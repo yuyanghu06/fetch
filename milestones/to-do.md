@@ -3,7 +3,7 @@
 - [x] Read selected scope and source, preserve earlier planning and establish exclusive ownership.
 - [x] Durable OAuth/native authority/Keychain/lasting TLS identity source written; all verification deferred.
 - [x] Private runtime/package preparation and install-progress source written; unverified.
-- [ ] Server management source integration.
+- [x] Shared server-management source integrated; bounded source review accepts it, runtime verification deferred.
 - [x] Raw runner/transports/queues/catalog/native MCP source written; all verification deferred.
 - [ ] Existing HTTP route integration and native API-backed Iced interface.
 - [ ] App/DMG packaging source, MIT/notices and explicit testing handoff.

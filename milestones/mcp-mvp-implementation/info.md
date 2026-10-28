@@ -17,3 +17,5 @@ Authority source is written and registered; see [the pass](../history/2026-10-28
 Private installer/discovery/storage source written and source-reviewed; no runtime/package preparation has run. Manager and native integration remain active.
 
 Shared runner and native MCP source written, including raw transport fidelity/owner accounting mechanisms. No compile/runtime/client evidence.
+
+Manager source integrated after bounded read-only review. The implementation records supported authentication adapters and unsupported cases explicitly; runtime/provider/client success is unverified.

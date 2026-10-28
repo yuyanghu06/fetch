@@ -1,3 +1,10 @@
+## Shared server-management source written
+
+Server/config/auth/credentials/restart and tool-observation source has received a bounded source review after corrections. All behavior remains uncompiled and untested.
+
+- [Accept bounded installer and manager source review](history/2026-10-28_14-21-26-711572-evaluator-final-installation-manager-source-review.md)
+- [Implement shared server-management source](history/2026-10-28_14-21-26-711804-coder-server-management-source.md)
+
 ## Shared runner and MCP source written
 
 Three transports and selected native methods are implemented in source. Queue/uncertainty/revocation and private catalog behavior have been source-read; none has been executed. [Runner pass](history/2026-10-28_14-20-16-098752-coder-raw-runner-and-native-mcp-source.md). Manager, HTTP and UI integration follows.

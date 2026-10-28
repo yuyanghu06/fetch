@@ -12,3 +12,4 @@ pub mod native_auth;
 pub mod installation;
 pub mod runner;
 pub mod mcp;
+pub mod manager;
