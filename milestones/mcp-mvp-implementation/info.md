@@ -19,3 +19,5 @@ Private installer/discovery/storage source written and source-reviewed; no runti
 Shared runner and native MCP source written, including raw transport fidelity/owner accounting mechanisms. No compile/runtime/client evidence.
 
 Manager source integrated after bounded read-only review. The implementation records supported authentication adapters and unsupported cases explicitly; runtime/provider/client success is unverified.
+
+API/native application/Iced interface source integrated after bounded source review corrections. No visual, HTTP, OS or client behavior has been exercised. Final handoff/distribution-source documentation follows.

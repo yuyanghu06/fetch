@@ -1,3 +1,10 @@
+## Native application and API/UI source integrated
+
+Shared services now have selected HTTP adapters and a native API-backed interface with install selection, structured monitoring, expandable inspection, call settings, native secrets and client/cleanup guidance. One-process startup, activation and Quit source is wired. Compilation/visual/HTTP/client evidence remains absent by instruction.
+
+- [Review native/API integration source](history/2026-10-28_14-26-10-790953-evaluator-parent-integration-source-review.md)
+- [Integrate native application and shared API interface](history/2026-10-28_14-26-10-791201-orchestrator-native-api-ui-source-integration.md)
+
 ## Shared server-management source written
 
 Server/config/auth/credentials/restart and tool-observation source has received a bounded source review after corrections. All behavior remains uncompiled and untested.

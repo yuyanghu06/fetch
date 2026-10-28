@@ -5,7 +5,7 @@
 - [x] Private runtime/package preparation and install-progress source written; unverified.
 - [x] Shared server-management source integrated; bounded source review accepts it, runtime verification deferred.
 - [x] Raw runner/transports/queues/catalog/native MCP source written; all verification deferred.
-- [ ] Existing HTTP route integration and native API-backed Iced interface.
+- [x] Existing HTTP route integration and native API-backed Iced interface source written; source review corrections integrated; uncompiled/untested.
 - [ ] App/DMG packaging source, MIT/notices and explicit testing handoff.
 - [ ] Scoped commits/pushes as features are integrated.
 - [ ] User-started testing/compilation and isolated acceptance: deliberately NOT RUN.

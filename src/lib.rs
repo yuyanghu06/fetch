@@ -13,3 +13,5 @@ pub mod installation;
 pub mod runner;
 pub mod mcp;
 pub mod manager;
+pub mod application;
+pub mod ui;

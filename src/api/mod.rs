@@ -1,5 +1,6 @@
 //! Existing product routes wrap shared backend services.
 pub mod setup;
+pub mod runtime;
 
 use crate::{
     authority::{AuthorizationError, Authorizer, Caller},
@@ -23,6 +24,10 @@ pub struct AppState {
     pub repository: ServerRepository,
     pub discovery: DiscoveryService,
     pub authority: Arc<dyn Authorizer>,
+    pub manager: Option<Arc<crate::manager::Manager>>,
+    pub native: Option<Arc<crate::native_auth::NativeAuthority>>,
+    pub oauth: Option<Arc<crate::oauth::OAuthService>>,
+    pub gateway: Option<Arc<crate::mcp::McpGateway>>,
 }
 
 impl AppState {
@@ -49,30 +54,35 @@ impl AppState {
             repository,
             discovery,
             authority,
+            manager: None, native: None, oauth: None, gateway: None,
         })
     }
 }
 
 pub fn router(state: Arc<AppState>) -> Router {
-    Router::new()
-        .route(
-            "/.well-known/oauth-protected-resource/mcp",
-            get(resource_metadata),
-        )
-        .route(
-            "/.well-known/oauth-authorization-server",
-            get(authorization_metadata),
-        )
+    let mut routes = Router::new()
+        .route("/.well-known/oauth-protected-resource/mcp", get(resource_metadata))
         .route("/api/v1/servers", get(servers))
         .route("/api/v1/setup/discovery", get(setup::discovery))
-        .route(
-            "/mcp",
-            get(mcp_pending).post(mcp_pending).delete(mcp_pending),
-        )
-        .method_not_allowed_fallback(method_not_allowed)
-        .fallback(not_found)
-        .layer(middleware::from_fn_with_state(state.clone(), boundary))
-        .with_state(state)
+        .route("/api/v1/setup/installations", axum::routing::post(runtime::install))
+        .route("/api/v1/setup/installations/{installation_id}", get(runtime::installation))
+        .route("/api/v1/servers/{server_id}/config", axum::routing::patch(runtime::config))
+        .route("/api/v1/servers/{server_id}/credentials", axum::routing::patch(runtime::credentials))
+        .route("/api/v1/servers/{server_id}/authenticate", axum::routing::post(runtime::authenticate))
+        .route("/api/v1/servers/{server_id}/restart", axum::routing::post(runtime::restart))
+        .route("/api/v1/servers/{server_id}/tools/{tool_name}/call", axum::routing::post(runtime::call))
+        .route("/api/v1/tools", get(runtime::tools))
+        .route("/oauth/provider/callback", get(runtime::provider_callback))
+        .with_state(state.clone());
+    if let Some(oauth) = &state.oauth { routes = routes.merge(crate::oauth::router(oauth.clone())); }
+    else { routes = routes.route("/.well-known/oauth-authorization-server", get(authorization_metadata)); }
+    if let Some(gateway) = &state.gateway { routes = routes.merge(gateway.clone().router()); }
+    else {
+        let pending = Router::new().route("/mcp", get(mcp_pending).post(mcp_pending).delete(mcp_pending)).with_state(state.clone());
+        routes = routes.merge(pending);
+    }
+    routes.method_not_allowed_fallback(method_not_allowed).fallback(not_found)
+        .layer(middleware::from_fn_with_state(state, boundary))
 }
 
 async fn boundary(State(state): State<Arc<AppState>>, request: Request, next: Next) -> Response {
@@ -96,23 +106,28 @@ async fn boundary(State(state): State<Arc<AppState>>, request: Request, next: Ne
     let origins: Vec<_> = request.headers().get_all(header::ORIGIN).iter().collect();
     let valid_origin = origins.is_empty()
         || (origins.len() == 1 && origins[0].to_str().ok() == Some(state.origin.as_str()));
+    let application_path = request.uri().path().starts_with("/api/v1/");
     let mut response = if !valid_host || !uri_authority {
-        application_error(
+        if !application_path { StatusCode::BAD_REQUEST.into_response() } else { application_error(
             StatusCode::BAD_REQUEST,
             "INVALID_REQUEST",
             "Use Fetch's configured local address.",
             None,
-        )
+        ) }
     } else if !valid_origin {
-        application_error(
+        if !application_path { StatusCode::FORBIDDEN.into_response() } else { application_error(
             StatusCode::FORBIDDEN,
             "FORBIDDEN",
             "This browser origin is not allowed.",
             None,
-        )
+        ) }
     } else {
         next.run(request).await
     };
+    if application_path && !response.headers().get(header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|v| v.starts_with("application/json")) {
+        let status = response.status();
+        response = application_error(status, "INVALID_REQUEST", "The request could not be read in the required form.", None);
+    }
     response
         .headers_mut()
         .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
@@ -143,6 +158,10 @@ pub(super) fn authorize_management(
     headers: &HeaderMap,
     shape: Option<&str>,
 ) -> Result<Caller, Box<Response>> {
+    authorize_scope(state, headers, "fetch:manage", shape)
+}
+
+pub(super) fn authorize_scope(state: &AppState, headers: &HeaderMap, scope: &str, shape: Option<&str>) -> Result<Caller, Box<Response>> {
     let caller = match state.authority.authorize(headers) {
         Ok(caller) => caller,
         Err(AuthorizationError::Unauthenticated) => {
@@ -171,11 +190,11 @@ pub(super) fn authorize_management(
             )));
         }
     };
-    if !caller.can_manage() {
+    if !caller.has_scope(scope) {
         return Err(Box::new(application_error(
             StatusCode::FORBIDDEN,
             "FORBIDDEN",
-            "Server-management permission is required.",
+            "This operation requires the matching Fetch permission.",
             shape,
         )));
     }
@@ -212,9 +231,9 @@ pub(super) async fn empty_body(request: Request) -> Result<HeaderMap, ()> {
 }
 
 async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Response {
-    if let Err(reply) = authorize_management(&state, request.headers(), Some("servers")) {
-        return *reply;
-    }
+    let caller = match authorize_management(&state, request.headers(), Some("servers")) {
+        Ok(caller) => caller, Err(reply) => return *reply,
+    };
     let query = request.uri().query().unwrap_or("").to_owned();
     if empty_body(request).await.is_err() {
         return application_error(
@@ -264,6 +283,12 @@ async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Respon
             "A restart lookup requires exactly one server ID.",
             Some("servers"),
         );
+    }
+    if let Some(manager) = &state.manager {
+        return match manager.servers_for(&caller, ids, restart).await {
+            Ok(value) => Json(value).into_response(),
+            Err(error) => (StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR), Json(error.body())).into_response(),
+        };
     }
     let repository = state.clone();
     let selected_ids = ids.clone();

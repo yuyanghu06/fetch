@@ -48,3 +48,12 @@ fn inspect(raw: &RawValue, depth: usize) -> Result<(), ()> {
     }
     Ok(())
 }
+
+/// Encode an opaque selector as one path component; never interpret it as a path.
+pub fn path_component(value: &str) -> String {
+    let mut result = String::new();
+    for byte in value.as_bytes() {
+        match byte { b'A'..=b'Z'|b'a'..=b'z'|b'0'..=b'9'|b'-'|b'_'|b'~' => result.push(*byte as char), _ => result.push_str(&format!("%{byte:02X}")) }
+    }
+    result
+}
