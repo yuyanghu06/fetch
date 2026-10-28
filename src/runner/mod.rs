@@ -19,13 +19,18 @@ pub struct ExecutionPolicy {
     pub default_timeout_ms:u64,
     #[serde(default)]
     pub tool_timeouts_ms:BTreeMap<String,u64>,
+    /// Trusted integration observations for the exact current connection context.
+    /// This is never an API field or a value decoded from raw Tool metadata.
+    #[serde(skip)]
+    pub supported_tool_timeouts_ms:BTreeMap<String,u64>,
 }
 impl Default for ExecutionPolicy {
-    fn default()->Self { Self{max_concurrent_calls:1,default_timeout_ms:120_000,tool_timeouts_ms:BTreeMap::new()} }
+    fn default()->Self { Self{max_concurrent_calls:1,default_timeout_ms:120_000,tool_timeouts_ms:BTreeMap::new(),supported_tool_timeouts_ms:BTreeMap::new()} }
 }
 impl ExecutionPolicy {
     pub fn validate(&self)->Result<(),RunError> {
-        if !(1..=64).contains(&self.max_concurrent_calls)||!(1..=86_400_000).contains(&self.default_timeout_ms)||self.tool_timeouts_ms.len()>4096||self.tool_timeouts_ms.iter().any(|(name,limit)|name.is_empty()||name.contains('\0')||!(1..=86_400_000).contains(limit)) { Err(RunError::invalid_config()) } else { Ok(()) }
+        let invalid_supported=self.supported_tool_timeouts_ms.len()>4096||self.supported_tool_timeouts_ms.iter().any(|(name,limit)|name.is_empty()||name.contains('\0')||*limit==0||!limit.checked_add(5000).is_some_and(|effective|effective<=86_400_000));
+        if !(1..=64).contains(&self.max_concurrent_calls)||!(1..=86_400_000).contains(&self.default_timeout_ms)||self.tool_timeouts_ms.len()>4096||self.tool_timeouts_ms.iter().any(|(name,limit)|name.is_empty()||name.contains('\0')||!(1..=86_400_000).contains(limit))||invalid_supported { Err(RunError::invalid_config()) } else { Ok(()) }
     }
 }
 #[derive(Clone)]

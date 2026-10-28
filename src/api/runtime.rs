@@ -1,6 +1,6 @@
 //! HTTP adapters for the selected management and installed-tool operations.
 use super::{AppState, application_error, authorize_scope, empty_body, parse_query};
-use crate::{authority::Caller, manager::{Manager,ManagementError}, runner::{InvocationContext,RunError,Runner}};
+use crate::{authority::Caller, manager::{Manager,ManagementError}, runner::{InvocationContext,RunError}};
 use axum::{Json,body::to_bytes,extract::{Path,Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response}};
 use serde_json::{Value,json,value::RawValue};
 use std::sync::Arc;
@@ -9,9 +9,14 @@ fn manager(state:&AppState)->Result<Arc<Manager>,Response>{state.manager.clone()
 fn management_error(error:ManagementError)->Response{(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
 fn accepted(body:Value,location:Option<String>)->Response{let mut response=(StatusCode::ACCEPTED,Json(body)).into_response();if let Some(location)=location{if let Ok(value)=HeaderValue::from_str(&location){response.headers_mut().insert(header::LOCATION,value);}}response}
 fn no_query(request:&Request)->bool{request.uri().query().is_none()}
-async fn body(request:Request)->Result<Value,Response>{
-    if !no_query(&request)||!request.headers().get(header::CONTENT_TYPE).and_then(|v|v.to_str().ok()).is_some_and(|v|v.split(';').next().is_some_and(|v|v.trim().eq_ignore_ascii_case("application/json"))){return Err(invalid());}
+async fn body(request:Request)->Result<Value,Response>{ read_body(request,false).await }
+async fn optional_body(request:Request)->Result<Value,Response>{ read_body(request,true).await }
+async fn read_body(request:Request,allow_empty:bool)->Result<Value,Response>{
+    if !no_query(&request){return Err(invalid());}
+    let json_content=request.headers().get(header::CONTENT_TYPE).and_then(|v|v.to_str().ok()).is_some_and(|v|v.split(';').next().is_some_and(|v|v.trim().eq_ignore_ascii_case("application/json")));
     let bytes=to_bytes(request.into_body(),crate::json::MAX_REQUEST_BYTES).await.map_err(|_|invalid())?;
+    if bytes.is_empty()&&allow_empty{return Ok(json!({}));}
+    if !json_content{return Err(invalid());}
     let raw=crate::json::object(&bytes).map_err(|_|invalid())?;
     serde_json::from_str(raw.get()).map_err(|_|invalid())
 }
@@ -35,12 +40,12 @@ pub async fn config(State(state):State<Arc<AppState>>,Path(id):Path<String>,requ
 }
 pub async fn authenticate(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
-    let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match body(request).await{Ok(v)=>v,Err(r)=>return r};if input!=json!({}){return invalid();}
+    let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};if input!=json!({}){return invalid();}
     match manager.authenticate(&id).await{Ok(v)=>{if v["status"]=="authenticating"{accepted(v,Some(format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).finish())))}else{Json(v).into_response()}},Err(e)=>management_error(e)}
 }
 pub async fn restart(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
-    let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match body(request).await{Ok(v)=>v,Err(r)=>return r};
+    let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};
     match manager.restart(&id,input).await{Ok(v)=>{let location=v["restart_id"].as_str().map(|attempt|format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).append_pair("restart_id",attempt).finish()));accepted(v,location)},Err(e)=>management_error(e)}
 }
 pub async fn credentials(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
@@ -138,7 +143,7 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
                 "fetch__discover_servers"=>{let path=input.get("config_path").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')&&std::path::Path::new(s).is_absolute()).map(std::path::PathBuf::from).ok_or_else(RunError::invalid)).transpose()?;let discovery=self.discovery.clone();tokio::task::spawn_blocking(move||discovery.scan(path.as_deref())).await.map_err(|_|RunError::catalog())?.map_err(|e|RunError{http_status:e.http_status,code:e.code,message:e.message,execution:"not_started"})},
                 "fetch__install_servers"=>project(self.manager.install(input).await),
                 "fetch__get_installation"=>project(self.manager.installation(input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
-                "fetch__get_servers"=>{let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
+                "fetch__get_servers"=>{if input.get("restart_id").is_some()&&input["id"].as_array().is_none_or(|ids|ids.len()!=1){return Err(RunError::invalid());}let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
                 "fetch__authenticate_server"=>project(self.manager.authenticate(id).await),
                 "fetch__restart_server"=>{let mut patch=json!({});if let Some(force)=input.get("force_restart"){patch["force_restart"]=force.clone();}project(self.manager.restart(id,patch).await)},
                 "fetch__update_server_config"=>{let id=id.to_owned();let mut patch=input;patch.as_object_mut().ok_or_else(RunError::invalid)?.remove("server_id");project(self.manager.config(&id,patch,&caller).await)},

@@ -89,7 +89,8 @@ impl DiscoveryService {
             args.iter().skip(1).cloned().collect()
         } else if row["type"] == "pypi" { args.iter().skip(1).cloned().collect() } else { Vec::new() };
         let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
-        let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":120000,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
+        let default_timeout_ms=source_default_timeout_ms(harness,definition).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?;
+        let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":default_timeout_ms,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
         if row["type"] == "remote" {
             let mut headers=headers;
             if let Some(reference)=definition["bearer_token_env_var"].as_str(){if !headers.iter().any(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))){headers.push(json!({"name":"Authorization","credential_ref":reference}));}}
@@ -327,6 +328,7 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
     let Some(o) = definition.as_object() else {
         return blocked(row, true);
     };
+    if source_default_timeout_ms(harness,definition).is_err(){return blocked(row,true);}
     let mut variables = BTreeSet::new();
     for key in ["env", "environment"] {
         if let Some(v) = o.get(key) {
@@ -572,6 +574,34 @@ fn header_name(s: &str) -> bool {
 pub(crate) fn supported_remote_endpoint(url:&Url)->bool {
     matches!(url.path(),"/mcp"|"/mcp/"|"/sse"|"/sse/"|"/api/mcp"|"/api/mcp/")
         || (url.host_str()==Some("mcp.linear.app") && url.path()=="/mcp/readonly")
+}
+/// Seed Fetch's own wait duration from a documented explicit source setting.
+/// These client settings are not observations of a server's intrinsic limit.
+fn source_default_timeout_ms(harness:&str,definition:&Value)->Result<u64,()> {
+    const FALLBACK_MS:u64=120_000;
+    const MAX_MS:u64=86_400_000;
+    // Convert decimal duration preferences exactly; a floating-point multiply can
+    // otherwise reject a valid value such as a whole millisecond written in seconds.
+    let decimal_milliseconds=|value:&Value,scale:i32|->Option<u64>{
+        let Value::Number(number)=value else{return None;};
+        let text=number.to_string();
+        if text.starts_with('-'){return None;}
+        let mut parts=text.split(['e','E']);let base=parts.next()?;
+        let exponent=parts.next().map(|s|s.parse::<i32>().ok()).unwrap_or(Some(0))?;
+        if parts.next().is_some(){return None;}
+        let fraction=base.split_once('.').map_or(0,|(_,tail)|tail.len());
+        let digits=base.replace('.',"");let nonzero=digits.trim_start_matches('0');
+        if nonzero.is_empty(){return None;}
+        let significant=nonzero.trim_end_matches('0');
+        let trailing=i32::try_from(nonzero.len()-significant.len()).ok()?;
+        let power=exponent.checked_add(scale)?.checked_sub(i32::try_from(fraction).ok()?)?.checked_add(trailing)?;
+        if !(0..=8).contains(&power){return None;}
+        significant.parse::<u64>().ok()?.checked_mul(10u64.checked_pow(power as u32)?)
+    };
+    let field=match harness {"codex"=>"tool_timeout_sec","opencode"=>"timeout",_=>return Ok(FALLBACK_MS)};
+    let Some(value)=definition.get(field)else{return Ok(FALLBACK_MS)};
+    let milliseconds=decimal_milliseconds(value,if harness=="codex"{3}else{0});
+    milliseconds.filter(|value|*value>0 && *value<=MAX_MS).ok_or(())
 }
 fn npm_package(s: &str) -> Option<(&str, Option<&str>)> {
     let split = if let Some(unscoped) = s.strip_prefix('@') {

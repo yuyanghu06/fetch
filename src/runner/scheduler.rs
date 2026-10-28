@@ -47,7 +47,9 @@ impl Scheduler {
     }
     pub fn timeout(&self, name: Option<&str>) -> Duration {
         let state = self.state.lock().expect("scheduler lock");
-        Duration::from_millis(name.and_then(|name| state.policy.tool_timeouts_ms.get(name).copied()).unwrap_or(state.policy.default_timeout_ms))
+        let explicit=name.and_then(|name|state.policy.tool_timeouts_ms.get(name).copied());
+        let supported=name.and_then(|name|state.policy.supported_tool_timeouts_ms.get(name).copied()).and_then(|limit|limit.checked_add(5000));
+        Duration::from_millis(explicit.or(supported).unwrap_or(state.policy.default_timeout_ms))
     }
     pub async fn admit(self: &Arc<Self>, bytes: usize, cancel: CancelToken) -> Result<Reservation, RunError> {
         let (reply, receiver) = oneshot::channel();
