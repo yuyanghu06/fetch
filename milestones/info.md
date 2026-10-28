@@ -1,7 +1,5 @@
 # Milestone records
 
-[Snapshot](milestone.md) is current state and actual evidence; [to-do](to-do.md) tracks the single current worklist; [mcp-mvp-architecture](mcp-mvp-architecture/info.md) is the active milestone. [History](history/info.md) is append-only. Prior context/tasks are preserved in the milestone folder as historical snapshots, not current blockers.
+[Snapshot](milestone.md) records current state and actual evidence; [to-do](to-do.md) tracks unfinished work. [The first developer foundation](mcp-dev-foundation/info.md) is implemented and independently accepted. [Architecture work](mcp-mvp-architecture/info.md) remains a specification/reference milestone, not another build-approval gate. [History](history/info.md) is append-only.
 
-D73 replaces repeated approval lists with one implementation checkpoint. Source/runtime/environment/client/credential work remains paused until authorized. Documentation acceptance does not establish application readiness.
-
-The active implementation increment is mcp-dev-foundation after D74. The architecture audit remains preserved; real MCP tests are deferred to the later joint virtual-environment session.
+D74 authorizes source implementation and pushes without release. Native authorization/lasting identity/Keychain, preparation, MCP sharing and the desktop interface remain unfinished. Main MCP connection tests are deferred to the later joint isolated environment. The developer default is https://localhost:53671. Previous context/tasks and journal entries stay historical.

@@ -51,7 +51,7 @@ The [full-session MCP audit](mcp-session-audit.md) recovered these already-selec
 | 4. Native interface and connection setup | Wrap working APIs with installation/status/Settings/reconnect screens; connect each agent once to Fetch and guide per-server authentication only when needed. | UI-only setup with selection/install/auth/conditional-restart controls, ordinary-agent secret-write denial, user-completed provider flows, one saved agent connection and the user-pasted cleanup prompt only after verification. |
 | 5. Isolated acceptance and release | Independent daily-workflow/fresh-install tests, fixes/retests/evaluator acceptance, MIT license file and DMG packaging. | Supported clients/providers actually work; app lifecycle and saved data survive approved updates; release signing/notarization/access and publication authorized when required. |
 
-This sequence does not authorize code or environment provisioning. Source/API work remains paused until the user gives the implementation go-ahead. Each included new route or meaningful behavior change must be presented completely before implementation; do not reopen selected broad decisions.
+D74 authorizes source implementation and pushes without release. The first developer-backend foundation is implemented; it does not complete Stage1. Environment provisioning, trust/personal-client changes and live managed-MCP tests remain outside this authorization. Each included new route or meaningful behavior change must be presented completely before implementation; do not reopen selected broad decisions.
 
 ## One engineering worklist — not separate product-approval rounds
 
@@ -84,4 +84,4 @@ Other unselected optional controls stay outside the build unless a selected work
 
 - D73 locks the clarified release scope and planning approach; D01–D72 retain their selected scopes and explicit supersessions.
 - The only pending product-scope question listed here is the custom GitHub CLI adapter. Engineering mechanisms are grouped above, not presented as completed facts or ten new product decisions.
-- Implementation, live tests, personal-client changes and release remain separately gated. Finish any required implementation brief as one coherent review, then obtain the build go-ahead.
+- Implementation/push is authorized by D74. Continue native authorization/token issuance and protected lasting identity/Keychain, then the existing build sequence. Live managed-MCP tests and personal-client changes remain deferred; no release is authorized.

@@ -712,3 +712,7 @@ The custom Fetch-owned GitHub CLI adapter remains a genuine include/defer questi
 ## D74 — authorize implementation and repository push, without release
 
 October28, 2026. The user said to start building and push to the configured remote, create no release, provide developer-server commands, and work together later on main MCP tests in an isolated virtual environment with the same server inventory. This supersedes prior implementation/push pauses. It does not authorize release publication, personal-client changes, trust-store changes, credential migration or live managed-server connections. The first implementation pass establishes a runnable Rust developer-backend foundation; incomplete features remain explicitly unavailable. Selected product/API behavior stays intact; no shared-memory work is included.
+
+## D75 — use a less common developer port
+
+October28, 2026. The user requested a less common port and current-state documentation. Set the current developer default to53671 instead of4141, retaining explicit --port overrides and port0 test allocation. A local TCP listener check found53671 free, and a targeted public search found no established common software/MCP default there; neither guarantees permanent availability or exclusivity. This changes the developer address only, not the selected HTTPS/authorization rules or trust. Refresh current docs/status, preserve historical records and unfinished work.

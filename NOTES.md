@@ -743,3 +743,7 @@ New Rust source now provides ephemeral loopback HTTPS, protected read handlers, 
 ### October28, 2026 — first source push verified
 
 Source commit `d62db7edf4df798288f545da1d0c373e7c871d75` was pushed to `origin/main`; `git ls-remote` matched local HEAD. Working tree was clean and there were no tags. No release was created. The developer-backend foundation milestone is complete; full MCP/native-interface implementation and later joint VM testing remain unfinished. Developer command: `cargo run --locked --bin fetch -- dev`.
+
+## October28, 2026 — less common developer port and current-state documentation
+
+The user requested a less common port and confirmation that milestones/docs reflect actual progress. The default is now https://localhost:53671, with --port overrides unchanged. The local listener check found it unused; no uniqueness guarantee is implied. Current records explicitly describe the completed backend foundation and unfinished native authorization/Keychain/lasting identity, installation, desktop UI and MCP sharing. Obsolete pre-D74 status is labelled historical; no old history or deferred feature design was rewritten. Verification/review and the authorized follow-up push are recorded in the milestone.

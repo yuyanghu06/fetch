@@ -13,7 +13,7 @@ Finish one coherent user-reviewed first-release MCP implementation checkpoint wi
 
 ## Current status and next action
 
-Active/incomplete. [The single implementation checkpoint](../../docs/architecture/build-readiness.md) is canonical. The custom GitHub CLI adapter is the one remaining product-scope choice; recommendation is defer, not yet selected. Remaining engineering work is grouped once, not another ten-question backlog. Application implementation/live tests remain paused.
+Active/incomplete. [The single implementation checkpoint](../../docs/architecture/build-readiness.md) is canonical. The custom GitHub CLI adapter is the one remaining product-scope choice; recommendation is defer, not yet selected. Remaining engineering work is grouped once, not another ten-question backlog. D74 authorizes implementation/push. The first backend foundation exists; native authorization/identity, package preparation, UI and MCP sharing remain unfinished. Live managed-MCP tests remain deferred to the later joint isolated environment; no release is authorized.
 
 ## Preserved records
 

@@ -4,7 +4,7 @@
 
 Updated October28, 2026 after D73. Read [the single implementation checkpoint](docs/architecture/build-readiness.md), [confirmed decisions](docs/architecture/decisions.md) and [current checkpoint index](docs/architecture/open-questions.md). These supersede older proposal/status summaries. Detailed dated notes remain in [NOTES.md](NOTES.md); the [pre-D73 context](milestones/mcp-mvp-architecture/context-before-d73.md) preserves the earlier record.
 
-## Current release
+## Selected release design — not all implemented
 
 - One local macOS Fetch application with a Rust backend; UI, API and managed-server controller share one Fetch process. Iced is the previously chosen framework to try, not a validated prototype; exact compatible dependencies belong in one engineering brief.
 - This first release is MCP management/sharing. Shared memory, prompt/history/undo and their interfaces are deferred; they remain future functionality in the same product. PostgreSQL/retention, graph, extra server processes, native background Tasks and live per-resource content remain deferred at their recorded scopes.
@@ -33,3 +33,7 @@ Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://gith
 ## First source delivery — October28
 
 Source commit d62db7e is pushed to origin/main. The first developer-backend milestone passed independent evaluation,37 tests, formatting, strict Clippy and normal-TLS CLI smoke. Run `cargo run --locked --bin fetch -- dev`; see README.md for the temporary certificate and exact limits. No tag/release, live MCP connection or personal-state change occurred. Full native authorization/identity/Keychain, preparation, desktop UI and MCP sharing remain unfinished; this delivery does not complete Stage1 or the full MVP.
+
+## Current developer address — October28
+
+The default developer address is `https://localhost:53671`; `--port` still overrides it. The foundation is implemented and pushed, while native approval/token issuance, lasting identity/Keychain, installation, desktop UI and MCP sharing are unfinished. Next: implement real native authorization and protected lasting identity before server preparation/runner work. No release or live managed-MCP test is authorized.

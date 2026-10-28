@@ -10,10 +10,10 @@ Install Rust 1.89 or newer, then run from this folder:
 cargo run --locked --bin fetch -- dev
 ```
 
-The backend listens at `https://localhost:4141`. Stop it with **Ctrl-C**. Use another port if needed:
+The backend listens at `https://localhost:53671`. Stop it with **Ctrl-C**. Use another port if needed:
 
 ```sh
-cargo run --locked --bin fetch -- dev --port 4142
+cargo run --locked --bin fetch -- dev --port 53672
 ```
 
 Developer data goes in the ignored `.fetch-dev/` directory. It does not use your normal Fetch Application Support folder or scan your personal client configurations. You can select another private directory with `--data-dir /absolute/path`.
@@ -22,7 +22,7 @@ Each run creates a temporary HTTPS certificate. Its private key stays in memory;
 
 ```sh
 curl --cacert .fetch-dev/certificate.pem \
-  https://localhost:4141/.well-known/oauth-protected-resource/mcp
+  https://localhost:53671/.well-known/oauth-protected-resource/mcp
 ```
 
 This returns Fetch's public connection metadata. Opening that HTTPS address in a browser will show an untrusted-certificate warning; there is no browser interface yet. The temporary developer certificate is separate from the planned lasting installation certificate.

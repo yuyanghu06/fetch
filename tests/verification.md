@@ -37,3 +37,7 @@ The final review found that valid HTTP/2 authority-only requests were rejected. 
 ## Limits
 
 All files and keys were disposable fixtures. HTTPS trust was limited to the test HTTP client. No MCP server or provider was contacted; no personal client configuration, credentials, Keychain or system certificate trust was read or changed. No native UI, real app authorization, package preparation, production Keychain behavior or MCP client/provider compatibility was tested. Those remain separate implementation and later isolated-testing work.
+
+## Development-port follow-up — 2026-10-28T13:06:54.850498-04:00
+
+Updated only the six static backend test fixture references to the final developer port53671. HTTPS tests retain available port0; no fixed-port listener or MCP connection was started. `cargo fmt --all --check` and `cargo test --locked --all-targets` passed again:37 tests (13 library,16 backend,7 HTTPS,1 raw JSON). `cargo run --locked -- dev --help` exited successfully and displayed `--port` default53671. No new test or production setting was added by the Tester.

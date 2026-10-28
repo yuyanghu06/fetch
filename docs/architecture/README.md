@@ -1,12 +1,12 @@
 # Fetch architecture records
 
-Updated October28, 2026 after D73. Design/research/documentation only; application implementation remains paused.
+Updated October28, 2026 after D74. The first Rust developer backend is implemented, tested and pushed. The desktop interface, native app authorization, package installation and MCP sharing are unfinished. Current default: `https://localhost:53671`; no release or live managed-MCP testing.
 
 ## Read before continuing
 
 Start with [PROJECT_CONTEXT.md](../../PROJECT_CONTEXT.md), [NOTES.md](../../NOTES.md) and [confirmed decisions](decisions.md). The **single current plan** is [build-readiness.md](build-readiness.md). [Open questions](open-questions.md) is a short index to its one product-scope question and engineering worklist, not a second approval backlog. Do not revive the superseded ten-group count or old checkpoints.
 
-## Current direction
+## Selected design recorded before D74
 
 One local Rust/macOS app; one saved Fetch connection/token per agent at `/mcp`; user-completed provider logins reused by tool calls; selected raw data/transports/native scope/queues/deadlines/restart; encrypted per-server files and Keychain keys; native Settings manual secrets. No shared memory in this release. MIT license and drag-and-drop DMG are selected. No implementation, real client/credential/Keychain/certificate changes, provisioning, live tests or publishing is authorized by these records.
 
@@ -14,7 +14,7 @@ One local Rust/macOS app; one saved Fetch connection/token per agent at `/mcp`; 
 
 | Area | Reference / status |
 | --- | --- |
-| All product decisions | [decisions.md](decisions.md), latest D73. |
+| All product decisions | [decisions.md](decisions.md), D74 authorizes building/pushing; the current port follow-up is recorded there. |
 | Existing APIs | [api-contract.md](api-contract.md); exact remaining engineering work is gathered once in the implementation checkpoint. |
 | App connection | [client-authorization.md](client-authorization.md), D71 presented scope approved; [HTTPS/certificates](local-oauth-trust.md), D70. |
 | Settings/secrets | [storage](storage-scope.md), [shown D72 direction and unshown mechanism candidates](secret-storage-settings.md). |

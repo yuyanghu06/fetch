@@ -11,3 +11,5 @@ The pre-build MCP source-session audit restores existing requirements and record
 The original-session MCP audit is independently accepted. Protected existing content and prior journal entries passed integrity checks; the snapshot records final documentation checks and audit pass links.
 
 The D74 Rust foundation passes record dependency research, bounded planning, implementation, actual failing checks, fixes/retests and final independent acceptance. Delivery entries record real push evidence separately; none claims the full MCP MVP complete.
+
+D75 follow-up entries record the less common developer port, current-state documentation cleanup, existing test evidence and independent acceptance. Historical port references are retained as originally recorded.

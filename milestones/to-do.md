@@ -27,7 +27,7 @@ October28, 2026 after D73. Canonical work is [the single implementation checkpoi
 - [ ] Stage4: native API-backed setup/Settings/client connection; no personal cleanup until verified and authorized.
 - [ ] Stage5: isolated real-client/fresh-install acceptance, fixes/retests/evaluator acceptance, MIT file and DMG; release only when authorized.
 
-## Consolidation verification
+## Historical consolidation verification before D74
 
 - [x] Inspect read-only Planner consolidation report and preserve previous context/tasks/history.
 - [x] Finish consolidation checks — independent Evaluator ACCEPT;332 Markdown files/668 local links and anchors/31 JSON examples passed before journal append; status fixes and archive links verified, all pass evidence serialized.
@@ -52,3 +52,10 @@ Application implementation and live testing remain paused. Exact new API or mean
 - [ ] Continue full Stage1 native authorization/token/Keychain/lasting identity, then selected preparation/runner/interface work. Current foundation does not complete Stage1 or MCP sharing.
 - [ ] Plan the later joint isolated MCP environment from the recorded real server inventory; no live managed-MCP tests now.
 - [ ] Release/DMG publication: not authorized by D74; do not create a release.
+
+## Developer-port and status follow-up
+
+- [x] Switch the developer default from4141 to53671, keeping explicit overrides and port0 tests.
+- [x] Refresh current milestone/context/README/architecture pointers and label obsolete pre-D74 status as historical.
+- [x] Port/docs verification: formatting,37 existing tests, CLI help and independent Evaluator ACCEPT.
+- [ ] Push the reviewed follow-up and record the verified remote.

@@ -16,7 +16,7 @@ use std::{path::Path, sync::Arc};
 use tempfile::TempDir;
 use tower::ServiceExt;
 
-const ORIGIN: &str = "https://localhost:4141";
+const ORIGIN: &str = "https://localhost:53671";
 
 /// A fixture grant injected in-process. It is not a developer bearer-token path.
 struct FixtureAuthority {
@@ -56,7 +56,7 @@ fn fixture() -> (TempDir, Arc<AppState>, Router) {
 fn request(uri: &str) -> Request<Body> {
     Request::builder()
         .uri(uri)
-        .header(header::HOST, "localhost:4141")
+        .header(header::HOST, "localhost:53671")
         .body(Body::empty())
         .unwrap()
 }
@@ -186,7 +186,7 @@ async fn missing_host_wrong_host_and_foreign_origin_are_rejected_without_cors() 
         .insert(header::HOST, "attacker.example".parse().unwrap());
     wrong_host
         .headers_mut()
-        .insert("x-forwarded-host", "localhost:4141".parse().unwrap());
+        .insert("x-forwarded-host", "localhost:53671".parse().unwrap());
     let mut foreign_origin = request("/api/v1/servers");
     foreign_origin
         .headers_mut()
@@ -194,7 +194,7 @@ async fn missing_host_wrong_host_and_foreign_origin_are_rejected_without_cors() 
     let mut duplicate_host = request("/api/v1/servers");
     duplicate_host
         .headers_mut()
-        .append(header::HOST, "localhost:4141".parse().unwrap());
+        .append(header::HOST, "localhost:53671".parse().unwrap());
     for (input, expected) in [
         (missing_host, StatusCode::BAD_REQUEST),
         (wrong_host, StatusCode::BAD_REQUEST),
@@ -308,7 +308,7 @@ async fn invalid_get_inputs_are_rejected_without_echoing_input() {
     }
     let input = Request::builder()
         .uri("/api/v1/servers")
-        .header(header::HOST, "localhost:4141")
+        .header(header::HOST, "localhost:53671")
         .body(Body::from("secret-body"))
         .unwrap();
     let response = app.oneshot(input).await.unwrap();
@@ -526,7 +526,7 @@ async fn application_method_errors_keep_the_common_json_guidance_field() {
     let input = Request::builder()
         .method("POST")
         .uri("/api/v1/servers")
-        .header(header::HOST, "localhost:4141")
+        .header(header::HOST, "localhost:53671")
         .body(Body::empty())
         .unwrap();
     let response = app.oneshot(input).await.unwrap();

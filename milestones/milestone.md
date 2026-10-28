@@ -2,11 +2,11 @@
 
 # Fetch milestone snapshot
 
-Updated October28, 2026 after D74. Active implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. Full MCP MVP and isolated client verification remain incomplete.
+Updated October28, 2026 after D74. Latest implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. Full MCP MVP and isolated client verification remain incomplete.
 
 ## Active implementation increment
 
-The user authorized building/pushing (D74). [Rust developer backend foundation](mcp-dev-foundation/info.md) is active. The first runnable backend is implemented and independently accepted:37 tests, formatting, strict Clippy and real CLI HTTPS/clean shutdown passed. Final documentation check: 364 Markdown files/704 local links and anchors/31 JSON examples passed. Source commit d62db7e was pushed to origin/main and the remote SHA matched local HEAD. No tag/release was created. Virtual-environment MCP interoperability tests follow in a later joint session. No release is authorized. The architecture audit below remains historical evidence.
+The user authorized building/pushing (D74). [Rust developer backend foundation](mcp-dev-foundation/info.md) is complete. The first runnable backend is implemented and independently accepted:37 tests, formatting, strict Clippy and real CLI HTTPS/clean shutdown passed. Final documentation check: 364 Markdown files/704 local links and anchors/31 JSON examples passed. Source commit d62db7e was pushed to origin/main and the remote SHA matched local HEAD. No tag/release was created. Virtual-environment MCP interoperability tests follow in a later joint session. No release is authorized. The architecture audit below remains historical evidence.
 
 ## Architecture checkpoint retained from the pre-build audit
 
@@ -16,7 +16,7 @@ D73 locks the clarified release: local Rust/macOS Fetch, one saved credential/to
 
 The one remaining product-scope choice is a new custom GitHub CLI adapter. Recommendation is to defer it; imported GitHub MCP compatibility is separate. All exact module/dependency/key/file/wire/native-admission/package/destination/lifecycle/onboarding/test/installer details are collected in one engineering worklist. They are not claimed historically selected and are not new broad product-review rounds.
 
-## Build sequence and boundaries
+## Historical build boundaries before D74
 
 Rust foundation/authority → server management APIs → MCP runner/sharing → native API-backed interface/client setup → isolated acceptance and release. Each API gets real HTTP verification before its interface. Preserve provider private handoff and D25/D31, raw data/caller isolation, D46 isolation and real Claude Code/OpenCode plus Codex workflows.
 
@@ -30,7 +30,7 @@ Independent Evaluator ACCEPT with no remaining material findings. All106 protect
 
 ## Actual evidence and next action
 
-Consolidation uses an inspected read-only Planner audit, existing decisions/research and independent documentation evaluation. Independent Evaluator ACCEPT with no remaining material findings;332 Markdown files/668 local links and anchors/31 JSON examples passed before the four new pass entries. New history fields/links checked. No source/runtime verification occurred. Next action: resolve the custom GitHub adapter scope and any required implementation brief in one coherent checkpoint, then obtain the build go-ahead.
+The implemented developer backend has local HTTPS, protected read handlers, safe config discovery and private/encrypted storage primitives. Source commit d62db7e and its delivery records are pushed to origin/main. Formatting, strict Clippy,37 tests and a certificate-verified CLI smoke passed. The current default is `https://localhost:53671`, with `--port` available. Native approval/token issuance, lasting identity/Keychain, package installation, desktop UI and MCP sharing remain unfinished. Next action: implement native authorization and protected lasting identity, then continue the existing build sequence. Main MCP connection tests remain deferred to the later joint isolated environment; no release is authorized.
 
 The full [historical handoff](mcp-mvp-architecture/handoff.md), [pre-D73 context](mcp-mvp-architecture/context-before-d73.md) and [pre-D73 task record](mcp-mvp-architecture/to-do-before-d73.md) preserve earlier evidence without creating current blockers. History remains append-only.
 
@@ -365,3 +365,12 @@ D61 selects [HTTP/SSE transport adapters](../docs/architecture/remote-upstreams.
 - [Orchestrator: Integrate accepted developer backend](history/2026-10-28_12-40-19-879883-orchestrator-developer-backend-reviewed-integration.md) — Code and documentation accepted and ready for commit/push; operational push result not yet claimed.
 
 - [Orchestrator: Deliver first developer backend to origin](history/2026-10-28_12-41-33-919126-orchestrator-developer-backend-push-evidence.md) — source d62db7e pushed and remote verified; bounded foundation complete, fullMVP incomplete.
+
+## D75 developer-port follow-up
+
+Default https://localhost:53671; current docs/status refreshed and obsolete pauses marked historical. Existing37 tests, formatting and CLI help passed; independent Evaluator ACCEPT. Push is authorized and follows these checks; no release or managed-MCP testing.
+
+- [Planner: Plan less common port and status cleanup](history/2026-10-28_13-08-27-492948-planner-developer-port-and-state-plan.md) — Bounded plan accepted; no missing product decision.
+- [Orchestrator: Change developer port and reconcile current status](history/2026-10-28_13-08-27-493353-orchestrator-developer-port-and-current-docs.md) — Implementation/docs complete; independenttester/evaluator evidence follows.
+- [Tester: Verify port change without expanding tests](history/2026-10-28_13-08-27-493572-tester-developer-port-followup-verification.md) — PASS; ownedfilesfrozen.
+- [Evaluator: Review developer port and current-state documentation](history/2026-10-28_13-08-27-493907-evaluator-developer-port-and-docs-acceptance.md) — No remaining material findings.

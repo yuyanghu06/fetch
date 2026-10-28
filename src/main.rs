@@ -21,7 +21,7 @@ enum Command {
         #[arg(long, default_value = ".fetch-dev")]
         data_dir: PathBuf,
         /// IPv4 loopback port. Use zero to select an available port.
-        #[arg(long, default_value_t = 4141)]
+        #[arg(long, default_value_t = 53671)]
         port: u16,
     },
 }

@@ -6,7 +6,7 @@ October28, 2026. D74 authorizes starting implementation and pushing, without a r
 
 Use one Rust edition2024 Cargo package with a shared library and a developer-only command. Axum/Tokio handle existing API routes; axum-server/rustls provide HTTPS with the ring provider. Cargo.lock records actually resolved versions. The later Iced app uses the same backend inside the single Fetch process; this command is not a new production daemon.
 
-The developer command binds IPv4 loopback and publishes https://localhost:4141 by default. A different explicit port is supported, including zero for test allocation. Host must match the configured authority and supplied Origin must match the configured origin. Proxy headers cannot authorize a request. Application JSON includes next_steps and no-store; OAuth/protocol envelopes keep their own formats.
+The developer command binds IPv4 loopback and publishes https://localhost:53671 by default. A different explicit port is supported, including zero for test allocation. Host must match the configured authority and supplied Origin must match the configured origin. Proxy headers cannot authorize a request. Application JSON includes next_steps and no-store; OAuth/protocol envelopes keep their own formats.
 
 Developer data is explicitly separate from production Application Support. Each run creates an in-memory TLS private key and writes only its public certificate into the selected private development directory. No trust installation, Keychain call, lasting identity, saved agent token or MCP process is involved. This is an explicit developer mechanism, not a substitute for D70's lasting protected installation identity. The planned installation identity and its VM verification remain unfinished.
 

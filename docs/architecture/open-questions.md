@@ -29,7 +29,7 @@ The [single worklist](build-readiness.md#one-engineering-worklist--not-separate-
 
 The unaccepted [verification amendment](credential-verification.md) is withdrawn from active review. No new storage-only200 exception or policy in it is approved; preserve D25/D31 until an explicit amendment is selected. Native read/prompt admission and precise mechanisms remain worklist items, not falsely claimed historical approvals.
 
-## Authorization and future scope
+## Historical D73 authorization and future scope
 
 Application implementation, environment provisioning, real Keychain/certificate/credentials/client changes, live testing and release remain paused until explicitly authorized. D46 isolation and D58 actual workflows remain acceptance requirements. Shared memory remains future same-product work; PostgreSQL/retention, graph, extra processes and recorded native-feature deferrals are not current build blockers.
 
@@ -38,3 +38,7 @@ Historical detailed proposals and append-only history preserve evidence/chronolo
 ## Source-history audit
 
 [The MCP session audit](mcp-session-audit.md) reconciles all seven available Fetch conversations. No new product decision or build permission was found; already-selected missing mapping/acceptance details were restored to the existing plan. It does not add another backlog or re-open deferred feature work.
+
+## Current implementation status after D74
+
+The first developer-backend foundation is implemented and pushed; the developer command defaults to `https://localhost:53671`. Native approval/token issuance, lasting identity/Keychain, package installation, desktop UI and MCP sharing remain unfinished. Build/push authorization is already granted; the old D73 pause above is historical. Continue the existing build sequence without requesting that permission again. Main MCP tests remain for the later joint isolated environment. No release is authorized.
