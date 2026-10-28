@@ -21,6 +21,7 @@ One local Rust/macOS app; one saved Fetch connection/token per agent at `/mcp`; 
 | Tool/native/runtime | [execution](mcp-execution.md), [connection](mcp-connection.md), [management tools](mcp-management-tools.md), [resources/prompts](mcp-resources-prompts.md). |
 | Remote/raw/catalog | [remote amendment](remote-api-amendment.md), [protocol adapters](mcp-protocol-adapters.md), [catalog](tool-catalog-status.md), [names](mcp-tool-names.md), [presentation](mcp-presentation.md), [interaction relay](mcp-interaction-relay.md). |
 | Integration/research | [GitHub CLI open scope](github-cli-proposal.md), [real-use inventory](real-use-compatibility.md), [research](research.md). No source review establishes live compatibility. |
+| Isolated testing | [Short batch/proposed layout](isolated-testing.md), [curated five-server roster](../../milestones/isolated-mcp-testing/servers.md): Everything, Filesystem, Time, Tavily and Linear. Layout/access setup remains proposed; all checks not run. |
 | Unaccepted historical draft | [credential verification amendment](credential-verification.md), withdrawn from active review by D73; no storage-only200 exception adopted. |
 | Actual work | [milestone snapshot](../../milestones/milestone.md), [live to-do](../../milestones/to-do.md) and immutable pass history. |
 

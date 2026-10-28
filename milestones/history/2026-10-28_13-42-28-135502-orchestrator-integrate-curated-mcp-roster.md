@@ -1,0 +1,10 @@
+# Integrate the curated MCP roster
+
+- Local timestamp / acting role / milestone: October 28, 2026, 13:42:28.135502 America/New_York / Orchestrator / isolated-mcp-testing.
+- Requested scope: Curate servers fitting short standard MCP behavior, installation and authentication goals and record them in the milestone/to-do.
+- Starting repository state: main at 1fae5b6 with earlier project/testing documentation preserved; test-root layout proposed and no environment provisioned.
+- Work performed / changed files: Added milestones/isolated-mcp-testing/servers.md; reconciled its guide, snapshot/to-do, environment/index/guides, project notes/context/AGENTS and D76 follow-up; serialized separate local/auth research, initial tracking review, correction and final acceptance. No application edits.
+- Decisions: Select Everything, Filesystem, Time, Tavily and Linear as curated targets under the user's explicit request. Published local pins are 2.0.1/2.0.1/2026.10.19/0.2.22; Linear remains hosted. Distinguish test-target selection from provider/product-contract approval, actual readiness or operational permission.
+- Checks and evidence: Inspected dedicated research, official sources/issues/release and public registry metadata; local documentation check found 571 local link paths across 26 changed/new paths before final journal append, no application/test changes and absent runtime root. Whitespace checks passed; independent Evaluator ACCEPT after snapshot correction. Final post-journal local paths/whitespace checked. No installation, login, credential use or live MCP test.
+- Resulting state / acceptance: Requested curation and tracking complete; five-server table/checklist ready to present. All runtime statuses remain not run. Earlier no-list checkpoint is superseded, not an instruction to ask for selection again.
+- Remaining work and handoff: Complete concrete location/launch/access/auth setup and unfinished backend features before authorized sequential smoke tests; use dedicated test accounts/data, preserve raw values and private credential handling, and export only redacted evidence. No release or personal-state change.

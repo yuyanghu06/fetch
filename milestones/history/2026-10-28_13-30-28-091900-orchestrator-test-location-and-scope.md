@@ -1,0 +1,10 @@
+# Record short test scope and proposed location
+
+- Local timestamp / acting role / milestone: October 28, 2026, 13:30:28.091900 America/New_York / Orchestrator / isolated-mcp-testing.
+- Requested scope: Define where the lighter setup will live first; defer actual MCP selection until the user's next step and record future selections in to-do/milestone.
+- Starting repository state: main at 1fae5b6 with previous notes/research preserved. Developer foundation is complete; actual auth/installer/MCP sharing remains unfinished.
+- Work performed / changed files: Added D76 short-batch/sequence record and detailed location proposal in isolated-testing.md; updated project context/notes/AGENTS, affected guides, testing milestone, rolling snapshot/to-do; serialized Planner report and this history. No application source or runtime writes.
+- Decisions: Confirm user-selected short behavior/install/auth scope and requested order. Recommend /Users/yuyang/Library/Application Support/Fetch-Testing/ with profiles, alternate Fetch package/durable-data hierarchy, caches, disposable workspaces, browser and raw evidence. Layout/access mechanisms remain proposed; no server selected or setup/live-test authority inferred.
+- Checks and evidence: Read existing --data-dir/--port support and root nonexistence; inspected Planner findings and documentation diff. Local-link paths and git diff --check checked by Orchestrator. No independent runtime test or live connection, and no directory/account/client was created or launched.
+- Resulting state / acceptance: Concrete location ready for user review; pending server-selection task visible in milestone/to-do. D46 and broader release/client acceptance stay intact. Existing implementation/push permission unchanged.
+- Remaining work and handoff: Review location, then research/select representative MCPs on the later requested step and record source/version/transport/auth/expected checks/status. Establish actual test credential and process/account/network boundaries before execution; retain private raw evidence outside Git.

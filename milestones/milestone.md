@@ -1,8 +1,18 @@
+# Current pass — full MVP source, testing deferred
+
+October 28, 2026. Active milestone: [MCP MVP source implementation](mcp-mvp-implementation/info.md). D77 authorizes full selected source work and scoped commits/pushes, and prohibits **all testing** until the user starts it. No test/build/check/lint/format/validation/service/connection/packaging execution is part of this pass. Prior foundation evidence below is historical.
+
+Current state: Planner report inspected; authority, management and runner work assigned separately. Parent owns integration/native UI/packaging. No new runtime evidence. Next action: implement backend services, then API-backed UI source and handoff.
+
+- [Planner/source authorization pass](history/2026-10-28_13-49-03-679662-orchestrator-full-mvp-source-authorization.md)
+
+---
+
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 
 # Fetch milestone snapshot
 
-Updated October28, 2026 after D75. Latest implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. Full MCP MVP and isolated client verification remain incomplete.
+Updated October28, 2026 after the requested first MCP roster curation. Latest implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. [Testing](isolated-mcp-testing/info.md) has five curated targets, all not run; actual environment/auth setup and full MCP MVP/client verification remain incomplete.
 
 ## Active implementation increment
 
@@ -376,3 +386,66 @@ Default https://localhost:53671; current docs/status refreshed and obsolete paus
 - [Evaluator: Review developer port and current-state documentation](history/2026-10-28_13-08-27-493907-evaluator-developer-port-and-docs-acceptance.md) — No remaining material findings.
 
 - [Orchestrator: Deliver developer port and status docs](history/2026-10-28_13-09-08-028451-orchestrator-developer-port-push-evidence.md) — 0fa5bce pushed and remote verified; no release.
+
+## Future project organizer note — October 28
+
+Recorded the user's future direction in [NOTES.md](../NOTES.md#october-28-2026--future-project-organizer-for-agent-sessions) and the current context: a Git-like home in each project folder for agent sessions, common Claude Code/Codex context and shared MCP servers/setup across computers, including Mac mini-to-MacBook continuation. Actual Git integration and sharing mechanisms remain open. This documentation pass does not change first-release scope, modules/data boundaries or the next implementation action above.
+
+Verification: inspected the documentation diff, checked the new local links and ran `git diff --check`. No application tests are needed for this note-only change. Checks were performed by the Orchestrator, without independent specialist review.
+
+- [Orchestrator: Record future agent-session project organizer](history/2026-10-28_13-10-33-126518-orchestrator-future-agent-session-project-organizer.md) — Future direction recorded; no implementation or live-system action.
+
+## Virtual testing environment discussion — October 28
+
+Active discussion: [isolated-mcp-testing](isolated-mcp-testing/info.md). Goal: choose an environment that protects everyday files, credentials, clients, apps and services while verifying the recorded MCP inventory. [The comparison and proposed rules](../docs/architecture/isolated-testing.md) recommend a clean macOS guest: UTM for interactive testing, Tart for automation, Parallels as a paid alternative. Docker/Podman and Python venv serve narrower purposes. No vendor or concrete plan is selected.
+
+Proposed boundary: Fetch, browser/agent clients and controlled apps run inside the guest with disposable data/test credentials; disable everyday host sharing, review network access and use clean test copies. A VM reset does not undo cloud-account changes; hardware-backed confirmation remains unproven. These are testing proposals, not new product behavior or operational permission. Implemented state/modules/data boundaries remain unchanged: the developer foundation is complete, while native authorization/Keychain, installation, UI and MCP sharing remain unfinished.
+
+Verification: primary documentation and the Researcher report inspected; documentation diff, local-link existence and git diff --check checked. No application or live MCP tests were run. Next: choose the preferred VM workflow and compatible Mac, then complete the concrete image/reset/network/account/test/evidence plan before provisioning. Existing implementation permission remains; no release or personal-state changes.
+
+- [Researcher: Compare isolated testing software](history/2026-10-28_13-13-01-798993-researcher-virtual-testing-options.md) — Primary-source comparison inspected; recommendations remain unselected.
+- [Orchestrator: Record virtual testing options and proposed operating rules](history/2026-10-28_13-13-01-799126-orchestrator-virtual-testing-proposal.md) — Discussion documented; no provisioning or live test.
+
+UTM sizing follow-up: [the estimate](../docs/architecture/isolated-testing.md#utm-sizing-estimate--october-28-follow-up) recommends starting with 8 GB guest RAM / 100 GB virtual disk and budgeting roughly 150–200 GB host free storage for the base/test-copy workflow. A read-only check found 16 GiB total RAM and 76 GiB free on the current workspace volume; this is capacity evidence, not a performance benchmark. No VM settings, cleanup or storage purchase is selected. Documentation diff/local links/whitespace checked; no runtime test. Next choice remains the concrete environment and its storage/isolation plan; application state and authorization are unchanged.
+
+- [Orchestrator: Estimate UTM memory and storage](history/2026-10-28_13-20-20-994314-orchestrator-utm-resource-estimate.md) — Source-backed baseline and explicit workload estimates; no provisioning.
+
+### Current direction under discussion: lighter client profiles
+
+The user proposed fresh Codex/Claude Code sessions and separate MCP installation paths because the VM budget is too heavy. [Current research/proposal](../docs/architecture/isolated-testing.md#latest-discussion-lighter-client-profiles-and-separate-installs) verifies separate CLI profile controls and distinguishes them from OS access restrictions. Ordinary command sandboxes do not cover MCP processes automatically. Proposed next design uses explicit restrictions around client/Fetch/MCP process trees and a dedicated standard Mac test user for credential/native-app cases; reported same-user Keychain access prevents claiming the standalone sandbox is sufficient for everything. No boundary/account/settings/dependency is selected, created or tested.
+
+Verification: inspected official OpenAI/Anthropic docs, the read-only specialist report and the local developer CLI's existing data-dir/port flags. Documentation diff/local links/whitespace checked; these are documentation checks, not independent runtime isolation evidence. No implementation/source/data-boundary change or live connection. Next: define a concrete lighter test scope and protected resources. VM-vendor selection is superseded as the immediate next action; D46/D74 remain unchanged.
+
+- [Researcher: Check lightweight client and MCP isolation](history/2026-10-28_13-25-30-445395-researcher-lightweight-client-mcp-isolation.md) — Profile controls, whole-process sandbox candidate and credential/app limits inspected.
+- [Orchestrator: Record lighter testing proposal](history/2026-10-28_13-25-30-445516-orchestrator-lightweight-testing-proposal.md) — Recommendations revised; no operational action or user selection inferred.
+
+### D76 current batch and proposed location
+
+The user selects short standard MCP behavior, installation and authentication checks, with no heavy/long workflows. Define the location first; choose and record the server list in a later step. [The concrete proposal](../docs/architecture/isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location) uses `/Users/yuyang/Library/Application Support/Fetch-Testing/` outside Git/normal Fetch/client data for profiles, test Fetch data/packages/durable server records, caches, workspaces, browser and private runs. Redacted summaries belong in this milestone. The root was checked absent and not created; layout/access controls remain proposed, no servers selected, no live test/provisioning authorized or run.
+
+Implementation state/modules/data boundaries are unchanged; only the first test batch and planning sequence are narrowed, preserving broader release acceptance and D46. Planner report, existing CLI data-dir/port support and documentation diff/local links/whitespace inspected. Documentation checks by Orchestrator, no independent runtime acceptance. Next: review location, then select and record representative servers with version/source/transport/auth/expected harmless checks/status before concrete setup and execution.
+
+- [Planner: Plan the lightweight test location](history/2026-10-28_13-30-28-091764-planner-lightweight-test-location.md) — Read-only plan inspected; alternate Fetch-root hierarchy preserves existing package/data design.
+- [Orchestrator: Record short test scope and proposed location](history/2026-10-28_13-30-28-091900-orchestrator-test-location-and-scope.md) — D76 and reviewable layout documented; server list explicitly deferred.
+
+### Current roster — curation requested and completed
+
+The user subsequently explicitly asked Codex to choose the servers. [The detailed roster](isolated-mcp-testing/servers.md) and [to-do](to-do.md#first-mcp-roster--all-checks-not-run) now record these five targets:
+
+| Server | Version / source | Purpose | Execution |
+| --- | --- | --- | --- |
+| Everything | npm 2.0.1 | Node install, tiny protocol/structured/media/resource/prompt calls; HTTP/SSE variants | Not run |
+| Filesystem | npm 2.0.1 | Node install with launch args, disposable file I/O and allowed-directory refusal | Not run |
+| Time | PyPI 2026.10.19 | Python/uvx install, UTC/time conversion and a small tool error | Not run |
+| Tavily | npm 0.2.22; optional hosted HTTP | Dedicated API-key verification, one public search and stored-key reuse | Not run |
+| Linear | Provider-hosted read-only HTTP/OAuth | Dedicated test workspace, browser cancel/retry/approve, one issue read and saved auth reuse | Not run |
+
+Actual evidence: two read-only Researcher reports, official docs/source/release/issues, public registry version/runtime/integrity metadata and documentation checks. Node fixtures require Node>=24; source Tavily0.2.23 is not its currently published0.2.22 pin. The plan keeps keyless search separate from authenticated provider proof, preserves private token ownership/verification prerequisites and does not infer OAuth refresh from ordinary reuse. Source/app implementation and data boundaries are unchanged; installation/auth/MCP sharing remain unfinished. Test-root layout/access controls remain proposed and no operational setup/live test occurred.
+
+Independent Evaluator ACCEPT after the initial snapshot/history tracking correction; no remaining material roster finding. The prior server-selection wait is fulfilled, superseding the older no-list/next-selection wording above. Root documentation check passed for 571 local link paths before final journal append, with no application/test changes and runtime root absent; final post-journal paths/whitespace checked. Next: complete location/launch/access/auth prerequisites and backend readiness before authorized preparation/execution, rather than reselecting the roster. Broader release acceptance and D46/D74 remain intact.
+
+- [Researcher: Research the local MCP test roster](history/2026-10-28_13-40-10-512226-researcher-local-mcp-roster.md) — Local trio/source pins/dependencies/license/security qualifications inspected.
+- [Researcher: Research the authentication MCP test roster](history/2026-10-28_13-40-10-512351-researcher-auth-mcp-roster.md) — Tavily/Linear checks and private auth prerequisites inspected.
+- [Evaluator: Review the MCP roster and tracking integration](history/2026-10-28_13-40-44-475946-evaluator-initial-mcp-roster-review.md) — Suitable roster; tracking integration requested, now corrected for final recheck.
+- [Evaluator: Accept the curated MCP roster documentation](history/2026-10-28_13-42-28-135377-evaluator-final-mcp-roster-acceptance.md) — ACCEPT after tracking correction; no runtime acceptance.
+- [Orchestrator: Integrate the curated MCP roster](history/2026-10-28_13-42-28-135502-orchestrator-integrate-curated-mcp-roster.md) — Curation/tracking complete; all installation/auth/connection checks remain not run.

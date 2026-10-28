@@ -37,3 +37,11 @@ Source commit d62db7e is pushed to origin/main. The first developer-backend mile
 ## Current developer address — October28
 
 The default developer address is `https://localhost:53671`; `--port` still overrides it. The foundation is implemented and pushed, while native approval/token issuance, lasting identity/Keychain, installation, desktop UI and MCP sharing are unfinished. Next: implement real native authorization and protected lasting identity before server preparation/runner work. No release or live managed-MCP test is authorized.
+
+## Future project organizer — October 28
+
+The user wants Fetch to grow into a Git-like organizer for agent sessions in each project folder, possibly building on Git. Sessions, common Claude Code/Codex project context and MCP servers/setup would be shared across computers, making it easy to continue Mac mini work on a MacBook. This is a future direction beyond the first release; mechanisms remain open. See [the dated note](NOTES.md#october-28-2026--future-project-organizer-for-agent-sessions).
+
+## Current testing discussion — October 28
+
+D76 narrows the next test batch to short standard MCP behavior, installation and authentication checks. [The proposed layout](docs/architecture/isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location) uses `~/Library/Application Support/Fetch-Testing/` for separate clients, Fetch data/packages, caches, browser state and private run logs. At the user's subsequent curation request, [the roster](milestones/isolated-mcp-testing/servers.md) now selects Everything, Filesystem, Time, Tavily and Linear; all checks are not run and listed in milestone/to-do. The root does not exist and no setup ran. Layout/access/auth mechanisms remain proposed; D46 protection and broader release acceptance remain unchanged. No live-test or personal-state permission is inferred.

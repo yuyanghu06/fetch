@@ -749,3 +749,46 @@ Source commit `d62db7edf4df798288f545da1d0c373e7c871d75` was pushed to `origin/m
 The user requested a less common port and confirmation that milestones/docs reflect actual progress. The default is now https://localhost:53671, with --port overrides unchanged. The local listener check found it unused; no uniqueness guarantee is implied. Current records explicitly describe the completed backend foundation and unfinished native authorization/Keychain/lasting identity, installation, desktop UI and MCP sharing. Obsolete pre-D74 status is labelled historical; no old history or deferred feature design was rewritten. Verification/review and the authorized follow-up push are recorded in the milestone.
 
 The port and current-state updates were pushed as `0fa5bced8f3a376b49dd4ffd4266cb742e685c4a`. The remote main commit matched local HEAD. All37 existing tests and formatting passed; independent review accepted the change. No release or managed-MCP connection test was performed.
+
+## October 28, 2026 — Future project organizer for agent sessions
+
+Status: user-requested future direction, beyond the first release; detailed design remains open.
+
+- Evolve Fetch into a project organizer for agent work. Each project folder would have an "agentic git": a shared home for its agent sessions and project context.
+- Share the project's sessions across computers, so work started on a Mac mini can easily be carried over and continued on a MacBook.
+- Let Claude Code and Codex sessions share common project context, so either assistant can pick up the same work.
+- Share the project's MCP servers and setup across computers alongside its sessions and context.
+- Explore Git-like organization and possibly building on Git itself. The user suggested Git as a direction, not a selected implementation or a requirement to copy Git's exact behavior.
+
+This records the future product idea. The exact session transfer, context sharing, MCP sharing and Git integration mechanisms remain to be designed; current first-release scope is unchanged.
+
+## October 28, 2026 — Virtual testing environment options
+
+Status: user-requested comparison and proposed plan, not a selected VM or authorization to provision/test.
+
+The user clarified that they want to define the virtual testing environment and asked about standard software, including VMs and virtual environments. [The researched comparison](docs/architecture/isolated-testing.md) distinguishes package separation (Python venv), configured Linux containers (Docker/Podman), and a separate macOS operating system (UTM/Parallels/Tart). A clean macOS VM is recommended for Fetch's full Mac/client/desktop-MCP tests; UTM for hands-on use and Tart for automation remain alternatives awaiting the user's choice.
+
+The proposed boundary puts Fetch, clients and controlled apps inside the guest with disposable data/test credentials, no everyday host sharing, reviewed network access and a clean-base/test-copy reset workflow. VM reset cannot undo external cloud-account changes, and hardware-backed confirmation remains unproven in a guest. No software, accounts, personal settings, trust or runtime state were changed; live tests remain deferred.
+
+### October 28 follow-up — lighter test sessions and MCP installs
+
+The user finds the VM's resource needs too heavy and proposes fresh Codex/Claude Code sessions or separate instances with test-only MCP install paths. [The revised comparison](docs/architecture/isolated-testing.md#latest-discussion-lighter-client-profiles-and-separate-installs) records supported CLI profile controls and a lighter proposed arrangement: separate client/Fetch/package/cache state, disposable data/test credentials, and explicit restrictions on the actual Fetch/MCP process trees. The clients' command sandboxes do not automatically cover MCP processes; path separation alone does not meet D46.
+
+A dedicated standard macOS test user is recommended for real Keychain/native-app cases because same-user runtime credential isolation remains unproven. This uses the existing OS, with a user-switching inconvenience and shared-service limits. No concrete boundary, new account or testing exception is selected; no session was launched, dependency installed or live test run. VM options remain available for gaps rather than the mandatory next choice.
+
+### October 28 follow-up — short checks, location first, server list next
+
+D76 records the user's immediate scope: standard MCP behavior, installation and authentication flows, without heavy or long workflows. They want the location defined first, then a later representative MCP list recorded in the to-do and milestone records. No servers are selected yet.
+
+[The layout proposal](docs/architecture/isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location) places private test state at `/Users/yuyang/Library/Application Support/Fetch-Testing/`, outside Git and normal Fetch/client data. It separates client profiles, Fetch data with replaceable packages versus durable server records, caches, disposable workspaces, browser state and private run evidence. Redacted summaries stay in the project milestone. This location was checked but not created; the user has not approved the concrete path/access mechanism or authorized setup/live tests. Separate paths and short duration do not replace D46 or erase OS/provider-held credentials.
+
+### October 28 follow-up — first MCP server roster curated
+
+The user explicitly requested choosing a list now. [The roster](milestones/isolated-mcp-testing/servers.md) selects Everything, Filesystem, Time, Tavily and Linear for short protocol/Node/Python installation, API-key and browser-OAuth checks. Tavily and Linear come from the recorded real inventory; controlled reference servers cover the no-auth baseline without desktop apps or heavy workflows. Actual pins/sources, expected harmless checks and all-pending statuses are recorded in milestone/to-do.
+
+Public metadata confirms npm Everything/Filesystem 2.0.1, Python Time 2026.10.19 and published Tavily 0.2.22 (source main is 0.2.23). Important validity checks: Everything gets no secrets; Filesystem roots stay on disposable fixtures; Tavily keyless search is not auth proof, so use authenticated `/usage`; Linear uses a dedicated read-only test workspace and observed OAuth behavior rather than assumed refresh. No installation, credentials, accounts, browser sessions, personal settings or live MCP tests were used. Location/access/auth readiness remains separate from choosing the targets.
+
+
+## October 28, 2026 — Full MVP implementation, no testing
+
+The user requested all selected MVP source through the point where testing can begin and prohibited any form of testing. They want full control over starting it. Commit and push scoped features along the way. D77 records this authority and test boundary; the source milestone must not be confused with verified release acceptance. Preserve personal clients, credentials, trust and isolated-environment choices.

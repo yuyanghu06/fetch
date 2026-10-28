@@ -13,3 +13,7 @@ The pre-build MCP source-session audit restores existing requirements and record
 The original-session MCP audit is independently accepted. Protected existing content and prior journal entries passed integrity checks; the snapshot records final documentation checks and audit pass links.
 
 D74 authorizes implementation/push without release. developer-foundation.md records the first code increment and its exact limits; selected architecture behavior is not all implemented yet.
+
+[Isolated testing](isolated-testing.md) compares lighter separate client profiles plus process restrictions/test users with VMs, containers and Python environments. Separate install/config paths alone do not protect host resources. No concrete boundary is selected or verified; no environment or live test was created by this research.
+
+D76 selects short behavior/installation/authentication checks. At the user's subsequent request, the initial roster is now Everything, Filesystem, Time, Tavily and Linear in milestones/isolated-mcp-testing/servers.md; follow the link in isolated-testing.md. The external-root layout/access setup remains proposed and all execution is not run. The earlier server-selection wait is fulfilled.

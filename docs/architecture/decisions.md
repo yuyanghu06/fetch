@@ -716,3 +716,18 @@ October28, 2026. The user said to start building and push to the configured remo
 ## D75 — use a less common developer port
 
 October28, 2026. The user requested a less common port and current-state documentation. Set the current developer default to `53671` instead of `4141`, retaining explicit --port overrides and port `0` test allocation. A local TCP listener check found `53671` free, and a targeted public search found no established common software/MCP default there; neither guarantees permanent availability or exclusivity. This changes the developer address only, not the selected HTTPS/authorization rules or trust. Refresh current docs/status, preserve historical records and unfinished work.
+
+## D76 — scope the first lightweight MCP test batch and define its location first
+
+October 28, 2026. The user clarified that the immediate testing need is standard MCP behavior, installation and authentication flows, without heavy or long-running workflows. Define where the lighter test setup will live first; select an MCP server list in a later step and record it in the to-do and milestone records.
+
+This selects the immediate test scope and sequence, not a completed isolation boundary or permission to install packages, launch clients, use credentials, change trust/Keychain/personal settings or run live connections. D46's protection requirement remains; short tests and separate paths alone do not establish it. Broader release/client acceptance is not cancelled. [The location/layout proposal](isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location) recommends `~/Library/Application Support/Fetch-Testing/` outside Git and normal Fetch/client data, but the path, concrete process/account controls and actual server list are not yet user-approved or provisioned.
+
+Subsequent same-day instruction: the user explicitly asked Codex to curate the servers now. [The recorded test roster](../../milestones/isolated-mcp-testing/servers.md) selects Everything, Filesystem, Time, Tavily and Linear as targets under that delegation; this fulfills the prior selection wait. It is a researched test plan, not a user-reviewed guarantee of each provider integration, location approval or operational installation/auth/test permission. All checks remain not run.
+
+
+## D77 — Implement the selected MVP, with all testing controlled by the user
+
+October 28, 2026. The user requested the full MVP implementation through the point where testing can begin and expressly prohibited starting **any form of testing**. They then requested commits and pushes along the way after individual scoped features. Implement the selected D73 release requirements; preserve all deferred features and personal-state restrictions. No test, build, compile check, formatter/linter check, validation script, service/app launch, managed connection, package/runtime installation, trust change or packaging run is authorized in this pass. Source reading and writing, primary-source research, normal Git version-control operations and documentation are permitted. Historical passing checks apply only to their recorded earlier commits.
+
+The usual API-before-interface verification sequence is paused at its verification steps for this source-only implementation: implement backend handlers first, then their interface wrappers, without running either. Source completion is distinct from verified MVP acceptance. Prepare packaging source without producing a release or claiming a usable signed DMG. The user will decide when and where verification begins.

@@ -1,0 +1,53 @@
+# First MCP test roster
+
+Curated October 28, 2026 at the user's request. Scope: short installation, standard MCP behavior and authentication checks. This is a selected test plan, not an installation, live connection, compatibility result or new product API approval. All execution is **not run**. The external test-root layout and actual access/auth setup remain prerequisites; see [the environment plan](../../docs/architecture/isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location).
+
+Five servers are enough for the first batch. Tavily and Linear already appear in [the recorded inventory](../../docs/architecture/real-use-compatibility.md); the three official reference servers add controlled local fixtures. Use separate test profiles and test credentials rather than the existing personal connections.
+
+## Roster and expected checks
+
+| Order / server | Package or endpoint / version | What it verifies | Short expected checks | Status |
+| --- | --- | --- | --- | --- |
+| 1. Everything | `@modelcontextprotocol/server-everything@2.0.1`; local Node/stdio, then separate HTTP/SSE transport runs | Standard protocol calls and unchanged results; npm installation; selected tools/resources/prompts | List tools; `echo` returns the supplied marker; `get-sum` returns 5 for 2 + 3. Check one structured result, one resource/prompt and optionally the tiny image. Use only applicable selected features, not long demonstrations or Tasks. | Not run |
+| 2. Filesystem | `@modelcontextprotocol/server-filesystem@2.0.1`; local Node/stdio | npm installation with launch arguments and a real directory restriction | List effective allowed directories; write/read a short marker file under the dedicated fixture root. Request a separate disposable canary outside that allow-list and expect refusal. Never use personal files for the negative check. | Not run |
+| 3. Time | `mcp-server-time==2026.10.19`; local Python/uvx/stdio | Python package/runtime preparation and ordinary structured/error results without a service account | `get_current_time` for `Etc/UTC`; `convert_time` from UTC 12:00 to Tokyo gives 21:00 (+9 hours). An invalid timezone produces a useful error. No external service call needed after installation. | Not run |
+| 4. Tavily | Local npm `tavily-mcp@0.2.22`; optional separate hosted HTTP connection at `https://mcp.tavily.com/mcp/` | API-key save/reference/handoff and private environment/header use; real authenticated service access | With a dedicated test key, verify the stored value through authenticated `GET https://api.tavily.com/usage`. Make one basic public search using its discovered schema. Check explicit invalid-key failure, restore valid test key and check reuse after restart. A hosted run additionally checks saved bearer-header references. | Not run; dedicated test key and Fetch auth/storage implementation needed |
+| 5. Linear | Hosted Streamable HTTP `https://mcp.linear.app/mcp/readonly`; provider version not locally pinnable | Browser OAuth consent/cancel and read-only remote access | In a disposable workspace with one test issue, cancel the first sign-in, retry/approve, list tools and read that issue using the actual available schema. Reconnect/restart and check the saved test authorization is reused. Record observed token lifecycle; no forced expiry or refresh success is presumed. | Not run; dedicated test account/workspace and Fetch OAuth implementation needed |
+
+## Why this set
+
+- Everything is the official reference test server; use its small deterministic calls rather than building a test MCP from scratch. Its additional transports cover local-process, Streamable HTTP and legacy SSE without requiring a sixth server/provider. Legacy SSE is a separate older-protocol run, not a promise of modern-protocol support on that transport. [README](https://github.com/modelcontextprotocol/servers/blob/main/src/everything/README.md), [features](https://github.com/modelcontextprotocol/servers/blob/main/src/everything/docs/features.md).
+- Filesystem adds actual argument/path handling and disposable file I/O. Time covers Python/uvx with fewer dependencies and fixtures than Git or a web-fetching server. [Filesystem README](https://github.com/modelcontextprotocol/servers/blob/main/src/filesystem/README.md), [Time README](https://github.com/modelcontextprotocol/servers/blob/main/src/time/README.md).
+- Tavily supplies the API-key path; Linear supplies a separate browser-OAuth provider with a documented read-only endpoint. More SaaS providers would add accounts and setup while largely repeating these paths. [Tavily setup](https://docs.tavily.com/documentation/mcp), [Linear setup](https://linear.app/docs/mcp).
+- GitHub, Supabase, Google/Apple app servers, browser automation and additional search services are outside this first roster. This does not remove their future compatibility work, select a custom GitHub CLI adapter, or complete broader MVP acceptance.
+
+## Installation and source evidence
+
+Everything and Filesystem pins were confirmed through public npm registry metadata; both require Node >=24 and have published integrity metadata. The official [October 25 v2.1.0 security release](https://github.com/modelcontextprotocol/servers/releases/tag/v2.1.0) identifies their fixed npm version as **2.0.1**, despite the repository release being named v2.1.0. Explicit pins avoid the maintainers' documented date-version ordering problem. Keep registry integrity/resolution evidence with the eventual preparation record; this research downloaded no package code for execution.
+
+Time's [published PyPI metadata](https://pypi.org/pypi/mcp-server-time/2026.10.19/json) confirms 2026.10.19. Its source requires Python >=3.10 and MCP SDK >=2.3,<3, with Pydantic/timezone dependencies. The npm reference packages say `SEE LICENSE IN LICENSE`; the upstream repository is in a license transition, while the Time artifact metadata says MIT. Preserve/check each exact artifact's license and notices rather than assuming all current reference packages share one label.
+
+Public npm metadata resolved Tavily's published `latest` to **0.2.22** during this pass, with MIT license and integrity metadata. Source `main` declares 0.2.23; do not install an unpublished version just because it is in the repository. Resolve/record runtime dependency requirements and exact integrity before preparation. [Tavily source metadata](https://github.com/tavily-ai/tavily-mcp/blob/main/package.json).
+
+These are documentation-only launch definitions, not executed commands:
+
+```text
+npx -y @modelcontextprotocol/server-everything@2.0.1 stdio
+npx -y @modelcontextprotocol/server-filesystem@2.0.1 <test-filesystem-directory>
+uvx --from mcp-server-time==2026.10.19 mcp-server-time
+npx -y tavily-mcp@0.2.22
+```
+
+Preparation must use Fetch's private pinned installs/runtimes; these definitions identify supported package sources rather than authorizing on-demand network downloads at every tool call. The same Everything package accepts `streamableHttp` and `sse` for additional loopback-only runs; record an available test port without disturbing other services. Provider-hosted software cannot be pinned like a package: record test date, advertised server information, negotiated revision and actual tool schema.
+
+## Limits that affect a valid test result
+
+1. **No-auth baseline:** the first three need no provider credentials. Everything includes a tool that reads its process environment; start it with a deliberately clean environment, assign no provider keys/tokens and omit that call. Preserve raw tool definitions; do not invent a sanitizer or field whitelist. Filesystem's legacy client roots can replace its command-line allowed directories, so assert the effective allowed list remains the disposable fixture root before calls. Neither feature is an OS sandbox.
+2. **Tavily auth proof:** current official documentation/source supports keyless search/extract. Missing-key success is not proof of authentication. The [usage endpoint](https://docs.tavily.com/documentation/api-reference/endpoint/usage) requires bearer authentication and documents 200/401/429; check the newly stored/retrieved test key there. [Hosted issue 211](https://github.com/tavily-ai/tavily-mcp/issues/211) reports an auth failure returned with `isError:false`; it was not reproduced here. Preserve actual results and do not equate an outer tool success marker with valid provider auth. Exact installed-pin behavior still needs execution evidence.
+3. **Linear auth scope:** use the dedicated read-only endpoint/test workspace. Native HTTP support needs no `mcp-remote` bridge. `/sse` is deprecated; Everything supplies the initial legacy transport fixture, so a second Linear SSE run is optional later. General Linear API refresh docs do not prove its hosted MCP's exact token audience/lifetime/refresh behavior. Fetch-to-client login and Fetch-to-provider login remain separate checks; a browser callback or tool list alone does not satisfy D25/D31. Supported private token ownership/handoff and a concrete authenticated verification step are prerequisites before claiming Fetch auth success.
+4. **Costs/data:** [Tavily's credit policy](https://docs.tavily.com/documentation/api-credits) documents a free allowance and one-credit basic searches; use the test account's actual quota and stop after the small planned call count. Linear needs a separate test workspace/account with a harmless issue. No account creation, purchase or existing account access is performed by curation. Use invalid test values only; never expose real credential values in tools, URLs, project documents or raw result summaries.
+5. **Execution evidence:** run sequentially, with a small explicit list of harmless calls and no endurance/load/background workflow. Test supported Claude Code and Codex profiles against the same backend APIs, preserving arguments/results and permission checks. Client behavior and the underlying backend stages must actually exist before marking a check passed. End-to-end login/token reuse is different from forced expiry/refresh, which stays unproven until a suitable bounded test is specified and run.
+
+## Completion and recordkeeping
+
+Each run records exact client/package/runtime versions, imported source identity, transport/protocol revision, expected/actual result, safe failure details and cleanup/revocation needs. Keep raw data/browser/login/log state under the private external test root; write only reviewed redacted summaries into milestone evidence. All five remain **not run**, and the source foundation still lacks installation/auth/MCP sharing. No personal config, Keychain/trust, credential, environment, account or server was changed during curation.
