@@ -1,0 +1,10 @@
+/target/
+/.fetch-dev/
+/.codex/
+.DS_Store
+*.log
+*.pem
+*.key
+.env
+.env.*
+!.env.example
