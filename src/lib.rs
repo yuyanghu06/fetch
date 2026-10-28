@@ -5,3 +5,7 @@ pub mod credentials;
 pub mod development;
 pub mod discovery;
 pub mod storage;
+pub mod json;
+pub mod oauth;
+pub mod identity;
+pub mod native_auth;

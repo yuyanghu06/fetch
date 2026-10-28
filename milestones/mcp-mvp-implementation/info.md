@@ -11,3 +11,5 @@ All selected source paths and distribution scripts are written and integrated; s
 ## Current status
 
 Active. Planner source-reading report received. Three exclusive implementation assignments cover authority, management and runner; Orchestrator owns integration/UI/packaging and serialized records. D77 forbids all testing, build/check/format/lint commands, application launches, connection attempts, dependency/runtime installation and packaging execution. No new verification is claimed.
+
+Authority source is written and registered; see [the pass](../history/2026-10-28_13-55-35-037181-coder-durable-app-authorization-source.md). No compile/runtime evidence. Manager/runner/UI integration remains active.

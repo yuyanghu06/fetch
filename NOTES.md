@@ -792,3 +792,8 @@ Public metadata confirms npm Everything/Filesystem 2.0.1, Python Time 2026.10.19
 ## October 28, 2026 — Full MVP implementation, no testing
 
 The user requested all selected MVP source through the point where testing can begin and prohibited any form of testing. They want full control over starting it. Commit and push scoped features along the way. D77 records this authority and test boundary; the source milestone must not be confused with verified release acceptance. Preserve personal clients, credentials, trust and isolated-environment choices.
+
+
+## October 28, 2026 — Defer custom GitHub CLI tools
+
+Confirmed by the user's explicit selection (D78). No custom Fetch GitHub CLI adapter in this MVP. Existing GitHub MCP imports remain separate selected scope.

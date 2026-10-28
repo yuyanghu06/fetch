@@ -74,14 +74,19 @@ Resolve these together in the implementation brief before the affected code. Dis
 
 Unexpected implementation questions get one consolidated update with the concrete conflict and recommendation. Ask the user only where new product behavior, an unapproved route/major choice, external access/cost or changed accepted behavior actually requires input. Keep all other work in this engineering list rather than creating more approval counts.
 
-## The remaining product-scope choice
+## Resolved product-scope choice — D78
 
-**Custom GitHub CLI tools:** a new Fetch-owned CLI adapter is not the same as importing the user's existing GitHub MCP. Recommendation: defer building the custom adapter for this first slice and support imported definitions according to their verified compatibility. This recommendation is not yet selected. If the user wants the adapter now, review its named operations/API mapping and credential/refresh ownership together once. [Existing proposal](github-cli-proposal.md).
+**Custom GitHub CLI tools:** a new Fetch-owned CLI adapter is not the same as importing the user's existing GitHub MCP. Recommendation: defer building the custom adapter for this first slice and support imported definitions according to their verified compatibility. The user selected deferral in D78; do not implement the custom adapter. If the user wants the adapter now, review its named operations/API mapping and credential/refresh ownership together once. [Existing proposal](github-cli-proposal.md).
 
 Other unselected optional controls stay outside the build unless a selected workflow requires them. Their exact future API remains unselected. No separate shared-memory, graph, PostgreSQL, process-pooling or native-Tasks design is required for this slice.
 
 ## Current checkpoint
 
 - D73 locks the clarified release scope and planning approach; D01–D72 retain their selected scopes and explicit supersessions.
-- The only pending product-scope question listed here is the custom GitHub CLI adapter. Engineering mechanisms are grouped above, not presented as completed facts or ten new product decisions.
+- D78 resolves the custom GitHub CLI adapter question by deferring it. Engineering mechanisms are grouped above, not presented as completed facts or ten new product decisions.
 - Implementation/push is authorized by D74. Continue native authorization/token issuance and protected lasting identity/Keychain, then the existing build sequence. Live managed-MCP tests and personal-client changes remain deferred; no release is authorized.
+
+
+## Current D77 implementation boundary
+
+Implement the full selected MVP source and push scoped commits. All testing, builds/checks/lints/formatters, service/app launches, runtime/package installation, trust changes and packaging execution are deferred to the user. API handlers are written before UI wrappers, with runtime verification deliberately postponed. See [the implementation brief](mvp-implementation.md). Source completion cannot establish runtime acceptance.

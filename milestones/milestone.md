@@ -1,3 +1,7 @@
+## Durable authority source written — D77
+
+OAuth/Keychain/native confirmation/lasting TLS source is implemented and source-read, with all verification deferred. Dependency declarations changed; Cargo.lock refresh and compilation are not run. [Authority pass](history/2026-10-28_13-55-35-037181-coder-durable-app-authorization-source.md). Next: server-management/runner integration and native UI.
+
 # Current pass — full MVP source, testing deferred
 
 October 28, 2026. Active milestone: [MCP MVP source implementation](mcp-mvp-implementation/info.md). D77 authorizes full selected source work and scoped commits/pushes, and prohibits **all testing** until the user starts it. No test/build/check/lint/format/validation/service/connection/packaging execution is part of this pass. Prior foundation evidence below is historical.

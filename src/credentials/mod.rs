@@ -32,6 +32,8 @@ impl std::error::Error for CredentialError {}
 /// There is intentionally no plaintext-file or environment-key implementation.
 pub trait KeyProvider: Send + Sync {
     fn key_for_server(&self, server_id: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError>;
+    /// Existing encrypted files must not cause replacement-key creation.
+    fn existing_key_for_server(&self, server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> { self.key_for_server(server_id) }
 }
 
 pub struct SecretDocument(Zeroizing<Vec<u8>>);
@@ -62,6 +64,8 @@ impl CredentialStore {
             writes: Mutex::new(()),
         }
     }
+    /// App tokens and TLS identity use a separate encrypted application tree.
+    pub fn application_store(&self)->Self { Self::new(self.root.join("application"),self.keys.clone()) }
     pub fn read(&self, server_id: &str) -> Result<Option<SecretDocument>, CredentialError> {
         let Some(dir) = server_directory(&self.root, server_id, false)
             .map_err(|_| CredentialError::StorageUnavailable)?
@@ -74,7 +78,7 @@ impl CredentialStore {
         else {
             return Ok(None);
         };
-        let key = self.keys.key_for_server(server_id)?;
+        let key = self.keys.existing_key_for_server(server_id)?;
         decrypt(server_id, &key, &bytes).map(Some)
     }
     pub fn save(&self, server_id: &str, value: &SecretDocument) -> Result<(), CredentialError> {
@@ -85,16 +89,12 @@ impl CredentialStore {
             .writes
             .lock()
             .map_err(|_| CredentialError::StorageUnavailable)?;
-        let key = self.keys.key_for_server(server_id)?;
         // Refuse to overwrite an existing document that cannot be verified with its current key.
-        if let Some(dir) = server_directory(&self.root, server_id, false)
-            .map_err(|_| CredentialError::StorageUnavailable)?
-            && let Some(existing) = dir
-                .read("credentials.enc", MAX_SECRET_BYTES + MAGIC.len() + 28)
-                .map_err(|_| CredentialError::StorageUnavailable)?
-        {
-            let _ = decrypt(server_id, &key, &existing)?;
-        }
+        let existing = match server_directory(&self.root, server_id, false).map_err(|_|CredentialError::StorageUnavailable)? {
+            Some(dir)=>dir.read("credentials.enc",MAX_SECRET_BYTES+MAGIC.len()+28).map_err(|_|CredentialError::StorageUnavailable)?,None=>None
+        };
+        let key=if existing.is_some() { self.keys.existing_key_for_server(server_id)? } else { self.keys.key_for_server(server_id)? };
+        if let Some(existing)=existing { let _=decrypt(server_id,&key,&existing)?; }
         let cipher =
             Aes256Gcm::new_from_slice(key.as_ref()).map_err(|_| CredentialError::KeyUnavailable)?;
         let mut nonce = [0u8; 12];
@@ -217,4 +217,54 @@ mod tests {
         assert!(missing.save("a", &secret).is_err());
         assert_eq!(std::fs::read(a).unwrap(), bytes);
     }
+}
+
+
+/// Each item is a random file key held by the Mac login Keychain. There is no plaintext fallback.
+pub struct MacKeychainKeys { service:String, creation:Mutex<()> }
+impl MacKeychainKeys {
+    pub fn new(namespace:String)->Self { Self { service:format!("com.fetch.local.keys.{namespace}"),creation:Mutex::new(()) } }
+    fn read_key(&self,server_id:&str)->Result<Option<Zeroizing<[u8;32]>>,CredentialError> {
+        #[cfg(target_os="macos")]
+        {
+            use std::ffi::CString;
+            use sha2::{Digest,Sha256};
+            let service=CString::new(self.service.as_str()).map_err(|_|CredentialError::KeyUnavailable)?;
+            let account=CString::new(format!("{:x}",Sha256::digest(server_id.as_bytes()))).map_err(|_|CredentialError::KeyUnavailable)?;
+            let mut key=Zeroizing::new([0u8;32]);
+            // SAFETY: all pointers refer to valid buffers for the synchronous native call.
+            let status=unsafe { fetch_keychain_read(service.as_ptr(),account.as_ptr(),key.as_mut_ptr(),32) };
+            match status { 0=>Ok(Some(key)),-25300=>Ok(None),_=>Err(CredentialError::KeyUnavailable) }
+        }
+        #[cfg(not(target_os="macos"))]
+        { let _=server_id;Err(CredentialError::KeyUnavailable) }
+    }
+}
+impl KeyProvider for MacKeychainKeys {
+    fn existing_key_for_server(&self,server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> { self.read_key(server_id)?.ok_or(CredentialError::KeyUnavailable) }
+    fn key_for_server(&self,server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> {
+        let _lock=self.creation.lock().map_err(|_|CredentialError::KeyUnavailable)?;
+        if let Some(key)=self.read_key(server_id)? { return Ok(key); }
+        #[cfg(target_os="macos")]
+        {
+            use std::ffi::CString;
+            use sha2::{Digest,Sha256};
+            let service=CString::new(self.service.as_str()).map_err(|_|CredentialError::KeyUnavailable)?;
+            let account=CString::new(format!("{:x}",Sha256::digest(server_id.as_bytes()))).map_err(|_|CredentialError::KeyUnavailable)?;
+            let mut key=Zeroizing::new([0u8;32]);OsRng.fill_bytes(key.as_mut());
+            // SAFETY: all pointers remain valid until the native call completes.
+            let status=unsafe { fetch_keychain_create(service.as_ptr(),account.as_ptr(),key.as_ptr(),32) };
+            if status!=0 && status!= -25299 { return Err(CredentialError::KeyUnavailable); }
+            let stored=self.existing_key_for_server(server_id)?;
+            if status==0 && *stored!=*key { return Err(CredentialError::IntegrityFailed); }
+            Ok(stored)
+        }
+        #[cfg(not(target_os="macos"))]
+        { Err(CredentialError::KeyUnavailable) }
+    }
+}
+#[cfg(target_os="macos")]
+unsafe extern "C" {
+    fn fetch_keychain_read(service:*const std::ffi::c_char,account:*const std::ffi::c_char,output:*mut u8,length:usize)->i32;
+    fn fetch_keychain_create(service:*const std::ffi::c_char,account:*const std::ffi::c_char,input:*const u8,length:usize)->i32;
 }

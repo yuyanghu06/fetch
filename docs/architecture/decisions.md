@@ -731,3 +731,8 @@ Subsequent same-day instruction: the user explicitly asked Codex to curate the s
 October 28, 2026. The user requested the full MVP implementation through the point where testing can begin and expressly prohibited starting **any form of testing**. They then requested commits and pushes along the way after individual scoped features. Implement the selected D73 release requirements; preserve all deferred features and personal-state restrictions. No test, build, compile check, formatter/linter check, validation script, service/app launch, managed connection, package/runtime installation, trust change or packaging run is authorized in this pass. Source reading and writing, primary-source research, normal Git version-control operations and documentation are permitted. Historical passing checks apply only to their recorded earlier commits.
 
 The usual API-before-interface verification sequence is paused at its verification steps for this source-only implementation: implement backend handlers first, then their interface wrappers, without running either. Source completion is distinct from verified MVP acceptance. Prepare packaging source without producing a release or claiming a usable signed DMG. The user will decide when and where verification begins.
+
+
+## D78 — Defer custom GitHub CLI tools
+
+October 28, 2026. The user selected “Defer custom GitHub CLI tools.” Do not build a new Fetch-owned GitHub CLI adapter in this MVP. Importing an existing GitHub MCP remains in scope under the same transport/authentication/credential requirements as other imports. This resolves the last product-scope choice in the D73 implementation checkpoint.

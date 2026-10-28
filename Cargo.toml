@@ -29,14 +29,23 @@ rustls = { version = "0.23.46", default-features = false, features = ["ring", "s
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value", "arbitrary_precision"] }
 sha2 = "0.10"
-tokio = { version = "1.54", features = ["macros", "rt-multi-thread", "signal", "sync", "time", "net"] }
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread", "signal", "sync", "time", "net", "process", "io-util", "fs"] }
 toml = "1.1"
 url = "2.5"
 zeroize = { version = "1", features = ["derive"] }
 
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+futures-util = "0.3"
+tokio-stream = { version = "0.1", features = ["sync"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "http2", "stream"] }
+iced = { version = "0.14.0", default-features = false, features = ["wgpu", "tokio"] }
+
+[build-dependencies]
+cc = "1"
+
 [dev-dependencies]
 http-body-util = "0.1"
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "http2"] }
 tempfile = "3"
 tower = { version = "0.5", features = ["util"] }
 

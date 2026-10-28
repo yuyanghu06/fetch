@@ -19,9 +19,9 @@ This is the single-checkpoint index after D73; the older ten-group count is supe
 
 [Confirmed decisions](decisions.md), especially D73 and its referenced decisions, remain canonical. This index does not enlarge old approval scopes.
 
-## One remaining product-scope question
+## Product-scope choice resolved — D78
 
-Whether to build a new Fetch-owned GitHub CLI adapter now or defer it. Recommendation: defer it; importing existing GitHub MCP definitions remains a separate supported-compatibility task. If included, decide named operations and auth ownership together. [GitHub proposal](github-cli-proposal.md).
+The user selected deferral of the new Fetch-owned GitHub CLI adapter in D78; importing existing GitHub MCP definitions remains a separate supported-compatibility task. If included, decide named operations and auth ownership together. [GitHub proposal](github-cli-proposal.md).
 
 ## Engineering work, gathered once
 

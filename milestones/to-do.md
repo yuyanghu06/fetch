@@ -1,7 +1,7 @@
 # Active D77 source implementation — no testing
 
 - [x] Read selected scope and source, preserve earlier planning and establish exclusive ownership.
-- [ ] Durable OAuth/native authority/Keychain/lasting TLS identity source.
+- [x] Durable OAuth/native authority/Keychain/lasting TLS identity source written; all verification deferred.
 - [ ] Private runtime/package preparation, install progress and server management source.
 - [ ] Raw runner/transports/queues/catalog/native MCP source.
 - [ ] Existing HTTP route integration and native API-backed Iced interface.
@@ -30,7 +30,7 @@ October28, 2026 after D73. Canonical work is [the single implementation checkpoi
 
 ## One remaining scope choice
 
-- [ ] Include or defer a new custom GitHub CLI adapter. Recommendation is defer; importing an existing GitHub MCP is separate. If included, decide operations and auth ownership together once.
+- [x] D78 defers the custom GitHub CLI adapter; existing GitHub MCP imports remain in scope.
 
 ## Consolidated engineering and delivery work
 
