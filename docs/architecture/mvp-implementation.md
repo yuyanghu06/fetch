@@ -20,3 +20,15 @@ Do not run Cargo, tests, checks, formatters, linters, validation scripts, servic
 ## Runner source engineering choices
 
 Native resource reads, prompt retrieval and completion share the same per-server finite admission queue and server execution duration. Per-tool overrides apply only to tool calls. This resolves the remaining native-admission implementation item without changing selected operations/scopes. Alias reservations are durable; selectors remain outside original arguments. Initial numeric engineering bounds are concurrency 1–64, configured finite execution durations through 24 hours, 256 active native requests/continuations and 64 MiB upstream messages, while the accepted queue stays 64 entries/16 MiB/300 seconds. These are engineering bounds in source, not claimed historical approvals or proven client compatibility.
+
+## Native/API integration source details
+
+The native app uses a short-lived in-process Settings session over its same-origin HTTPS APIs; only its own installation certificate is trusted by that internal client. Closing the window revokes that session immediately, while accepted backend installation/restart work continues. Reopening uses a fresh session. Named restart monitors survive read errors; failed installation retry selection excludes successful items. Native secrets stay hidden and fresh Mac confirmation binds the exact request and saved state.
+
+The app uses a private Unix socket under its locked data root to show the existing window on another launch; this is an internal activation channel, not a new product API. OAuth and MCP responses retain native formats even when the shared Host/Origin boundary rejects a request. An explicit alternate discovery home disables inherited everyday CODEX_HOME. No such mechanism has been run or validated.
+
+## Timeout/input source follow-up
+
+D55 initialization reads documented Codex `tool_timeout_sec` seconds and the supported flat OpenCode `timeout` milliseconds as initial per-server Fetch wait preferences, otherwise120000ms. Canonical decimal conversion preserves whole milliseconds without binary-float multiplication; malformed/out-of-range preferences fail safely. Successful imported-record reuse preserves saved settings. OpenCode's SDK progress-reset behavior is not adopted; Fetch retains its own selected absolute dispatch timer.
+
+The internal runner policy also implements D68's override → documented/current supported whole-call limit+5000ms → fallback precedence. The supported-limit map is excluded from JSON serialization/deserialization and defaults empty; no current generic MCP/provider metadata source is invented. Existing authenticate/restart POSTs accept an omitted body as selected; other JSON object requirements remain unchanged. Source only; no execution evidence.

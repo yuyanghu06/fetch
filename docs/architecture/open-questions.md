@@ -1,3 +1,5 @@
+> **Current checkpoint:** D77 selected MVP source is written; the user controls starting every build/check/test/launch/connection step. Read [the handoff](../testing/HANDOFF.md). D78 resolves the custom GitHub CLI scope by deferring it. Older implementation checkpoints below are historical.
+
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 
 # Current implementation checkpoint

@@ -1,3 +1,5 @@
+> **D77/D78 current checkpoint:** Selected MVP source is written through [the user-controlled testing handoff](../testing/HANDOFF.md). No current-pass builds, checks, tests, launches, connections or packaging ran. Custom GitHub CLI tools are deferred. Older foundation verification below is historical.
+
 # Fetch architecture records
 
 Updated October28, 2026 after D74. The first Rust developer backend is implemented, tested and pushed. The desktop interface, native app authorization, package installation and MCP sharing are unfinished. Current default: `https://localhost:53671`; no release or live managed-MCP testing.

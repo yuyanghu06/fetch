@@ -1,0 +1,76 @@
+# Fetch MVP — source handoff, testing not started
+
+October 28, 2026. The selected MVP source is written. **No build, compile check, formatter, linter, test, validation script, application/service launch, managed MCP connection or packaging run was started in this implementation pass.** The user controls when each begins. Earlier foundation results apply only to their recorded commits.
+
+## What is prepared
+
+| Requirement | Source |
+| --- | --- |
+| Account-free app connection, scoped tokens, rotation/revocation | `src/oauth/`, `src/authority.rs` |
+| Native Settings authority, fresh Mac confirmation and Keychain keys | `src/native_auth/`, `src/credentials/` |
+| Stable local HTTPS identity and one app instance | `src/identity/`, `src/application.rs` |
+| Safe discovery/source capture and private pinned installation/progress | `src/discovery/`, `src/installation/`, `src/storage/` |
+| Config, credentials, provider authentication, named restart/reconnect | `src/manager/`, `src/api/runtime.rs` |
+| Stdio, Streamable HTTP and legacy SSE; raw tools/arguments/results | `src/runner/` |
+| Native MCP revisions, management tools, progress/owned interactions, resources/prompts/completion | `src/mcp/` |
+| White native interface, selection/install/status, expandable inspection, call settings, private secrets and client guidance | `src/ui/` |
+| App bundle/drag-and-drop DMG script and source license | `packaging/`, `scripts/package-macos.sh`, `LICENSE` |
+
+The interface calls the same HTTPS application APIs as agents. It uses structured states, not next_steps text, to choose controls. A status read never starts a login or server. A configuration save never implicitly restarts. Accepted installation/restart responses remain pending until their named operation finishes.
+
+## First compilation is yours to start
+
+The manifest now declares new dependencies. **Cargo.lock has deliberately not been refreshed**, because no Cargo operation was run. First compilation must resolve dependencies and may identify compile or integration corrections. Do not use `--locked` until that updated lockfile has been reviewed and saved.
+
+When you explicitly decide to begin, the initial build command from the repository is:
+
+```sh
+cargo build --bin fetch
+```
+
+That command compiles source and does not start Fetch or a test runner. It has **not** been executed here. Subsequent formatting, linting, existing tests, HTTP checks and native testing remain separate actions you choose. No CI workflow or Git hook was added to start them on push; commits and pushes used hooks disabled.
+
+## Before launching or connecting anything
+
+Finish the protection and account setup described in [the isolation plan](../architecture/isolated-testing.md). The proposed Fetch-Testing folder is not an approved/provisioned isolation boundary. Merely setting a data directory or a different client profile does not isolate Keychain, desktop apps or services. Use disposable fixtures and dedicated credentials, and retain personal clients/configurations untouched.
+
+The native `fetch app` command, when you choose to run it, creates protected installation state and Keychain items, starts its HTTPS listener and starts saved managed connections. Its normal location is `~/Library/Application Support/Fetch/`. Explicit `--data-dir` and `--discovery-home` options select separate fixture roots, and `--port` selects its localhost port. An explicit `--discovery-home` disables inheritance of the everyday `CODEX_HOME`; its built-in Codex candidate stays under that fixture home. Those options alone do not establish the required isolation. A second launch requests the first instance's window instead of starting duplicate managed servers.
+
+The original `fetch dev` command remains fixture-only and ephemeral, with app authority denied. It is not the full native MVP launcher.
+
+The default native endpoint is `https://localhost:53671/mcp`. The native UI trusts only its own loaded certificate for its internal API connection. External browsers and coding apps require the selected explicit certificate trust setup and normal verification. No certificate trust or personal client changes were made, and no insecure TLS workaround is prescribed.
+
+## User-controlled verification order
+
+1. Resolve dependencies/compile, inspect results and fix source issues. Save the resulting lockfile. No runtime acceptance follows from compilation alone.
+2. Choose and prepare the actual isolated Mac boundary, disposable data and dedicated accounts before any OS/provider/client exercise.
+3. Run local record/JSON/authority/HTTP checks, then native approval/Settings/Keychain/TLS and lifecycle checks. Confirm ordinary agents cannot write manual secret values.
+4. Use [the curated roster](../../milestones/isolated-mcp-testing/servers.md): Everything, Filesystem, Time, Tavily and Linear. All remain **not run**. Cover preparation, required authentication, one harmless tool operation and saved context reuse; keep this first batch short.
+5. Check queues, raw JSON/media, both native revisions, resources/prompts, owner-bound progress/interactions, cancellation/uncertainty, named restart/reconnect and revoked access. Use the existing selected contracts as expected behavior.
+6. Exercise Claude Code, OpenCode and Codex and compare native controls with guidance for the same states. Do not clean personal configurations until successful verification and explicit user action.
+
+This is a future sequence, not permission to start it automatically.
+
+## Boundaries to examine first
+
+- The new Rust/Objective-C/Iced integration is uncompiled. Fresh Mac approval, Keychain ACL/build identity behavior, Dock/menu/window reopening, listener shutdown and signed/ad-hoc build behavior all need actual evidence.
+- Supported imports are conservative. Unknown launch argument grammars remain unsupported. Remote records support known non-secret endpoint path profiles (`/mcp`, `/sse`, `/api/mcp`, plus Linear `/mcp/readonly`, with permitted trailing slash); custom layouts, credential-bearing/query/fragment URLs remain unsupported instead of copying possible credentials.
+- Credential verification adapters cover documented Tavily/GitHub reads and Linear's authenticated viewer read. Linear OAuth metadata/PKCE/token ownership/refresh is implemented, but its issued token must actually pass the selected service check. A browser approval or successful MCP handshake cannot substitute. Unknown/wrapper-owned integrations report their missing support truthfully.
+- D31 has no unchecked-success exemption. Unsupported, unreferenced, multi-entry, removal-only or OAuth-shadowed manual changes may already be saved but return `CREDENTIAL_VERIFICATION_FAILED`. This boundary is documented and must be checked; no old token's success can verify a new manual value.
+- Host handling of aliases, encoded selectors/resource templates, large/unknown JSON values, modern protocol headers/control messages and raw media is unverified. Deferred native Tasks and live resource subscriptions must remain unadvertised.
+- Documented Codex/OpenCode call-wait preferences initialize Fetch defaults; the supported observed-limit branch stays empty unless a trusted integration can supply one. Verify default/override/allowance and dispatch-relative timing without changing raw arguments.
+- New numeric limits are source engineering choices recorded in [the implementation brief](../architecture/mvp-implementation.md). They need compatibility evidence. All source-review acceptance here is bounded reasoning, not proof of runtime behavior.
+
+## Packaging remains explicit
+
+`scripts/package-macos.sh` takes an already-built binary. It requires `FETCH_ALLOW_PACKAGING=1` and a fresh output folder, and never starts a build or test. It can apply an explicitly supplied signing identity. It does not notarize, publish or create a GitHub release. No app bundle or DMG has been produced.
+
+Before distributing, collect the exact resolved direct/transitive license texts and runtime notices, and complete authorized signing/notarization and acceptance. [The notices file](../../THIRD_PARTY_NOTICES.md) is a source-stage inventory, not a complete final binary notice bundle.
+
+## Intentionally outside this MVP
+
+Custom GitHub CLI tools are deferred by D78. Shared memory, PostgreSQL/retention, graphs, extra managed processes, native background Tasks, live resource subscriptions and future project/session sharing remain deferred at their recorded scopes. Existing GitHub MCP imports remain separate selected scope. No release is authorized.
+
+## Delivered source commits
+
+The scoped source increments are bf5dd73 (authority), fc9b1ae (installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration) and e576bcc (timeout/input refinements). They were pushed to origin/main during implementation. The final documentation/packaging-source commit accompanies this handoff. Source-only reviews accepted their bounded scopes after corrections. No current-pass runtime verification exists.

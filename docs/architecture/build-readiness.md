@@ -1,3 +1,5 @@
+> **Current D77/D78 checkpoint:** Selected MVP source is written through [the testing handoff](../testing/HANDOFF.md). All testing, compilation and launches remain unstarted at the user's instruction. Custom GitHub CLI tools are deferred. Stage evidence requirements below remain future acceptance work, not passed steps.
+
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 
 # Fetch MCP first-release implementation checkpoint

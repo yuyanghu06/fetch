@@ -1,56 +1,23 @@
 # Fetch
 
-Fetch is a local macOS app being built to let your coding apps share installed MCP servers through one Fetch connection. This repository currently contains the first Rust backend increment. It is not ready to replace your existing MCP setup.
+Fetch is a local macOS app that lets coding apps share installed MCP servers through one Fetch connection. The selected MVP source is now written: native UI, local HTTPS, app authorization, protected credentials, installation, server management and MCP sharing.
 
-## Run the developer server
+**Testing has not started.** This implementation pass ran no builds, checks, formatters, linters, tests, apps, services, connections or packaging. The new source is uncompiled and unverified. The user controls when verification begins.
 
-Install Rust 1.89 or newer, then run from this folder:
+Read [the testing handoff](docs/testing/HANDOFF.md) before running anything. It lists the implemented source, exact remaining verification, supported-import/authentication limits and the first build command. Cargo.lock still belongs to the earlier foundation; dependency resolution is deliberately deferred to that first user-started build.
 
-```sh
-cargo run --locked --bin fetch -- dev
-```
+## Source layout
 
-The backend listens at `https://localhost:53671`. Stop it with **Ctrl-C**. Use another port if needed:
+- `src/oauth`, `src/native_auth`, `src/identity`, `src/credentials`: app access, native Mac confirmation, HTTPS identity and Keychain-backed encryption.
+- `src/discovery`, `src/installation`, `src/storage`, `src/manager`: private pinned setup and shared server/config/auth/restart rules.
+- `src/runner`, `src/mcp`: three upstream transports, raw MCP data, queues and the selected native surface.
+- `src/api`, `src/ui`, `src/application.rs`: the shared application APIs, native interface and one-process lifecycle.
+- `packaging`, `scripts/package-macos.sh`: app/DMG construction source; not executed.
 
-```sh
-cargo run --locked --bin fetch -- dev --port 53672
-```
+The native app's default MCP endpoint is `https://localhost:53671/mcp`. Launching it later creates protected app state and starts saved managed connections. The original `dev` command remains a separate fixture-only foundation with ephemeral HTTPS and denied app authority. Neither has been launched during this pass.
 
-Developer data goes in the ignored `.fetch-dev/` directory. It does not use your normal Fetch Application Support folder or scan your personal client configurations. You can select another private directory with `--data-dir /absolute/path`.
+Personal client configurations, existing services, credentials and certificate trust were left untouched. The selected isolated MCP test roster is recorded, with every check still not run. No release or DMG has been produced.
 
-Each run creates a temporary HTTPS certificate. Its private key stays in memory; only the public certificate is saved. The server never adds it to your Mac's trust settings or Keychain. Because it changes on restart, use the certificate from the current run when checking HTTPS:
+[Selected requirements](docs/architecture/build-readiness.md), [decisions](docs/architecture/decisions.md), [current milestone](milestones/milestone.md) and [work remaining](milestones/to-do.md) distinguish source completion from verified acceptance.
 
-```sh
-curl --cacert .fetch-dev/certificate.pem \
-  https://localhost:53671/.well-known/oauth-protected-resource/mcp
-```
-
-This returns Fetch's public connection metadata. Opening that HTTPS address in a browser will show an untrusted-certificate warning; there is no browser interface yet. The temporary developer certificate is separate from the planned lasting installation certificate.
-
-## What works in this increment
-
-- A Rust backend with loopback-only HTTPS, strict Host/Origin checks and no-store responses.
-- Approved server-list and discovery handlers, with fixture tests for their permissions, inputs and response shapes.
-- Read-only Claude Code JSON, Codex TOML and OpenCode JSON/JSONC discovery with bounded reads and safe metadata. The supported launch forms are documented in [the discovery guide](src/discovery/info.md).
-- Private local records and encrypted credential-store primitives using an injected key provider. Saved-record persistence currently covers local servers; remote records and execution settings still need implementation. No real Keychain provider or provider-login verification is implemented yet.
-- A separate development data directory and a lock preventing two instances from using it at once.
-
-Native Mac approval, OAuth token issuance, the desktop interface, package/runtime installation, provider authentication and MCP sharing are still being built. Protected routes reject requests; there is no developer token or login bypass. OAuth-server metadata returns `503` while authorization is unavailable. Fixture tests inject test authority directly into the backend; the running developer server cannot issue grants.
-
-The headless developer command uses the shared backend library. The planned desktop app will run that library inside the same application process.
-
-## Check the code
-
-```sh
-cargo fmt --check
-cargo clippy --locked --all-targets -- -D warnings
-cargo test --locked
-```
-
-Tests use disposable files and keys. HTTPS smoke tests connect only to this backend's public metadata with a temporary certificate. They do not start or connect to managed MCP servers, use personal credentials, change trust or edit client configurations. Real MCP tests with your server inventory will happen later in an isolated virtual environment.
-
-## Project records
-
-[Current build plan](docs/architecture/build-readiness.md), [architecture decisions](docs/architecture/decisions.md), and [current milestone](milestones/milestone.md) distinguish selected behavior, implemented code and pending verification. No release has been created.
-
-MIT licensed; dependencies retain their own licenses.
+MIT licensed. Dependencies retain their own licenses; [the source-stage notices](THIRD_PARTY_NOTICES.md) identify the final notice work needed before binary distribution.

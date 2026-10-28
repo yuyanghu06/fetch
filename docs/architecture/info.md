@@ -17,3 +17,5 @@ D74 authorizes implementation/push without release. developer-foundation.md reco
 [Isolated testing](isolated-testing.md) compares lighter separate client profiles plus process restrictions/test users with VMs, containers and Python environments. Separate install/config paths alone do not protect host resources. No concrete boundary is selected or verified; no environment or live test was created by this research.
 
 D76 selects short behavior/installation/authentication checks. At the user's subsequent request, the initial roster is now Everything, Filesystem, Time, Tavily and Linear in milestones/isolated-mcp-testing/servers.md; follow the link in isolated-testing.md. The external-root layout/access setup remains proposed and all execution is not run. The earlier server-selection wait is fulfilled.
+
+D77 separates full source implementation from user-controlled testing; D78 defers custom GitHub CLI tools. mvp-implementation.md records engineering mechanisms; ../testing/HANDOFF.md records source coverage and unverified limits.

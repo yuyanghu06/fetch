@@ -797,3 +797,13 @@ The user requested all selected MVP source through the point where testing can b
 ## October 28, 2026 — Defer custom GitHub CLI tools
 
 Confirmed by the user's explicit selection (D78). No custom Fetch GitHub CLI adapter in this MVP. Existing GitHub MCP imports remain separate selected scope.
+
+
+## October 28, 2026 — Full selected MVP source and testing handoff
+
+The implementation now covers authority/Keychain/HTTPS, private preparation/management, raw shared MCP runner/native methods and the API-backed Iced interface, plus packaging source. Scoped feature commits are pushed individually. Read docs/testing/HANDOFF.md for source coverage and actual limitations. No tests, builds/checks/formatters/linters/validation scripts, services/apps/connections/package commands or packaging ran in this pass. The user controls the next step. Cargo.lock refresh, first compilation, isolated/native/client verification and final distribution acceptance remain pending. No personal-state changes or release.
+
+
+## October 28, 2026 — Source feature delivery record
+
+Scoped source commits pushed during D77: bf5dd73 (durable authority), fc9b1ae (private installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration), e576bcc (timeout/input refinements). d8c917c preserved earlier planning before implementation. Final handoff/distribution source follows separately. All source remains uncompiled and untested by explicit user instruction; no release.

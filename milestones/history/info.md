@@ -19,3 +19,5 @@ The virtual-environment research entries distinguish primary-source findings and
 The first-server-roster entries record separate local/auth research, public package metadata, current-state tracking corrections and independent documentation review. Curated targets remain distinct from installed/tested integrations; all runtime checks are pending until evidence is recorded.
 
 D77 implementation entries distinguish written source from user-controlled verification. No current-pass test/build/check evidence is claimed. D78 defers custom GitHub CLI tools.
+
+Full MVP source-delivery entries include bounded source reviews/corrections and separate feature pushes. They never claim runtime, visual or client acceptance. D77 testing remains user-controlled.

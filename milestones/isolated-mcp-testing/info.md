@@ -1,3 +1,5 @@
+> **D77 source handoff:** The selected backend/native source is now written; no compilation, provisioning or testing has started. This milestone remains unexecuted, with all five roster targets not run. The user controls beginning each step. See docs/testing/HANDOFF.md from the project root.
+
 # Isolated MCP testing
 
 ## Goal and scope

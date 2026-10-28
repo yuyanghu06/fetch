@@ -1,3 +1,5 @@
+> **Latest instruction — October 28, 2026 (D77/D78):** Build the selected full MVP source and commit/push individual scoped features. **Do not start any form of testing.** No builds/checks/formatters/linters/validation scripts, apps/services, managed connections, runtime/package execution or packaging runs until the user explicitly starts that work. Preserve personal state and no-release restrictions. Custom GitHub CLI tools are deferred; existing GitHub MCP imports remain in scope. Read docs/testing/HANDOFF.md for the source-stage checkpoint.
+
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 
 # Project instructions

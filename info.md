@@ -7,3 +7,5 @@ Fetch's first release is the local macOS Rust MCP manager/sharing app. One saved
 [NOTES.md](NOTES.md) preserves dated project notes. [Snapshot](milestones/milestone.md), [live work](milestones/to-do.md) and immutable history record actual progress. The milestone folder preserves pre-D73 context/tasks. No application implementation, OS/client/credential changes, provisioning, live testing or release is authorized by these records.
 
 The [future project-organizer note](NOTES.md#october-28-2026--future-project-organizer-for-agent-sessions) records Git-like organization of agent sessions, shared Claude Code/Codex project context and MCP servers/setup across computers. It is beyond the first release; implementation choices remain open.
+
+D77 selected MVP source now includes the native interface and backend feature modules, with all testing deferred to the user. Read docs/testing/HANDOFF.md before running builds, apps or connections. packaging/ contains distribution source only. No release has been created.

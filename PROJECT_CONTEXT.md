@@ -1,47 +1,23 @@
-> **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
-
 # Fetch — current project context
 
-Updated October28, 2026 after D73. Read [the single implementation checkpoint](docs/architecture/build-readiness.md), [confirmed decisions](docs/architecture/decisions.md) and [current checkpoint index](docs/architecture/open-questions.md). These supersede older proposal/status summaries. Detailed dated notes remain in [NOTES.md](NOTES.md); the [pre-D73 context](milestones/mcp-mvp-architecture/context-before-d73.md) preserves the earlier record.
+Updated October 28, 2026 after D77/D78. The selected MCP MVP source is written through the testing handoff; **no testing or compilation has started**. Read [the handoff](docs/testing/HANDOFF.md), [selected requirements](docs/architecture/build-readiness.md), [decisions](docs/architecture/decisions.md) and [milestone](milestones/milestone.md).
 
-## Selected release design — not all implemented
+## Current source
 
-- One local macOS Fetch application with a Rust backend; UI, API and managed-server controller share one Fetch process. Iced is the previously chosen framework to try, not a validated prototype; exact compatible dependencies belong in one engineering brief.
-- This first release is MCP management/sharing. Shared memory, prompt/history/undo and their interfaces are deferred; they remain future functionality in the same product. PostgreSQL/retention, graph, extra server processes, native background Tasks and live per-resource content remain deferred at their recorded scopes.
-- Each agent configures one Fetch MCP at `/mcp`, stores its own Fetch credential/token and reuses the approved renewable connection. No Fetch account or per-tool provider-token exchange.
-- The user completes each installed provider/server's authentication. Fetch reuses assigned valid credentials; ordinary tool calls do not start login or repeat provider verification. Preserve current caller permissions and truthful missing/expired/provider access guidance.
-- Local HTTPS and the presented certificate/trust direction are selected. Standard app authorization, separate optional management permission and native Settings-only manual secret entry with Mac confirmation are selected at D71/D72's shown scopes.
-- Per-server encrypted files and Keychain-held keys live outside replaceable packages. Ordinary non-secret records contain references. Provider credentials never enter agent responses. Exact cipher/Keychain mode/header/bootstrap/file mechanisms remain engineering candidates, not claimed historical approvals.
-- Raw Tool JSON, model argument objects and upstream results are preserved. The shared runner routes stdio/HTTP/SSE and selected native methods with backend API authority, ownership and approved queue/deadline/cancellation/restart behavior.
-- Opening Fetch starts managed local servers; background/window close keeps services running; explicit Quit stops managed children. Package changes are explicit, with pinned preparation and no credential migration or automatic personal-client cleanup.
-- Distribution is a drag-and-drop DMG with Fetch.app and an Applications shortcut. License: MIT. Actual signing/notarization/publication and destructive data actions need their operational authorization when performed.
+One Rust/macOS Fetch process owns the native Iced interface, localhost HTTPS API and MCP server manager. Source covers safe discovery/private pinned runtime and package preparation, durable local/remote configuration, Keychain-backed encrypted credentials, native Settings confirmation, account-free renewable app OAuth, the three selected upstream transports, queues/deadlines/restart and selected native tools/resources/prompts/relay behavior. UI wraps the same APIs and follows structured state.
 
-## Current work and permission
+Each coding app keeps its own Fetch connection/token at `/mcp`; provider login remains separate and is reused by normal calls. Raw provider Tool JSON, argument objects and results are preserved. Manual secret values remain native Settings-only. Exact source-stage supported import/authentication limits are documented in the handoff and folder guides; source implementation is not client compatibility evidence.
 
-The user asked to stop circling back and to record one complete step with everything needed together. D73 replaces the ten-group review count with one five-stage API-first build sequence and one engineering worklist. Rust/execution/login/storage direction are settled, not new broad approval topics. New APIs or meaningful behavior changes still need a complete review; ordinary internal choices are grouped rather than asked individually.
+The native default is `https://localhost:53671`. The old developer launcher remains fixture-only/ephemeral with denied authority. Launching the native app later creates protected installation/Keychain state and starts saved connections. Nothing has been launched or provisioned in D77. Personal clients/configurations/credentials/trust/services remain untouched.
 
-The one remaining product-scope question is a new Fetch-owned GitHub CLI adapter. Recommendation is to defer it; importing an existing GitHub MCP is a distinct compatibility task. Optional unselected management controls are not silently added. The unaccepted credential-verification exception draft is withdrawn from active review; D25/D31's success gate remains.
+## Latest authorization
 
-D74 now authorizes starting implementation and pushing to origin, without a release. The first Rust developer-backend increment exists: ephemeral local HTTPS, protected read handlers, safe discovery and private/encrypted storage primitives. Native approval/token issuance, Keychain, package execution, desktop UI and MCP sharing remain incomplete. Real MCP tests are deferred to a later joint isolated-environment session; personal clients, trust and credentials remain untouched. The earlier October25 draft stays removed; this is new source, not a restoration.
+D77 authorizes full selected source implementation and scoped commits/pushes. The user expressly reserves control of **all testing**: no build/check/lint/format/validation/service/app/connection/package/packaging execution until they start it. Read-only source review is recorded separately. Cargo.lock refresh and first compilation are pending. Existing 37-test foundation evidence applies only to its prior commits. No release or DMG is created/authorized.
 
-Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Preserve the existing personal MCP gateway/configurations and project tool state. Notes use existing NOTES.md; architecture decisions belong in docs/architecture, and actual pass history stays in milestones/history.
+D78 explicitly defers new custom GitHub CLI tools. Importing an existing GitHub MCP remains separate selected scope. Shared memory, PostgreSQL/retention, graph, extra managed processes, native background Tasks/live resource subscriptions and future project-session sharing remain deferred. Preserve future same-product memory direction and the dated organizer note.
 
-## Pre-build MCP session audit — October28
+## Testing handoff
 
-[The full source audit](docs/architecture/mcp-session-audit.md) checks all seven available Fetch conversations. It restored private runtime/setup/UI/cleanup/source-independence and concrete dispatch/streaming/catalog acceptance requirements that the short plan compressed, and the missing D68 execution input on the config management tool. No new product scope or application implementation was authorized. The consolidated plan remains current.
+The curated short roster remains Everything, Filesystem, Time, Tavily and Linear, all not run. The proposed `~/Library/Application Support/Fetch-Testing/` layout and actual file/Keychain/app/service/network isolation/account boundary remain unprovisioned. A data folder or client profile alone is not sufficient isolation. The user will choose when to compile and start testing.
 
-## First source delivery — October28
-
-Source commit d62db7e is pushed to origin/main. The first developer-backend milestone passed independent evaluation,37 tests, formatting, strict Clippy and normal-TLS CLI smoke. Run `cargo run --locked --bin fetch -- dev`; see README.md for the temporary certificate and exact limits. No tag/release, live MCP connection or personal-state change occurred. Full native authorization/identity/Keychain, preparation, desktop UI and MCP sharing remain unfinished; this delivery does not complete Stage1 or the full MVP.
-
-## Current developer address — October28
-
-The default developer address is `https://localhost:53671`; `--port` still overrides it. The foundation is implemented and pushed, while native approval/token issuance, lasting identity/Keychain, installation, desktop UI and MCP sharing are unfinished. Next: implement real native authorization and protected lasting identity before server preparation/runner work. No release or live managed-MCP test is authorized.
-
-## Future project organizer — October 28
-
-The user wants Fetch to grow into a Git-like organizer for agent sessions in each project folder, possibly building on Git. Sessions, common Claude Code/Codex project context and MCP servers/setup would be shared across computers, making it easy to continue Mac mini work on a MacBook. This is a future direction beyond the first release; mechanisms remain open. See [the dated note](NOTES.md#october-28-2026--future-project-organizer-for-agent-sessions).
-
-## Current testing discussion — October 28
-
-D76 narrows the next test batch to short standard MCP behavior, installation and authentication checks. [The proposed layout](docs/architecture/isolated-testing.md#current-batch-short-mcp-checks-and-proposed-location) uses `~/Library/Application Support/Fetch-Testing/` for separate clients, Fetch data/packages, caches, browser state and private run logs. At the user's subsequent curation request, [the roster](milestones/isolated-mcp-testing/servers.md) now selects Everything, Filesystem, Time, Tavily and Linear; all checks are not run and listed in milestone/to-do. The root does not exist and no setup ran. Layout/access/auth mechanisms remain proposed; D46 protection and broader release acceptance remain unchanged. No live-test or personal-state permission is inferred.
+Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.

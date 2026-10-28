@@ -2,22 +2,16 @@
 
 ## Goal and scope
 
-Implement the selected Rust/macOS MCP first release through a user-controlled testing handoff. Scope follows docs/architecture/build-readiness.md, including durable authorization/Keychain/TLS, private runtime/package preparation, server management, raw MCP sharing and native UI. Memory/database/graph/process pools/native Tasks/live resource subscriptions remain deferred.
+Write the D73 selected Rust/macOS MCP first release through a user-controlled testing handoff. D77 prohibits every testing/build/check/launch/connection/package/packaging action in this pass and authorizes scoped source commits/pushes. D78 defers custom GitHub CLI tools.
 
 ## Completion criteria
 
-All selected source paths and distribution scripts are written and integrated; scoped commits are pushed; actual limitations and first testing prerequisites are recorded. This is source completion only. Runtime acceptance remains a later milestone.
+Selected source paths and distribution scripts are written/integrated; bounded source reviews are addressed; scoped commits are pushed; source limitations and first verification steps are recorded. This milestone measures source delivery only. Runtime and release acceptance stay separate.
 
-## Current status
+## Status
 
-Active. Planner source-reading report received. Three exclusive implementation assignments cover authority, management and runner; Orchestrator owns integration/UI/packaging and serialized records. D77 forbids all testing, build/check/format/lint commands, application launches, connection attempts, dependency/runtime installation and packaging execution. No new verification is claimed.
+Source work is complete through the handoff. Scoped source increments through e576bcc are pushed to origin/main; final handoff/distribution-source documentation accompanies this completion record. Authority, installer, manager, runner/native MCP, HTTP and native UI source are integrated. Packaging is source only. Read [the handoff](../../docs/testing/HANDOFF.md) and [current snapshot](../milestone.md).
 
-Authority source is written and registered; see [the pass](../history/2026-10-28_13-55-35-037181-coder-durable-app-authorization-source.md). No compile/runtime evidence. Manager/runner/UI integration remains active.
+No compilation/dependency resolution/lockfile refresh, tests, formatters/linters/validators, app/service/native/Keychain/trust action, package/runtime execution, provider/MCP/client connection or packaging was run. First compilation may require source fixes. Source-review ACCEPT is not tested acceptance. Actual supported-client/provider behavior is unverified.
 
-Private installer/discovery/storage source written and source-reviewed; no runtime/package preparation has run. Manager and native integration remain active.
-
-Shared runner and native MCP source written, including raw transport fidelity/owner accounting mechanisms. No compile/runtime/client evidence.
-
-Manager source integrated after bounded read-only review. The implementation records supported authentication adapters and unsupported cases explicitly; runtime/provider/client success is unverified.
-
-API/native application/Iced interface source integrated after bounded source review corrections. No visual, HTTP, OS or client behavior has been exercised. Final handoff/distribution-source documentation follows.
+The user chooses when to start verification and prepare the isolated environment/accounts. Personal state is unchanged; no release or DMG has been created. Prior pass details remain in append-only history.
