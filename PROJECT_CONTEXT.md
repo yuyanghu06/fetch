@@ -1,5 +1,36 @@
 # Fetch — current project context
 
+Official Figma project (user-selected October 28, 2026): [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1).
+Use this existing file for ongoing Fetch design work. See [Figma reference](docs/FIGMA.md).
+
+
+Latest Install UI: discovery/progress has a bounded independent scroll area;
+Install selected servers stays in a fixed footer with selected count. Top Select
+all selects supported definitions only without editing source flags. Independent
+source acceptance and native build succeeded (10.45seconds); interactive layout
+checks remain unrun. Import rules were not broadened.
+
+Latest UI change: Choose file… beside the Install MCPs config path opens the
+standard macOS file picker, including hidden folders. Selection fills the path;
+Cancel preserves it, and Discover servers stays explicit. Independent source
+review accepted; locked native compilation succeeded in11.35seconds. Actual
+dialog interaction has not been exercised by agents.
+
+Current follow-up: development/final-build state separation is implemented and
+source-reviewed and compiled successfully, with four unexecuted path tests. The user selected global Codex
+import and a fresh test Codex client sharing the same development Fetch endpoint
+with the main client. Paths resolve from the current home on either Mac. Read
+[development setup](docs/testing/DEVELOPMENT.md); no state migration, client setup,
+provider installation/login or agent-run test occurred. The binary-only build
+`cargo build --locked --bin fetch --message-format short` succeeded in9.74seconds.
+
+October 28 follow-up: testing planning has resumed. The user reports running the
+development build after accepting the Xcode license. No successful native launch
+or current test result has been observed by agents. See
+[the first-session plan](docs/testing/FIRST_SESSION.md) and current milestone;
+older execution-pause statements below describe the prior source/compile pass.
+
+
 Updated October 28, 2026 after D77/D78. The selected MCP MVP source is written through the testing handoff; **D79 native binary compilation succeeded; tests, app launch and MCP connections remain prohibited**. Read [the handoff](docs/testing/HANDOFF.md), [selected requirements](docs/architecture/build-readiness.md), [decisions](docs/architecture/decisions.md) and [milestone](milestones/milestone.md).
 
 ## Current source
@@ -8,7 +39,7 @@ One Rust/macOS Fetch process owns the native Iced interface, localhost HTTPS API
 
 Each coding app keeps its own Fetch connection/token at `/mcp`; provider login remains separate and is reused by normal calls. Raw provider Tool JSON, argument objects and results are preserved. Manual secret values remain native Settings-only. Exact source-stage supported import/authentication limits are documented in the handoff and folder guides; source implementation is not client compatibility evidence.
 
-The native default is `https://localhost:53671`. The old developer launcher remains fixture-only/ephemeral with denied authority. Launching the native app later creates protected installation/Keychain state and starts saved connections. Nothing has been launched or provisioned in D77. Personal clients/configurations/credentials/trust/services remain untouched.
+The native debug default is `https://localhost:53672` under `~/Library/Application Support/Fetch-Development/`; release uses `https://localhost:53671` under `~/Library/Application Support/Fetch/`. The old developer launcher remains fixture-only/ephemeral with denied authority. Launching the native app later creates protected installation/Keychain state and starts saved connections. Nothing has been launched or provisioned in D77. Personal clients/configurations/credentials/trust/services remain untouched.
 
 ## Latest authorization
 
@@ -20,6 +51,6 @@ D78 explicitly defers new custom GitHub CLI tools. Importing an existing GitHub 
 
 The curated short roster remains Everything, Filesystem, Time, Tavily and Linear, all not run. The proposed `~/Library/Application Support/Fetch-Testing/` layout and actual file/Keychain/app/service/network isolation/account boundary remain unprovisioned. A data folder or client profile alone is not sufficient isolation. Compilation alone is now authorized and successful. The user still chooses when to launch or start testing.
 
-Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.
+Repository: this checkout (location may differ by Mac), branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.
 
 D79 compiler fixes and resolved Cargo.lock are committed/pushed as70e0f78; local HEAD and origin/main agreed. The compile-only milestone is complete. No tests, app/service launch or MCP connections have run.

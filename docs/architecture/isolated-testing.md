@@ -1,3 +1,10 @@
+> October 28 follow-up: the user selected importing normal global Codex definitions
+> into development Fetch, then a fresh Codex profile connected only to Fetch. The
+> main Codex may use that same Fetch instance concurrently. Current implemented
+> defaults and portable paths are in [DEVELOPMENT.md](../testing/DEVELOPMENT.md).
+> The earlier Fetch-Testing layout below remains historical/proposed; it is not
+> the native debug default. Existing host/provider protection requirements remain.
+
 # Isolated MCP testing environment
 
 October 28, 2026. Status: researched options and proposed operating rules, awaiting the user's choice. No VM, software installation, credentials, client settings, trust changes or live MCP tests are authorized by this discussion. D46's isolation requirement and D74's source-build permission remain unchanged. This document expands the isolated-verification item in [the single implementation worklist](build-readiness.md#one-engineering-worklist--not-separate-product-approval-rounds); it is not another product approval backlog.
@@ -11,7 +18,7 @@ Sequence requested by the user: define the location first, then select a represe
 Recommended root on this Mac:
 
 ```text
-/Users/yuyang/Library/Application Support/Fetch-Testing/
+~/Library/Application Support/Fetch-Testing/
   clients/
     codex/                 # Separate test client configuration/state
     claude/                # Separate test client configuration/state

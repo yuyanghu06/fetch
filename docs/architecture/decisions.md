@@ -741,3 +741,22 @@ October 28, 2026. The user selected “Defer custom GitHub CLI tools.” Do not 
 ## D79 — Compile and fix build errors, retaining the runtime/testing pause
 
 October 28, 2026. After the source handoff, the user explicitly requested compilation and build-error corrections, then reiterated continuing until the project compiles and committing/pushing the fixes. This lifts D77's compilation/dependency-resolution pause only. No tests or test-target builds, app/service launch, MCP/provider connections, managed server/runtime setup, certificate trust or credential changes, packaging or release are authorized. Do not execute the produced binary. Preserve accepted APIs/behavior while correcting compiler integration errors; record actual build outcomes and keep runtime acceptance pending.
+
+
+## October 28 follow-up — separate development state and fresh-client testing
+
+The user requires development MCP packages and state to stay separate from the
+final build, with paths documented relative to the current home so another Mac
+initializes its own state. They selected importing supported current global
+Codex definitions into Fetch, then connecting a fresh test Codex profile with
+Fetch as its sole MCP connection; main Codex may connect concurrently to the same
+Fetch instance. Clients have distinct Fetch grants but share its managed servers
+and provider logins. No second Fetch instance is required for client-login tests.
+
+Implementation uses native debug defaults Fetch-Development/53672 and release
+Fetch/53671 under ~/Library/Application Support, with existing explicit overrides.
+No-cwd stdio launches now use their private server home. Original local scripts
+and explicit working directories remain unchanged. See
+[development setup](../testing/DEVELOPMENT.md) for exact paths/limits. Source review
+accepted; four new regression tests remain unexecuted. No personal settings,
+credentials, trust, old state or live connections were changed by this pass.

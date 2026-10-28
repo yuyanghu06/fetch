@@ -5,3 +5,11 @@
 The D77 source pass adds native app authorization, installation/management, the shared runner/MCP gateway and an API-backed Iced interface. application.rs wires one process and a private single-instance activation socket. The original development launcher remains fixture-only; the native app command uses lasting identity and Keychain-backed state when the user explicitly launches it. No D77 source has been compiled or tested.
 
 D79 binary compilation succeeds after a gateway syntax/import correction. No executable, app/service or MCP connection was started; runtime behavior is still unverified.
+
+Current development defaults: native debug app resolves the current home and uses
+Library/Application Support/Fetch-Development with port53672; release uses Fetch
+with port53671. application.rs exposes side-effect-free path/port selectors and
+main.rs applies defaults while preserving explicit overrides. Installer, manager,
+credentials and runner retain the selected root. See docs/testing/DEVELOPMENT.md.
+The follow-up locked native binary build succeeded in9.74seconds; no runtime
+check or regression test was executed.

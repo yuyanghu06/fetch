@@ -13,3 +13,14 @@ D76 scopes the next batch to short standard MCP behavior/install/auth checks. At
 The mcp-mvp-implementation milestone delivers source under D77 with all execution-based verification deferred. milestone-before-d77-source.md and to-do-before-d77-source.md preserve the preceding rolling records; current snapshot/tasks are concise source-handoff truth.
 
 The mcp-mvp-compilation milestone records D79 binary-build fixes and the resolved lockfile. Tests, app launch and MCP connections remain unstarted.
+
+The development-state folder records the portable debug/release separation and
+fresh Codex/shared Fetch workflow. Current evidence is source-only acceptance;
+regression and native/client/provider checks remain unexecuted.
+
+config-file-picker records the native configuration path selector, source review
+and compilation evidence. Actual dialog interaction remains pending.
+
+install-list-controls records the bounded Install-page scroll area, fixed footer
+and supported-only Select all. Source/build acceptance is separate from native
+layout verification, which remains pending.

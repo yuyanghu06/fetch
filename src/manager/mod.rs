@@ -157,7 +157,8 @@ impl Manager {
             let mut environment=BTreeMap::new();for binding in config["environment"].as_array().ok_or_else(invalid)?{let name=binding["name"].as_str().ok_or_else(invalid)?;let reference=binding["credential_ref"].as_str().ok_or_else(invalid)?;let value=document["manual"][reference].as_str().ok_or_else(auth_required)?;environment.insert(name.to_owned(),value.to_owned());}
             let home=self.repository.root().join("servers").join(format!("{:x}",Sha256::digest(id.as_bytes()))).join("home");private_directory(&home).map_err(|_|ManagementError::new(500,"SERVER_START_FAILED","The private server home could not be prepared."))?;
             let executable:PathBuf=config["executable"].as_str().ok_or_else(invalid)?.into();let path=executable.parent().map(|p|format!("{}:/usr/bin:/bin",p.display())).unwrap_or_else(||"/usr/bin:/bin".into());environment.entry("PATH".into()).or_insert(path);environment.entry("HOME".into()).or_insert_with(||home.to_string_lossy().into_owned());environment.entry("LANG".into()).or_insert_with(||"en_US.UTF-8".into());
-            TransportConfig::Stdio{executable,args:string_array(&config["args"] )?,working_directory:config["working_directory"].as_str().map(PathBuf::from),environment}
+            // Relative server writes belong in its private home unless the import selects a directory.
+            TransportConfig::Stdio{executable,args:string_array(&config["args"] )?,working_directory:Some(config["working_directory"].as_str().map(PathBuf::from).unwrap_or(home)),environment}
         };
         Ok(ServerRoute{server_id:id.to_owned(),transport,execution:policy(config)?})
     }

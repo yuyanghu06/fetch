@@ -819,3 +819,77 @@ The user authorized compilation and build-error fixes, then explicitly asked to 
 `cargo build --locked --bin fetch --message-format short` completed with exit0 in12.61seconds on Rust/Cargo1.95.0, producing target/debug/fetch. Fixed one gateway match-guard syntax error and removed three unused imports; Cargo.lock now resolves the declared dependencies. Independent source/build-evidence review ACCEPT. Four older Keychain API warnings and one unread protocol-field warning remain non-blocking. No tests/test-target builds, binary/app/service launch, native/Keychain/trust/credential action, MCP/provider/client connection, managed server setup or packaging occurred. Runtime behavior remains unverified. Commit/push follows the explicit user instruction.
 
 D79 fixes/lockfile and current records were delivered in70e0f785fcc560f1af234ea6c9c6a9aadb97fe90, pushed to origin/main with matching local remote-tracking SHA. Compile-only milestone complete; all tests, launches and MCP connections remain paused.
+
+
+## October 28, 2026 — Resume actual testing planning
+
+The user asked to work out actual testing using their documented short-check
+behavior. Preserve Everything, Filesystem, Time, Tavily and Linear, disposable
+files and separate test credentials/client state. Independent Planner/Tester
+source inspection and Evaluator review produced docs/testing/FIRST_SESSION.md.
+No agents ran builds, tests, apps, services, installers or connections.
+
+The user encountered an Xcode-license compiler block, reported accepting the
+license themselves, then reported running the development build. Native startup
+and test success have not been observed. The ordinary app command uses normal
+Fetch state/Keychain; actual isolated connection-test setup remains pending.
+
+
+## October 28, 2026 — Separate dev state; global import and fresh Codex
+
+The user wants development MCP installs/state separate from the final app and
+portable paths from ~, including on their Mac Mini. They propose importing normal
+global Codex definitions into Fetch and connecting a fresh Codex profile only to
+Fetch; main Codex can also connect to the same running instance. Implemented
+native debug defaults ~/Library/Application Support/Fetch-Development and53672;
+release keeps Fetch and53671. No old state is moved. Stdio with no explicit cwd
+uses private server home. Four new path tests were authored but not run.
+Read docs/testing/DEVELOPMENT.md for full paths, two-client/shared-provider
+behavior and setup limits. Agents did not build/run/install/authenticate or edit
+personal configs. The prior proposed Fetch-Testing folder is not the debug default.
+
+
+## October 28, 2026 — Development-default binary compilation
+
+After source/documentation acceptance, cargo build --locked --bin fetch
+--message-format short succeeded with exit0 in9.74seconds. Four Keychain API
+deprecation warnings and one unread protocol-field warning remain. No tests or
+Fetch executable were run. Fresh Codex configuration/authentication and actual
+MCP installs/connections remain pending; personal config/state was not changed.
+
+
+## October 28, 2026 — Native configuration file selector
+
+The user requested a button beside the optional config path to select a file
+through the native macOS picker. Implemented Choose file… with hidden folders
+visible, single-file selection, editable absolute path, unchanged input on
+Cancel and no automatic discovery/install. Main-queue async presentation and
+close/Quit/old-window handling preserve the existing interface lifecycle.
+Independent source review accepted; native binary compiled successfully in
+11.35seconds. No native dialog or tests were run by agents. Runtime interaction
+remains for the updated app after relaunch; personal config/credentials untouched.
+
+
+## October 28, 2026 — Import limits, bounded list and Select all
+
+Read-only redacted global-entry inspection explained HF's URL query, Miro/Vercel
+root URL profiles and v0's mcp-remote URL/header arguments as current Fetch import
+limits. No credential values printed, service contacted or importer change made.
+The user then requested independent/bounded list scrolling, always-visible
+Install selected servers and Select all at the top. Implemented fixed header,
+bounded discovery/progress/messages, fixed install/count footer, supported-only
+bulk selection and inactive-state guards. Source flags remain unchanged.
+Independent source review ACCEPT; native binary build exit0 in10.45seconds.
+No tests or native layout interaction were run; relaunch/manual checks remain.
+
+
+## October 28, 2026 — Official Figma project
+
+Status: confirmed project destination selected by the user.
+
+The user designated [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1) as the official Figma project that we will work in.
+Keep ongoing Fetch design work in this existing file unless the user chooses
+another project. File key: `OcgOlmfuoSTJMHTeN753TF`; linked node: `0:1`.
+The reference is recorded in AGENTS.md, PROJECT_CONTEXT.md and
+[docs/FIGMA.md](docs/FIGMA.md). This records the destination; no file contents
+were inspected or changed and no application changes were requested.

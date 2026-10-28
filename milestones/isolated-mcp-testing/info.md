@@ -1,5 +1,11 @@
 > **D77 source handoff:** The selected backend/native source is now written; no compilation, provisioning or testing has started. This milestone remains unexecuted, with all five roster targets not run. The user controls beginning each step. See docs/testing/HANDOFF.md from the project root.
 
+October 28 follow-up: [the first-session guide](../../docs/testing/FIRST_SESSION.md)
+turns the existing scope into staged checks. Source exists and prior compilation
+succeeded; this environment has only the user's reported development build so
+far. All MCP checks and actual isolation provisioning remain pending.
+
+
 # Isolated MCP testing
 
 ## Goal and scope
@@ -18,7 +24,7 @@ Choose a compatible Mac environment and concrete isolation/reset/account/network
 
 ## Current status
 
-Planning only. The short first-batch scope is selected and the requested five-server curation is recorded. Proposed private root: `/Users/yuyang/Library/Application Support/Fetch-Testing/`, with separate `clients/`, `fetch/packages/`, durable `fetch/servers/`, `cache/`, `workspaces/`, `browser/` and `runs/`. No directory was created. Keep only reviewed/redacted reports in project milestone evidence. The precise layout and live-access/auth mechanisms remain unselected/unverified. Profile paths and normal shell sandboxes alone do not isolate MCP servers; OS/provider-held credentials need explicit handling. VM research remains a comparison, not a current requirement. Application implementation permission and the completed developer foundation are unchanged.
+Planning only. The short first-batch scope is selected and the requested five-server curation is recorded. Proposed private root: `~/Library/Application Support/Fetch-Testing/`, with separate `clients/`, `fetch/packages/`, durable `fetch/servers/`, `cache/`, `workspaces/`, `browser/` and `runs/`. No directory was created. Keep only reviewed/redacted reports in project milestone evidence. The precise layout and live-access/auth mechanisms remain unselected/unverified. Profile paths and normal shell sandboxes alone do not isolate MCP servers; OS/provider-held credentials need explicit handling. VM research remains a comparison, not a current requirement. Application implementation permission and the completed developer foundation are unchanged.
 
 Earlier VM sizing, retained only for comparison: an 8 GB RAM / 100 GB virtual disk starting point and roughly 150–200 GB host free-space budget for a clean base plus test copy/installers/growth were estimates, not benchmarks. The read-only host check found 16 GiB total RAM and 76 GiB free on the workspace volume. The current lightweight proposal has no second OS installation or selected VM resource allocation.
 

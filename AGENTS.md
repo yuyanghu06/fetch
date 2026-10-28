@@ -1,3 +1,17 @@
+> **Development-state follow-up, October 28:** Keep native debug state/packages
+> under ~/Library/Application Support/Fetch-Development and release state under
+> ~/Library/Application Support/Fetch, resolved from current HOME. Defaults use
+> ports53672/53671 respectively; explicit overrides remain. User selected normal
+> global Codex import plus a fresh test Codex client connected only to the same
+> Fetch instance that the main Codex may also use. Read docs/testing/DEVELOPMENT.md.
+> Do not migrate old state or change personal client settings automatically.
+
+> **October 28 testing follow-up:** The user resumed planning actual testing and
+> requested native development launch instructions. They report running the build
+> after accepting the Xcode license. Read docs/testing/FIRST_SESSION.md. Do not
+> infer a successful native launch, passing tests or general personal-state/MCP
+> authorization from that report. Preserve the existing isolated-test requirements.
+
 > **Latest instruction — October 28, 2026 (D79):** Compile Fetch, keep fixing build errors until it compiles, then commit and push. **Do not run tests, launch the app or connect to MCP servers.** Dependency resolution/binary compilation now supersede D77's build pause only; other runtime/testing/personal-state/release restrictions remain. Read milestones/mcp-mvp-compilation/info.md for this pass.
 
 > **Latest instruction — October 28, 2026 (D77/D78):** Build the selected full MVP source and commit/push individual scoped features. **Do not start any form of testing.** No builds/checks/formatters/linters/validation scripts, apps/services, managed connections, runtime/package execution or packaging runs until the user explicitly starts that work. Preserve personal state and no-release restrictions. Custom GitHub CLI tools are deferred; existing GitHub MCP imports remain in scope. Read docs/testing/HANDOFF.md for the source-stage checkpoint.
@@ -5,6 +19,15 @@
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 
 # Project instructions
+
+## Official Figma project — October 28, 2026
+
+Use [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1) as Fetch's official Figma project for ongoing design work. Continue
+working in this file unless the user selects a different project. File key:
+`OcgOlmfuoSTJMHTeN753TF`; linked starting node: `0:1`.
+See [the Figma reference](docs/FIGMA.md). Recording this destination does not
+approve every design in the file or request implementation changes.
+
 
 Read [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md), [NOTES.md](NOTES.md), and the architecture index at [docs/architecture/README.md](docs/architecture/README.md) before planning or implementing changes. Read its linked decisions, API contract, and open questions before continuing architecture work.
 

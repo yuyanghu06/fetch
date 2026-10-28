@@ -1,0 +1,10 @@
+# first session plan acceptance
+
+- Local timestamp / role: 2026-10-28_15-14-39-691534 America/New_York / evaluator.
+- Requested scope: work out actual testing using the documented behavior; explain native development launch.
+- Starting state: cloned main at 91d491f; prior compile-only evidence, no current test evidence.
+- Work / evidence: Independently reviewed CLI, startup, test sources and proposed sequence. ACCEPT with explicit normal-state startup effects and isolation prerequisites. Counts describe inspected source, not passing tests. Read-only; no execution.
+- Changed files: specialists owned no files; Orchestrator serialized documentation in docs/testing/FIRST_SESSION.md; docs/testing/info.md; AGENTS.md; PROJECT_CONTEXT.md; NOTES.md; milestones/milestone.md; milestones/to-do.md; milestones/isolated-mcp-testing/{info.md,servers.md}; milestones/history/.
+- Decisions: preserve existing short roster and protection requirements; proposed sequence is not runtime acceptance.
+- Result: planning complete for this pass; no current test or compatibility result.
+- Handoff: observe user launch result, settle actual isolation setup, then execute selected checks when instructed.

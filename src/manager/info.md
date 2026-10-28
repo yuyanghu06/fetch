@@ -7,3 +7,9 @@ Manual credentials require a native Settings capability bound to the exact batch
 Source includes Tavily/GitHub authenticated reads and Linear's documented authenticated GraphQL viewer read, plus metadata-driven Linear OAuth with PKCE and owned encrypted refresh state. [Linear MCP](https://linear.app/docs/mcp), [Linear API](https://linear.app/developers/graphql) and the existing architecture/provider research inform these paths. No provider authentication or test was performed during implementation.
 
 The required verification gate has no unchecked-success exception. A single new effective assigned manual credential can succeed only after its readback passes the provider check; unsupported, unreferenced, multi-entry, removal-only or OAuth-shadowed manual changes cannot borrow a previous credential's successful check. They can commit encrypted storage and still return `CREDENTIAL_VERIFICATION_FAILED`, with explicit saved-state guidance. This preserves the unresolved edge-case boundary rather than claiming broad integration support.
+
+Stdio servers without an explicit saved working directory now use their private
+server home as both the default HOME and working directory, keeping relative
+writes out of the launch checkout. Explicit imported working directories are
+preserved. The home follows the selected development/release application root.
+This fallback change is source-reviewed, not runtime-verified.

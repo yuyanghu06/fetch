@@ -6,6 +6,38 @@
 #include <stdint.h>
 #include <string.h>
 
+// AppKit owns the panel. Rust owns the callback context until this one completion.
+typedef void (*FetchConfigFileCallback)(void *context, const char *path, int32_t status);
+static NSOpenPanel *fetch_config_file_panel = nil;
+void fetch_choose_config_file(FetchConfigFileCallback callback, void *context) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @autoreleasepool {
+            NSWindow *parent = NSApp.keyWindow ?: NSApp.mainWindow;
+            if (fetch_config_file_panel || !parent) { callback(context, NULL, 2); return; }
+            NSOpenPanel *panel = [NSOpenPanel openPanel];
+            fetch_config_file_panel = panel;
+            panel.title = @"Choose an MCP configuration file";
+            panel.prompt = @"Choose";
+            panel.canChooseFiles = YES;
+            panel.canChooseDirectories = NO;
+            panel.allowsMultipleSelection = NO;
+            panel.showsHiddenFiles = YES;
+            panel.directoryURL = [NSFileManager defaultManager].homeDirectoryForCurrentUser;
+            [panel beginSheetModalForWindow:parent completionHandler:^(NSModalResponse response) {
+                if (fetch_config_file_panel == panel) fetch_config_file_panel = nil;
+                if (response != NSModalResponseOK) { callback(context, NULL, 1); return; }
+                NSURL *url = panel.URL;
+                const char *path = url.isFileURL ? url.path.UTF8String : NULL;
+                callback(context, path, path ? 0 : 2);
+            }];
+        }
+    });
+}
+void fetch_cancel_config_file_picker(void) {
+    // Preserve ordering with queued presentation, including a close immediately after Choose.
+    dispatch_async(dispatch_get_main_queue(), ^{ [fetch_config_file_panel cancel:nil]; });
+}
+
 int32_t fetch_confirm_owner(const char *reason, uint32_t timeout_seconds) {
     @autoreleasepool {
         if (!reason || [NSThread isMainThread]) return 3;

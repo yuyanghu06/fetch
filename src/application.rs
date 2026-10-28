@@ -67,7 +67,15 @@ impl ApplicationHost {
         self.stopped.store(true,Ordering::Release);self.shutdown_done.notify_waiters();
     }
 }
-pub fn default_data_root()->io::Result<PathBuf>{let home=std::env::var_os("HOME").map(PathBuf::from).filter(|p|p.is_absolute()).ok_or_else(||io::Error::other("Fetch could not find the current user's home folder."))?;Ok(home.join("Library/Application Support/Fetch"))}
+/// Resolve a build's data folder without reading the environment or creating state.
+pub fn data_root_for_home(home:&Path,development:bool)->io::Result<PathBuf>{
+    if !home.is_absolute(){return Err(io::Error::other("Fetch requires an absolute current-user home folder."));}
+    Ok(home.join("Library/Application Support").join(if development{"Fetch-Development"}else{"Fetch"}))
+}
+/// Development and release apps use different listeners as well as different state.
+pub const fn app_port_for_build(development:bool)->u16{if development{53672}else{53671}}
+pub const fn default_app_port()->u16{app_port_for_build(cfg!(debug_assertions))}
+pub fn default_data_root()->io::Result<PathBuf>{data_root_for_home(&home_directory()?,cfg!(debug_assertions))}
 pub fn home_directory()->io::Result<PathBuf>{std::env::var_os("HOME").map(PathBuf::from).filter(|p|p.is_absolute()).ok_or_else(||io::Error::other("Fetch could not find the current user's home folder."))}
 pub async fn show_existing(root:&Path)->io::Result<()>{let mut stream=tokio::time::timeout(Duration::from_secs(2),tokio::net::UnixStream::connect(root.join("activation.sock"))).await.map_err(|_|io::Error::other("Fetch is already running; open it from its Dock or menu."))??;stream.write_all(b"show").await}
 fn private_directory(path:&Path)->io::Result<()>{match fs::symlink_metadata(path){Ok(metadata)=>{if !metadata.is_dir()||metadata.file_type().is_symlink()||metadata.permissions().mode()&0o077!=0||metadata.uid()!=unsafe{libc::geteuid()}{return Err(io::Error::other("Fetch requires an owner-only data folder with mode 700."));}},Err(error)if error.kind()==io::ErrorKind::NotFound=>fs::DirBuilder::new().recursive(true).mode(0o700).create(path)?,Err(error)=>return Err(error)}Ok(())}

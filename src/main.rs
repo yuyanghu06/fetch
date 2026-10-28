@@ -1,5 +1,5 @@
 use clap::{Parser,Subcommand};
-use fetch_local::{application::{ApplicationHost,default_data_root,home_directory,show_existing},development::{DevelopmentOptions,DevelopmentServer,shutdown_timeout}};
+use fetch_local::{application::{ApplicationHost,default_app_port,default_data_root,home_directory,show_existing},development::{DevelopmentOptions,DevelopmentServer,shutdown_timeout}};
 use std::{path::PathBuf,process::ExitCode,sync::Arc};
 
 #[derive(Parser)]
@@ -8,7 +8,7 @@ struct Cli {#[command(subcommand)]command:Option<Command>}
 #[derive(Subcommand)]
 enum Command {
     /// Open the native Fetch app. Closing its window keeps the backend running.
-    App {#[arg(long)]data_dir:Option<PathBuf>,#[arg(long,default_value_t=53671)]port:u16,/// Separate discovery home for an explicitly selected isolated environment.
+    App {#[arg(long)]data_dir:Option<PathBuf>,#[arg(long,default_value_t=default_app_port())]port:u16,/// Separate discovery home for an explicitly selected isolated environment.
         #[arg(long)]discovery_home:Option<PathBuf>},
     /// Run the original fixture-only developer foundation with ephemeral HTTPS and denied app authority.
     Dev {#[arg(long,default_value=".fetch-dev")]data_dir:PathBuf,#[arg(long,default_value_t=53671)]port:u16},
@@ -18,7 +18,7 @@ fn main()->ExitCode {
 }
 fn run()->Result<(),Box<dyn std::error::Error>> {
     let runtime=tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
-    match Cli::parse().command.unwrap_or(Command::App{data_dir:None,port:53671,discovery_home:None}) {
+    match Cli::parse().command.unwrap_or(Command::App{data_dir:None,port:default_app_port(),discovery_home:None}) {
         Command::Dev{data_dir,port}=>runtime.block_on(async move{
             let server=DevelopmentServer::prepare(DevelopmentOptions{data_dir,port}).await?;
             println!("Fetch fixture-only developer backend: {}",server.origin);
