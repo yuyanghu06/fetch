@@ -32,3 +32,7 @@ The app uses a private Unix socket under its locked data root to show the existi
 D55 initialization reads documented Codex `tool_timeout_sec` seconds and the supported flat OpenCode `timeout` milliseconds as initial per-server Fetch wait preferences, otherwise120000ms. Canonical decimal conversion preserves whole milliseconds without binary-float multiplication; malformed/out-of-range preferences fail safely. Successful imported-record reuse preserves saved settings. OpenCode's SDK progress-reset behavior is not adopted; Fetch retains its own selected absolute dispatch timer.
 
 The internal runner policy also implements D68's override → documented/current supported whole-call limit+5000ms → fallback precedence. The supported-limit map is excluded from JSON serialization/deserialization and defaults empty; no current generic MCP/provider metadata source is invented. Existing authenticate/restart POSTs accept an omitted body as selected; other JSON object requirements remain unchanged. Source only; no execution evidence.
+
+## D79 compile-only follow-up
+
+The user subsequently authorized compilation/build-error fixes and commit/push only. Cargo.lock is resolved and the native binary builds on Rust1.95.0 after the gateway match-guard syntax/import correction. No tests/test targets, app launch or MCP/provider connection has run. The earlier D77 execution prohibitions describe that source-only pass; runtime/testing restrictions remain active under D79.

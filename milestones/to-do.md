@@ -1,6 +1,14 @@
 # Fetch current work
 
-October 28, 2026. D77 source implementation is written through the testing handoff. **No testing or builds/checks have started.** The user controls the next step. Earlier unfinished tasks are preserved in [the prior rolling record](to-do-before-d77-source.md); source implementation replaces its old implementation waits, while all unrun verification remains pending.
+October 28, 2026. D77 source implementation is written. D79 now authorizes binary compilation/build fixes and commit/push only; tests, app launch and MCP connections remain prohibited. Earlier unfinished tasks are preserved in [the prior rolling record](to-do-before-d77-source.md); source implementation replaces its old implementation waits, while all unrun verification remains pending.
+
+## Active compile-only pass
+
+- [x] Inspect Planner scope and native build script; no compile-time app action.
+- [x] Resolve dependencies/refresh Cargo.lock through first binary build.
+- [x] Fix gateway syntax/imports; locked native binary compilation succeeds without tests or launch.
+- [x] Locked native binary build succeeds; independent source/build-evidence review ACCEPT.
+- [ ] Commit/push fixes and refreshed lockfile; record outcome.
 
 ## Source work
 
@@ -17,7 +25,7 @@ October 28, 2026. D77 source implementation is written through the testing hando
 
 ## Deliberately unstarted — user controls all execution
 
-- [ ] Resolve dependencies, refresh/review Cargo.lock and perform first compilation; fix resulting issues.
+- [ ] Complete D79 compile-only work above. Runtime acceptance remains unstarted.
 - [ ] Start any formatting/lint/test/HTTP/validation command only when the user chooses. Nothing is recorded as passing in this source pass.
 - [ ] Select/prepare the actual file/Keychain/app/service/network isolation and dedicated test accounts; proposed layout remains unprovisioned. VM/provider selection is not forced; D46 protection still applies.
 - [ ] Run the curated short roster: Everything2.0.1, Filesystem2.0.1, Time2026.10.19, Tavily0.2.22 and hosted Linear. All installation/auth/tool/reuse checks remain NOT RUN.

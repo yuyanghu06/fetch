@@ -1,6 +1,6 @@
 # Fetch — current project context
 
-Updated October 28, 2026 after D77/D78. The selected MCP MVP source is written through the testing handoff; **no testing or compilation has started**. Read [the handoff](docs/testing/HANDOFF.md), [selected requirements](docs/architecture/build-readiness.md), [decisions](docs/architecture/decisions.md) and [milestone](milestones/milestone.md).
+Updated October 28, 2026 after D77/D78. The selected MCP MVP source is written through the testing handoff; **D79 native binary compilation succeeded; tests, app launch and MCP connections remain prohibited**. Read [the handoff](docs/testing/HANDOFF.md), [selected requirements](docs/architecture/build-readiness.md), [decisions](docs/architecture/decisions.md) and [milestone](milestones/milestone.md).
 
 ## Current source
 
@@ -12,12 +12,12 @@ The native default is `https://localhost:53671`. The old developer launcher rema
 
 ## Latest authorization
 
-D77 authorizes full selected source implementation and scoped commits/pushes. The user expressly reserves control of **all testing**: no build/check/lint/format/validation/service/app/connection/package/packaging execution until they start it. Read-only source review is recorded separately. Cargo.lock refresh and first compilation are pending. Existing 37-test foundation evidence applies only to its prior commits. No release or DMG is created/authorized.
+D77 authorizes full selected source implementation and scoped commits/pushes. The user expressly reserves control of **all testing**: no build/check/lint/format/validation/service/app/connection/package/packaging execution until they start it. Read-only source review is recorded separately. D79 now authorizes dependency resolution/binary compilation and build-error fixes followed by commit/push. Cargo.lock is refreshed and the gateway match-guard syntax/imports are corrected and locked native binary compilation now succeeds. Existing 37-test foundation evidence applies only to its prior commits. No release or DMG is created/authorized.
 
 D78 explicitly defers new custom GitHub CLI tools. Importing an existing GitHub MCP remains separate selected scope. Shared memory, PostgreSQL/retention, graph, extra managed processes, native background Tasks/live resource subscriptions and future project-session sharing remain deferred. Preserve future same-product memory direction and the dated organizer note.
 
 ## Testing handoff
 
-The curated short roster remains Everything, Filesystem, Time, Tavily and Linear, all not run. The proposed `~/Library/Application Support/Fetch-Testing/` layout and actual file/Keychain/app/service/network isolation/account boundary remain unprovisioned. A data folder or client profile alone is not sufficient isolation. The user will choose when to compile and start testing.
+The curated short roster remains Everything, Filesystem, Time, Tavily and Linear, all not run. The proposed `~/Library/Application Support/Fetch-Testing/` layout and actual file/Keychain/app/service/network isolation/account boundary remain unprovisioned. A data folder or client profile alone is not sufficient isolation. Compilation alone is now authorized and successful. The user still chooses when to launch or start testing.
 
 Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.

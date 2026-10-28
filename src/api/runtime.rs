@@ -1,7 +1,7 @@
 //! HTTP adapters for the selected management and installed-tool operations.
 use super::{AppState, application_error, authorize_scope, empty_body, parse_query};
 use crate::{authority::Caller, manager::{Manager,ManagementError}, runner::{InvocationContext,RunError}};
-use axum::{Json,body::to_bytes,extract::{Path,Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response}};
+use axum::{Json,body::to_bytes,extract::{Path,Request,State},http::{HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response}};
 use serde_json::{Value,json,value::RawValue};
 use std::sync::Arc;
 

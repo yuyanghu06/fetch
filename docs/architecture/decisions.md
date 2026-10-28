@@ -736,3 +736,8 @@ The usual API-before-interface verification sequence is paused at its verificati
 ## D78 — Defer custom GitHub CLI tools
 
 October 28, 2026. The user selected “Defer custom GitHub CLI tools.” Do not build a new Fetch-owned GitHub CLI adapter in this MVP. Importing an existing GitHub MCP remains in scope under the same transport/authentication/credential requirements as other imports. This resolves the last product-scope choice in the D73 implementation checkpoint.
+
+
+## D79 — Compile and fix build errors, retaining the runtime/testing pause
+
+October 28, 2026. After the source handoff, the user explicitly requested compilation and build-error corrections, then reiterated continuing until the project compiles and committing/pushing the fixes. This lifts D77's compilation/dependency-resolution pause only. No tests or test-target builds, app/service launch, MCP/provider connections, managed server/runtime setup, certificate trust or credential changes, packaging or release are authorized. Do not execute the produced binary. Preserve accepted APIs/behavior while correcting compiler integration errors; record actual build outcomes and keep runtime acceptance pending.

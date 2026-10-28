@@ -1,8 +1,7 @@
 //! The single client-facing Streamable HTTP endpoint, with native MCP envelopes.
 mod management;
 use crate::{authority::{Authorizer,AuthorizationError,Caller},runner::{Runner,RunError,InvocationContext,CancelToken,RelayEvent,raw,catalog,LEGACY,MODERN}};
-use axum::{Router,Json,body::to_bytes,extract::{Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{IntoResponse,Response,Sse,sse::{Event,KeepAlive}},routing::post};
-use futures_util::StreamExt;
+use axum::{Router,body::to_bytes,extract::{Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{IntoResponse,Response,Sse,sse::{Event,KeepAlive}},routing::post};
 use serde::Deserialize;
 use serde_json::{Value,json,value::RawValue};
 use std::{collections::BTreeMap,convert::Infallible,future::Future,pin::Pin,sync::Arc,time::Duration};
@@ -148,7 +147,7 @@ impl McpGateway{
         }
         let value=match method{
             "ping"=>Ok(raw::raw(&json!({}))),
-            "server/discover"if revision==MODERN=>Ok(raw::raw(&json!({"resultType":"complete","ttlMs":0,"cacheScope":"private","supportedVersions":[LEGACY,MODERN],"capabilities":server_capabilities(),"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}}}))),
+            "server/discover" if revision==MODERN=>Ok(raw::raw(&json!({"resultType":"complete","ttlMs":0,"cacheScope":"private","supportedVersions":[LEGACY,MODERN],"capabilities":server_capabilities(),"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}}}))),
             "tools/list"=>{if !caller.has_scope("fetch:catalog")&&!caller.has_scope("fetch:manage"){return StatusCode::FORBIDDEN.into_response();}self.list_tools(&caller,revision).await},
             "resources/list"|"resources/templates/list"|"prompts/list"=>{if !caller.has_scope("fetch:catalog"){return StatusCode::FORBIDDEN.into_response();}self.list_content(&caller,method,revision).await},
             _=>return protocol_error(StatusCode::NOT_FOUND,Some(&id),-32601,"This MCP method is not implemented."),

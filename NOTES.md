@@ -807,3 +807,13 @@ The implementation now covers authority/Keychain/HTTPS, private preparation/mana
 ## October 28, 2026 — Source feature delivery record
 
 Scoped source commits pushed during D77: bf5dd73 (durable authority), fc9b1ae (private installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration), e576bcc (timeout/input refinements). d8c917c preserved earlier planning before implementation. Final handoff/distribution source follows separately. All source remains uncompiled and untested by explicit user instruction; no release.
+
+
+## October 28, 2026 — Compile-only authorization
+
+The user authorized compilation and build-error fixes, then explicitly asked to continue until it compiles and commit/push fixes. Tests, app launch and MCP connections remain prohibited. D79 supersedes the earlier compilation pause only. The first binary build refreshed Cargo.lock and reached a gateway syntax error; no runtime acceptance is implied.
+
+
+## October 28, 2026 — Native binary compilation succeeds
+
+`cargo build --locked --bin fetch --message-format short` completed with exit0 in12.61seconds on Rust/Cargo1.95.0, producing target/debug/fetch. Fixed one gateway match-guard syntax error and removed three unused imports; Cargo.lock now resolves the declared dependencies. Independent source/build-evidence review ACCEPT. Four older Keychain API warnings and one unread protocol-field warning remain non-blocking. No tests/test-target builds, binary/app/service launch, native/Keychain/trust/credential action, MCP/provider/client connection, managed server setup or packaging occurred. Runtime behavior remains unverified. Commit/push follows the explicit user instruction.

@@ -11,3 +11,5 @@ The snapshot and to-do also link the user's future Git-like project organizer id
 D76 scopes the next batch to short standard MCP behavior/install/auth checks. At the user's subsequent curation request, [the roster](isolated-mcp-testing/servers.md) now contains Everything, Filesystem, Time, Tavily and Linear with expected checks/source pins and all-not-run status. The external test-root layout/access setup remains proposed; the prior server-selection wait is fulfilled and no runtime result is claimed.
 
 The mcp-mvp-implementation milestone delivers source under D77 with all execution-based verification deferred. milestone-before-d77-source.md and to-do-before-d77-source.md preserve the preceding rolling records; current snapshot/tasks are concise source-handoff truth.
+
+The mcp-mvp-compilation milestone records D79 binary-build fixes and the resolved lockfile. Tests, app launch and MCP connections remain unstarted.

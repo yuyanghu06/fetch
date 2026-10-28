@@ -1,6 +1,6 @@
-# Fetch MVP — source handoff, testing not started
+# Fetch MVP — compiled, testing not started
 
-October 28, 2026. The selected MVP source is written. **No build, compile check, formatter, linter, test, validation script, application/service launch, managed MCP connection or packaging run was started in this implementation pass.** The user controls when each begins. Earlier foundation results apply only to their recorded commits.
+October 28, 2026. D77 delivered the selected MVP source without execution. The user subsequently authorized dependency resolution and binary compilation/build fixes under **D79**. The native development binary now compiles successfully. **No tests or test targets, app/service launch, MCP/provider connection, native/Keychain/trust action, managed server setup or packaging has run.** The user controls all remaining execution. Earlier foundation results apply only to their recorded commits.
 
 ## What is prepared
 
@@ -18,17 +18,19 @@ October 28, 2026. The selected MVP source is written. **No build, compile check,
 
 The interface calls the same HTTPS application APIs as agents. It uses structured states, not next_steps text, to choose controls. A status read never starts a login or server. A configuration save never implicitly restarts. Accepted installation/restart responses remain pending until their named operation finishes.
 
-## First compilation is yours to start
+## Compilation completed; the binary was not run
 
-The manifest now declares new dependencies. **Cargo.lock has deliberately not been refreshed**, because no Cargo operation was run. First compilation must resolve dependencies and may identify compile or integration corrections. Do not use `--locked` until that updated lockfile has been reviewed and saved.
-
-When you explicitly decide to begin, the initial build command from the repository is:
+The first native build refreshed Cargo.lock and exposed one gateway match-guard syntax error. After correcting that syntax and unused imports, the exact command below succeeded with exit0 in12.61seconds on Rust/Cargo1.95.0:
 
 ```sh
-cargo build --bin fetch
+cargo build --locked --bin fetch --message-format short
 ```
 
-That command compiles source and does not start Fetch or a test runner. It has **not** been executed here. Subsequent formatting, linting, existing tests, HTTP checks and native testing remain separate actions you choose. No CI workflow or Git hook was added to start them on push; commits and pushes used hooks disabled.
+The build produced `target/debug/fetch`; it was **not executed**. The resolved lockfile is now saved for repeatable binary builds. Dependency resolution used the manifest's Rust1.89 compatibility constraint; this pass did not separately build with Rust1.89 or other targets/profiles.
+
+Remaining warnings are four deprecated classic-Keychain API uses in the native bridge and one unread protocol-error field. They do not prevent compilation. The selected Keychain behavior was preserved; no storage redesign or native function call was performed to remove warnings.
+
+Compilation does not prove runtime behavior. Subsequent formatting/linting, tests, HTTP checks, native behavior and client/server connections remain separate actions requiring the user's instruction. No CI workflow or Git hook was added to start them on push; commits and pushes use hooks disabled.
 
 ## Before launching or connecting anything
 
@@ -42,7 +44,7 @@ The default native endpoint is `https://localhost:53671/mcp`. The native UI trus
 
 ## User-controlled verification order
 
-1. Resolve dependencies/compile, inspect results and fix source issues. Save the resulting lockfile. No runtime acceptance follows from compilation alone.
+1. **D79 completed:** resolve dependencies and compile the native binary; save the resolved lockfile and compiler fixes. No runtime acceptance follows from compilation alone. Further execution remains paused.
 2. Choose and prepare the actual isolated Mac boundary, disposable data and dedicated accounts before any OS/provider/client exercise.
 3. Run local record/JSON/authority/HTTP checks, then native approval/Settings/Keychain/TLS and lifecycle checks. Confirm ordinary agents cannot write manual secret values.
 4. Use [the curated roster](../../milestones/isolated-mcp-testing/servers.md): Everything, Filesystem, Time, Tavily and Linear. All remain **not run**. Cover preparation, required authentication, one harmless tool operation and saved context reuse; keep this first batch short.
@@ -53,7 +55,7 @@ This is a future sequence, not permission to start it automatically.
 
 ## Boundaries to examine first
 
-- The new Rust/Objective-C/Iced integration is uncompiled. Fresh Mac approval, Keychain ACL/build identity behavior, Dock/menu/window reopening, listener shutdown and signed/ad-hoc build behavior all need actual evidence.
+- The Rust/Objective-C/Iced integration compiles. Fresh Mac approval, Keychain ACL/build identity behavior, Dock/menu/window reopening, listener shutdown and signed/ad-hoc build behavior all need actual evidence.
 - Supported imports are conservative. Unknown launch argument grammars remain unsupported. Remote records support known non-secret endpoint path profiles (`/mcp`, `/sse`, `/api/mcp`, plus Linear `/mcp/readonly`, with permitted trailing slash); custom layouts, credential-bearing/query/fragment URLs remain unsupported instead of copying possible credentials.
 - Credential verification adapters cover documented Tavily/GitHub reads and Linear's authenticated viewer read. Linear OAuth metadata/PKCE/token ownership/refresh is implemented, but its issued token must actually pass the selected service check. A browser approval or successful MCP handshake cannot substitute. Unknown/wrapper-owned integrations report their missing support truthfully.
 - D31 has no unchecked-success exemption. Unsupported, unreferenced, multi-entry, removal-only or OAuth-shadowed manual changes may already be saved but return `CREDENTIAL_VERIFICATION_FAILED`. This boundary is documented and must be checked; no old token's success can verify a new manual value.
@@ -73,4 +75,4 @@ Custom GitHub CLI tools are deferred by D78. Shared memory, PostgreSQL/retention
 
 ## Delivered source commits
 
-The scoped source increments are bf5dd73 (authority), fc9b1ae (installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration) and e576bcc (timeout/input refinements). They were pushed to origin/main during implementation. The final documentation/packaging-source commit accompanies this handoff. Source-only reviews accepted their bounded scopes after corrections. No current-pass runtime verification exists.
+The scoped source increments are bf5dd73 (authority), fc9b1ae (installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration) and e576bcc (timeout/input refinements). They were pushed to origin/main during implementation. The final documentation/packaging-source commit accompanies this handoff. Source-only reviews accepted their bounded scopes after corrections. No current-pass runtime verification exists. D79 adds binary compilation evidence only.

@@ -21,3 +21,5 @@ The first-server-roster entries record separate local/auth research, public pack
 D77 implementation entries distinguish written source from user-controlled verification. No current-pass test/build/check evidence is claimed. D78 defers custom GitHub CLI tools.
 
 Full MVP source-delivery entries include bounded source reviews/corrections and separate feature pushes. They never claim runtime, visual or client acceptance. D77 testing remains user-controlled.
+
+D79 compilation entries separately record the first compiler failure, minimal source corrections, successful locked binary build and source/evidence review. They add no runtime or testing acceptance.
