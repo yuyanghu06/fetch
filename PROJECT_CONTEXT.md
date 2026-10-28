@@ -29,3 +29,7 @@ Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://gith
 ## Pre-build MCP session audit — October28
 
 [The full source audit](docs/architecture/mcp-session-audit.md) checks all seven available Fetch conversations. It restored private runtime/setup/UI/cleanup/source-independence and concrete dispatch/streaming/catalog acceptance requirements that the short plan compressed, and the missing D68 execution input on the config management tool. No new product scope or application implementation was authorized. The consolidated plan remains current.
+
+## First source delivery — October28
+
+Source commit d62db7e is pushed to origin/main. The first developer-backend milestone passed independent evaluation,37 tests, formatting, strict Clippy and normal-TLS CLI smoke. Run `cargo run --locked --bin fetch -- dev`; see README.md for the temporary certificate and exact limits. No tag/release, live MCP connection or personal-state change occurred. Full native authorization/identity/Keychain, preparation, desktop UI and MCP sharing remain unfinished; this delivery does not complete Stage1 or the full MVP.

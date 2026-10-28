@@ -10,4 +10,4 @@ Builds, formatting and focused independent tests pass; no fake authorization or 
 
 ## Current status
 
-Implemented and independently accepted first increment.37 tests, formatting, strict Clippy and binary CLI HTTPS/Ctrl-C smoke passed. Authorized commit/push remains pending. Native approval, production Keychain integration, provider/package execution, desktop interface and MCP sharing remain later increments.
+Implemented and independently accepted first increment.37 tests, formatting, strict Clippy and binary CLI HTTPS/Ctrl-C smoke passed. Source commit d62db7e is pushed to origin/main and the remote SHA was verified. This bounded milestone is complete; the full MCP MVP remains incomplete. No tag/release was created. Native approval, production Keychain integration, provider/package execution, desktop interface and MCP sharing remain later increments.
