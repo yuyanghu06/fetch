@@ -817,3 +817,5 @@ The user authorized compilation and build-error fixes, then explicitly asked to 
 ## October 28, 2026 — Native binary compilation succeeds
 
 `cargo build --locked --bin fetch --message-format short` completed with exit0 in12.61seconds on Rust/Cargo1.95.0, producing target/debug/fetch. Fixed one gateway match-guard syntax error and removed three unused imports; Cargo.lock now resolves the declared dependencies. Independent source/build-evidence review ACCEPT. Four older Keychain API warnings and one unread protocol-field warning remain non-blocking. No tests/test-target builds, binary/app/service launch, native/Keychain/trust/credential action, MCP/provider/client connection, managed server setup or packaging occurred. Runtime behavior remains unverified. Commit/push follows the explicit user instruction.
+
+D79 fixes/lockfile and current records were delivered in70e0f785fcc560f1af234ea6c9c6a9aadb97fe90, pushed to origin/main with matching local remote-tracking SHA. Compile-only milestone complete; all tests, launches and MCP connections remain paused.

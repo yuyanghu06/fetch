@@ -1,6 +1,6 @@
 # Fetch milestone snapshot
 
-October 28, 2026. Active milestone: [MCP MVP compilation](mcp-mvp-compilation/info.md). D79 authorizes compiling and fixing build errors until a native binary is produced, followed by commit/push. **Tests, app launch and MCP connections remain prohibited.**
+October 28, 2026. Active milestone: [MCP MVP compilation](mcp-mvp-compilation/info.md). D79 compile-only milestone is complete: the native binary builds and fixes/lockfile were pushed as70e0f78. **Tests, app launch and MCP connections remain prohibited.**
 
 ## Current state and boundaries
 
@@ -10,7 +10,7 @@ No tests/test targets, binary/application/service launch, MCP/provider connectio
 
 ## Verification and next action
 
-First command: `cargo build --bin fetch --message-format short`, exit101 at src/mcp/mod.rs:151. Corrected build: `cargo build --locked --bin fetch --message-format short`, exit0 in12.61seconds, producing target/debug/fetch. Toolchain1.95.0; dependencies resolved under manifest Rust1.89 compatibility. Four native classic-Keychain deprecation warnings and one unread protocol-error field warning remain. Independent source/build-evidence review ACCEPT. Commit/push the minimal fixes and resolved lockfile; do not run the executable. Every runtime/test step remains for the user's separate instruction.
+First command: `cargo build --bin fetch --message-format short`, exit101 at src/mcp/mod.rs:151. Corrected build: `cargo build --locked --bin fetch --message-format short`, exit0 in12.61seconds, producing target/debug/fetch. Toolchain1.95.0; dependencies resolved under manifest Rust1.89 compatibility. Four native classic-Keychain deprecation warnings and one unread protocol-error field warning remain. Independent source/build-evidence review ACCEPT. Fixes and Cargo.lock are committed/pushed as70e0f785fcc560f1af234ea6c9c6a9aadb97fe90; local HEAD and origin/main agreed after push. Stop; do not run the executable. Every runtime/test step remains for the user's separate instruction.
 
 ## Current pass history
 
@@ -20,6 +20,8 @@ First command: `cargo build --bin fetch --message-format short`, exit101 at src/
 - [Compiler fix and successful binary build](history/2026-10-28_15-00-36-928523-coder-binary-build-error-fix.md)
 
 - [Independent compiler-fix acceptance](history/2026-10-28_15-02-42-900848-evaluator-accept-compile-fix-delivery.md)
+
+- [Compile-fix delivery](history/2026-10-28_15-03-44-962679-orchestrator-compile-fix-delivery.md)
 
 ## Prior source and future acceptance
 

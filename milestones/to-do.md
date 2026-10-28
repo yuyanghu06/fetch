@@ -8,7 +8,7 @@ October 28, 2026. D77 source implementation is written. D79 now authorizes binar
 - [x] Resolve dependencies/refresh Cargo.lock through first binary build.
 - [x] Fix gateway syntax/imports; locked native binary compilation succeeds without tests or launch.
 - [x] Locked native binary build succeeds; independent source/build-evidence review ACCEPT.
-- [ ] Commit/push fixes and refreshed lockfile; record outcome.
+- [x] Commit/push fixes and resolved Cargo.lock as70e0f78; local HEAD and origin/main matched; delivery recorded.
 
 ## Source work
 
@@ -25,7 +25,7 @@ October 28, 2026. D77 source implementation is written. D79 now authorizes binar
 
 ## Deliberately unstarted — user controls all execution
 
-- [ ] Complete D79 compile-only work above. Runtime acceptance remains unstarted.
+- [x] D79 compile-only work complete. Runtime acceptance remains unstarted; every test/launch/connection below still needs user instruction.
 - [ ] Start any formatting/lint/test/HTTP/validation command only when the user chooses. Nothing is recorded as passing in this source pass.
 - [ ] Select/prepare the actual file/Keychain/app/service/network isolation and dedicated test accounts; proposed layout remains unprovisioned. VM/provider selection is not forced; D46 protection still applies.
 - [ ] Run the curated short roster: Everything2.0.1, Filesystem2.0.1, Time2026.10.19, Tavily0.2.22 and hosted Linear. All installation/auth/tool/reuse checks remain NOT RUN.

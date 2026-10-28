@@ -21,3 +21,5 @@ D78 explicitly defers new custom GitHub CLI tools. Importing an existing GitHub 
 The curated short roster remains Everything, Filesystem, Time, Tavily and Linear, all not run. The proposed `~/Library/Application Support/Fetch-Testing/` layout and actual file/Keychain/app/service/network isolation/account boundary remain unprovisioned. A data folder or client profile alone is not sufficient isolation. Compilation alone is now authorized and successful. The user still chooses when to launch or start testing.
 
 Repository: `/Users/yuyang/Documents/fetch`, branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.
+
+D79 compiler fixes and resolved Cargo.lock are committed/pushed as70e0f78; local HEAD and origin/main agreed. The compile-only milestone is complete. No tests, app/service launch or MCP connections have run.

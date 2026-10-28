@@ -10,7 +10,7 @@ Compile the native Fetch binary, fix build errors, save the resolved lockfile an
 
 ## Status and boundaries
 
-Binary build succeeds after a gateway match-guard syntax correction and unused-import cleanup. `cargo build --locked --bin fetch --message-format short` exits0 in12.61seconds; target/debug/fetch was produced and not executed. Independent source/build-evidence review ACCEPT; commit/push delivery follows. Rust toolchain is1.95.0; Cargo resolved dependencies under the manifest's Rust1.89 compatibility constraint. Native bridge reports classic-Keychain deprecation warnings.
+Binary build succeeds after a gateway match-guard syntax correction and unused-import cleanup. `cargo build --locked --bin fetch --message-format short` exits0 in12.61seconds; target/debug/fetch was produced and not executed. Independent source/build-evidence review ACCEPT. Fixes and lockfile committed/pushed as70e0f78; local HEAD and origin/main matched. This compilation-only milestone is complete; the binary was not run. Rust toolchain is1.95.0; Cargo resolved dependencies under the manifest's Rust1.89 compatibility constraint. Native bridge reports classic-Keychain deprecation warnings.
 
 Compilation alone is authorized. No tests or test targets, application/service launch, MCP/provider connection, managed runtime/server installation, trust/credential changes or packaging. Runtime/client/native behavior remains unverified.
 
