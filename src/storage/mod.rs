@@ -38,6 +38,21 @@ impl ServerRepository {
     pub fn new(root: PathBuf) -> Self {
         Self { root }
     }
+    pub fn root(&self) -> &Path { &self.root }
+    /// Backend-only read of durable records. Live state must be supplied by the manager.
+    pub fn get_saved(&self, id: &str) -> Result<Option<Value>, StorageError> {
+        let Some(dir) = server_directory(&self.root, id, false)? else { return Ok(None) };
+        let Some(bytes) = dir.read("config.json", MAX_RECORD_BYTES)? else { return Ok(None) };
+        let value: Value = serde_json::from_slice(&bytes).map_err(|_| StorageError::CorruptRecord)?;
+        if !valid_record(id, &value) { return Err(StorageError::CorruptRecord); }
+        Ok(Some(value))
+    }
+    pub fn list_saved(&self) -> Result<Vec<Value>, StorageError> {
+        self.list()?.into_iter().map(|v| {
+            self.get_saved(v["server_id"].as_str().ok_or(StorageError::CorruptRecord)?)?
+                .ok_or(StorageError::CorruptRecord)
+        }).collect()
+    }
     pub fn list(&self) -> Result<Vec<Value>, StorageError> {
         if !path_present(&self.root)? {
             return Ok(vec![]);
@@ -109,6 +124,7 @@ impl ServerRepository {
 
 // Saved status is not live evidence in this process. No disk flag can manufacture authentication.
 fn project_record(mut v: Value) -> Value {
+    v.as_object_mut().map(|o| o.remove("_installation"));
     v["runtime"] = serde_json::json!({"status":"stopped","error":null});
     v["authentication"] = serde_json::json!({"status":"unknown","error":null});
     v["restart"] = Value::Null;
@@ -135,9 +151,7 @@ fn state(v: &Value, states: &[&str]) -> bool {
                 && v["error"]["message"].is_string()))
 }
 fn valid_record(id: &str, v: &Value) -> bool {
-    if !keys(
-        v,
-        &[
+    if !v.as_object().is_some_and(|o| o.keys().all(|k| [
             "server_id",
             "name",
             "runtime",
@@ -146,8 +160,8 @@ fn valid_record(id: &str, v: &Value) -> bool {
             "restart",
             "config",
             "credentials",
-        ],
-    ) || id.trim().is_empty()
+            "_installation",
+        ].contains(&k.as_str()))) || id.trim().is_empty()
         || v["server_id"] != id
         || !nonempty(&v["name"])
         || !v["restart_required"].is_boolean()
@@ -179,18 +193,16 @@ fn valid_record(id: &str, v: &Value) -> bool {
         return false;
     }
     let c = &v["config"];
-    if !keys(
-        c,
-        &[
+    if !c.as_object().is_some_and(|o| o.keys().all(|k| [
             "kind",
             "package",
             "executable",
             "args",
             "working_directory",
             "environment",
-        ],
-    ) || !matches!(c["kind"].as_str(), Some("npm" | "pypi" | "local_script"))
-        || !c["executable"].is_string()
+            "connection", "execution", "tool_features",
+        ].contains(&k.as_str()))) || !matches!(c["kind"].as_str(), Some("npm" | "pypi" | "local_script" | "remote"))
+        || !(if c["kind"]=="remote" {c["executable"].is_null()} else {c["executable"].is_string()})
         || !nullable_string(&c["working_directory"])
         || !c["args"]
             .as_array()
@@ -198,7 +210,7 @@ fn valid_record(id: &str, v: &Value) -> bool {
     {
         return false;
     }
-    if c["kind"] == "local_script" {
+    if c["kind"] == "local_script" || c["kind"] == "remote" {
         if !c["package"].is_null() {
             return false;
         }
@@ -210,6 +222,24 @@ fn valid_record(id: &str, v: &Value) -> bool {
         || !nonempty(&c["package"]["installed_version"])
     {
         return false;
+    }
+    if c["kind"] == "remote" {
+        let conn = &c["connection"];
+        if !keys(conn, &["url", "transport", "headers"])
+            || !matches!(conn["transport"].as_str(), Some("streamable_http" | "sse"))
+            || !conn["url"].as_str().is_some_and(|u| url::Url::parse(u).is_ok_and(|u| matches!(u.scheme(), "https" | "http") && u.host_str().is_some() && u.username().is_empty() && u.password().is_none() && u.fragment().is_none() && u.query().is_none() && crate::discovery::supported_remote_endpoint(&u)))
+            || !conn["headers"].as_array().is_some_and(|a| a.iter().all(|x| keys(x, &["name", "credential_ref"]) && nonempty(&x["name"]) && nonempty(&x["credential_ref"]))) { return false; }
+    }
+    if let Some(e) = c.get("execution") {
+        if !keys(e, &["max_concurrent_calls", "default_timeout_ms", "tool_timeouts_ms"])
+            || !e["max_concurrent_calls"].as_u64().is_some_and(|n| n > 0 && n <= 64)
+            || !e["default_timeout_ms"].as_u64().is_some_and(|n| n > 0 && n <= 86_400_000)
+            || !e["tool_timeouts_ms"].as_object().is_some_and(|o| o.len()<=4096 && o.iter().all(|(k,v)| !k.is_empty() && v.as_u64().is_some_and(|n| n > 0 && n <= 86_400_000))) { return false; }
+    }
+    if let Some(i) = v.get("_installation") {
+        if !keys(i, &["source_path", "source_name", "installation_id", "protected_args"])
+            || !nonempty(&i["source_path"]) || !nonempty(&i["source_name"]) || !nonempty(&i["installation_id"])
+            || !i["protected_args"].as_u64().is_some() { return false; }
     }
     if !c["environment"].as_array().is_some_and(|a| {
         a.iter().all(|x| {

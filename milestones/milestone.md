@@ -1,3 +1,10 @@
+## Private installation source written — testing deferred
+
+Installer/discovery/storage source is implemented. The source review found issues and accepted the installer corrections; manager refinements remain in progress. No installation, downloads, dependency resolution or verification ran.
+
+- [Source review requested corrections](history/2026-10-28_14-19-13-498104-evaluator-initial-installation-manager-source-review.md)
+- [Implement private pinned installation source](history/2026-10-28_14-19-13-498851-coder-private-installation-source.md)
+
 ## Durable authority source written — D77
 
 OAuth/Keychain/native confirmation/lasting TLS source is implemented and source-read, with all verification deferred. Dependency declarations changed; Cargo.lock refresh and compilation are not run. [Authority pass](history/2026-10-28_13-55-35-037181-coder-durable-app-authorization-source.md). Next: server-management/runner integration and native UI.

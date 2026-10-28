@@ -50,9 +50,53 @@ pub struct DiscoveryService {
     home: PathBuf,
     codex_home: Option<PathBuf>,
 }
+/// Backend-only installation capture. Source secret values are deliberately discarded.
+#[derive(Clone)]
+pub struct CapturedDefinition {
+    pub row: Value,
+    pub config: Value,
+    pub package_arguments: Vec<String>,
+}
 impl DiscoveryService {
     pub fn new(home: PathBuf, codex_home: Option<PathBuf>) -> Self {
         Self { home, codex_home }
+    }
+    pub fn capture(&self, path: &Path, name: &str) -> Result<CapturedDefinition, DiscoveryError> {
+        if !path.is_absolute() || name.trim().is_empty() { return Err(error("INVALID_REQUEST")); }
+        let file = OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK).open(path).map_err(|_| error("CONFIG_UNREADABLE"))?;
+        let meta = file.metadata().map_err(|_| error("CONFIG_UNREADABLE"))?;
+        if !meta.is_file() || meta.len() > MAX_SOURCE_BYTES as u64 { return Err(error("CONFIG_UNREADABLE")); }
+        let mut bytes = Vec::new();
+        file.take(MAX_SOURCE_BYTES as u64 + 1).read_to_end(&mut bytes).map_err(|_| error("CONFIG_UNREADABLE"))?;
+        if bytes.len() > MAX_SOURCE_BYTES { return Err(error("CONFIG_UNREADABLE")); }
+        let text = std::str::from_utf8(&bytes).map_err(|_| error("INVALID_CONFIG_FILE"))?;
+        let (document, format) = parse_document(text, None)?;
+        let candidates = [("mcpServers", "claude_code"), ("mcp_servers", "codex"), ("mcp", "opencode")];
+        let found: Vec<_> = candidates.iter().filter(|(key,_)| document.get(*key).is_some()).collect();
+        if found.len() != 1 { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
+        let (container, harness) = *found[0];
+        if (harness == "codex" && format != "toml") || (harness == "claude_code" && format != "json") || (harness == "opencode" && format == "toml") { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
+        let definition = document[container].get(name).ok_or_else(|| error("UNSUPPORTED_CONFIG_FILE"))?;
+        let row = classify(name, definition, harness);
+        if row["status"] != "supported" { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
+        let environment: Vec<Value> = row["credential_variables"].as_array().unwrap().iter().map(|v| json!({"name":v,"credential_ref":v})).collect();
+        let mut args: Vec<String> = if harness == "opencode" {
+            definition["command"].as_array().map(|a| a.iter().skip(1).filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default()
+        } else { definition["args"].as_array().map(|a| a.iter().filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default() };
+        let executable = if harness == "opencode" { definition["command"][0].as_str() } else { definition["command"].as_str() }.unwrap_or("");
+        let package_arguments = if row["type"] == "npm" {
+            if args.first().is_some_and(|a| a == "-y" || a == "--yes") { args.remove(0); }
+            args.iter().skip(1).cloned().collect()
+        } else if row["type"] == "pypi" { args.iter().skip(1).cloned().collect() } else { Vec::new() };
+        let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
+        let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":120000,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
+        if row["type"] == "remote" {
+            let mut headers=headers;
+            if let Some(reference)=definition["bearer_token_env_var"].as_str(){if !headers.iter().any(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))){headers.push(json!({"name":"Authorization","credential_ref":reference}));}}
+            let endpoint=definition["url"].as_str().and_then(|s|Url::parse(s).ok()).filter(supported_remote_endpoint).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?;
+            config["executable"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
+        }
+        Ok(CapturedDefinition { row, config, package_arguments })
     }
     pub fn scan(&self, config_path: Option<&Path>) -> Result<Value, DiscoveryError> {
         let mut groups = vec![];
@@ -383,6 +427,7 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             || url.query().is_some()
             || url.fragment().is_some()
             || url.host_str().is_none()
+            || !supported_remote_endpoint(&url)
         {
             return blocked(row, false);
         }
@@ -471,22 +516,24 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             } else {
                 &args[..]
             };
-            if args.len() != 1 {
+            if args.is_empty() {
                 return blocked(row, false);
             }
             let Some((package, version)) = npm_package(&args[0]) else {
                 return blocked(row, false);
             };
+            if args.len() > 1 && (package != "@modelcontextprotocol/server-filesystem" || args[1..].iter().any(|a| !Path::new(a).is_absolute())) { return blocked(row, false); }
             row["type"] = json!("npm");
             row["package"] = json!(package);
             row["version_spec"] = json!(version);
         } else if command == "uvx" {
-            if args.len() != 1 {
+            if args.is_empty() {
                 return blocked(row, false);
             }
             let Some((package, version)) = python_package(&args[0]) else {
                 return blocked(row, false);
             };
+            if args.len() > 1 && (package != "mcp-server-time" || args[1..].iter().any(|a| !a.starts_with("--local-timezone=") || !a[17..].chars().all(|c| c.is_ascii_alphanumeric() || "/_+-".contains(c)))) { return blocked(row, false); }
             row["type"] = json!("pypi");
             row["package"] = json!(package);
             row["version_spec"] = json!(version);
@@ -519,6 +566,12 @@ fn header_name(s: &str) -> bool {
     !s.is_empty()
         && s.bytes()
             .all(|c| c.is_ascii_alphanumeric() || b"!#$%&'*+-.^_`|~".contains(&c))
+}
+/// Only recognized public endpoint paths may enter ordinary non-secret records.
+/// Arbitrary path segments can carry credentials, even when no query is present.
+pub(crate) fn supported_remote_endpoint(url:&Url)->bool {
+    matches!(url.path(),"/mcp"|"/mcp/"|"/sse"|"/sse/"|"/api/mcp"|"/api/mcp/")
+        || (url.host_str()==Some("mcp.linear.app") && url.path()=="/mcp/readonly")
 }
 fn npm_package(s: &str) -> Option<(&str, Option<&str>)> {
     let split = if let Some(unscoped) = s.strip_prefix('@') {
