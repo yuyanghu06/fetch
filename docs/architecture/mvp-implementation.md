@@ -16,3 +16,7 @@ Credential success still requires encrypted store/readback plus the service's au
 ## Deferred execution
 
 Do not run Cargo, tests, checks, formatters, linters, validation scripts, services, applications, runtime/package installers, connection attempts, trust changes or packaging in this implementation pass. Dependency resolution and Cargo.lock refresh are deferred together with first compilation. Do not infer that code compiles, clients connect, OS prompts work or packaging succeeds. The existing isolated-testing plan remains unprovisioned.
+
+## Runner source engineering choices
+
+Native resource reads, prompt retrieval and completion share the same per-server finite admission queue and server execution duration. Per-tool overrides apply only to tool calls. This resolves the remaining native-admission implementation item without changing selected operations/scopes. Alias reservations are durable; selectors remain outside original arguments. Initial numeric engineering bounds are concurrency 1–64, configured finite execution durations through 24 hours, 256 active native requests/continuations and 64 MiB upstream messages, while the accepted queue stays 64 entries/16 MiB/300 seconds. These are engineering bounds in source, not claimed historical approvals or proven client compatibility.

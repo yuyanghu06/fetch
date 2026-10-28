@@ -15,3 +15,5 @@ Active. Planner source-reading report received. Three exclusive implementation a
 Authority source is written and registered; see [the pass](../history/2026-10-28_13-55-35-037181-coder-durable-app-authorization-source.md). No compile/runtime evidence. Manager/runner/UI integration remains active.
 
 Private installer/discovery/storage source written and source-reviewed; no runtime/package preparation has run. Manager and native integration remain active.
+
+Shared runner and native MCP source written, including raw transport fidelity/owner accounting mechanisms. No compile/runtime/client evidence.

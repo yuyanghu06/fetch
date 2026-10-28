@@ -10,3 +10,5 @@ pub mod oauth;
 pub mod identity;
 pub mod native_auth;
 pub mod installation;
+pub mod runner;
+pub mod mcp;

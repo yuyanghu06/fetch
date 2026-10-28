@@ -1,3 +1,7 @@
+## Shared runner and MCP source written
+
+Three transports and selected native methods are implemented in source. Queue/uncertainty/revocation and private catalog behavior have been source-read; none has been executed. [Runner pass](history/2026-10-28_14-20-16-098752-coder-raw-runner-and-native-mcp-source.md). Manager, HTTP and UI integration follows.
+
 ## Private installation source written — testing deferred
 
 Installer/discovery/storage source is implemented. The source review found issues and accepted the installer corrections; manager refinements remain in progress. No installation, downloads, dependency resolution or verification ran.

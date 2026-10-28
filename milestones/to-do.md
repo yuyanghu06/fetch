@@ -4,7 +4,7 @@
 - [x] Durable OAuth/native authority/Keychain/lasting TLS identity source written; all verification deferred.
 - [x] Private runtime/package preparation and install-progress source written; unverified.
 - [ ] Server management source integration.
-- [ ] Raw runner/transports/queues/catalog/native MCP source.
+- [x] Raw runner/transports/queues/catalog/native MCP source written; all verification deferred.
 - [ ] Existing HTTP route integration and native API-backed Iced interface.
 - [ ] App/DMG packaging source, MIT/notices and explicit testing handoff.
 - [ ] Scoped commits/pushes as features are integrated.
