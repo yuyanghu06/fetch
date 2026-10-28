@@ -2,7 +2,7 @@
 
 # Fetch milestone snapshot
 
-Updated October28, 2026 after D74. Latest implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. Full MCP MVP and isolated client verification remain incomplete.
+Updated October28, 2026 after D75. Latest implementation milestone: [mcp-dev-foundation](mcp-dev-foundation/info.md). Status: first developer-backend increment complete, independently accepted and pushed to origin/main. Full MCP MVP and isolated client verification remain incomplete.
 
 ## Active implementation increment
 
@@ -368,9 +368,11 @@ D61 selects [HTTP/SSE transport adapters](../docs/architecture/remote-upstreams.
 
 ## D75 developer-port follow-up
 
-Default https://localhost:53671; current docs/status refreshed and obsolete pauses marked historical. Existing37 tests, formatting and CLI help passed; independent Evaluator ACCEPT. Push is authorized and follows these checks; no release or managed-MCP testing.
+Default https://localhost:53671; current docs/status refreshed and obsolete pauses marked historical. Existing37 tests, formatting and CLI help passed; independent Evaluator ACCEPT. Commit 0fa5bce is pushed to origin/main and the remote commit matches. No release or managed-MCP testing.
 
 - [Planner: Plan less common port and status cleanup](history/2026-10-28_13-08-27-492948-planner-developer-port-and-state-plan.md) — Bounded plan accepted; no missing product decision.
 - [Orchestrator: Change developer port and reconcile current status](history/2026-10-28_13-08-27-493353-orchestrator-developer-port-and-current-docs.md) — Implementation/docs complete; independenttester/evaluator evidence follows.
 - [Tester: Verify port change without expanding tests](history/2026-10-28_13-08-27-493572-tester-developer-port-followup-verification.md) — PASS; ownedfilesfrozen.
 - [Evaluator: Review developer port and current-state documentation](history/2026-10-28_13-08-27-493907-evaluator-developer-port-and-docs-acceptance.md) — No remaining material findings.
+
+- [Orchestrator: Deliver developer port and status docs](history/2026-10-28_13-09-08-028451-orchestrator-developer-port-push-evidence.md) — 0fa5bce pushed and remote verified; no release.

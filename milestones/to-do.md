@@ -55,7 +55,7 @@ Application implementation and live testing remain paused. Exact new API or mean
 
 ## Developer-port and status follow-up
 
-- [x] Switch the developer default from4141 to53671, keeping explicit overrides and port0 tests.
+- [x] Switch the developer default from `4141` to `53671`, keeping explicit overrides and port `0` tests.
 - [x] Refresh current milestone/context/README/architecture pointers and label obsolete pre-D74 status as historical.
 - [x] Port/docs verification: formatting,37 existing tests, CLI help and independent Evaluator ACCEPT.
-- [ ] Push the reviewed follow-up and record the verified remote.
+- [x] Pushed port/status follow-up 0fa5bce to origin/main and verified the matching remote commit.
