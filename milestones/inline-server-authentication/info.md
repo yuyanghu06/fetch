@@ -20,3 +20,6 @@ no live child environment replacement or full generic OAuth support is claimed.
 The user rejected the earlier UI-only approach; required operational MVP gaps
 are recorded in docs/testing/MVP_GAPS.md rather than called approved deferrals.
 See the rolling snapshot/history for exact implementation/build evidence.
+
+Scoped code pushed as9def537. Later runtime acceptance remains pending; see the
+rolling snapshot for delivery evidence. Unrelated Figma work remains separate.

@@ -2,6 +2,9 @@
 
 ## Current delivery — Railway sign-in, inline authentication and request logs
 
+Scoped code is committed/pushed as9def537; local HEAD and origin/main matched.
+[Delivery record](history/2026-10-28_21-55-32-489892-orchestrator-deliver-railway-auth-and-diagnostics.md). No runtime acceptance is claimed.
+
 The selected Railway fix is implemented and independently source-reviewed:
 Authenticate starts Fetch-owned browser OAuth, uses D80's temporary numeric
 127.0.0.1 callback and privately verifies the stored credential through /oauth/me.
