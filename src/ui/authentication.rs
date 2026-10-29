@@ -1,9 +1,10 @@
 //! Card-local authentication state and the credential editor shared with Settings.
-use iced::{Element, widget::{button, column, row, text, text_input}};
+use super::{components::{button, text_input}, theme};
+use iced::{Element, widget::{column, row, text}};
 use serde_json::Value;
 use zeroize::Zeroize;
 
-pub(super) const SPACING: f32 = 10.0;
+pub(super) const SPACING: f32 = theme::CONTROL_GAP;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Phase { Starting, Saving, Pending, Required, Unknown, NeedsVerification, Authenticated, NotRequired, Failed }
@@ -112,7 +113,7 @@ pub(super) fn credential_editor<'a, M: Clone + 'a>(
     if let Some(remove) = remove {
         actions = actions.push(button("Remove entry").on_press_maybe((enabled && !name.trim().is_empty()).then_some(remove)));
     }
-    column![text("Private credential entry").size(20),
+    column![text("Private credential entry").size(theme::FIELD_TITLE),
         text("Each save requires Mac confirmation. Fetch stores the credential encrypted and verifies it with the provider before reporting success."),
         name_input, secret_input, actions].spacing(SPACING).into()
 }

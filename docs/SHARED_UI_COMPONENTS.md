@@ -66,10 +66,15 @@ the actual Navigation, Text input and Message structure above.
 
 ## Current implementation state
 
-Shared Figma components and linked instances exist. This design pass did not
-change application code. Current source now has the shared credential_editor
-described above; broader custom UI extraction remains a separate implementation
-task. No Code Connect mapping or passing runtime result is claimed.
+Shared Figma components and linked instances exist. Under D81, native code now
+uses src/ui/components.rs and theme.rs for repeated navigation, controls, page
+framing, messages, server cards and disclosures; the credential editor remains
+shared. src/browser.rs supplies escaped document/message/control helpers used by
+client approval, product provider callback and Railway callback rendering.
+Existing layout/labels/light defaults/masking/availability/scrolling are preserved.
+The native build and68 fixture checks pass; no actual native visual or live login
+acceptance is claimed. Code Connect and the Railway Figma specimen follow-up are
+still separate reference work.
 
 Review populated, empty, busy, disabled, error, expanded and scrolled states when
 code changes are selected. Preserve the fixed Install footer and actual long

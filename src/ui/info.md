@@ -4,9 +4,14 @@ UI reuse requirement (confirmed October 28): use shared rendering functions or
 modules for repeated navigation, buttons, server cards, plain messages/status,
 text inputs, tool disclosures and checkboxes, with common theme values. Pages supply
 data, state and callbacks. See [the component definitions](../../docs/SHARED_UI_COMPONENTS.md).
-Matching Figma components exist. The current authentication.rs::credential_editor
-is already reused by Settings and inline authentication; other custom UI
-extraction remains separate work. The current state library is indexed in
+Matching Figma components exist. `components.rs` now owns common native buttons,
+full-width inputs, checkboxes, navigation, page framing, plain/error messages,
+server-card framing and tool/server disclosure rendering. `theme.rs` owns their
+current sizes, spacing and padding and keeps the Iced Light appearance. Pages
+still supply data, availability and callbacks; these helpers do not call APIs.
+`authentication.rs::credential_editor` remains shared by Settings and inline
+authentication and uses the same controls/theme. Browser rendering is managed
+outside this native module. The current state library is indexed in
 [UI_STATE_COVERAGE.md](../../docs/UI_STATE_COVERAGE.md), including all nine auth
 phases, individual Settings outcomes and interaction/disabled differences.
 The user rejected the earlier styled proposals. Current Figma copies preserve
@@ -15,7 +20,11 @@ colored notices or two-column Settings as part of copying it.
 
 Iced renders a light native window. The window holds a short-lived in-process Settings session and calls the same HTTPS application APIs as agents. Server records, installation progress and restart outcomes drive controls; next_steps text is never interpreted as UI instructions. Manual secret changes go through the existing credential PATCH and a fresh backend Mac confirmation. Closing the window drops its authority and leaves backend work running; Quit requests backend shutdown.
 
-All interface source is uncompiled and untested in the D77 implementation pass. The UI does not edit client configurations, install certificate trust or execute tools merely to inspect them.
+The D77 interface source was initially delivered without compilation or tests;
+later binary-build evidence is recorded in the milestone. The October29 shared
+native extraction is awaiting the coordinated build and actual UI checks. The
+UI does not edit client configurations, install certificate trust or execute
+tools merely to inspect them.
 
 Server/tool details expand individually. Call limits have ordinary controls, while launch/reference/per-tool edits have an optional advanced editor. Manual secrets are hidden on entry; closing the window immediately revokes native authority even if an HTTP request still holds a client clone. Internal HTTPS trusts the installation certificate with built-in public roots disabled. Named monitoring survives status-read errors; retries select failed installation rows only.
 
