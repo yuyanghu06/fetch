@@ -1,3 +1,5 @@
+> **D81 active local work:** Implementation/build/test and protected actual MCP/client checks are authorized; packaging/signing/DMG are excluded. Native build and68 fixtures pass; real UI/provider/MCP proof is still pending. Two focused choices remain unanswered: storage success versus authenticated status for credential operations, and bounded protected-MCP authentication proof when no separate provider account API exists. Preserve D25/D31 until answered. See [the current run](../testing/LOCAL_MVP_RUN.md). Older execution-pause paragraphs below are historical.
+
 > **October29 current handoff:** five required implementation areas plus isolated
 > runtime acceptance/fixes and distribution preparation remain. See
 > [MVP_GAPS.md](../testing/MVP_GAPS.md). Railway/auth/logging source compiles;

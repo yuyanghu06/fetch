@@ -1,5 +1,23 @@
 # Fetch current work
 
+## Active local MVP completion — D81
+
+- [ ] Finish imports, general/provider sign-in, credential outcomes and shared UI.
+- [x] Implement exact known public/bridge imports and curated launcher forms;7 fixture cases pass.
+- [x] Implement native/browser shared helpers/theme; compiled and reviewed, actual visuals pending.
+- [x] Add generic remote discovery/registration/renewal and issuer-bound callback source; full verified provider success still pending.
+- [ ] Resolve the two focused credential-contract choices without reopening settled scope.
+- [x] Run independent combined68 fixture checks and final locked native build; fix the import assertion/issuer finding and retest. Clippy exits0 with72 warnings.
+- [ ] Establish actual protected local environment, separate Codex state and scoped trust.
+- [x] Prepare copied Codex with fresh file-based state; offline app-server starts with0 MCPs and disposable path canaries pass. No real connection/trust/native proof.
+- [ ] Complete administrator authentication at the prepared Users&Groups Unlock prompt and establish the protected native session; no test account created yet.
+- [ ] Install a real MCP through computer interaction, call from test Codex and repeat after restart.
+- [ ] Verify selected native/provider/client/protocol behavior and obtain independent acceptance.
+- [ ] Notify the user after genuinely ready for their own testing.
+- Packaging/signing/notarization/DMG work is excluded from D81; older distribution tasks stay future work.
+
+- [x] October29: independently reassess actual source at 1276516; confirm five known implementation areas, relative work size and local-operation versus distribution boundary. No tests/builds/runtime actions. See [assessment](mvp-readiness-review/info.md).
+
 - [x] October29: save/push the full pending tree (a15eacc), document actual remaining work and integrate independent documentation corrections; final handoff is in this documentation commit.
 
 ## Current remaining work — October 29

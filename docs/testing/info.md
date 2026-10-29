@@ -1,9 +1,19 @@
 # User-controlled verification
 
+D81 starts actual local implementation and verification. See
+[LOCAL_MVP_RUN.md](LOCAL_MVP_RUN.md) for current work/evidence and protected
+environment prerequisites. Previous no-execution statements below are historical;
+packaging/signing/DMG remain excluded and personal-state protection remains.
+
 Current remaining work is grouped as five implementation areas plus two
 completion stages in [MVP_GAPS.md](MVP_GAPS.md). HANDOFF.md retains prior build
 evidence and current restrictions. No new execution was authorized by the
 October29 full-tree push/documentation request.
+
+The [read-only readiness reassessment](../../milestones/mvp-readiness-review/info.md)
+confirms the known source groups and their unequal size. Local working acceptance
+requires source completion plus actual isolated workflows; distribution is a
+later stage. This assessment adds no runtime evidence or execution authority.
 
 [DEVELOPMENT.md](DEVELOPMENT.md) documents current-home-relative development and
 release paths, importing normal Codex definitions, and a fresh test Codex client

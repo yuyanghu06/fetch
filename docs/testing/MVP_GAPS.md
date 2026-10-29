@@ -11,15 +11,51 @@ required shared UI structure. These are broad areas, not seven equal-sized
 fixes or seven remaining endpoints. Some areas overlap. They do not support an
 honest completion percentage or finish date; runtime checks may find more work.
 
+## October 29 source reassessment
+
+A fresh read-only Planner review and independent Evaluator review at `1276516`
+confirm these five known implementation groups. The main app, client approval,
+encrypted storage, server runner and shared MCP endpoint have substantial source
+implementations. This bounded review found no additional missing major subsystem;
+it does not establish that the existing implementations work end to end.
+
+For a **working local MVP**, complete areas 1–5 and stage 6 below. Stage 7 is the
+separate work needed to distribute the application. Provider setup and general
+remote sign-in are the largest implementation work and overlap. Known import
+forms and credential editing/removal are medium tasks; remaining shared UI code
+is smaller. These are relative source-based assessments, not time estimates.
+The amount of repair after real native/provider/client checks remains unknown.
+
+Recommended order: fix known imports and record setup support for the existing
+server inventory; finish shared remote login and required provider-specific
+setup; correct credential outcomes; finish the shared UI helpers; run authorized
+isolated workflows and fix actual failures. Most of this is engineering under
+settled decisions. The user still chooses the protected testing arrangement and
+starts execution, then completes required provider consent. If credential-success
+behavior must change, present that one concrete contract change before implementing.
+
+See [the source-assessment milestone](../../milestones/mvp-readiness-review/info.md)
+for independent findings and limits. No tests, builds, app launches or connections
+were run for this reassessment.
+
 ## Five implementation areas
+
+D81 progress: exact public import/bridge forms and native/browser shared renderers
+are implemented and fixture-tested; real visual/installation acceptance is still
+pending. Generic remote discovery/registration/renewal source now exists, with
+issuer-bound callbacks, but completing authenticated success is blocked on the
+pending verification choice and provider-specific proof. Existing credential
+batch/removal behavior remains unchanged pending its focused decision. Broader
+everyday-provider/wrapper setup is still unfinished. Read [the active run](LOCAL_MVP_RUN.md)
+for actual68-test/build evidence and native-environment handoff. The table below describes the remaining work after these source passes.
 
 | Area | What is still incomplete | What counts as finished | Source to continue from |
 | --- | --- | --- | --- |
 | 1. Provider setup for everyday servers | Fresh setup and stored-credential verification cover only a small recognized provider list. Other required imports can install but return unknown instead of completing sign-in. | Trace every selected server in the existing inventory through its real login/credential ownership, protected storage, authenticated verification, refresh and restart behavior. Record usable versus missing support per integration; do not equate installation or tools/list with authenticated setup. | src/manager/mod.rs::provider_kind/authenticate/verify_stored; docs/architecture/real-use-compatibility.md |
-| 2. General remote OAuth | Registration, browser login and renewal are implemented for particular providers. There is no general protected-resource/issuer discovery and registration path for other remote servers. | The existing Authenticate operation can perform supported remote discovery/registration/sign-in/renewal with validated destinations and the existing verification/credential rules. Handle failures honestly without opening login on normal tool calls. | src/manager/mod.rs::begin_provider_login/refresh_owned; src/runner/transport.rs |
+| 2. General remote OAuth | Generic discovery/registration/PKCE/renewal source is implemented with pinned destinations and exact callback issuer binding. Verified authentication for providers without a separate account API awaits the explicit proof-rule decision; actual login/renewal remains unrun. | Complete the approved verification integration, exercise real supported remote sign-in/renewal and report provider-side client restrictions honestly. No login on ordinary tool calls. | src/manager/remote_auth.rs; src/manager/mod.rs::begin_provider_login/refresh_owned |
 | 3. Credential editing, batches and removal | A successful save currently requires one recognized effective authentication entry with no existing OAuth token. Other environment/custom-header edits, multiple entries and removal-only changes may commit then return verification failure. | Resolve and implement the successful outcomes for these advertised Settings operations consistently with the accepted stored-credential verification requirement. Correctly report committed-but-unverified state and required reauthentication; do not bypass verification or automatically retry an uncertain write. | src/manager/mod.rs::save_credentials/can_verify_batch; docs/architecture/api-contract.md |
-| 4. Real configuration import compatibility | Current launcher-argument and URL classification rejects forms found in the recorded everyday-server inventory. The exact official Railway root is now supported; that does not solve other rejected forms. | Support the selected safe forms using disposable fixtures based on the recorded inventory, preserving source identity and credential references without importing secret values or rewriting destinations silently. Record remaining unsupported definitions explicitly. | src/discovery/mod.rs::classify/supported_remote_endpoint; docs/architecture/real-use-compatibility.md |
-| 5. Remaining shared UI code extraction | The credential editor is already shared between Settings and inline authentication. Other repeated custom UI rendering and common visual values still need the required shared implementations. | Relevant native/browser pages reuse the common rendering/helpers/theme, preserving current layout, controls, masking, availability and scrolling. Keep matching Figma components and state coverage aligned. Do not introduce the rejected visual redesign. | src/ui/mod.rs; src/ui/authentication.rs::credential_editor; docs/SHARED_UI_COMPONENTS.md |
+| 4. Real configuration import compatibility | Precise Miro/Vercel/v0/HF endpoints, narrow HF queries, proven mcp-remote bridge forms and curated Everything/Time launcher forms now pass seven fixtures. Full inventory setup and real installation/connection compatibility remain unverified; unknown grammars stay explicit. | Exercise selected safe inventory forms through the actual UI installer/client, preserving source identity and fresh credential references; resolve concrete remaining compatibility findings. | src/discovery/mod.rs; tests/import_compatibility.rs; docs/architecture/real-use-compatibility.md |
+| 5. Shared UI code and acceptance | Native components/theme and browser document/message/form helpers are implemented and compiled. Real visual states, later approved credential-result changes and Railway Figma mapping remain unverified/pending. | Preserve actual layout/masking/actions/scrolling in native checks; integrate final structured credential outcomes and maintain the matching reference index. | src/ui/components.rs; src/ui/theme.rs; src/browser.rs; docs/SHARED_UI_COMPONENTS.md |
 
 Areas 1–4 are the immediate product-completion priority. Use the existing
 inventory; do not ask the user to relist it. Shared UI extraction is a separate

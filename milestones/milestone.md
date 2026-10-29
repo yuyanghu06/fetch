@@ -1,5 +1,59 @@
 # Fetch milestone snapshot
 
+## Active — local working MVP under D81
+
+The user now authorizes finishing the selected source, local build/test execution,
+computer-use installation of a real MCP and a separate test Codex instance. No
+packaging/signing/DMG. [Scope](local-working-mvp/info.md),
+[actual run and protection prerequisites](../docs/testing/LOCAL_MVP_RUN.md).
+Planner and primary-source Researcher reports accepted; imports, remote auth and
+shared UI source assigned separately. Two credential-contract choices are pending.
+Native login-Keychain/owner-confirmation isolation remains a concrete prerequisite;
+do not treat a fresh profile as sufficient. No current-pass runtime acceptance yet.
+All earlier incomplete scope remains tracked below.
+
+- [Implementation plan](history/2026-10-29_12-01-40-000001-planner-local-working-mvp-plan.md)
+- [OAuth/isolation primary-source research](history/2026-10-29_12-01-40-000002-researcher-remote-auth-and-isolation.md)
+- [Shared native UI source pass](history/2026-10-29_12-01-40-000003-coder-native-shared-ui-source.md)
+
+Native/browser shared helpers, known import forms and generic remote OAuth source
+are implemented. Final locked native build exit0; independent combined suite68/68
+PASS. Initial import assertion failure was corrected/retested. Source review found
+and resolved issuer mix-up; final scoped ACCEPT. Clippy exits0 with72 warnings.
+No live UI/MCP/provider acceptance: a copied offline Codex starts with0 servers;
+CUA test-user setup is at administrator Unlock. No account/password/security/trust
+change or real MCP connection. Pending2 credential choices and protected native
+session are the next required inputs. Do not mark working-local completion or notify.
+
+- [Imports source and fixture correction](history/2026-10-29_12-16-09-000001-coder-import-compatibility-source.md)
+- [Generic remote OAuth source](history/2026-10-29_12-16-09-000002-coder-generic-remote-oauth-source.md)
+- [Browser/integrated native build](history/2026-10-29_12-16-09-000003-orchestrator-shared-browser-and-first-build.md)
+- [Independent fixture runs/failure/retests](history/2026-10-29_12-16-09-000004-tester-fixture-failure-and-retest.md)
+- [Issuer-mixup review finding](history/2026-10-29_12-16-09-000005-evaluator-oauth-issuer-mixup-finding.md)
+- [Issuer binding fix and final checks](history/2026-10-29_12-16-09-000006-coder-fix-oauth-issuer-binding.md)
+- [Separate offline Codex and Mac handoff](history/2026-10-29_12-16-09-000007-orchestrator-confined-offline-codex-and-handoff.md)
+
+## October 29 — reassess the work remaining for a working MVP
+
+At `1276516`, fresh read-only source inspection and independent specialist
+reviews confirm five known implementation areas. Provider setup/general remote
+login are the largest overlapping work; import/credential outcomes are medium;
+shared UI extraction is smaller. Native/client/provider correctness remains
+unverified. A working local MVP requires those areas plus isolated end-to-end
+acceptance/fixes; distribution is a separate later stage. No percent or date is
+supported. Existing app/API/manager/runner/storage boundaries and product scope
+are preserved. No tests, builds, launches, connections or personal-state changes.
+
+[Assessment scope and completion](mvp-readiness-review/info.md).
+Next: known imports and server setup coverage, shared/provider login, credential
+outcomes and UI helpers, then user-started isolated workflows. All unfinished
+work below is preserved. This assessment changes documentation only and remains
+local; it does not mark the operational MVP complete.
+
+- [Planner source findings](history/2026-10-29_11-46-15-000001-planner-mvp-remaining-work-source-review.md)
+- [Independent Evaluator ACCEPT](history/2026-10-29_11-46-15-000002-evaluator-mvp-local-readiness-review.md)
+- [Orchestrator integration](history/2026-10-29_11-46-15-000003-orchestrator-integrate-mvp-readiness-assessment.md)
+
 ## October 29 handoff — full tree saved and remaining work counted
 
 Documentation review is complete; debug/release paths and stale completion

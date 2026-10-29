@@ -1,3 +1,13 @@
+> **Latest instruction — October 29, 2026 (D81):** Finish the selected local MVP,
+> build and test autonomously, then use computer interaction to install a real
+> MCP server in the protected development test environment and verify it from a
+> separate test Codex instance. Preserve everyday Codex settings, credentials and
+> existing services. This supersedes the prior test/launch/install pause for
+> this bounded local work; retain the isolation and native-human-authority rules.
+> Notify the user only when genuinely ready for their own testing. Do not do
+> DMG packaging, signing, notarization or release work. See
+> milestones/local-working-mvp/info.md and docs/testing/LOCAL_MVP_RUN.md.
+
 > **Development-state follow-up, October 28:** Keep native debug state/packages
 > under ~/Library/Application Support/Fetch-Development and release state under
 > ~/Library/Application Support/Fetch, resolved from current HOME. Defaults use

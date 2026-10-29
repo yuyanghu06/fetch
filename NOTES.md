@@ -1,5 +1,24 @@
 # Project notes
 
+## October 29, 2026 — Local MVP implementation and actual verification authorized
+
+The user asked to finish/build/test the local MVP autonomously, install a real
+MCP through computer interaction after building, and verify it from a separate
+test Codex instance without interfering with their existing installation. They
+want a completion notification when it is ready for their own testing. D81
+records this authorization. Packaging, signing/notarization and DMG/release work
+are explicitly excluded. Actual test isolation and native owner confirmation
+remain required; pending credential-contract questions are not approved by silence.
+See [the active local run](docs/testing/LOCAL_MVP_RUN.md).
+
+Scoped source now adds safe public imports, generic issuer-bound remote OAuth
+and shared native/browser rendering. The native binary builds; all68 selected
+fixtures pass together and independent scoped source review ACCEPTs. A copied
+offline Codex starts with0 MCPs without using existing credentials. Actual GUI/
+MCP/provider proof is waiting on protected native setup and the2 focused
+credential choices. macOS is at the administrator Unlock prompt; no account or
+security setting has changed. No packaging/signing/DMG or completion alert.
+
 This is the default document for this project's notes. When the user asks to note something down, update this file unless they name another destination. Date entries and distinguish ideas to try from confirmed decisions and completed work.
 
 Architecture decisions now have a user-selected destination: [docs/architecture/](docs/architecture/README.md). Keep general dated project history here and current architecture/API detail there. Historical entries below may describe superseded ideas.

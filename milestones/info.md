@@ -1,5 +1,14 @@
 # Milestone records
 
+[Local working MVP](local-working-mvp/info.md) is active under D81: implementation,
+builds and protected actual UI/client testing are authorized; packaging/signing/DMG
+are excluded. Prior execution pauses are historical for this bounded local work.
+
+[MVP readiness review](mvp-readiness-review/info.md) records the October29
+read-only source reassessment: five known implementation areas, their relative
+size, actual local workflow acceptance and later distribution work. It adds no
+build/runtime evidence or permission to execute.
+
 [Full-tree handoff](full-tree-handoff/info.md) records the October29 request to
 push all pending work and document the remaining implementation/verification.
 [The current gap list](../docs/testing/MVP_GAPS.md) overrides older source-complete

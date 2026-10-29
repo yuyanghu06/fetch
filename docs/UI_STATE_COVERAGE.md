@@ -24,6 +24,12 @@ count. The source-backed original library remains useful within its snapshot.
 
 ## Source and evidence
 
+D81 shared-code reconciliation: native rendering now reuses src/ui/components.rs
+and theme.rs, while src/browser.rs supplies the shared escaped browser shell,
+messages and controls for all three Fetch-owned renderers. Current text/layout
+and the153 reference count are unchanged. The seven Railway paragraph variants
+above still need their Figma specimen mapping; shared code is not visual evidence.
+
 - Native rendering: src/ui/mod.rs (servers_view, authentication_view, install_view,
   connect_view, settings_view and the global error/notice slots).
 - Shared editor and nine authentication phases: src/ui/authentication.rs

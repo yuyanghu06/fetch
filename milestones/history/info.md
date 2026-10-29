@@ -1,5 +1,14 @@
 # Append-only pass history
 
+D81 local-working-MVP entries distinguish source implementation, the initial
+fixture assertion failure/retests, independent issuer-mixup finding/fix, final68
+fixture/build evidence and offline Codex/native-account handoff. None claims a
+real server installation or completed operational MVP.
+
+October29 readiness entries record fresh read-only Planner findings, independent
+Evaluator acceptance and Orchestrator integration at 1276516. They assess known
+remaining source work; they do not verify the application by running it.
+
 Each entry uses [the project template](../../docs/templates/history-entry.md) and an America/New_York timestamp: YYYY-MM-DD_HH-MM-SS-microseconds-role-description.md. The Orchestrator serializes inspected specialist/root outcomes, links them from [the snapshot](../milestone.md), and never edits completed entries. Corrections get new entries.
 
 D73 consolidates the current plan without erasing prior choices/research/review evidence. Older open-topic/checkpoint text is historical and cannot recreate the superseded ten-group backlog. Current truth is in the [single implementation checkpoint](../../docs/architecture/build-readiness.md) and [live work](../to-do.md).

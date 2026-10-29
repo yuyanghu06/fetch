@@ -155,6 +155,13 @@ needs verification after rebuilding and relaunching.
 Read-only inspection of the current global Codex entry shapes found these import
 limits, without running servers or exposing configuration secrets:
 
+D81 source follow-up: the four importer limitations in the historical table
+below are now addressed for the precise documented forms. Seven disposable
+import fixtures pass, including narrow Hugging Face query values and safe
+mcp-remote conversion that discards source header/environment values. This is
+import source evidence, not actual provider login/client approval or connection
+acceptance. See [the active run](LOCAL_MVP_RUN.md).
+
 | Entry | Current reason |
 | --- | --- |
 | Hugging Face | Its URL includes a query string; Fetch currently rejects URL queries. |

@@ -1,5 +1,11 @@
 # Architecture folder
 
+D81 current: local implementation/build/test and protected actual installation/
+client proof are authorized. Native build and68 fixtures pass; live acceptance
+and2 focused credential-contract questions remain pending. D78 already defers
+the custom GitHub CLI adapter; it is not a fresh scope question. The following
+foundation-era paragraphs retain historical context. See [the current run](../testing/LOCAL_MVP_RUN.md).
+
 Updated October28, 2026 after D74. The first developer foundation is implemented/pushed at https://localhost:53671; native authorization, installation, UI and MCP sharing remain unfinished. Read [README](README.md), [decisions](decisions.md), [existing API contracts](api-contract.md) and the **[single implementation checkpoint](build-readiness.md)**. [Open questions](open-questions.md) is its short index, not a second backlog.
 
 One agent credential/token and `/mcp` connection, user-completed provider login reused on calls, Rust/execution/raw protocol/auth/Settings direction, no memory in this release, MIT and drag-and-drop DMG are selected. Unchosen engineering details are gathered in one worklist; new meaningful behavior is reviewed completely once, not as another broad subject.

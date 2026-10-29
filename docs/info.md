@@ -1,5 +1,10 @@
 # Documentation guide
 
+[LOCAL_MVP_RUN.md](testing/LOCAL_MVP_RUN.md) records D81 source delivery,
+68 passing fixtures/final binary build, scoped source acceptance and the actual
+offline-Codex/native-test-user handoff. Real server installation/provider/client
+proof and2 credential choices remain pending. No packaging/signing/DMG work.
+
 [MVP_GAPS.md](testing/MVP_GAPS.md) is the current remaining-work list: five
 implementation areas, isolated runtime acceptance and distribution preparation.
 It distinguishes code gaps, unrun evidence and explicitly deferred features.

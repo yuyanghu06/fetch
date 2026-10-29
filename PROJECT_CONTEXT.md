@@ -1,5 +1,17 @@
 # Fetch — current project context
 
+Latest October29 instruction (D81): finish/build/test the local MVP autonomously,
+then install a real MCP through computer interaction and verify it with a separate
+test Codex instance. Preserve everyday clients/personal state and actual isolation.
+Notify the user only after it is ready for their own testing. No packaging,
+signing, notarization or DMG/release work. Safe known imports and shared native/
+browser rendering are implemented; generic remote OAuth source is added with
+issuer binding. Native build and68 fixtures pass; scoped source review ACCEPT.
+Full provider setup,2 credential-policy choices and actual UI/MCP proof remain.
+A copied offline test Codex starts with0 MCPs; native test-user setup is at the
+administrator Unlock prompt. No account/security changes or real MCP connection.
+See [the current run](docs/testing/LOCAL_MVP_RUN.md).
+
 October29 handoff: the full working tree is saved/pushed as a15eacc. There are
 five known implementation areas remaining, followed by isolated runtime
 acceptance/fixes and distribution preparation. [MVP_GAPS.md](docs/testing/MVP_GAPS.md)

@@ -777,3 +777,24 @@ The callback remains bound to the original pending OAuth state/attempt and
 existing encrypted-store/readback/service-verification rules. No live sign-in,
 listener execution, test, provider call or personal-state change was authorized
 or performed by recording this decision.
+
+## D81 — Finish and verify the local MVP autonomously
+
+October 29, 2026. The user explicitly requested finishing all known local MVP
+work, building and testing autonomously, using computer interaction after the
+build to install an MCP server in the development test environment, and testing
+it through a separate Codex instance that does not interfere with their existing
+installation. Notify them when it is ready for their own testing.
+
+This authorizes implementation, local builds/fixture checks and bounded real
+installation/connection testing within a suitable protected test environment.
+It supersedes the previous execution pause for that work. Preserve disposable
+data/dedicated credentials, isolated MCP access, everyday client settings and
+personal state. A separate Codex profile is required but does not alone isolate
+the login Keychain, desktop apps or managed child processes. Actual native owner
+confirmation is never simulated as real acceptance.
+
+DMG packaging, signing, notarization and distribution/release work are explicitly
+excluded from this pass. Existing product contracts remain in force; the two
+credential-save/protected-MCP verification amendments sent for user input are
+pending and are not approved by silence or this broad work instruction.

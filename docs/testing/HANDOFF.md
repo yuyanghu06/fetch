@@ -1,5 +1,17 @@
 # Fetch MVP — compiled, operational work and testing remain
 
+D81 current local work: public import compatibility and shared native/browser
+rendering are implemented; generic remote discovery/registration/renewal source
+is added with issuer-bound callback protection. The final locked native binary
+build succeeds and68 selected fixture checks pass together. Independent source
+review ACCEPT is limited to that scope. Credential-outcome and authenticated
+remote-verification choices remain pending; everyday-provider setup is not
+universally complete. A fresh confined offline Codex starts with zero MCPs, but
+actual UI installation/provider/native/client acceptance has not run. Mac test
+user setup currently requires administrator authentication. No packaging/signing/
+DMG. See [LOCAL_MVP_RUN.md](LOCAL_MVP_RUN.md); older no-execution statements below
+describe earlier passes.
+
 Current October29 status: five implementation areas plus runtime acceptance and
 distribution remain in [MVP_GAPS.md](MVP_GAPS.md). Railway authentication and safe
 request logging source are implemented and compiled (latest source build4.66s);
