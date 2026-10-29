@@ -106,7 +106,7 @@ async fn callback(State(state): State<Arc<CallbackState>>, request: Request) -> 
     let Some(manager) = state.manager.upgrade() else {
         return page(StatusCode::SERVICE_UNAVAILABLE, "Fetch has stopped. Start a fresh sign-in from Fetch.");
     };
-    match manager.provider_callback(&state.expected, query.get("code").map(String::as_str), query.get("error").map(String::as_str)).await {
+    match manager.provider_callback(&state.expected, query.get("code").map(String::as_str), query.get("error").map(String::as_str), query.get("iss").map(String::as_str)).await {
         Ok(()) => page(StatusCode::OK, "Railway sign-in is verified. Return to Fetch, then use Connect to start the server or apply the new login."),
         Err(_) => page(StatusCode::BAD_REQUEST, "Railway sign-in did not complete. Return to Fetch to review its status and retry Authenticate."),
     }
@@ -146,7 +146,7 @@ fn decode(value: &str) -> Option<String> {
     String::from_utf8(decoded).ok()
 }
 fn page(status: StatusCode, message: &'static str) -> Response {
-    let mut response = (status, Html(format!("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Fetch Railway sign-in</title><h1>Fetch Railway sign-in</h1><p>{message}</p></html>"))).into_response();
+    let mut response = (status, Html(crate::browser::message_page("Fetch Railway sign-in", message))).into_response();
     for (name, value) in [
         (header::CACHE_CONTROL, "no-store"),
         (header::REFERRER_POLICY, "no-referrer"),

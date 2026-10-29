@@ -61,10 +61,10 @@ pub async fn credentials(State(state):State<Arc<AppState>>,Path(id):Path<String>
 pub async fn provider_callback(State(state):State<Arc<AppState>>,request:Request)->Response{
     let query=match parse_query(request.uri().query().unwrap_or("")){Ok(v)=>v,Err(_)=>return invalid()};
     if empty_body(request).await.is_err(){return invalid();}
-    let(mut flow,mut code,mut error)=(None,None,None);for(key,value)in query{match key.as_str(){"state" if flow.is_none()=>flow=Some(value),"code" if code.is_none()=>code=Some(value),"error" if error.is_none()=>error=Some(value),"error_description"|"iss"=>{},_=>return invalid()}}
+    let(mut flow,mut code,mut error,mut issuer)=(None,None,None,None);for(key,value)in query{match key.as_str(){"state" if flow.is_none()=>flow=Some(value),"code" if code.is_none()=>code=Some(value),"error" if error.is_none()=>error=Some(value),"iss" if issuer.is_none()=>issuer=Some(value),"error_description"=>{},_=>return invalid()}}
     let Some(flow)=flow else{return invalid();};let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};
-    let (status,message)=match manager.provider_callback(&flow,code.as_deref(),error.as_deref()).await{Ok(())=>(StatusCode::OK,"Provider setup finished. Return to Fetch to review the server's authentication and restart state."),Err(_)=>(StatusCode::BAD_REQUEST,"Provider setup did not finish successfully. Return to Fetch to review the server state before retrying.")};
-    let mut response=(status,Html(format!("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Fetch provider setup</title><h1>Fetch provider setup</h1><p>{message}</p></html>"))).into_response();response.headers_mut().insert(header::CONTENT_SECURITY_POLICY,HeaderValue::from_static("default-src 'none'; frame-ancestors 'none'; base-uri 'none'"));response
+    let (status,message)=match manager.provider_callback(&flow,code.as_deref(),error.as_deref(),issuer.as_deref()).await{Ok(())=>(StatusCode::OK,"Provider setup finished. Return to Fetch to review the server's authentication and restart state."),Err(_)=>(StatusCode::BAD_REQUEST,"Provider setup did not finish successfully. Return to Fetch to review the server state before retrying.")};
+    let mut response=(status,Html(crate::browser::message_page("Fetch provider setup", message))).into_response();response.headers_mut().insert(header::CONTENT_SECURITY_POLICY,HeaderValue::from_static("default-src 'none'; frame-ancestors 'none'; base-uri 'none'"));response
 }
 
 pub async fn tools(State(state):State<Arc<AppState>>,request:Request)->Response{

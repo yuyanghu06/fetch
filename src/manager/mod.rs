@@ -1,6 +1,7 @@
 //! Shared server state and approved operations. UI and MCP adapters use these same handlers.
 mod railway;
 mod provider_callback;
+mod remote_auth;
 use crate::diagnostics::{send as provider_send, UpstreamOperation};
 use crate::{authority::Caller, credentials::{CredentialStore, SecretDocument}, installation::{Installer, opaque, private_directory}, native_auth::{NativeAuthority, SettingsCapability}, runner::{Runner, ServerRoute, TransportConfig, ExecutionPolicy}, storage::ServerRepository};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
@@ -20,7 +21,7 @@ impl From<crate::runner::RunError> for ManagementError {fn from(e:crate::runner:
 #[derive(Clone)]
 struct Live { auth:Value, applied:Option<Value>, current_manual_hashes:BTreeMap<String,String>, applied_manual_hashes:BTreeMap<String,String>, oauth_restart_pending:bool, oauth_present:bool, revision:u64, authenticating:bool, auth_deadline:u64, auth_attempt:Option<String>, restart:Option<String> }
 impl Default for Live {fn default()->Self{Self{auth:json!({"status":"unknown","error":null}),applied:None,current_manual_hashes:BTreeMap::new(),applied_manual_hashes:BTreeMap::new(),oauth_restart_pending:false,oauth_present:false,revision:0,authenticating:false,auth_deadline:0,auth_attempt:None,restart:None}}}
-struct ProviderFlow {server:String, state:String, provider:Provider, verifier:String, client_id:String, token_endpoint:String, redirect:String, resource:Option<String>, revision:u64, expires:u64, _callback:Option<provider_callback::Lease>}
+struct ProviderFlow {server:String, state:String, provider:Provider, verifier:String, client_id:String, token_endpoint:String, redirect:String, resource:Option<String>, remote_metadata:Option<remote_auth::Metadata>, revision:u64, expires:u64, _callback:Option<provider_callback::Lease>}
 pub struct Manager {
     pub repository:ServerRepository, pub credentials:Arc<CredentialStore>, pub runner:Arc<Runner>, pub installer:Arc<Installer>,
     locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>, live:Mutex<BTreeMap<String,Live>>, attempts:Mutex<BTreeMap<(String,String),Value>>, flows:Mutex<BTreeMap<String,ProviderFlow>>, origin:RwLock<String>, http:reqwest::Client, stopping:AtomicBool, stop:Arc<Notify>,
@@ -270,7 +271,7 @@ impl Manager {
         }
         let document=self.secrets(id)?;
         let has_values=document["oauth"]["access_token"].is_string() || (provider_kind(&record)!=Provider::Railway&&assigned_manual_reference(&record).is_some_and(|entry|document["manual"][entry].is_string()));
-        let browser_supported=provider_kind(&record)==Provider::Railway || (provider_kind(&record)==Provider::Linear && record["config"]["kind"]=="remote");
+        let browser_supported=provider_kind(&record)==Provider::Railway || (matches!(provider_kind(&record),Provider::Linear|Provider::Remote) && record["config"]["kind"]=="remote");
         let retry_browser=browser_supported&&(live.auth["status"]=="failed"||(provider_kind(&record)==Provider::Railway
             &&(document["oauth"]["verified"]!=true||document["oauth"]["refresh_in_progress"]==true)));
         if has_values && !retry_browser {
@@ -300,6 +301,7 @@ impl Manager {
             let origin=self.origin.read().map_err(|_|auth_required())?.clone();if origin.is_empty(){return Err(auth_required());}
             format!("{origin}/oauth/provider/callback")
         };
+        let remote_metadata=if provider==Provider::Remote{Some(remote_auth::discover(record["config"]["connection"]["url"].as_str().ok_or_else(invalid)?).await?)}else{None};
         let (authorization,token,registration,resource)=if provider==Provider::Railway{
             (railway::AUTHORIZE.to_owned(),railway::TOKEN.to_owned(),railway::REGISTER.to_owned(),None)
         }else if provider==Provider::Linear{
@@ -313,6 +315,8 @@ impl Manager {
             (checked_linear_endpoint(metadata["authorization_endpoint"].as_str().ok_or_else(auth_required)?)?,
                 checked_linear_endpoint(metadata["token_endpoint"].as_str().ok_or_else(auth_required)?)?,
                 checked_linear_endpoint(metadata["registration_endpoint"].as_str().ok_or_else(auth_required)?)?,Some(endpoint.to_owned()))
+        }else if let Some(metadata)=&remote_metadata{
+            (metadata.authorization.clone(),metadata.token.clone(),metadata.registration.clone(),Some(metadata.resource.clone()))
         }else{return Err(auth_required());};
         // Registration is owned by this Fetch installation and this managed server.
         // Keep all returned registration material encrypted, never in saved config/API results.
@@ -320,8 +324,11 @@ impl Manager {
         let registration_record=&document["oauth_client"];
         let reusable=registration_record["provider"]==provider.name()&&registration_record["redirect"]==redirect
             &&registration_record["registration_endpoint"]==registration
+            &&(provider!=Provider::Remote||registration_record["remote_metadata"]==serde_json::to_value(&remote_metadata).map_err(|_|store_error())?)
             &&registration_record["registration"]["client_id"].as_str().is_some_and(|s|!s.is_empty());
-        let client_registration=if reusable{registration_record["registration"].clone()}else{
+        let client_registration=if reusable{registration_record["registration"].clone()}else if let Some(metadata)=&remote_metadata{
+            remote_auth::register(metadata,&redirect).await?
+        }else{
             let body=if provider==Provider::Railway{railway::registration(&redirect)}else{
                 json!({"client_name":"Fetch","redirect_uris":[redirect],"token_endpoint_auth_method":"none","grant_types":["authorization_code","refresh_token"],"response_types":["code"]})
             };
@@ -337,13 +344,13 @@ impl Manager {
         let live=self.live.lock().await.get(id).cloned().ok_or_else(auth_required)?;
         if live.revision!=revision||live.auth_attempt.as_deref()!=Some(attempt)||!live.authenticating||live.auth_deadline<=now()||self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
         document=self.secrets(id)?;
-        document["oauth_client"]=json!({"provider":provider.name(),"redirect":redirect,"registration_endpoint":registration,"registration":client_registration});
+        document["oauth_client"]=json!({"provider":provider.name(),"redirect":redirect,"registration_endpoint":registration,"registration":client_registration,"remote_metadata":remote_metadata});
         self.credentials.save(id,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         let stored=self.secrets(id)?;
         if stored["oauth_client"]["registration"]["client_id"]!=client_id{return Err(store_error());}
         let verifier=URL_SAFE_NO_PAD.encode(rand::random::<[u8;32]>());let challenge=URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
         let flow=ProviderFlow{server:id.to_owned(),state:attempt.to_owned(),provider,verifier,client_id:client_id.clone(),token_endpoint:token,
-            redirect:redirect.clone(),resource:resource.clone(),revision,expires:live.auth_deadline,_callback:None};
+            redirect:redirect.clone(),resource:resource.clone(),remote_metadata:remote_metadata.clone(),revision,expires:live.auth_deadline,_callback:None};
         {let mut flows=self.flows.lock().await;if self.stopping.load(Ordering::SeqCst){return Err(auth_required());}flows.insert(attempt.to_owned(),flow);}
         if let Some(callback)=callback{
             let lease=callback.start(Arc::downgrade(self),self.stop.clone(),id.to_owned(),attempt.to_owned(),live.auth_deadline);
@@ -356,6 +363,10 @@ impl Manager {
             .append_pair("code_challenge",&challenge).append_pair("code_challenge_method","S256").append_pair("state",attempt);
         if let Some(resource)=resource{target.query_pairs_mut().append_pair("resource",&resource);}
         if provider==Provider::Railway{target.query_pairs_mut().append_pair("scope",railway::SCOPES).append_pair("prompt","consent");}
+        if let Some(metadata)=&remote_metadata{
+            if let Some(scope)=&metadata.scope{target.query_pairs_mut().append_pair("scope",scope);}
+            remote_auth::validate_browser_destination(target.as_str()).await?;
+        }
         drop(guard);
         if self.stopping.load(Ordering::SeqCst){self.flows.lock().await.remove(attempt);return Err(auth_required());}
         let mut browser=tokio::process::Command::new("/usr/bin/open");browser.arg(target.as_str()).stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).kill_on_drop(true);
@@ -367,18 +378,18 @@ impl Manager {
             if let Some(manager)=manager.upgrade(){manager.flows.lock().await.remove(&state);manager.end_auth_failure(&server,&state,"AUTHENTICATION_TIMEOUT","The browser login expired after ten minutes. Retry Authenticate when ready.").await;}}));
         Ok(())
     }
-    pub async fn provider_callback(self:&Arc<Self>,state:&str,code:Option<&str>,error:Option<&str>)->Result<(),ManagementError>{
+    pub async fn provider_callback(self:&Arc<Self>,state:&str,code:Option<&str>,error:Option<&str>,issuer:Option<&str>)->Result<(),ManagementError>{
         let flow=self.flows.lock().await.remove(state).ok_or_else(||ManagementError::new(400,"INVALID_REQUEST","This provider login is no longer pending."))?;
         let server=flow.server.clone();let attempt=flow.state.clone();
         let mut interrupted=provider_callback::AttemptGuard::new(Arc::downgrade(self),server.clone(),attempt.clone());
         let remaining=Duration::from_secs(flow.expires.saturating_sub(now()));
-        let result=tokio::time::timeout(remaining,self.finish_provider_callback(flow,code,error)).await
+        let result=tokio::time::timeout(remaining,self.finish_provider_callback(flow,code,error,issuer)).await
             .unwrap_or_else(|_|Err(ManagementError::new(400,"AUTHENTICATION_TIMEOUT","Provider sign-in exceeded its original deadline. Start a fresh sign-in.")));
         if let Err(ref failure)=result {self.end_auth_failure(&server,&attempt,failure.code,"Provider sign-in was denied, expired or could not be verified. Retry Authenticate to start fresh; review provider access and workspace/project consent.").await;}
         interrupted.disarm();
         result
     }
-    async fn finish_provider_callback(self:&Arc<Self>,flow:ProviderFlow,code:Option<&str>,error:Option<&str>)->Result<(),ManagementError>{
+    async fn finish_provider_callback(self:&Arc<Self>,flow:ProviderFlow,code:Option<&str>,error:Option<&str>,issuer:Option<&str>)->Result<(),ManagementError>{
         let gate=self.lock(&flow.server).await;let _guard=gate.lock().await;
         let live=self.live.lock().await.get(&flow.server).cloned().unwrap_or_default();
         let record=self.record(&flow.server)?;
@@ -387,15 +398,22 @@ impl Manager {
             ||!live.authenticating||error.is_some()||provider_kind(&record)!=flow.provider||self.stopping.load(Ordering::SeqCst){
             return Err(ManagementError::new(400,"AUTHENTICATION_FAILED","Provider login was denied, cancelled or its saved settings changed."));
         }
+        // Generic metadata may deliberately use distinct public authorization
+        // and token origins. Bind the callback issuer before transmitting either
+        // the authorization code or its PKCE verifier to that token endpoint.
+        if let Some(metadata)=&flow.remote_metadata{metadata.validate_response_issuer(issuer)?;}
         let code=code.filter(|c|!c.is_empty()&&c.len()<=8192).ok_or_else(auth_required)?;
         let mut fields=vec![("grant_type","authorization_code"),("code",code),("client_id",flow.client_id.as_str()),
             ("redirect_uri",flow.redirect.as_str()),("code_verifier",flow.verifier.as_str())];
         if let Some(resource)=flow.resource.as_deref(){fields.push(("resource",resource));}
-        let response=provider_send(UpstreamOperation::ProviderTokenExchange,self.http.post(&flow.token_endpoint).form(&fields)).await.map_err(|_|auth_required())?;
-        let token=bounded_json(response).await?;
+        let token=if let Some(metadata)=&flow.remote_metadata{remote_auth::token(metadata,&fields,false).await?}else{
+            let response=provider_send(UpstreamOperation::ProviderTokenExchange,self.http.post(&flow.token_endpoint).form(&fields)).await.map_err(|_|auth_required())?;
+            bounded_json(response).await?
+        };
         if flow.expires<=now()||self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
         let mut document=self.secrets(&flow.server)?;
         document["oauth"]=oauth_document(&token,flow.provider,&flow.client_id,&flow.token_endpoint,flow.resource.as_deref(),None)?;
+        if let Some(metadata)=&flow.remote_metadata{document["oauth"]["remote_metadata"]=serde_json::to_value(metadata).map_err(|_|store_error())?;}
         self.credentials.save(&flow.server,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         if self.verify_stored(&record).await.is_err(){self.verification_failed(&flow.server).await;return Err(verification_error());}
         if flow.expires<=now()||self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
@@ -409,9 +427,9 @@ impl Manager {
         self.schedule_refresh(flow.server).await;Ok(())
     }
     fn mark_oauth_verified(&self,record:&Value)->Result<(),ManagementError>{
-        if provider_kind(record)!=Provider::Railway{return Ok(());}
+        if !matches!(provider_kind(record),Provider::Railway|Provider::Remote){return Ok(());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let mut document=self.secrets(id)?;
-        if !document["oauth"]["access_token"].is_string()||document["oauth"]["provider"]!="railway"{return Err(auth_required());}
+        if !document["oauth"]["access_token"].is_string()||document["oauth"]["provider"]!=provider_kind(record).name(){return Err(auth_required());}
         document["oauth"]["verified"]=json!(true);
         self.credentials.save(id,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         if self.secrets(id)?["oauth"]["verified"]!=true{return Err(store_error());}Ok(())
@@ -431,24 +449,35 @@ impl Manager {
         let provider=provider_kind(record);
         // Railway rotates refresh tokens. An interrupted exchange must never
         // retry a possibly consumed token, including after an application restart.
-        if provider==Provider::Railway&&oauth["refresh_in_progress"]==true{return Err(auth_required());}
+        if matches!(provider,Provider::Railway|Provider::Remote)&&oauth["refresh_in_progress"]==true{return Err(auth_required());}
         if !oauth.is_object()||oauth["expires_at"].as_u64().is_none_or(|t|t>now()+60){return Ok(());}
         let refresh=oauth["refresh_token"].as_str().ok_or_else(auth_required)?;
         if oauth["provider"].as_str().is_some_and(|stored|stored!=provider.name()){return Err(auth_required());}
         let saved_endpoint=oauth["token_endpoint"].as_str().ok_or_else(auth_required)?;
+        let remote_metadata=if provider==Provider::Remote{
+            let metadata=remote_auth::Metadata::from_saved(&oauth["remote_metadata"],record["config"]["connection"]["url"].as_str().ok_or_else(auth_required)?)?;
+            let client_metadata=&document["oauth_client"];
+            if saved_endpoint!=metadata.token||oauth["resource"]!=metadata.resource||client_metadata["remote_metadata"]!=oauth["remote_metadata"]
+                ||client_metadata["registration"]["client_id"]!=oauth["client_id"]{return Err(auth_required());}
+            Some(metadata)
+        }else{None};
         let endpoint=if provider==Provider::Railway&&saved_endpoint==railway::TOKEN{railway::TOKEN.to_owned()}
-            else if provider==Provider::Linear{checked_linear_endpoint(saved_endpoint)?}else{return Err(auth_required());};
+            else if provider==Provider::Linear{checked_linear_endpoint(saved_endpoint)?}
+            else if let Some(metadata)=&remote_metadata{metadata.token.clone()}else{return Err(auth_required());};
         let client=oauth["client_id"].as_str().ok_or_else(auth_required)?;let resource=oauth["resource"].as_str();
         if provider==Provider::Linear&&resource!=record["config"]["connection"]["url"].as_str(){return Err(auth_required());}
         let mut fields=vec![("grant_type","refresh_token"),("refresh_token",refresh),("client_id",client)];
-        if provider==Provider::Linear{fields.push(("resource",resource.ok_or_else(auth_required)?));}
-        if provider==Provider::Railway{
+        if matches!(provider,Provider::Linear|Provider::Remote){fields.push(("resource",resource.ok_or_else(auth_required)?));}
+        if matches!(provider,Provider::Railway|Provider::Remote){
             document["oauth"]["refresh_in_progress"]=json!(true);
             self.credentials.save(id,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         }
-        let response=provider_send(UpstreamOperation::ProviderRefresh,self.http.post(&endpoint).form(&fields)).await.map_err(|_|auth_required())?;
-        let value=bounded_json(response).await?;
+        let value=if let Some(metadata)=&remote_metadata{remote_auth::token(metadata,&fields,true).await?}else{
+            let response=provider_send(UpstreamOperation::ProviderRefresh,self.http.post(&endpoint).form(&fields)).await.map_err(|_|auth_required())?;
+            bounded_json(response).await?
+        };
         document["oauth"]=oauth_document(&value,provider,client,&endpoint,resource,Some(refresh))?;
+        if let Some(metadata)=&remote_metadata{document["oauth"]["remote_metadata"]=serde_json::to_value(metadata).map_err(|_|store_error())?;}
         self.credentials.save(id,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         self.verify_stored(record).await?;self.mark_oauth_verified(record)?;
         if record["config"]["kind"]!="remote"{
@@ -507,9 +536,9 @@ fn validate_bindings(value:&Value,header:bool,record:&Value)->Result<(),Manageme
     if !record["credentials"].as_array().is_some_and(|a|a.iter().any(|v|v["name"]==reference)){return Err(invalid_config());}
 }Ok(())}
 fn safe_argument_edit(record:&Value,args:&[String])->bool{let name=record["config"]["package"]["name"].as_str().unwrap_or("");match name{"@modelcontextprotocol/server-filesystem"=>!args.is_empty()&&args.iter().all(|s|Path::new(s).is_absolute()&&!s.contains(['\0','\r','\n'])) ,"mcp-server-time"=>args.iter().all(|s|s.strip_prefix("--local-timezone=").is_some_and(|v|!v.is_empty()&&v.chars().all(|c|c.is_ascii_alphanumeric()||"/_+-".contains(c)))),_=>args.is_empty()}}
-#[derive(Clone,Copy,PartialEq,Eq)]enum Provider{None,Tavily,Linear,Github,Railway,Unknown}
-impl Provider {fn name(self)->&'static str{match self{Self::None=>"none",Self::Tavily=>"tavily",Self::Linear=>"linear",Self::Github=>"github",Self::Railway=>"railway",Self::Unknown=>"unknown"}}}
-fn provider_kind(record:&Value)->Provider{if railway::matches_record(record){return Provider::Railway;}match record["config"]["package"]["name"].as_str(){Some("@modelcontextprotocol/server-everything"|"@modelcontextprotocol/server-filesystem"|"mcp-server-time")=>Provider::None,Some("tavily-mcp")=>Provider::Tavily,Some("@modelcontextprotocol/server-github")=>Provider::Github,_=>{let url=record["config"]["connection"]["url"].as_str().and_then(|s|url::Url::parse(s).ok());match url.as_ref().and_then(url::Url::host_str){Some("mcp.linear.app")=>Provider::Linear,Some("mcp.tavily.com")=>Provider::Tavily,Some("api.githubcopilot.com")=>Provider::Github,_=>Provider::Unknown}}}}
+#[derive(Clone,Copy,PartialEq,Eq)]enum Provider{None,Tavily,Linear,Github,Railway,Remote,Unknown}
+impl Provider {fn name(self)->&'static str{match self{Self::None=>"none",Self::Tavily=>"tavily",Self::Linear=>"linear",Self::Github=>"github",Self::Railway=>"railway",Self::Remote=>"remote",Self::Unknown=>"unknown"}}}
+fn provider_kind(record:&Value)->Provider{if railway::matches_record(record){return Provider::Railway;}match record["config"]["package"]["name"].as_str(){Some("@modelcontextprotocol/server-everything"|"@modelcontextprotocol/server-filesystem"|"mcp-server-time")=>Provider::None,Some("tavily-mcp")=>Provider::Tavily,Some("@modelcontextprotocol/server-github")=>Provider::Github,_=>{let url=record["config"]["connection"]["url"].as_str().and_then(|s|url::Url::parse(s).ok());match url.as_ref().and_then(url::Url::host_str){Some("mcp.linear.app")=>Provider::Linear,Some("mcp.tavily.com")=>Provider::Tavily,Some("api.githubcopilot.com")=>Provider::Github,_ if record["config"]["kind"]=="remote"=>Provider::Remote,_=>Provider::Unknown}}}}
 fn checked_linear_endpoint(value:&str)->Result<String,ManagementError>{let u=url::Url::parse(value).map_err(|_|auth_required())?;if u.scheme()!="https"||!matches!(u.host_str(),Some("mcp.linear.app"|"linear.app"|"api.linear.app"))||!u.username().is_empty()||u.password().is_some()||u.fragment().is_some(){return Err(auth_required());}Ok(value.to_owned())}
 async fn bounded_json(mut response:reqwest::Response)->Result<Value,ManagementError>{if !response.status().is_success()||response.content_length().is_some_and(|n|n>1024*1024){return Err(auth_required());}let mut bytes=vec![];while let Some(chunk)=response.chunk().await.map_err(|_|auth_required())?{if bytes.len()+chunk.len()>1024*1024{return Err(auth_required());}bytes.extend_from_slice(&chunk);}serde_json::from_slice(&bytes).map_err(|_|auth_required())}
 fn oauth_document(token:&Value,provider:Provider,client:&str,endpoint:&str,resource:Option<&str>,prior_refresh:Option<&str>)->Result<Value,ManagementError>{
