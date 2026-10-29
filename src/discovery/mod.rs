@@ -87,15 +87,21 @@ impl DiscoveryService {
         let package_arguments = if row["type"] == "npm" {
             if args.first().is_some_and(|a| a == "-y" || a == "--yes") { args.remove(0); }
             args.iter().skip(1).cloned().collect()
-        } else if row["type"] == "pypi" { args.iter().skip(1).cloned().collect() } else { Vec::new() };
+        } else if row["type"] == "pypi" { args.iter().skip(if args.first().is_some_and(|arg|arg=="--from"){3}else{1}).cloned().collect() } else { Vec::new() };
         let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
         let default_timeout_ms=source_default_timeout_ms(harness,definition).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?;
         let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":default_timeout_ms,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
         if row["type"] == "remote" {
             let mut headers=headers;
             if let Some(reference)=definition["bearer_token_env_var"].as_str(){if !headers.iter().any(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))){headers.push(json!({"name":"Authorization","credential_ref":reference}));}}
-            let endpoint=definition["url"].as_str().and_then(|s|Url::parse(s).ok()).filter(supported_remote_endpoint).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?;
-            config["executable"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
+            let endpoint=if let Some(url)=definition["url"].as_str(){
+                Url::parse(url).ok().filter(supported_remote_endpoint).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?
+            }else{
+                mcp_remote(&args).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?.endpoint
+            };
+            // A recognized stdio bridge becomes the existing native remote adapter.
+            // Neither its source header arguments nor its environment values are saved.
+            config["executable"]=Value::Null;config["args"]=json!([]);config["working_directory"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
         }
         Ok(CapturedDefinition { row, config, package_arguments })
     }
@@ -426,7 +432,6 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             || !matches!(url.scheme(), "http" | "https")
             || !url.username().is_empty()
             || url.password().is_some()
-            || url.query().is_some()
             || url.fragment().is_some()
             || url.host_str().is_none()
             || !supported_remote_endpoint(&url)
@@ -509,9 +514,21 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             };
             (c.to_owned(), args)
         };
-        if !literal(&command) || args.iter().any(|a| !literal(a)) {
+        if !literal(&command) {
             return blocked(row, false);
         }
+        // These bridge forms are parsed without executing the bridge, resolving
+        // environment expressions or retaining its possibly secret header values.
+        if command == "npx" && is_mcp_remote(&args) {
+            if working.is_some() { return blocked(row, false); }
+            let Ok(remote)=mcp_remote(&args) else{return blocked(row,false);};
+            row["type"]=json!("remote");
+            row["credential_variables"]=json!([]);
+            row["connection"]=json!({"transport":remote.transport,"origin":remote.endpoint.origin().ascii_serialization(),"header_names":remote.headers});
+            row["status"]=json!("supported");row["selected_by_default"]=json!(enabled!=Some(false));
+            return row;
+        }
+        if args.iter().any(|a| !literal(a)) { return blocked(row,false); }
         if command == "npx" {
             let args = if args.first().is_some_and(|s| s == "-y" || s == "--yes") {
                 &args[1..]
@@ -524,18 +541,15 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             let Some((package, version)) = npm_package(&args[0]) else {
                 return blocked(row, false);
             };
-            if args.len() > 1 && (package != "@modelcontextprotocol/server-filesystem" || args[1..].iter().any(|a| !Path::new(a).is_absolute())) { return blocked(row, false); }
+            if !supported_package_arguments(package,&args[1..]) { return blocked(row, false); }
             row["type"] = json!("npm");
             row["package"] = json!(package);
             row["version_spec"] = json!(version);
         } else if command == "uvx" {
-            if args.is_empty() {
-                return blocked(row, false);
-            }
-            let Some((package, version)) = python_package(&args[0]) else {
+            let Some((package, version, package_args)) = python_launch(&args) else {
                 return blocked(row, false);
             };
-            if args.len() > 1 && (package != "mcp-server-time" || args[1..].iter().any(|a| !a.starts_with("--local-timezone=") || !a[17..].chars().all(|c| c.is_ascii_alphanumeric() || "/_+-".contains(c)))) { return blocked(row, false); }
+            if !supported_package_arguments(package,package_args) { return blocked(row, false); }
             row["type"] = json!("pypi");
             row["package"] = json!(package);
             row["version_spec"] = json!(version);
@@ -572,10 +586,89 @@ fn header_name(s: &str) -> bool {
 /// Only recognized public endpoint paths may enter ordinary non-secret records.
 /// Arbitrary path segments can carry credentials, even when no query is present.
 pub(crate) fn supported_remote_endpoint(url:&Url)->bool {
+    if !matches!(url.scheme(),"https"|"http") || url.host_str().is_none()
+        || !url.username().is_empty() || url.password().is_some() || url.fragment().is_some()
+        || !literal(url.as_str()) { return false; }
+    if url.scheme()=="http" && !url.host_str().is_some_and(|host|host=="localhost" || host.parse::<std::net::IpAddr>().is_ok_and(|ip|ip.is_loopback())) { return false; }
+    if url.query().is_some() && !huggingface_query(url) { return false; }
     matches!(url.path(),"/mcp"|"/mcp/"|"/sse"|"/sse/"|"/api/mcp"|"/api/mcp/")
         || (url.host_str()==Some("mcp.linear.app") && url.path()=="/mcp/readonly")
-        || (url.scheme()=="https" && url.host_str()==Some("mcp.railway.com")
+        || (url.scheme()=="https" && matches!(url.host_str(),Some("mcp.railway.com"|"mcp.miro.com"|"mcp.vercel.com"))
             && url.port_or_known_default()==Some(443) && url.path()=="/")
+}
+/// The HF public endpoint documents these non-secret switches. Keep their exact
+/// spelling/order in the saved URL; no arbitrary query key or value is admitted.
+fn huggingface_query(url:&Url)->bool {
+    if url.scheme()!="https" || url.host_str()!=Some("huggingface.co")
+        || url.port_or_known_default()!=Some(443) || !matches!(url.path(),"/mcp"|"/mcp/") {return false;}
+    let Some(query)=url.query().filter(|value|!value.is_empty()&&value.len()<=1024) else{return false;};
+    let mut seen=BTreeSet::new();
+    query.split('&').all(|part|{
+        let (name,value)=part.split_once('=').unwrap_or((part,""));
+        if !seen.insert(name){return false;}
+        match name {
+            "login"=>value.is_empty(),
+            "no_image_content"=>matches!(value,"true"|"false"),
+            "bouquet"=>matches!(value,"openai"|"proxy"),
+            "mix"=>value=="proxy",
+            _=>false,
+        }
+    })
+}
+struct RemoteBridge { endpoint:Url, transport:&'static str, headers:Vec<String> }
+fn npx_arguments(args:&[String])->&[String] {
+    if args.first().is_some_and(|arg|matches!(arg.as_str(),"-y"|"--yes")){&args[1..]}else{args}
+}
+fn is_mcp_remote(args:&[String])->bool {
+    npx_arguments(args).first().and_then(|arg|npm_package(arg)).is_some_and(|(name,_)|name=="mcp-remote")
+}
+fn known_http_bridge_endpoint(url:&Url)->bool {
+    url.scheme()=="https" && url.port_or_known_default()==Some(443)
+        && matches!(url.host_str(),Some("v0.app"|"mcp.vercel.com"|"mcp.miro.com"|"huggingface.co"|"mcp.railway.com"|"mcp.linear.app"))
+        && !matches!(url.path(),"/sse"|"/sse/")
+}
+fn mcp_remote(args:&[String])->Result<RemoteBridge,()> {
+    let args=npx_arguments(args);
+    if args.first().and_then(|arg|npm_package(arg)).is_none_or(|(name,_)|name!="mcp-remote"){return Err(());}
+    let endpoint=args.get(1).filter(|value|literal(value)).and_then(|value|Url::parse(value).ok()).filter(supported_remote_endpoint).ok_or(())?;
+    let mut headers=BTreeMap::new();let mut transport=None;let mut index=2;
+    while index<args.len(){
+        match args[index].as_str(){
+            "--header"=>{
+                let value=args.get(index+1).filter(|value|value.len()<=256*1024&&!value.contains(['\0','\r','\n'])).ok_or(())?;
+                let (name,_)=value.split_once(':').ok_or(())?;
+                if !header_name(name) || reserved_remote_header(name) || headers.insert(name.to_ascii_lowercase(),name.to_owned()).is_some(){return Err(());}
+            },
+            "--transport" if transport.is_none()=>{transport=Some(match args.get(index+1).map(String::as_str){Some("http-only")=>"streamable_http",Some("sse-only")=>"sse",_=>return Err(())});},
+            _=>return Err(()),
+        }
+        index+=2;
+    }
+    let transport=match transport{Some(value)=>value,None if known_http_bridge_endpoint(&endpoint)=>"streamable_http",None=>return Err(())};
+    Ok(RemoteBridge{endpoint,transport,headers:headers.into_values().collect()})
+}
+fn reserved_remote_header(name:&str)->bool {
+    let lower=name.to_ascii_lowercase();
+    ["host","content-type","content-length","accept","connection","origin","cookie","transfer-encoding","te","trailer","upgrade"].contains(&lower.as_str()) || lower.starts_with("mcp-") || lower.starts_with("proxy-")
+}
+fn supported_package_arguments(package:&str,args:&[String])->bool {
+    if args.is_empty(){return true;}
+    match package {
+        "@modelcontextprotocol/server-filesystem"=>args.iter().all(|arg|Path::new(arg).is_absolute()),
+        "@modelcontextprotocol/server-everything"=>args.len()==1&&args[0]=="stdio",
+        "mcp-server-time"=>args.iter().all(|arg|arg.strip_prefix("--local-timezone=").is_some_and(|zone|!zone.is_empty()&&zone.chars().all(|c|c.is_ascii_alphanumeric()||"/_+-".contains(c)))),
+        _=>false,
+    }
+}
+fn python_launch(args:&[String])->Option<(&str,Option<&str>,&[String])> {
+    if args.first()?.as_str()=="--from" {
+        let (package,version)=python_package(args.get(1)?)?;
+        if package!="mcp-server-time" || args.get(2)?.as_str()!=package {return None;}
+        Some((package,version,&args[3..]))
+    }else{
+        let (package,version)=python_package(&args[0])?;
+        Some((package,version,&args[1..]))
+    }
 }
 /// Seed Fetch's own wait duration from a documented explicit source setting.
 /// These client settings are not observations of a server's intrinsic limit.
@@ -720,7 +813,7 @@ mod tests {
         let p = t.path().join("config.json");
         write(
             &p,
-            r#"{"mcpServers":{"remote":{"type":"http","url":"https://example.com/private/path","headers":{"authorization":"secret-header","Authorization":"second-secret","X-Example":"hidden"}},"unsafe":{"url":"https://user:password@example.com/mcp?token=hidden"}}}"#,
+            r#"{"mcpServers":{"remote":{"type":"http","url":"https://example.com/mcp","headers":{"authorization":"secret-header","Authorization":"second-secret","X-Example":"hidden"}},"unsafe":{"url":"https://user:password@example.com/mcp?token=hidden"}}}"#,
         );
         let v = DiscoveryService::new(t.path().to_owned(), None)
             .scan(Some(&p))

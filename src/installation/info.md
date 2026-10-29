@@ -12,6 +12,15 @@ packages/servers, packages/runtimes and packages/cache stay below that root;
 existing local scripts remain in place and remote services remain remote.
 No installation was performed to verify these paths in this change.
 
+October 29 import follow-up: recognized `mcp-remote` source forms are normalized
+by discovery into native remote records. Preparation saves those fixed endpoints
+and fresh header credential references without installing the bridge or copying
+source header/environment values. The shared saved-record validator admits the
+same narrow public endpoint/query profiles as discovery. A repeated successful
+source path/name reuses the existing record and preserves its saved destination
+and Fetch settings even if the source definition later changes. Disposable
+fixture coverage exercises this without package downloads or connections.
+
 Official @railway/mcp-server imports also prepare pinned @railway/cli5.71.0 in
 a separate railway-cli dependency folder under their private installation. This
 provides the executable required by the MCP shim without using personal PATH or

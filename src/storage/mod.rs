@@ -227,7 +227,7 @@ fn valid_record(id: &str, v: &Value) -> bool {
         let conn = &c["connection"];
         if !keys(conn, &["url", "transport", "headers"])
             || !matches!(conn["transport"].as_str(), Some("streamable_http" | "sse"))
-            || !conn["url"].as_str().is_some_and(|u| url::Url::parse(u).is_ok_and(|u| matches!(u.scheme(), "https" | "http") && u.host_str().is_some() && u.username().is_empty() && u.password().is_none() && u.fragment().is_none() && u.query().is_none() && crate::discovery::supported_remote_endpoint(&u)))
+            || !conn["url"].as_str().is_some_and(|u| url::Url::parse(u).is_ok_and(|u| crate::discovery::supported_remote_endpoint(&u)))
             || !conn["headers"].as_array().is_some_and(|a| a.iter().all(|x| keys(x, &["name", "credential_ref"]) && nonempty(&x["name"]) && nonempty(&x["credential_ref"]))) { return false; }
     }
     if let Some(e) = c.get("execution") {
