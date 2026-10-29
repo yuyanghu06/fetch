@@ -1,5 +1,12 @@
 # Fetch — current project context
 
+Latest Figma expansion: 153 current UI states/specimens now cover native and
+browser branches, all nine inline-auth phases, individual Settings outcomes,
+widget states and OS-owned source contracts. The shared credential editor matches
+current src/ui/authentication.rs and its Settings/inline reuse. See
+[the complete UI coverage index](docs/UI_STATE_COVERAGE.md). These are source
+fixtures with bounded visual review, not runtime acceptance or every data permutation.
+
 The user reaffirmed a fully working selected MVP. Source audit found required
 authentication/credential/import workflows incomplete; see [actual gaps](docs/testing/MVP_GAPS.md).
 Inline auth UI and safe HTTP diagnostics are implemented in source; Railway
@@ -8,6 +15,24 @@ implemented. Final binary builds in4.66s; independent scoped source acceptance.
 Local running processes need explicit Restart after token refresh.
 No runtime/MCP/provider test result is claimed.
 
+Latest Figma correction, October 28: the user rejected the styled proposals and
+requested literal copies of the current UI for future iteration. The first three
+Figma pages now hold 13 native and four browser copies, current shared components,
+and an unmodified screenshot of the already-open empty Servers window. Use
+[the current inventory](docs/FIGMA.md); earlier styled boards are archived.
+Keep actual single-column/scrolling layouts and Iced controls. Native-font
+rendering requires a calibrated Figma substitute, explicitly documented.
+
+Confirmed October 28 UI rule: commonly reused elements must be shared components
+in Figma and in code. Reuse the seven defined families and a common theme instead
+of per-page copies. See [shared component definitions](docs/SHARED_UI_COMPONENTS.md).
+The Figma components exist; extracting their code equivalents remains pending.
+
+Initial October 28 Figma delivery (subsequently rejected as too styled): 17 editable screen/state
+mockups for every current native page and browser connection page, including
+populated sample data, empty/busy/error states, seven shared component families
+and 62 native prototype links. Those proposals are archived; use the corrected
+current-app copies linked above. App source and runtime acceptance are unchanged.
 
 Official Figma project (user-selected October 28, 2026): [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1).
 Use this existing file for ongoing Fetch design work. See [Figma reference](docs/FIGMA.md).

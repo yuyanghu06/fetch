@@ -19,6 +19,28 @@
 - [x] Independent source verification/evaluation ACCEPT and binary compilation; execution limits preserved.
 - [ ] Later verify actual browser/manual/native/CLI flows in authorized isolation; Railway is implemented in source, not runtime-proven.
 
+## Figma page designs
+
+- [x] Expand to 153 current UI states/specimens: all nine inline-auth phases, individual settings/credentials outcomes, setup/server/catalog variants, browser errors and widget/native contracts.
+- [x] Independently inventory source and inspect representative Figma frames; apply evaluator corrections and accept the reviewed scope.
+- [x] Publish [UI_STATE_COVERAGE.md](../docs/UI_STATE_COVERAGE.md) with every node and finite-branch limits; reuse the actual shared credential editor.
+- [ ] Keep the state index and affected shared components aligned when UI source changes; user feedback and runtime acceptance remain separate.
+
+- [x] Correct rejected styled boards: 13 current native states and four current browser HTML states, with actual source controls/layout/scrolling.
+- [x] Include the unchanged screenshot of the already-open app; distinguish screenshot evidence from source-derived sample states and document font limits.
+- [x] Archive rejected designs; point shared-component/code guidance at current widgets rather than added badges/dashboard layouts.
+- [ ] User review of corrected current-UI copies and any requested changes. The following original styled-delivery entries describe history, not approval of that styling.
+
+- [x] Define each shared family and record required code reuse in AGENTS.md, the component registry, native UI guide and Figma descriptions.
+- [ ] During selected UI implementation, extract/reuse matching shared Rust/Iced and browser rendering helpers and theme values; code refactor is not yet implemented.
+
+- [x] Build editable designs for all four current native pages and their key states in the official file.
+- [x] Include populated in-use data, active/queued calls, discovery, preparation, errors/retry, tool definitions, settings and browser approval/callback states: 17 frames total.
+- [x] Use linked shared Window header, Button, Server card, Status, Notice, Field and Checkbox components.
+- [x] Add native navigation/workflow prototype links; visually inspect screenshots and correct clipped content.
+- [ ] User review of visual proposals; no app implementation changes are implied. See [inventory](../docs/FIGMA.md).
+
+Previously pending native/client/provider verification below remains pending.
 
 ## Official Figma project
 

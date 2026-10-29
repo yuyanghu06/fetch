@@ -1,5 +1,14 @@
 # Milestone records
 
+The figma-app-pages scope now includes the 153-state current-UI library; the
+[coverage index](../docs/UI_STATE_COVERAGE.md) traces all nodes and source branches.
+Independent source and representative visual acceptance are separate from
+operational-MVP/runtime work recorded below.
+
+[figma-app-pages](figma-app-pages/info.md) records the 17 editable app/browser
+design frames, populated sample data, shared components and visual inspection.
+It does not change application source or establish runtime test acceptance.
+
 [Snapshot](milestone.md) records current state and actual evidence; [to-do](to-do.md) tracks unfinished work. [The first developer foundation](mcp-dev-foundation/info.md) is implemented and independently accepted. [Architecture work](mcp-mvp-architecture/info.md) remains a specification/reference milestone, not another build-approval gate. [History](history/info.md) is append-only.
 
 D74 authorizes source implementation and pushes without release. Native authorization/lasting identity/Keychain, preparation, MCP sharing and the desktop interface remain unfinished. Main MCP connection tests are deferred to the later joint isolated environment. The developer default is https://localhost:53671. Previous context/tasks and journal entries stay historical.

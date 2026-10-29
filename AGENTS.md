@@ -41,9 +41,37 @@ complaint about incompleteness does not itself authorize those actions.
 
 Use [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1) as Fetch's official Figma project for ongoing design work. Continue
 working in this file unless the user selects a different project. File key:
-`OcgOlmfuoSTJMHTeN753TF`; linked starting node: `0:1`.
+`OcgOlmfuoSTJMHTeN753TF`. The original node `0:1` is now an archived rejected
+proposal. Current app copies begin at `20:484` (empty Servers frame `23:487`).
 See [the Figma reference](docs/FIGMA.md). Recording this destination does not
 approve every design in the file or request implementation changes.
+
+## Shared UI components — confirmed October 28, 2026
+
+Repeated interface elements must be shared components in both Figma and code.
+Read [the shared UI component definitions](docs/SHARED_UI_COMPONENTS.md) before
+UI work. Reuse the current Navigation, Button, Text input, Checkbox, Server card,
+Message and Tool disclosure definitions; extend the registry as repeated patterns appear.
+Pages pass data, state and callbacks to shared rendering functions/modules
+rather than duplicating layout and styling. Keep common visual values in a
+shared theme. Native Rust/Iced and browser HTML use appropriate shared helpers
+within each platform; this does not select a new framework. Preserve API-first
+behavior and existing execution restrictions. This records the implementation
+requirement, not completion of a code refactor.
+
+Current-app copying rule (October 28 correction): the user rejected the styled
+mockups and wants literal copies of the existing app before changing it. Use
+current source plus the captured window as the reference. Preserve hierarchy,
+controls, text, spacing, colors and scrolling. Do not substitute dashboard
+metrics, badges, colored alerts, client cards or two-column Settings. Those
+earlier designs are archived. Document font/platform limitations honestly.
+
+Keep [the current UI state coverage index](docs/UI_STATE_COVERAGE.md) aligned
+with future UI changes. Cover each conditional rendering branch and shared
+control state with source-driven specimens, including inline authentication and
+individual Settings outcomes. Reuse the actual shared credential_editor in code
+and Figma; do not duplicate it per page. Distinguish source fixtures and OS-owned
+contracts from observed runtime screenshots or exhaustive value combinations.
 
 
 Read [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md), [NOTES.md](NOTES.md), and the architecture index at [docs/architecture/README.md](docs/architecture/README.md) before planning or implementing changes. Read its linked decisions, API contract, and open questions before continuing architecture work.

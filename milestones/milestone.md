@@ -37,6 +37,77 @@ selected features as scope deferrals. [Diagnostics guide](../docs/testing/DIAGNO
 - [Independent source verification](history/2026-10-28_21-52-54-895007-tester-railway-callback-and-diagnostics-source-acceptance.md)
 - [Independent final acceptance](history/2026-10-28_21-52-54-895117-evaluator-accept-scoped-railway-authentication-and-logging.md)
 
+## Latest Figma delivery — complete current UI state library
+
+The official file now contains 153 source-driven states/specimens: the 17-frame
+baseline plus 21 authentication, 28 individual Settings, 26 setup/server,
+25 browser request/error, six native-surface contracts and 30 control/message/
+minimum-window specimens. All nine current authentication phases and the shared
+credential_editor are represented. Current UI structure and scrolling remain;
+native OS appearance is explicitly unobserved rather than fabricated.
+
+Source inventory and representative Figma review independently accepted the
+reviewed scope after corrections. No application source/runtime action was part
+of this design pass. Concurrent operational-MVP implementation above is separate.
+See [the complete coverage/node index](../docs/UI_STATE_COVERAGE.md) and
+[integration record](history/2026-10-28_21-57-19-222233-orchestrator-complete-current-ui-state-library.md). User visual feedback and previous
+runtime acceptance remain open. Current SF Pro rendering limitations remain.
+
+## Prior correction — literal current-app UI baseline
+
+The user rejected the styled mockups. Current boards now reproduce the source's
+actual UI: 13 native states, four browser HTML states, seven current native shared
+component families and separate browser form controls. An unmodified screenshot
+of the already-open empty Servers window sits beside its editable counterpart.
+Current navigation, Iced controls, plain text status/errors, single-column forms
+and scrolling are preserved. There are 59 native prototype links.
+
+The original three boards are archived as rejected proposals; do not implement
+their added dashboard, badges, alert panels or two-column Settings. Figma cannot
+render native SF Pro: calibrated editable Arimo is used with original sizes in
+metadata. Other states are source-based fixtures, not observed runtime states.
+No app launch/operation, source change, test, build or managed connection occurred.
+See [current inventory](../docs/FIGMA.md) and
+[correction record](history/2026-10-28_21-17-10-000001-orchestrator-literal-current-ui-correction.md).
+
+## Active fix — inline server authentication
+
+Authenticate currently drops required/unknown outcomes into a generic Saved notice.
+Implement dedicated per-server progress/results and shared inline credential entry
+through existing native Settings APIs. Railway has no supported login adapter;
+show that blocker honestly. Planner and initial source complete; independent source review underway. First binary
+build failed on a shared spacing type; correction/rebuild pending.
+No tests or live authentication started. [Scope](inline-server-authentication/info.md).
+[Independent source findings](history/2026-10-28_21-20-58-629950-tester-inline-authentication-source-findings.md).
+[Coder/first-build record](history/2026-10-28_21-20-38-780249-coder-inline-authentication-source.md).
+[Planner record](history/2026-10-28_21-17-07-990957-planner-inline-server-authentication.md).
+
+## Latest requirement — shared UI components in code
+
+The user explicitly requires commonly reused UI elements to be defined once and
+shared in code as well as Figma. Seven families now have responsibility/input
+definitions and a recorded reuse rule in [the component registry](../docs/SHARED_UI_COMPONENTS.md),
+AGENTS.md, the native UI guide and Figma descriptions/guide. Shared theme values
+and platform-appropriate rendering helpers are required. Figma instances exist;
+code extraction is pending. No application source or execution changed.
+[Pass record](history/2026-10-28_20-49-03-000001-orchestrator-shared-ui-code-requirement.md).
+
+## Historical delivery — styled designs, subsequently rejected
+
+The official Figma file now contains 17 editable frames: 13 current native
+page/state designs and four browser approval/callback states. Populated sample
+data covers running servers, active/queued calls, partial tool catalogs,
+discovery, installation and retry, settings, credentials and app connection.
+Seven shared component families are used as linked instances across pages;
+62 native prototype links cover navigation and selected workflow transitions.
+
+Screenshots were inspected and clipped content corrected; all native page body
+bounds fit 1080×760 frames. This is Figma design inspection, not independent
+review or app/runtime testing. Designs remain proposals; no application source,
+personal state, trust, build or managed MCP execution changed.
+See [inventory](../docs/FIGMA.md), [scope](figma-app-pages/info.md) and
+[pass record](history/2026-10-28_20-46-58-000001-orchestrator-complete-figma-pages.md).
+Earlier unfinished runtime checks remain below.
 
 ## Latest documentation — official Figma project
 

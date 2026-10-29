@@ -1,0 +1,10 @@
+# Define shared UI elements and required code reuse
+
+- Local timestamp / acting role / milestone: October 28, 2026, 20:49:03 EDT / Orchestrator / figma-app-pages.
+- Requested scope: define commonly used shared elements and record that their equivalents must also be shared components in code.
+- Starting repository state: prior design pass documentation remains uncommitted; 17 Figma frames and seven shared component families already exist. Preserve those changes.
+- Work performed / changed files: added docs/SHARED_UI_COMPONENTS.md with component links, responsibilities, inputs/states and implementation/review guidance. Updated AGENTS.md, PROJECT_CONTEXT.md, NOTES.md, docs/FIGMA.md, docs/info.md, src/ui/info.md, milestone snapshot/to-do/scope and this history entry. Added descriptions to seven Figma masters/sets and an explicit code-reuse statement to the component-page guide.
+- Decisions: confirmed requirement, not an inferred preference. Reuse shared rendering functions/modules and theme values; pages pass data, state and callbacks. Use platform-appropriate Rust/Iced and browser HTML helpers without introducing a framework or moving backend authority into UI components.
+- Checks and evidence: inspected existing component definitions and source/documentation context. Figma mutation returned all seven affected master/set IDs and the guide/new text ID. Read the documentation diff after writing. No builds, tests, formatting/validation scripts, application launch or managed MCP connections ran.
+- Resulting state / acceptance: shared element definitions and future-code requirement recorded. Existing Figma components remain linked; no application source refactor or Code Connect mapping is claimed. No personal settings, credentials or trust changes.
+- Remaining work and handoff: extract/reuse shared code components when UI implementation is selected, then verify representative reused states under the existing execution rules. Preserve pending user visual review and runtime/client/provider acceptance tasks.

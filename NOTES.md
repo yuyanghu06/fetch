@@ -894,6 +894,58 @@ The reference is recorded in AGENTS.md, PROJECT_CONTEXT.md and
 [docs/FIGMA.md](docs/FIGMA.md). This records the destination; no file contents
 were inspected or changed and no application changes were requested.
 
+## October 28, 2026 — All current app pages designed in Figma
+
+The user requested Figma versions of every current page, then explicitly asked
+for populated in-use examples and shared components for repeated elements.
+The official blank file now contains 13 native page/state frames and four browser
+connection/result frames, with sample servers, active/queued calls, tool JSON,
+discovery, installation/preparation/retry, credentials/settings, client setup and
+approval data. Seven shared component families power the screens; native
+navigation and selected workflow transitions have 62 prototype links.
+
+Screens were visually inspected and clipping corrected. Library import was
+denied; local components are used. Inter replaces unavailable SF Pro rendering.
+These are design proposals, not accepted implementation changes or runtime test
+evidence. No application source, personal config/credentials, trust, build,
+Fetch execution or managed-server connection changed. See [Figma inventory](docs/FIGMA.md).
+
+## October 28, 2026 — Shared UI elements must also be shared in code
+
+Confirmed by the user's explicit request. Define commonly used elements once
+and reuse them in Figma and application code. The initial registry is Window
+header, Button, Server card, Status, Notice, Field and Checkbox. Their
+responsibilities, inputs, states and reuse rule are documented in
+[SHARED_UI_COMPONENTS.md](docs/SHARED_UI_COMPONENTS.md), AGENTS.md and the Figma
+component descriptions/guide. Native Rust/Iced and browser HTML use appropriate
+shared rendering helpers within each platform and common visual values.
+
+This is a confirmed implementation requirement; it does not mean the current UI
+has already been refactored. No application source, build, test, app launch,
+personal settings or managed MCP behavior changed in this documentation pass.
+
+## October 28, 2026 — Replace styled designs with the literal current UI
+
+The user explicitly rejected the earlier Figma mockups as stylized versions and
+wants the actual current UI reproduced before frequent future changes. The
+earlier three boards are now archived as rejected proposals. The first three
+pages contain 13 source-faithful native states, four current browser HTML states
+and current shared components. An unmodified screenshot of the existing empty
+Servers window is included beside the editable copy. No app was launched or
+operated; other populated states are reconstructed from source using fixtures.
+
+Preserved current navigation, white background, purple Iced buttons, gray server
+containers, plain text errors/status, full-width inputs, single-column Settings,
+whole-page scrolling and the fixed Install footer. Shared code reuse remains a
+confirmed requirement, now tied to current widgets rather than the rejected
+styled badge/card layouts. Native code extraction is still pending.
+
+Figma cannot render native SF Pro here; editable Arimo is calibrated against the
+captured window, with source sizes retained as metadata. Exact native rendering
+is preserved in the screenshot. Browser/OS controls also vary by platform.
+No app-source, API, credential, personal-config/trust, managed-MCP connection,
+build or test action occurred. See [current inventory](docs/FIGMA.md).
+
 
 ## October 28, 2026 — Working MVP, Railway authentication and logging
 
@@ -936,3 +988,28 @@ logs are implemented. Tests and actual browser/provider/CLI/MCP/native behavior
 remain unrun. Final binary compiles exit0 in4.66s; separate Tester and Evaluator
 source acceptance covers this scoped fix only. Full MVP gaps remain tracked;
 no release or personal client/trust/state edits occurred.
+
+## October 28, 2026 — Full current UI state library
+
+The user requested literal coverage of every currently displayable app element,
+especially authentication and individual Settings. The official Figma file now
+has 153 source-driven states/specimens across nine current boards. This includes
+all nine current inline-authentication phases, manual/browsing/reconciliation
+states, the actual shared credential editor, call-limit/config/credential
+validation and outcomes, setup/restart/catalog conditions, all 21 hard-coded
+browser HTML errors, widget interaction states and a minimum window specimen.
+
+The native/OS board records exact source-owned reasons and configuration rather
+than fabricating Touch ID/password/file-navigation pixels. Dynamic values and
+error strings use reusable slots; this does not enumerate every permutation.
+The existing empty Servers capture remains the only direct native runtime image.
+Source changed concurrently; the latest module includes NeedsVerification and
+Railway browser support. Unsupported auth therefore uses a generic fixture.
+Credential rows say stored/missing, and remove-only verification failure is shown
+honestly. Settings and inline authentication reuse the same source-backed editor.
+
+Independent source and representative Figma review accepted the reviewed scope
+after corrections. This pass changed Figma and project documentation only; no
+app execution, build/test, provider/MCP/credential/trust or personal-setting
+operation occurred. Other concurrent implementation work is separate. See
+[the full state/node index](docs/UI_STATE_COVERAGE.md).

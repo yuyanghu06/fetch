@@ -1,5 +1,18 @@
 # Native Fetch interface
 
+UI reuse requirement (confirmed October 28): use shared rendering functions or
+modules for repeated navigation, buttons, server cards, plain messages/status,
+text inputs, tool disclosures and checkboxes, with common theme values. Pages supply
+data, state and callbacks. See [the component definitions](../../docs/SHARED_UI_COMPONENTS.md).
+Matching Figma components exist. The current authentication.rs::credential_editor
+is already reused by Settings and inline authentication; other custom UI
+extraction remains separate work. The current state library is indexed in
+[UI_STATE_COVERAGE.md](../../docs/UI_STATE_COVERAGE.md), including all nine auth
+phases, individual Settings outcomes and interaction/disabled differences.
+The user rejected the earlier styled proposals. Current Figma copies preserve
+this source's controls, hierarchy and scrolling; do not introduce badges,
+colored notices or two-column Settings as part of copying it.
+
 Iced renders a light native window. The window holds a short-lived in-process Settings session and calls the same HTTPS application APIs as agents. Server records, installation progress and restart outcomes drive controls; next_steps text is never interpreted as UI instructions. Manual secret changes go through the existing credential PATCH and a fresh backend Mac confirmation. Closing the window drops its authority and leaves backend work running; Quit requests backend shutdown.
 
 All interface source is uncompiled and untested in the D77 implementation pass. The UI does not edit client configurations, install certificate trust or execute tools merely to inspect them.
