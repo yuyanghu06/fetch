@@ -1,6 +1,11 @@
+> **October29 current handoff:** five required implementation areas plus isolated
+> runtime acceptance/fixes and distribution preparation remain. See
+> [MVP_GAPS.md](../testing/MVP_GAPS.md). Railway/auth/logging source compiles;
+> no live acceptance follows. Older D77/D79 checkpoint text below is historical.
+
 > **D79 current checkpoint:** Native binary compilation succeeds with the resolved Cargo.lock after a gateway syntax/import fix. Tests, app launch and MCP connections remain prohibited. No runtime/client/native acceptance is claimed. See [the handoff](../testing/HANDOFF.md). Earlier D77 no-compilation statements describe that historical source-only pass.
 
-> **D77/D78 current checkpoint:** Selected MVP source is written through [the user-controlled testing handoff](../testing/HANDOFF.md). No current-pass builds, checks, tests, launches, connections or packaging ran. Custom GitHub CLI tools are deferred. Older foundation verification below is historical.
+> **Historical D77/D78 checkpoint:** Selected MVP source is written through [the user-controlled testing handoff](../testing/HANDOFF.md). No current-pass builds, checks, tests, launches, connections or packaging ran. Custom GitHub CLI tools are deferred. Older foundation verification below is historical.
 
 # Fetch architecture records
 

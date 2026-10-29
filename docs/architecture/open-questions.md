@@ -1,6 +1,11 @@
+> **October29 current handoff:** five required implementation areas plus isolated
+> runtime acceptance/fixes and distribution preparation remain. See
+> [MVP_GAPS.md](../testing/MVP_GAPS.md). Railway/auth/logging source compiles;
+> no live acceptance follows. Older D77/D79 checkpoint text below is historical.
+
 > **D79 current checkpoint:** Native binary compilation succeeds with the resolved Cargo.lock after a gateway syntax/import fix. Tests, app launch and MCP connections remain prohibited. No runtime/client/native acceptance is claimed. See [the handoff](../testing/HANDOFF.md). Earlier D77 no-compilation statements describe that historical source-only pass.
 
-> **Current checkpoint:** D77 selected MVP source is written; the user controls starting every build/check/test/launch/connection step. Read [the handoff](../testing/HANDOFF.md). D78 resolves the custom GitHub CLI scope by deferring it. Older implementation checkpoints below are historical.
+> **Historical D77 checkpoint:** initial MVP source was delivered; the user controls starting every build/check/test/launch/connection step. Read [the handoff](../testing/HANDOFF.md). D78 resolves the custom GitHub CLI scope by deferring it. Older implementation checkpoints below are historical.
 
 > **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
 

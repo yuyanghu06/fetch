@@ -1,5 +1,10 @@
 # User-controlled verification
 
+Current remaining work is grouped as five implementation areas plus two
+completion stages in [MVP_GAPS.md](MVP_GAPS.md). HANDOFF.md retains prior build
+evidence and current restrictions. No new execution was authorized by the
+October29 full-tree push/documentation request.
+
 [DEVELOPMENT.md](DEVELOPMENT.md) documents current-home-relative development and
 release paths, importing normal Codex definitions, and a fresh test Codex client
 sharing one Fetch instance with the main client. No profile/login was created.

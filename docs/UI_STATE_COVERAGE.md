@@ -11,6 +11,17 @@ The first 17 baseline frames remain. Later boards expand them using current sour
 rather than inventing new screens. The app's authentication UI is an inline panel
 inside an expanded server card, not a new product route or modal.
 
+## October 29 source reconciliation needed
+
+The existing153 specimens remain the recorded library. The separate D80 Railway
+callback renderer in src/manager/provider_callback.rs is not traced by the
+source/node index below. Its seven distinct response texts (wrong method,
+unknown path, invalid callback, unmatched/expired state, stopped Fetch, verified
+sign-in and failed sign-in) need explicit specimen mapping or additions. No
+Figma edit or live callback inspection was performed in this documentation pass;
+do not claim this newer renderer is visually covered or silently change the153
+count. The source-backed original library remains useful within its snapshot.
+
 ## Source and evidence
 
 - Native rendering: src/ui/mod.rs (servers_view, authentication_view, install_view,

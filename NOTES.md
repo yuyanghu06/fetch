@@ -1013,3 +1013,23 @@ after corrections. This pass changed Figma and project documentation only; no
 app execution, build/test, provider/MCP/credential/trust or personal-setting
 operation occurred. Other concurrent implementation work is separate. See
 [the full state/node index](docs/UI_STATE_COVERAGE.md).
+
+
+## October 29, 2026 — Save the whole working tree and document the remainder
+
+The user asked how much unfinished work remains, requested the full working
+tree be pushed, then requested the project status be documented. Saved and
+pushed all pending Figma/shared-UI/context/history changes as a15eacc. No
+application code changed in this pass and no test/build/runtime action ran.
+
+The defendable count is five implementation areas: remaining actual-provider
+setup, general remote OAuth, credential edit/batch/removal outcomes, real import
+compatibility and shared custom UI extraction. After/alongside them come isolated
+runtime verification/fixes and distribution preparation. This is seven broad
+areas, not seven tickets, an estimate of equal effort, a percentage or a finish date.
+The canonical remaining-work list is docs/testing/MVP_GAPS.md, with concrete
+source references and finish criteria. Existing deferred features remain outside
+the count. Railway sign-in/logging source already compiles, and the credential
+editor is already shared. Its actual login remains untested. The153-state Figma
+index is source/reference evidence; mapping the newer separate Railway callback
+renderer is a recorded follow-up rather than assumed complete visual coverage.

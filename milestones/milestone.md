@@ -1,5 +1,29 @@
 # Fetch milestone snapshot
 
+## October 29 handoff — full tree saved and remaining work counted
+
+Documentation review is complete; debug/release paths and stale completion
+wording are corrected. [Independent review](history/2026-10-29_11-36-36-000139-evaluator-remaining-work-documentation-review.md) and
+[full-tree handoff](history/2026-10-29_11-36-36-001631-orchestrator-full-tree-push-and-documented-remainder.md) record the scope/evidence.
+The final documentation commit contains this updated handoff; Git history and
+the delivery response identify its hash. Earlier source/build evidence is unchanged.
+
+
+The complete tracked/untracked working tree was committed and pushed as a15eacc,
+including the Figma153-state index, shared-component guidance and pending history.
+Current known remainder: five implementation areas (four core backend areas plus
+remaining shared UI extraction), then isolated runtime acceptance/fixes and
+separate distribution preparation. These are broad areas, not a percentage or
+seven equal-sized fixes. [Current remaining-work list](../docs/testing/MVP_GAPS.md)
+contains the source locations and finish criteria.
+
+Railway/auth/logging source is implemented and compiled; Figma reference work is
+recorded. Live native/provider/client verification remains unrun. The separate
+Railway temporary-callback renderer still needs explicit Figma-state mapping.
+No builds, tests, app/provider/MCP calls or personal-state actions in this
+October29 documentation/push pass. No release is authorized.
+
+
 ## Current delivery — Railway sign-in, inline authentication and request logs
 
 Scoped code is committed/pushed as9def537; local HEAD and origin/main matched.
@@ -70,7 +94,10 @@ No app launch/operation, source change, test, build or managed connection occurr
 See [current inventory](../docs/FIGMA.md) and
 [correction record](history/2026-10-28_21-17-10-000001-orchestrator-literal-current-ui-correction.md).
 
-## Active fix — inline server authentication
+## Historical planning checkpoint — inline authentication before the fix
+
+Superseded by the implemented/compiled Railway delivery above. The following
+paragraph records the earlier diagnosis, not current provider support or build status.
 
 Authenticate currently drops required/unknown outcomes into a generic Saved notice.
 Implement dedicated per-server progress/results and shared inline credential entry
@@ -89,7 +116,9 @@ shared in code as well as Figma. Seven families now have responsibility/input
 definitions and a recorded reuse rule in [the component registry](../docs/SHARED_UI_COMPONENTS.md),
 AGENTS.md, the native UI guide and Figma descriptions/guide. Shared theme values
 and platform-appropriate rendering helpers are required. Figma instances exist;
-code extraction is pending. No application source or execution changed.
+the credential editor is already shared; remaining custom UI extraction is
+pending. The linked requirement-recording pass changed documentation/Figma only;
+the later authentication implementation above added the shared editor.
 [Pass record](history/2026-10-28_20-49-03-000001-orchestrator-shared-ui-code-requirement.md).
 
 ## Historical delivery — styled designs, subsequently rejected

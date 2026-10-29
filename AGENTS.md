@@ -22,6 +22,12 @@
 
 ## Working MVP requirement — October 28 follow-up
 
+October29 handoff: read docs/testing/MVP_GAPS.md for the five remaining
+implementation areas plus runtime acceptance and distribution. The full working
+tree was requested for commit/push. That instruction does not authorize tests,
+app/provider/MCP execution, packaging, personal-state edits or a release.
+
+
 D80 selects a temporary Railway OAuth callback listener on HTTP 127.0.0.1,
 random port, only for a pending sign-in; close on completion or ten-minute
 expiry. The product API stays on HTTPS. See docs/architecture/decisions.md.

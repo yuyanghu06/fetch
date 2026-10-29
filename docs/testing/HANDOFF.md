@@ -1,6 +1,13 @@
-# Fetch MVP — compiled, testing not started
+# Fetch MVP — compiled, operational work and testing remain
 
-October 28, 2026. D77 delivered the selected MVP source without execution. The user subsequently authorized dependency resolution and binary compilation/build fixes under **D79**. The native development binary now compiles successfully. **No tests or test targets, app/service launch, MCP/provider connection, native/Keychain/trust action, managed server setup or packaging has run.** The user controls all remaining execution. Earlier foundation results apply only to their recorded commits.
+Current October29 status: five implementation areas plus runtime acceptance and
+distribution remain in [MVP_GAPS.md](MVP_GAPS.md). Railway authentication and safe
+request logging source are implemented and compiled (latest source build4.66s);
+actual sign-in/native/client checks remain unrun. The full prior working tree,
+including Figma documentation, was pushed as a15eacc. Earlier D77/D79 build
+paragraphs below are historical evidence, not full-MVP completion.
+
+Historical October28 source/compile evidence: D77 delivered initial integrated source without execution; later audits found the remaining gaps listed above. The user subsequently authorized dependency resolution and binary compilation/build fixes under **D79**. The native development binary now compiles successfully. **Agents ran no tests/test targets, app/service launch, MCP/provider connection, native/Keychain/trust action, managed server setup or packaging in those source/compile passes.** The user controls all remaining execution. Earlier foundation results apply only to their recorded commits.
 
 ## What is prepared
 
@@ -36,11 +43,12 @@ Compilation does not prove runtime behavior. Subsequent formatting/linting, test
 
 Finish the protection and account setup described in [the isolation plan](../architecture/isolated-testing.md). The proposed Fetch-Testing folder is not an approved/provisioned isolation boundary. Merely setting a data directory or a different client profile does not isolate Keychain, desktop apps or services. Use disposable fixtures and dedicated credentials, and retain personal clients/configurations untouched.
 
-The native `fetch app` command, when you choose to run it, creates protected installation state and Keychain items, starts its HTTPS listener and starts saved managed connections. Its normal location is `~/Library/Application Support/Fetch/`. Explicit `--data-dir` and `--discovery-home` options select separate fixture roots, and `--port` selects its localhost port. An explicit `--discovery-home` disables inheritance of the everyday `CODEX_HOME`; its built-in Codex candidate stays under that fixture home. Those options alone do not establish the required isolation. A second launch requests the first instance's window instead of starting duplicate managed servers.
+The native `fetch app` command, when you choose to run it, creates protected installation state and Keychain items, starts its HTTPS listener and starts saved managed connections. Native debug builds use `~/Library/Application Support/Fetch-Development/`; release builds use `~/Library/Application Support/Fetch/`, resolved from the current home. Explicit `--data-dir` and `--discovery-home` options select separate fixture roots, and `--port` selects its localhost port. An explicit `--discovery-home` disables inheritance of the everyday `CODEX_HOME`; its built-in Codex candidate stays under that fixture home. Those options alone do not establish the required isolation. A second launch requests the first instance's window instead of starting duplicate managed servers.
 
 The original `fetch dev` command remains fixture-only and ephemeral, with app authority denied. It is not the full native MVP launcher.
 
-The default native endpoint is `https://localhost:53671/mcp`. The native UI trusts only its own loaded certificate for its internal API connection. External browsers and coding apps require the selected explicit certificate trust setup and normal verification. No certificate trust or personal client changes were made, and no insecure TLS workaround is prescribed.
+The native debug endpoint is `https://localhost:53672/mcp`; release uses
+`https://localhost:53671/mcp`, preserving explicit overrides. The native UI trusts only its own loaded certificate for its internal API connection. External browsers and coding apps require the selected explicit certificate trust setup and normal verification. No certificate trust or personal client changes were made, and no insecure TLS workaround is prescribed.
 
 ## User-controlled verification order
 
@@ -56,8 +64,8 @@ This is a future sequence, not permission to start it automatically.
 ## Boundaries to examine first
 
 - The Rust/Objective-C/Iced integration compiles. Fresh Mac approval, Keychain ACL/build identity behavior, Dock/menu/window reopening, listener shutdown and signed/ad-hoc build behavior all need actual evidence.
-- Supported imports are conservative. Unknown launch argument grammars remain unsupported. Remote records support known non-secret endpoint path profiles (`/mcp`, `/sse`, `/api/mcp`, plus Linear `/mcp/readonly`, with permitted trailing slash); custom layouts, credential-bearing/query/fragment URLs remain unsupported instead of copying possible credentials.
-- Credential verification adapters cover documented Tavily/GitHub reads and Linear's authenticated viewer read. Linear OAuth metadata/PKCE/token ownership/refresh is implemented, but its issued token must actually pass the selected service check. A browser approval or successful MCP handshake cannot substitute. Unknown/wrapper-owned integrations report their missing support truthfully.
+- Supported imports are conservative. Unknown launch argument grammars remain unsupported. Remote records support known non-secret endpoint path profiles (`/mcp`, `/sse`, `/api/mcp`, plus Linear `/mcp/readonly` and the exact HTTPS Railway root on port443, with permitted trailing slash); custom layouts, credential-bearing/query/fragment URLs remain unsupported instead of copying possible credentials.
+- Credential verification adapters cover documented Tavily/GitHub reads, Linear's authenticated viewer read and Railway's stored-token /oauth/me identity check. Railway has Fetch-owned DCR/PKCE and D80's temporary numeric-loopback callback; its actual flow remains unrun. Linear OAuth metadata/PKCE/token ownership/refresh is implemented, but its issued token must actually pass the selected service check. A browser approval or successful MCP handshake cannot substitute. Unknown/wrapper-owned integrations report their missing support truthfully.
 - D31 has no unchecked-success exemption. Unsupported, unreferenced, multi-entry, removal-only or OAuth-shadowed manual changes may already be saved but return `CREDENTIAL_VERIFICATION_FAILED`. This boundary is documented and must be checked; no old token's success can verify a new manual value.
 - Host handling of aliases, encoded selectors/resource templates, large/unknown JSON values, modern protocol headers/control messages and raw media is unverified. Deferred native Tasks and live resource subscriptions must remain unadvertised.
 - Documented Codex/OpenCode call-wait preferences initialize Fetch defaults; the supported observed-limit branch stays empty unless a trusted integration can supply one. Verify default/override/allowance and dispatch-relative timing without changing raw arguments.

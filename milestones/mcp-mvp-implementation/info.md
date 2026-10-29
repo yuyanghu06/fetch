@@ -8,9 +8,17 @@ Write the D73 selected Rust/macOS MCP first release through a user-controlled te
 
 Selected source paths and distribution scripts are written/integrated; bounded source reviews are addressed; scoped commits are pushed; source limitations and first verification steps are recorded. This milestone measures source delivery only. Runtime and release acceptance stay separate.
 
-## Status
+## Current status — October 29 correction
 
-Source work is complete through the handoff. Scoped source increments through e576bcc are pushed to origin/main; final handoff/distribution-source documentation accompanies this completion record. Authority, installer, manager, runner/native MCP, HTTP and native UI source are integrated. Packaging is source only. Read [the handoff](../../docs/testing/HANDOFF.md) and [current snapshot](../milestone.md).
+The initial source-delivery pass is recorded below, but the full selected MVP
+source is not complete. Five implementation areas remain in
+[the current list](../../docs/testing/MVP_GAPS.md), including actual integration
+coverage. Latest Railway/auth/logging source compiles; live acceptance remains
+unrun. Do not use the historical D77 delivery record as full-product completion.
+
+## Historical D77 source delivery
+
+The initial source-delivery pass reached its handoff. Scoped source increments through e576bcc are pushed to origin/main; final handoff/distribution-source documentation accompanies this completion record. Authority, installer, manager, runner/native MCP, HTTP and native UI source are integrated. Packaging is source only. Read [the handoff](../../docs/testing/HANDOFF.md) and [current snapshot](../milestone.md).
 
 The D77 source pass ran no compilation/dependency resolution/lockfile refresh, tests, formatters/linters/validators, app/service/native/Keychain/trust action, package/runtime execution, provider/MCP/client connection or packaging was run. First compilation may require source fixes. Source-review ACCEPT is not tested acceptance. Actual supported-client/provider behavior is unverified.
 

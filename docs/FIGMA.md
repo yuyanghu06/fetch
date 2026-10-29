@@ -3,12 +3,18 @@
 Official file: [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=23-487).
 File key: `OcgOlmfuoSTJMHTeN753TF`. Selected by the user October 28, 2026.
 
-## Complete current-state library
+## Recorded 153-state source-snapshot library
+
+October29 coverage follow-up: the separate D80 Railway callback renderer has
+seven distinct response texts not yet traced to specimens in this index. Their
+mapping needs reconciliation; the recorded153 count is unchanged. This library
+does not establish complete coverage of that newer renderer or live behavior.
+
 
 The user's follow-up requested every current UI element, including authentication
 and individual settings. The file now contains **153 states/specimens** across
 nine current boards, preserving the rejected-design archives separately.
-See [the complete coverage index](UI_STATE_COVERAGE.md) for every node and the
+See [the recorded coverage index](UI_STATE_COVERAGE.md) for its nodes and the
 finite source-branch checklist.
 
 - [Authentication states](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=33-348): 21 full-app specimens, including all nine current module phases.
@@ -64,6 +70,12 @@ not execute backend operations. Shared definitions and code-reuse requirements
 are in [SHARED_UI_COMPONENTS.md](SHARED_UI_COMPONENTS.md).
 
 ## Evidence and limits
+
+October29 follow-up: the separate D80 Railway callback renderer still needs
+explicit mapping into the specimen index. The existing153 count is preserved;
+coverage of that newer renderer is not assumed. See the reconciliation note in
+[UI_STATE_COVERAGE.md](UI_STATE_COVERAGE.md). No Figma work was done for this note.
+
 
 The existing Fetch process/window was identified read-only; only that window was
 captured. No new app instance was started, no page/button was operated, and no

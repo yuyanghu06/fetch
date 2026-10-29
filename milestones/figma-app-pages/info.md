@@ -1,5 +1,11 @@
 # Current app pages in Figma
 
+October29 source follow-up: the existing153-state library is the recorded
+source snapshot. The separate D80 Railway callback renderer now has seven
+response texts without explicit node mapping in that index. Reconcile those
+specimens before claiming complete current coverage; no Figma edits or new
+visual acceptance were performed for this documentation update.
+
 Latest expansion: 153 current states/specimens across nine boards, indexed in
 [UI_STATE_COVERAGE.md](../../docs/UI_STATE_COVERAGE.md). Covers every inventoried
 finite native/browser rendering branch and control class with representative

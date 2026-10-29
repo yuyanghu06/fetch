@@ -1,5 +1,11 @@
 # Fetch — current project context
 
+October29 handoff: the full working tree is saved/pushed as a15eacc. There are
+five known implementation areas remaining, followed by isolated runtime
+acceptance/fixes and distribution preparation. [MVP_GAPS.md](docs/testing/MVP_GAPS.md)
+is the current list with finish criteria. Source/build completion, Figma coverage
+and actual working-product acceptance remain distinct; no percentage/ETA is justified.
+
 Latest Figma expansion: 153 current UI states/specimens now cover native and
 browser branches, all nine inline-auth phases, individual Settings outcomes,
 widget states and OS-owned source contracts. The shared credential editor matches
@@ -26,7 +32,8 @@ rendering requires a calibrated Figma substitute, explicitly documented.
 Confirmed October 28 UI rule: commonly reused elements must be shared components
 in Figma and in code. Reuse the seven defined families and a common theme instead
 of per-page copies. See [shared component definitions](docs/SHARED_UI_COMPONENTS.md).
-The Figma components exist; extracting their code equivalents remains pending.
+The Figma components exist. The Settings/inline credential editor is shared in
+code; remaining repeated custom UI helpers/theme still need extraction.
 
 Initial October 28 Figma delivery (subsequently rejected as too styled): 17 editable screen/state
 mockups for every current native page and browser connection page, including

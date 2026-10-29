@@ -1,5 +1,9 @@
 # Documentation guide
 
+[MVP_GAPS.md](testing/MVP_GAPS.md) is the current remaining-work list: five
+implementation areas, isolated runtime acceptance and distribution preparation.
+It distinguishes code gaps, unrun evidence and explicitly deferred features.
+
 [FIGMA.md](FIGMA.md) records Fetch’s official, user-selected Figma project,
 the 17 corrected current-UI copies, screenshot reference, shared components and
 prototype coverage. Earlier styled proposals are archived as rejected; current

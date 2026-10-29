@@ -1,5 +1,21 @@
 # Fetch current work
 
+- [x] October29: save/push the full pending tree (a15eacc), document actual remaining work and integrate independent documentation corrections; final handoff is in this documentation commit.
+
+## Current remaining work — October 29
+
+Five implementation areas remain, then two completion stages. Details and finish
+criteria: [MVP_GAPS.md](../docs/testing/MVP_GAPS.md). This is the current summary;
+older checkpoints below retain history. No completion percentage or ETA is claimed.
+
+- [ ] Finish fresh provider setup/verification for the selected everyday-server inventory.
+- [ ] Implement general remote OAuth discovery/registration/login/renewal.
+- [ ] Resolve and implement credential edit/batch/removal outcomes under the accepted verification rule.
+- [ ] Support the required safe import forms in the existing inventory.
+- [ ] Finish remaining shared UI helpers/theme; keep the already-shared credential editor and reconcile Railway callback specimens in the Figma index.
+- [ ] Prepare isolation and run authorized native/provider/client/API/protocol checks; fix findings and obtain actual acceptance.
+- [ ] Complete dependency notices and authorized packaging/signing/notarization/fresh-install evidence before distribution. No release authorized.
+
 ## Operational MVP correction
 
 - [x] Independently audit selected source gaps; record them without inventing scope deferrals.
@@ -32,7 +48,7 @@
 - [ ] User review of corrected current-UI copies and any requested changes. The following original styled-delivery entries describe history, not approval of that styling.
 
 - [x] Define each shared family and record required code reuse in AGENTS.md, the component registry, native UI guide and Figma descriptions.
-- [ ] During selected UI implementation, extract/reuse matching shared Rust/Iced and browser rendering helpers and theme values; code refactor is not yet implemented.
+- [ ] During selected UI implementation, extract/reuse matching shared Rust/Iced and browser rendering helpers and theme values; the credential editor is shared; remaining custom helpers/theme are pending.
 
 - [x] Build editable designs for all four current native pages and their key states in the official file.
 - [x] Include populated in-use data, active/queued calls, discovery, preparation, errors/retry, tool definitions, settings and browser approval/callback states: 17 frames total.
@@ -108,7 +124,7 @@ Older tasks below remain preserved; the current request resumes planning and
 manual launch guidance, without automatically starting agent-run connections.
 
 
-October 28, 2026. D77 source implementation is written. D79 now authorizes binary compilation/build fixes and commit/push only; tests, app launch and MCP connections remain prohibited. Earlier unfinished tasks are preserved in [the prior rolling record](to-do-before-d77-source.md); source implementation replaces its old implementation waits, while all unrun verification remains pending.
+Historical D77/D79 checkpoint — October 28, 2026. The initial source delivery was written; later source audit found the required gaps listed above. D79 now authorizes binary compilation/build fixes and commit/push only; tests, app launch and MCP connections remain prohibited. Earlier unfinished tasks are preserved in [the prior rolling record](to-do-before-d77-source.md); source implementation replaces its old implementation waits, while all unrun verification remains pending.
 
 ## Active compile-only pass
 

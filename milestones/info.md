@@ -1,5 +1,10 @@
 # Milestone records
 
+[Full-tree handoff](full-tree-handoff/info.md) records the October29 request to
+push all pending work and document the remaining implementation/verification.
+[The current gap list](../docs/testing/MVP_GAPS.md) overrides older source-complete
+wording; passing compilation does not establish a working MVP.
+
 The figma-app-pages scope now includes the 153-state current-UI library; the
 [coverage index](../docs/UI_STATE_COVERAGE.md) traces all nodes and source branches.
 Independent source and representative visual acceptance are separate from
