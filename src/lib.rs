@@ -4,6 +4,7 @@ pub mod authority;
 pub mod credentials;
 pub mod development;
 pub mod discovery;
+pub mod diagnostics;
 pub mod storage;
 pub mod json;
 pub mod oauth;

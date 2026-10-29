@@ -1,5 +1,25 @@
 # Fetch current work
 
+## Operational MVP correction
+
+- [x] Independently audit selected source gaps; record them without inventing scope deferrals.
+- [x] Research official Railway fresh OAuth, stored verification, CLI token handoff and private runtime.
+- [x] D80: user selects temporary 127.0.0.1 native OAuth callback; existing HTTPS product API unchanged.
+- [x] Implement Railway callback/refresh/verification, private CLI preparation and official root import; scoped source review and binary build accepted.
+- [x] Add safe first-party incoming/outgoing HTTP diagnostics and shared auth outcome source.
+- [x] Poll auth, installations and separate restarts independently in source.
+- [x] Independent final source review ACCEPT and final binary compilation exit0 in4.66s; no runtime acceptance.
+- [ ] Complete broader selected auth/credential/import gaps listed in docs/testing/MVP_GAPS.md.
+
+## Inline server authentication
+
+- [x] Trace generic Saved bug and existing provider support; define bounded UI fix.
+- [x] Implement per-server inline outcomes, shared masked credentials and safe polling/lifecycle.
+- [x] Fix spacing type and all reported inline source findings.
+- [x] Independent source verification/evaluation ACCEPT and binary compilation; execution limits preserved.
+- [ ] Later verify actual browser/manual/native/CLI flows in authorized isolation; Railway is implemented in source, not runtime-proven.
+
+
 ## Official Figma project
 
 - [x] Save the user-selected Fetch App Mockup link in AGENTS.md and project docs for future design work; see [Figma reference](../docs/FIGMA.md).

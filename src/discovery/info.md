@@ -13,3 +13,9 @@ At first capture, an explicit Codex `tool_timeout_sec` seeds Fetch's per-server 
 The captured duration must be a finite positive whole number of milliseconds no greater than 86,400,000 (24 hours). Missing or unsupported source preferences use Fetch's 120,000-millisecond fallback. A malformed, zero, negative, overflowing, sub-millisecond or out-of-range value in either supported preference makes that source row invalid and prevents a fresh capture; it is not silently replaced. Other harness fields, startup/catalog budgets, OpenCode's newer nested timeout schema, descriptions, arbitrary MCP metadata and model arguments are not used as execution defaults. Successful import reuse happens before capture and preserves saved Fetch settings; changing the source later does not reset them. This mapping was implemented from read-only official documentation/source research; no parser, build, validator, service or test was run.
 
 For the flat OpenCode format, the inspected call path is `requestTimeout` → `MCP.tools` → [the session's `convertTool` call](https://github.com/anomalyco/opencode/blob/v1.19.4/packages/opencode/src/session/tools.ts) → [`client.callTool` options](https://github.com/anomalyco/opencode/blob/v1.19.4/packages/opencode/src/mcp/catalog.ts). That adapter resets its own timer on progress. Fetch copies the configured duration as its own initial wait preference and applies Fetch's selected absolute deadline from dispatch; available progress does not extend it. This is neither an observed upstream maximum nor a promise to reproduce another client's timer behavior.
+
+Railway's documented HTTPS endpoint at the root of mcp.railway.com is a known
+remote profile alongside the existing MCP/SSE paths. This allows the official
+remote import without rewriting its URL; existing rejection of credential-bearing
+URLs, query/fragment data and unknown endpoint profiles remains. No connection
+was made to inspect this profile.

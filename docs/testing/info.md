@@ -15,3 +15,7 @@ The following paragraphs describe the historical D77/D79 source/compile checkpoi
 Current development evidence is in DEVELOPMENT.md. D77 reserved testing for the user. Read the source handoff before running a build, service, installer or client. The existing isolated-testing architecture and server roster still govern protection of files, credentials, apps and personal services.
 
 D79 authorizes compilation/build fixes only. The binary build now succeeds; the user has not authorized tests, app launch or MCP connections. HANDOFF.md records that exception and the actual result.
+
+[DIAGNOSTICS.md](DIAGNOSTICS.md) explains safe request logging and its limits.
+[MVP_GAPS.md](MVP_GAPS.md) records actual incomplete selected source paths;
+source/build checks must not be presented as working-product acceptance.

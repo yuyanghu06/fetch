@@ -1398,3 +1398,15 @@ D72 selects only the shown native Settings/Keychain direction (encrypted per-ser
 ## Historical stored-credential verification amendment — unaccepted, withdrawn from active review by D73
 
 [credential-verification.md](credential-verification.md) presents the remaining policy for existing authenticate POST, credentials PATCH and server GET: reviewed private verifier binding, preflight unknown/unbound SET restriction,30-second total readback/handoff/probe budget, service2xx plus documented success,422/502/504 shared verification failure versus500 storage failure, committed-value retention and safe stored/changed/verification metadata. GET stays read-only. The explicit proposed D31 exception permits200storage-only/not_applicable for pure removal, known non-auth-only changes/no-ops and empty batches; auth SETs including unchanged values retain the full gate. None of these new clauses was approved; D73 withdraws this draft from active review. Preserve existing D25/D31 and resolve required concrete integration/error behavior in the single implementation brief. Custom GitHub CLI scope remains the one separate product choice.
+
+
+## October 28 implementation note — Railway auth and diagnostics
+
+The existing authenticate POST now recognizes official Railway package/remote
+identities and starts Fetch-owned public-client DCR/PKCE sign-in. D80 approves
+the auxiliary one-use HTTP127.0.0.1 native callback, separate from product HTTPS
+APIs. Existing response statuses, permissions, empty input, raw-data policy,
+encrypted readback and service-authenticated verification gate are unchanged.
+Source compiles and is scoped-source-reviewed; no live authentication claim.
+First-party request logging excludes body/header/query/URL values. Broader
+selected incomplete workflows remain in ../testing/MVP_GAPS.md.

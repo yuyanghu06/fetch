@@ -76,3 +76,13 @@ Custom GitHub CLI tools are deferred by D78. Shared memory, PostgreSQL/retention
 ## Delivered source commits
 
 The scoped source increments are bf5dd73 (authority), fc9b1ae (installation), 9fc4eee (runner/native MCP), ff1f07c (management), 3024639 (native/API integration) and e576bcc (timeout/input refinements). They were pushed to origin/main during implementation. The final documentation/packaging-source commit accompanies this handoff. Source-only reviews accepted their bounded scopes after corrections. No current-pass runtime verification exists. D79 adds binary compilation evidence only.
+
+
+## October 28 correction — operational gaps and auth work
+
+The user reaffirmed a fully working selected MVP. The earlier source inventory
+is not a claim that all required operational paths are complete. Read
+[MVP_GAPS.md](MVP_GAPS.md). Inline authentication/progress and safe request
+diagnostics source are now added. Railway DCR/native browser callback and
+private CLI preparation are implemented under D80 and compile; no live sign-in or
+provider/MCP connection has been performed. See [diagnostics](DIAGNOSTICS.md).

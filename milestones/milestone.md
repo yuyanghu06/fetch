@@ -1,5 +1,40 @@
 # Fetch milestone snapshot
 
+## Current delivery — Railway sign-in, inline authentication and request logs
+
+The selected Railway fix is implemented and independently source-reviewed:
+Authenticate starts Fetch-owned browser OAuth, uses D80's temporary numeric
+127.0.0.1 callback and privately verifies the stored credential through /oauth/me.
+Inline server cards show progress/results/errors and share a masked credential
+editor with Settings. Old status reads and repeated actions are guarded.
+
+Railway's required CLI5.71.0 is prepared in its own private installation folder;
+old installations repair it on explicit Connect. HOME/PATH/token handoff stay
+private. Official remote Railway root URLs can be imported without rewriting.
+Background token refresh for an already-running local child exposes Restart
+required; Fetch does not claim that process's environment changes live.
+
+Every first-party incoming/outgoing HTTP call has safe stderr metadata logs,
+including auth outcomes/error codes. No secret bodies/headers/queries/raw URLs.
+HTTP completion is headers-ready, not terminal streamed-tool completion.
+Install, restart and auth monitoring now run independently.
+
+Final command: cargo build --locked --bin fetch --message-format short,
+exit0 in4.66s (prior integrated build19.64s). Existing four Keychain deprecation
+warnings and one unread protocol field warning remain. Tester and independent
+Evaluator ACCEPT scoped source/build only. No tests/test-target builds, app
+launch, provider/MCP/client requests, npm/CLI setup, personal state/credentials/
+trust, packaging or release executed. Working runtime remains unproven.
+
+Full MVP is still incomplete: [actual source gaps](../docs/testing/MVP_GAPS.md).
+The user explicitly requires operational completeness; do not rename missing
+selected features as scope deferrals. [Diagnostics guide](../docs/testing/DIAGNOSTICS.md).
+
+- [Coder and actual build evidence](history/2026-10-28_21-52-54-894807-coder-railway-browser-flow-and-private-runtime-source.md)
+- [Independent source verification](history/2026-10-28_21-52-54-895007-tester-railway-callback-and-diagnostics-source-acceptance.md)
+- [Independent final acceptance](history/2026-10-28_21-52-54-895117-evaluator-accept-scoped-railway-authentication-and-logging.md)
+
+
 ## Latest documentation — official Figma project
 
 On October 28, the user selected [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1) as Fetch's official Figma project for

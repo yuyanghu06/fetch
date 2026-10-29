@@ -13,3 +13,7 @@ main.rs applies defaults while preserving explicit overrides. Installer, manager
 credentials and runner retain the selected root. See docs/testing/DEVELOPMENT.md.
 The follow-up locked native binary build succeeded in9.74seconds; no runtime
 check or regression test was executed.
+
+`diagnostics.rs` owns safe first-party HTTP metadata logging. API middleware,
+provider HTTP, native UI requests, direct package downloads and remote MCP
+transports use it without logging secrets, URLs, headers or bodies.

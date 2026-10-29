@@ -24,3 +24,7 @@ and compilation evidence. Actual dialog interaction remains pending.
 install-list-controls records the bounded Install-page scroll area, fixed footer
 and supported-only Select all. Source/build acceptance is separate from native
 layout verification, which remains pending.
+
+[inline-server-authentication](inline-server-authentication/info.md) tracks the
+Authenticate button fix, shared inline native credential entry and truthful
+provider-support limits. Source/build evidence is separate from live login.

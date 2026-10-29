@@ -20,6 +20,23 @@
 
 # Project instructions
 
+## Working MVP requirement — October 28 follow-up
+
+D80 selects a temporary Railway OAuth callback listener on HTTP 127.0.0.1,
+random port, only for a pending sign-in; close on completion or ten-minute
+expiry. The product API stays on HTTPS. See docs/architecture/decisions.md.
+This is source implementation approval, not permission to run live sign-ins.
+
+
+The user reaffirmed that the selected MVP must actually run the product, including
+real authentication behind Authenticate. Do not treat imported definitions,
+working-looking controls or compilation as completion. Missing selected provider
+flows are unfinished work, not automatically accepted scope deferrals. Track
+[known source gaps](docs/testing/MVP_GAPS.md). Preserve existing restrictions on
+agent-run tests, app/provider/MCP execution, personal settings and releases; a
+complaint about incompleteness does not itself authorize those actions.
+
+
 ## Official Figma project — October 28, 2026
 
 Use [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1) as Fetch's official Figma project for ongoing design work. Continue

@@ -23,7 +23,7 @@ impl NativeClient {
         let mut request = self.client.request(method, format!("{}{}", self.origin, path))
             .header("X-Fetch-Settings-Capability", self.session.header_value());
         if let Some(body) = body { request = request.json(&body); }
-        let response = request.send().await.map_err(|_| "Fetch could not read its local API response. A submitted change may still be running; refresh its status before trying again.")?;
+        let response = crate::diagnostics::send(crate::diagnostics::UpstreamOperation::LocalApi, request).await.map_err(|_| "Fetch could not read its local API response. A submitted change may still be running; refresh its status before trying again.")?;
         let status = response.status();
         const LIMIT: usize = 32 * 1024 * 1024;
         if response.content_length().is_some_and(|size|size > LIMIT as u64) { return Err("The local API response is too large to display.".into()); }

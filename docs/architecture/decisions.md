@@ -760,3 +760,20 @@ and explicit working directories remain unchanged. See
 [development setup](../testing/DEVELOPMENT.md) for exact paths/limits. Source review
 accepted; four new regression tests remain unexecuted. No personal settings,
 credentials, trust, old state or live connections were changed by this pass.
+
+
+## D80 — Temporary numeric-loopback callback for Railway sign-in
+
+October 28, 2026. The user selected “Use the temporary callback listener
+(Recommended)” in response to the complete callback choice. Railway desktop
+sign-in may bind a temporary HTTP listener only to 127.0.0.1 on a random port,
+accept only the pending sign-in response, and close when that sign-in completes
+or after its existing ten-minute timeout. Fetch's product API remains on the
+existing HTTPS listener. No custom app URL scheme is selected.
+
+This resolves Railway's native callback incompatibility with HTTPS localhost
+without changing client-facing APIs, certificate trust or personal clients.
+The callback remains bound to the original pending OAuth state/attempt and
+existing encrypted-store/readback/service-verification rules. No live sign-in,
+listener execution, test, provider call or personal-state change was authorized
+or performed by recording this decision.

@@ -1,5 +1,14 @@
 # Fetch — current project context
 
+The user reaffirmed a fully working selected MVP. Source audit found required
+authentication/credential/import workflows incomplete; see [actual gaps](docs/testing/MVP_GAPS.md).
+Inline auth UI and safe HTTP diagnostics are implemented in source; Railway
+DCR/PKCE, D80 temporary numeric-loopback callback and private CLI preparation are
+implemented. Final binary builds in4.66s; independent scoped source acceptance.
+Local running processes need explicit Restart after token refresh.
+No runtime/MCP/provider test result is claimed.
+
+
 Official Figma project (user-selected October 28, 2026): [Fetch App Mockup](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=0-1&t=rEUDUra6cAWf3pxc-1).
 Use this existing file for ongoing Fetch design work. See [Figma reference](docs/FIGMA.md).
 

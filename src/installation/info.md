@@ -11,3 +11,13 @@ for native debug builds and ~/Library/Application Support/Fetch for release.
 packages/servers, packages/runtimes and packages/cache stay below that root;
 existing local scripts remain in place and remote services remain remote.
 No installation was performed to verify these paths in this change.
+
+Official @railway/mcp-server imports also prepare pinned @railway/cli5.71.0 in
+a separate railway-cli dependency folder under their private installation. This
+provides the executable required by the MCP shim without using personal PATH or
+modifying the shim's installed dependency tree during repair. Existing installs
+repair it only on explicit Connect, never GET or automatic startup. Native binary
+existence/permissions/path containment and pinned package metadata gate readiness;
+no CLI --version is run. npm's official postinstall fetches its binary over HTTPS;
+it does not provide an independent archive checksum. No package install executed
+in this source pass. First-party download HTTP now uses safe diagnostics.

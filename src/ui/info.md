@@ -25,3 +25,18 @@ explicit user choice, without changing source flags or starting installation.
 Busy, picker and active-install states disable the bulk action. The footer shows
 the selected count; reopened windows retain the same minimum dimensions.
 Locked native compilation passed; actual layout interaction remains unverified.
+
+
+Inline authentication is implemented in `authentication.rs` and `mod.rs`.
+`authentication.rs` owns card-local authentication presentation/state and the
+credential editor shared with Settings. Existing config references supply
+credential names; backend authentication statuses drive UI decisions. Human
+next_steps text may be displayed but is never executed or used to route actions.
+Railway browser sign-in is now implemented in the shared manager; source/build
+evidence and live verification remain separate. Other unknown integrations
+show their precise unsupported result, never a generic Saved notice.
+Source/build review for this change is recorded in the active milestone.
+
+Pending authentication status, installation progress and each named restart now
+have independent read-in-flight guards. One slow install/restart no longer
+prevents checking a different server's browser sign-in.

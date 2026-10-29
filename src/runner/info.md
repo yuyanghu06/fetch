@@ -11,3 +11,7 @@ Engineering bounds are 64 concurrent calls per server, 24 hours for a configured
 `cached_catalog` only projects a previously completed acquisition, including original observation time and known rejections. It makes no RPC and cannot label an unknown or replaced connection complete. Shutdown permanently closes admission before stopping connections; a delayed restart cannot reopen this runner after Quit.
 
 Execution timeout precedence is an explicit per-tool override, then an internally supplied documented/current whole-call limit plus 5,000 ms, then the server's configured fallback. The internal supported-limit map is excluded from serialization and deserialization and defaults empty. No generic MCP Tool field or current provider adapter supplies such an observation; unknown or stale provenance therefore uses the fallback. A trusted future adapter must bind observations to its reviewed source and current connection context. Supported limits are positive, and checked addition of the allowance must remain within the finite 24-hour execution bound.
+
+Remote MCP HTTP POST, legacy SSE opening and session event GETs use the safe
+diagnostics sender. Logged completion is HTTP headers-ready, not terminal tool
+completion. JSON-RPC payloads, content and provider headers are never logged.

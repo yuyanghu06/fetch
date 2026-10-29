@@ -6,7 +6,7 @@ use serde_json::{Value,json,value::RawValue};
 use std::sync::Arc;
 
 fn manager(state:&AppState)->Result<Arc<Manager>,Response>{state.manager.clone().ok_or_else(||application_error(StatusCode::SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE","Start Fetch's native application to use this operation.",None))}
-fn management_error(error:ManagementError)->Response{(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
+fn management_error(error:ManagementError)->Response{crate::diagnostics::application_failure(error.code);(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
 fn accepted(body:Value,location:Option<String>)->Response{let mut response=(StatusCode::ACCEPTED,Json(body)).into_response();if let Some(location)=location{if let Ok(value)=HeaderValue::from_str(&location){response.headers_mut().insert(header::LOCATION,value);}}response}
 fn no_query(request:&Request)->bool{request.uri().query().is_none()}
 async fn body(request:Request)->Result<Value,Response>{ read_body(request,false).await }
@@ -108,7 +108,7 @@ pub async fn call(State(state):State<Arc<AppState>>,Path((id,name)):Path<(String
         Err(e)=>call_error(&e,Some(&id),Some(&name))
     }
 }
-fn call_error(error:&RunError,id:Option<&str>,name:Option<&str>)->Response{(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::BAD_GATEWAY),Json(json!({"server_id":id,"name":name,"status":"failed","execution":error.execution,"result":null,"error":{"code":error.code,"message":error.message},"next_steps":error.next_steps(id.unwrap_or(""))}))).into_response()}
+fn call_error(error:&RunError,id:Option<&str>,name:Option<&str>)->Response{crate::diagnostics::application_failure(error.code);(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::BAD_GATEWAY),Json(json!({"server_id":id,"name":name,"status":"failed","execution":error.execution,"result":null,"error":{"code":error.code,"message":error.message},"next_steps":error.next_steps(id.unwrap_or(""))}))).into_response()}
 fn call_failure(mut response:Response)->Response{
     // Existing authorization and framing failures remain private and not_started.
     // A response mapper supplies the D50 call envelope without reading any target metadata.

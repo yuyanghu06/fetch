@@ -83,6 +83,7 @@ pub fn router(state: Arc<AppState>) -> Router {
     }
     routes.method_not_allowed_fallback(method_not_allowed).fallback(not_found)
         .layer(middleware::from_fn_with_state(state, boundary))
+        .layer(middleware::from_fn(crate::diagnostics::log_request))
 }
 
 async fn boundary(State(state): State<Arc<AppState>>, request: Request, next: Next) -> Response {
@@ -203,10 +204,11 @@ pub(super) fn authorize_scope(state: &AppState, headers: &HeaderMap, scope: &str
 
 pub(super) fn application_error(
     status: StatusCode,
-    code: &str,
+    code: &'static str,
     message: &str,
     shape: Option<&str>,
 ) -> Response {
+    crate::diagnostics::application_failure(code);
     let mut body =
         json!({"status":"failed", "error":{"code":code,"message":message}, "next_steps":[]});
     match shape {

@@ -40,3 +40,12 @@ Update decisions as the user answers. Present a new API/meaningful behavior choi
 ## Authorized developer backend implementation
 
 D74 starts implementation/push without release. [The first bounded engineering brief](developer-foundation.md) records the researched dependencies, actual developer-only mechanisms and verification limits. Live managed-MCP tests remain for a later joint isolated environment.
+
+## D80 Railway callback exception and current completeness
+
+[D80](decisions.md#d80--temporary-numeric-loopback-callback-for-railway-sign-in)
+selects a temporary numeric-loopback HTTP listener for Railway desktop sign-in;
+Fetch's product API remains HTTPS. Scoped Railway/auth/logging source now
+compiles, but actual native/provider/client proof remains unrun. See
+[known required source gaps](../testing/MVP_GAPS.md); the full selected MVP is
+not complete merely because its current source compiles.

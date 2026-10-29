@@ -226,7 +226,7 @@ impl Connection {
             for (name,value) in mirrored { request = request.header(name, value); }
         } else if let Some(session) = self.session.read().await.as_ref() { request = request.header("mcp-session-id", session); }
         let request_cancel=if let Some(parent)=parent{self.pending.lock().await.get(parent).map(|pending|pending.cancel.clone()).unwrap_or_default()}else{CancelToken::new()};
-        let response = tokio::select!{response=request.body(bytes).send()=>response.map_err(|_|RunError::unavailable())?,_=request_cancel.cancelled()=>return Err(RunError::unavailable()),_=self.close.cancelled()=>return Err(RunError::unavailable())};
+        let response = tokio::select!{response=crate::diagnostics::send(crate::diagnostics::UpstreamOperation::McpHttp,request.body(bytes))=>response.map_err(|_|RunError::unavailable())?,_=request_cancel.cancelled()=>return Err(RunError::unavailable()),_=self.close.cancelled()=>return Err(RunError::unavailable())};
         if let Some(session) = response.headers().get("mcp-session-id").and_then(|v| v.to_str().ok()) {
             if session.len() > 256 || session.is_empty() || !session.bytes().all(|b| (0x21..=0x7e).contains(&b)) { return Err(RunError::unavailable()); }
             *self.session.write().await = Some(session.to_owned());
@@ -321,7 +321,7 @@ impl Connection {
 
     async fn start_legacy_sse(self: &Arc<Self>) -> Result<(), RunError> {
         let Wire::Remote { client, endpoint, headers, .. } = &self.wire else { return Err(RunError::not_ready()); };
-        let response = client.get(endpoint).headers(headers.read().await.clone()).header("accept","text/event-stream").send().await.map_err(|_| RunError::not_ready())?;
+        let response = crate::diagnostics::send(crate::diagnostics::UpstreamOperation::McpHttp,client.get(endpoint).headers(headers.read().await.clone()).header("accept","text/event-stream")).await.map_err(|_| RunError::not_ready())?;
         if !response.status().is_success() { return Err(RunError::not_ready()); }
         let c = self.clone();
         let task = tokio::spawn(async move { if c.consume_sse(response,None,true).await.is_err() { c.fail_closed().await; } });
@@ -338,7 +338,7 @@ impl Connection {
         let Some(session) = self.session.read().await.clone() else { return; };
         let client=client.clone(); let endpoint=endpoint.clone(); let headers=headers.read().await.clone(); let c=self.clone();
         let task=tokio::spawn(async move {
-            if let Ok(response)=client.get(endpoint).headers(headers).header("accept","text/event-stream").header("mcp-session-id",session).header("mcp-protocol-version",LEGACY).send().await {
+            if let Ok(response)=crate::diagnostics::send(crate::diagnostics::UpstreamOperation::McpHttp,client.get(endpoint).headers(headers).header("accept","text/event-stream").header("mcp-session-id",session).header("mcp-protocol-version",LEGACY)).await {
                 if response.status().is_success() { let _=c.consume_sse(response,None,false).await; }
             }
         });

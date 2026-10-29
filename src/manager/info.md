@@ -13,3 +13,16 @@ server home as both the default HOME and working directory, keeping relative
 writes out of the launch checkout. Explicit imported working directories are
 preserved. The home follows the selected development/release application root.
 This fallback change is source-reviewed, not runtime-verified.
+
+Railway support is implemented in railway.rs, provider_callback.rs and the shared OAuth handlers:
+Fetch-owned DCR/public PKCE, encrypted registration and rotating grant ownership,
+stored-token /oauth/me verification, and D80's temporary numeric-loopback native
+callback. The same Authenticate operation is used by UI and MCP; safe outcome
+logging is in the shared handler. Legacy HTTPS callback remains for Linear.
+
+Railway stdio gets only Fetch's verified access token as RAILWAY_API_TOKEN, an
+authoritative private HOME and private CLI/Node PATH. Automatic CLI/skill updates
+and telemetry are disabled. No personal Railway login/config is read or written.
+An existing child needs explicit Restart after token refresh; the server exposes
+restart_required rather than claiming a live environment update. General remote
+OAuth and broader selected integration gaps remain in docs/testing/MVP_GAPS.md.

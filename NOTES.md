@@ -893,3 +893,46 @@ another project. File key: `OcgOlmfuoSTJMHTeN753TF`; linked node: `0:1`.
 The reference is recorded in AGENTS.md, PROJECT_CONTEXT.md and
 [docs/FIGMA.md](docs/FIGMA.md). This records the destination; no file contents
 were inspected or changed and no application changes were requested.
+
+
+## October 28, 2026 — Working MVP, Railway authentication and logging
+
+The user explicitly reaffirmed that the MVP must include the features needed to
+actually run the product. Railway's Authenticate routed into an unsupported
+provider branch; a generic Saved notice hid this. A UI-only fix is insufficient.
+Required integration work must not be renamed as a selected scope deferral.
+
+Independent source audit found wider auth/credential/import gaps, recorded in
+[the MVP gap list](docs/testing/MVP_GAPS.md). Safe first-party incoming/outgoing
+HTTP diagnostics are being integrated without logging bodies, headers, queries
+or credentials. Railway supports fresh Fetch-owned DCR/PKCE browser OAuth and
+stored /oauth/me verification, with private CLI token handoff. Its documented
+native callback needs numeric HTTP loopback or an app URL scheme, unlike Fetch's
+existing HTTPS localhost callback; the user was asked to select the temporary
+listener design under the existing architecture-input requirement. Choice pending.
+No provider requests, registrations, app launch, MCP tests or personal edits ran.
+
+
+## October 28, 2026 — Railway callback selected (D80)
+
+The user approved the temporary callback listener: bind HTTP only to 127.0.0.1
+on a random port, accept the pending sign-in only, close on completion or the
+existing ten-minute timeout. Fetch's API remains HTTPS. This permits source
+implementation of the documented native flow; no live callback/auth/test or
+personal state activity is authorized by this selection.
+
+
+## October 28, 2026 — Railway auth/logging source and build accepted
+
+Implemented actual Fetch-owned Railway DCR/PKCE sign-in, approved D80 one-use
+numeric-loopback callback, encrypted registration/credential readback and
+authenticated /oauth/me verification. The required private CLI5.71.0 is prepared
+without personal CLI credentials/state; explicit Connect repairs old imports.
+The official remote HTTPS root is a supported exact profile. Existing local
+processes require explicit Restart to receive background-refreshed tokens.
+
+Inline authentication/manual entry/progress and safe first-party HTTP request
+logs are implemented. Tests and actual browser/provider/CLI/MCP/native behavior
+remain unrun. Final binary compiles exit0 in4.66s; separate Tester and Evaluator
+source acceptance covers this scoped fix only. Full MVP gaps remain tracked;
+no release or personal client/trust/state edits occurred.

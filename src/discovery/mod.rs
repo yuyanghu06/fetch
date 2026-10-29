@@ -574,6 +574,8 @@ fn header_name(s: &str) -> bool {
 pub(crate) fn supported_remote_endpoint(url:&Url)->bool {
     matches!(url.path(),"/mcp"|"/mcp/"|"/sse"|"/sse/"|"/api/mcp"|"/api/mcp/")
         || (url.host_str()==Some("mcp.linear.app") && url.path()=="/mcp/readonly")
+        || (url.scheme()=="https" && url.host_str()==Some("mcp.railway.com")
+            && url.port_or_known_default()==Some(443) && url.path()=="/")
 }
 /// Seed Fetch's own wait duration from a documented explicit source setting.
 /// These client settings are not observations of a server's intrinsic limit.

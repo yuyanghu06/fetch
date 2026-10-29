@@ -1,10 +1,12 @@
 # Fetch
 
-Fetch is a local macOS app that lets coding apps share installed MCP servers through one Fetch connection. The selected MVP source is now written: native UI, local HTTPS, app authorization, protected credentials, installation, server management and MCP sharing.
+Fetch is a local macOS app that lets coding apps share installed MCP servers through one Fetch connection. Source includes native UI, local HTTPS, app authorization, protected credentials, installation, server management and MCP sharing. Required operational gaps remain; this is not a complete working MVP. See [the current gap list](docs/testing/MVP_GAPS.md).
 
 **Prior native compilation succeeded; current runtime behavior remains unverified.** Under D79, `cargo build --locked --bin fetch --message-format short` succeeded and produced `target/debug/fetch`. Those are historical build results. The user now reports running a development build. The development-path changes now also compile successfully; their four new regression tests remain unexecuted.
 
 Read [the testing handoff](docs/testing/HANDOFF.md) before running anything. It lists the build result, remaining verification and supported-import/authentication limits. Cargo.lock now records the resolved dependencies. The prior D79 build reported four warnings for deprecated classic-Keychain APIs and one unread protocol field, with no build errors. The development-state follow-up compiled successfully with the same warning categories; no tests or executable launch were run.
+
+Safe first-party HTTP diagnostics go to the launch terminal; see [what is logged](docs/testing/DIAGNOSTICS.md).
 
 ## Development launch
 

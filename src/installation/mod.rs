@@ -9,6 +9,7 @@ use tokio::{process::Command, sync::{Mutex, Notify}};
 pub const NODE_VERSION: &str = "24.22.1";
 pub const UV_VERSION: &str = "0.13.5";
 pub const PYTHON_VERSION: &str = "3.13.18";
+pub const RAILWAY_CLI_VERSION: &str = "5.71.0";
 const INSTALL_SECONDS: u64 = 600;
 const MAX_DOWNLOAD: usize = 256 * 1024 * 1024;
 
@@ -103,6 +104,7 @@ impl Installer {
         command.arg(node.join("lib/node_modules/npm/bin/npm-cli.js")).args(["install","--save-exact","--no-audit","--no-fund","--no-update-notifier","--"]).arg(spec);
         command.env("PATH",format!("{}:/usr/bin:/bin",node.join("bin").display()));
         self.execute(command).await?;
+        if requested=="@railway/mcp-server" { self.ensure_railway_cli(id).await?; }
         let package_dir=directory.join("node_modules").join(requested);
         let metadata=read_json(&package_dir.join("package.json"),2*1024*1024)?;
         let installed=metadata["version"].as_str().filter(|v|!v.is_empty()).ok_or(())?;
@@ -113,6 +115,35 @@ impl Installer {
         let mut config=capture.config.clone(); config["package"]=json!({"name":requested,"requested_version":capture.row["version_spec"],"installed_version":installed});config["executable"]=json!(node.join("bin/node"));
         let mut args=vec![json!(binary)];args.extend(capture.package_arguments.iter().map(|a|json!(a)));config["args"]=json!(args);
         Ok(config)
+    }
+    /// Called during preparation or an explicit Railway Connect, never status GET.
+    /// The CLI's postinstall runs in the existing private preparation HOME.
+    pub async fn ensure_railway_cli(&self,id:&str)->Result<PathBuf,()> {
+        if !id.strip_prefix("package-").is_some_and(|v|v.len()==32&&v.bytes().all(|b|b.is_ascii_hexdigit())) {return Err(());}
+        let package_root=self.root.join("packages/servers").join(id);
+        if !package_root.is_dir() {return Err(());}
+        let directory=package_root.join("railway-cli");private_directory(&directory)?;
+        let manifest=directory.join("package.json");
+        if !manifest.exists(){write_private(&manifest,b"{\"name\":\"fetch-private-railway-cli\",\"private\":true}\n")?;}
+        let project=read_json(&manifest,2*1024*1024)?;
+        if project["name"]!="fetch-private-railway-cli"||project["private"]!=true{return Err(());}
+        let bin=directory.join("node_modules/.bin");
+        let native=directory.join("node_modules/@railway/cli/bin/railway");
+        let metadata=directory.join("node_modules/@railway/cli/package.json");
+        let contained=|path:&Path|fs::canonicalize(path).is_ok_and(|p|p.starts_with(&directory));
+        let ready=|| bin.join("railway").is_file() && native.is_file() && contained(&bin.join("railway")) && contained(&native)
+            && fs::metadata(bin.join("railway")).is_ok_and(|m|m.permissions().mode()&0o111!=0)
+            && fs::metadata(&native).is_ok_and(|m|m.permissions().mode()&0o111!=0)
+            && read_json(&metadata,2*1024*1024).is_ok_and(|v|v["version"]==RAILWAY_CLI_VERSION);
+        if ready(){return Ok(bin);}
+        let node=self.node_runtime().await?;
+        let mut command=self.command(&node.join("bin/node"),&directory)?;
+        command.arg(node.join("lib/node_modules/npm/bin/npm-cli.js")).arg("--prefix").arg(&directory)
+            .args(["install","--save-exact","--no-audit","--no-fund","--no-update-notifier","--"])
+            .arg(format!("@railway/cli@{RAILWAY_CLI_VERSION}"));
+        command.env("PATH",format!("{}:/usr/bin:/bin",node.join("bin").display()));
+        self.execute(command).await?;
+        if ready(){Ok(bin)}else{Err(())}
     }
     async fn prepare_python(&self,id:&str,capture:&CapturedDefinition)->Result<Value,()> {
         let uv=self.uv_runtime().await?; let directory=self.package_directory(id)?;
@@ -182,7 +213,7 @@ impl Installer {
         fs::rename(&extracted,dest).map_err(|_|())?;let _=fs::remove_dir_all(&stage);Ok(())
     }
     async fn download(&self,url:&str,limit:usize)->Result<Vec<u8>,()> {
-        let mut response=self.client.get(url).send().await.map_err(|_|())?;if !response.status().is_success() || response.content_length().is_some_and(|n|n>limit as u64){return Err(());}
+        let mut response=crate::diagnostics::send(crate::diagnostics::UpstreamOperation::PackageDownload,self.client.get(url)).await.map_err(|_|())?;if !response.status().is_success() || response.content_length().is_some_and(|n|n>limit as u64){return Err(());}
         let mut bytes=Vec::new();while let Some(chunk)=response.chunk().await.map_err(|_|())? {if bytes.len().saturating_add(chunk.len())>limit{return Err(());}bytes.extend_from_slice(&chunk);}Ok(bytes)
     }
     fn package_directory(&self,id:&str)->Result<PathBuf,()> {let path=self.root.join("packages/servers").join(id);private_directory(&path)?;Ok(path)}
