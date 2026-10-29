@@ -1,5 +1,9 @@
 # Fetch milestone snapshot
 
+D81 scoped source/evidence delivery is pushed through f6563b3 with matching local/
+remote SHA and a clean tree at that checkpoint. [Delivery and exact pending handoff](history/2026-10-29_12-24-46-000001-orchestrator-scoped-local-source-delivery.md).
+This record's documentation follow-up is separate; no local MVP completion is claimed.
+
 ## Active — local working MVP under D81
 
 The user now authorizes finishing the selected source, local build/test execution,

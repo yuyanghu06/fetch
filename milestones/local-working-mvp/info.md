@@ -1,5 +1,9 @@
 # Finish and verify the local MVP
 
+Scoped source/tests/status are pushed through f6563b3 with verified matching refs.
+See [the delivery record](../history/2026-10-29_12-24-46-000001-orchestrator-scoped-local-source-delivery.md).
+This is an unfinished operational milestone, not a readiness notification.
+
 ## Goal and scope
 
 Complete the five known source areas and prove actual local use: build Fetch,

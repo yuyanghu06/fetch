@@ -1,5 +1,7 @@
 # Fetch current work
 
+- [x] Save/push accepted D81 scoped source/tests/evidence through f6563b3; remote/local commit matched. Native authentication, policy choices and real server/client proof remain pending.
+
 ## Active local MVP completion — D81
 
 - [ ] Finish imports, general/provider sign-in, credential outcomes and shared UI.
