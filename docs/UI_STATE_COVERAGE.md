@@ -11,6 +11,28 @@ The first 17 baseline frames remain. Later boards expand them using current sour
 rather than inventing new screens. The app's authentication UI is an inline panel
 inside an expanded server card, not a new product route or modal.
 
+## October 30 independent authentication state coverage
+
+Authentication and credential-change requests now track each server separately.
+The 153 Figma specimens and visual layout remain unchanged; no new Figma frames
+or native screenshots are claimed. The following source-driven fixtures in
+src/ui/auth_tests.rs cover the newly possible combinations using the existing
+shared card/editor/buttons and their existing enabled/disabled appearances:
+
+| Combination | Source fixture and evidence |
+| --- | --- |
+| GitHub starting while Tavily independently finishes | desktop_authenticate_messages_overlap_and_report_independent_results; Desktop messages, no window/Task execution. |
+| Same-server repeat/restart blocked while another server remains usable | desktop_repeated_same_target_and_restart_do_not_replace_pending_authentication plus independent-service cases. |
+| Settings save while another server authenticates | desktop_settings_save_has_its_own_request_and_clears_the_entered_secret; existing shared masked editor. |
+| Old status/request/window response after a newer result | desktop_rejects_status_reads_started_before_authentication_completed and desktop_old_window_and_old_auth_replies_cannot_overwrite_reopened_state. |
+| Failed manual save while an older key still authenticates | rejected_manual_save_is_not_approved_by_an_older_valid_server_credential; keep that save's failure visible. |
+
+All14 new UI fixtures pass, including five Desktop message cases. This verifies
+state transitions and handler wiring; actual overlapping native interaction,
+appearance and scrolling remain runtime checks. The Figma library's individual
+phase/control specimens are reused; it does not claim captured simultaneous
+service workflows.
+
 ## October 29 source reconciliation needed
 
 The existing153 specimens remain the recorded library. The separate D80 Railway
@@ -19,7 +41,7 @@ source/node index below. Its seven distinct response texts (wrong method,
 unknown path, invalid callback, unmatched/expired state, stopped Fetch, verified
 sign-in and failed sign-in) need explicit specimen mapping or additions. No
 Figma edit or live callback inspection was performed in this documentation pass;
-do not claim this newer renderer is visually covered or silently change the153
+do not claim this newer renderer is visually covered or silently change the 153
 count. The source-backed original library remains useful within its snapshot.
 
 ## Source and evidence
@@ -27,7 +49,7 @@ count. The source-backed original library remains useful within its snapshot.
 D81 shared-code reconciliation: native rendering now reuses src/ui/components.rs
 and theme.rs, while src/browser.rs supplies the shared escaped browser shell,
 messages and controls for all three Fetch-owned renderers. Current text/layout
-and the153 reference count are unchanged. The seven Railway paragraph variants
+and the 153 reference count are unchanged. The seven Railway paragraph variants
 above still need their Figma specimen mapping; shared code is not visual evidence.
 
 - Native rendering: src/ui/mod.rs (servers_view, authentication_view, install_view,

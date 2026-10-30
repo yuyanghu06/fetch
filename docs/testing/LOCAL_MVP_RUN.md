@@ -5,7 +5,31 @@ actual computer-use MCP installation and a separate test Codex instance. No DMG,
 packaging, signing/notarization or release work. This file records this run's
 actual results; earlier evidence remains in its original records.
 
-## Current work
+## October 30 authentication follow-up
+
+The user approved the route/concurrency fix and requested remaining blockers for
+their testing. Supported named API-key references can now be checked in batches
+from encrypted readback. POST authenticate retains its authenticated service
+check. UI requests are server-owned rather than using one shared auth slot;
+old completion and status-read messages cannot overwrite current outcomes.
+
+Independent verification:25 new cases pass (11 backend,14 UI including five
+actual Desktop::update cases). The fresh combined 93-test suite passes and
+`cargo build --locked --bin fetch --message-format short` exits 0 in 0.54s. Existing
+four native Security API deprecations and unread MCP error field warnings remain.
+See [the scoped evidence](../../milestones/parallel-authentication/evidence.md).
+The UI tests execute message handlers without opening windows or running Tasks.
+Credential-save fixtures exercise the post-confirmation backend helper under its
+server lock; no Mac confirmation is simulated as real native acceptance.
+
+[Remaining blockers](MVP_GAPS.md#october-30--what-still-blocks-testing-and-full-mvp-completion)
+are broader provider setup, generic remote proof, removal/non-auth change
+outcomes, the protected native environment and real UI/provider/client/restart
+acceptance. The last recorded administrator Unlock handoff is not a new live
+inspection or a completed account setup. No native/provider/MCP/client flow ran
+in this follow-up.
+
+## October 29 work and evidence
 
 Precise public import forms, native shared helpers/theme and browser shared HTML
 rendering are implemented. General remote metadata/registration/PKCE/renewal
@@ -17,7 +41,7 @@ acceptance is claimed.
 
 Actual evidence so far:
 
-- Locked native binary build exit0 (first integrated15.49s; final post-fix0.46s).
+- Locked native binary build exit 0 (first integrated15.49s; final post-fix0.46s).
 - Independent selected suite68/68 PASS together: lib22, backend16, HTTPS7,
   paths4, imports7, local-MVP11 and raw JSON1. The first import assertion failed
   because its /mcp substring also matched a hostname; its author corrected the
@@ -26,7 +50,7 @@ Actual evidence so far:
 - Independent source evaluation ACCEPT after correcting OAuth issuer mix-up.
   Actual callback-to-token integration still lacks a fixture seam; pure issuer
   guard tests plus source ordering are bounded evidence, not live login proof.
-- Clippy all-targets exit0 in19.82s with72 style/dead-field warnings and existing
+- Clippy all-targets exit 0 in19.82s with72 style/dead-field warnings and existing
   native bridge deprecations. This is not strict warning-free lint acceptance.
 - Copied Codex0.164.0 to fresh private test-owned files, without copying auth,
   config, hooks or plugins. A confined offline instance initialized and returned

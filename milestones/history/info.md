@@ -32,3 +32,8 @@ D77 implementation entries distinguish written source from user-controlled verif
 Full MVP source-delivery entries include bounded source reviews/corrections and separate feature pushes. They never claim runtime, visual or client acceptance. D77 testing remains user-controlled.
 
 D79 compilation entries separately record the first compiler failure, minimal source corrections, successful locked binary build and source/evidence review. They add no runtime or testing acceptance.
+
+October30 authentication entries separately record the route/concurrency plan,
+backend and UI source passes, window-free test host, independent fixtures and
+build, final evaluation and delivery. They do not claim complete provider/setup
+support or actual protected native/MCP/client readiness.

@@ -51,3 +51,8 @@ layout verification, which remains pending.
 [inline-server-authentication](inline-server-authentication/info.md) tracks the
 Authenticate button fix, shared inline native credential entry and truthful
 provider-support limits. Source/build evidence is separate from live login.
+
+[Parallel authentication](parallel-authentication/info.md) records the October 30
+scoped fix, independent 25 new/93 combined fixtures and native build. It preserves
+D25/D31 and the actual protected-native/provider/client acceptance work still
+required for the parent local working MVP.

@@ -2,8 +2,11 @@
 pub mod client;
 mod file_picker;
 mod authentication;
+mod auth_requests;
 mod components;
 mod theme;
+#[cfg(test)]
+mod auth_tests;
 use components::{button, checkbox, text_input};
 use authentication::{Flow as AuthFlow, Phase as AuthPhase};
 use crate::{application::ApplicationHost, native_auth::NativeSettingsSession};
@@ -16,13 +19,15 @@ use zeroize::Zeroize;
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum Page { Servers, Install, Connect, Settings }
+#[derive(Clone,Copy,PartialEq,Eq)]
+enum AuthAction { Authenticate, InlineCredential, SettingsCredential }
 #[derive(Clone)]
 enum Message {
     Page(Page), Opened(window::Id), Closed(window::Id), Tick, Show, Quit, Stopped,
-    Refresh, Servers(u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
+    Refresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
     Select(String,String,bool), SelectAllServers, Install, Installed(Result<Value,String>), Progress(Result<Value,String>),
     Inspect(String), Tools(Result<Value,String>), Authenticate(String), Restart(String,bool),
-    AuthFinished(u64,String,bool,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String), AuthDismiss(String),
+    AuthFinished(u64,String,AuthAction,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String), AuthDismiss(String),
     Changed(String,Result<Value,String>), RestartStatus(String,Result<Value,String>),
     Choose(String), Config(String), SaveConfig, Timeout(String), Concurrency(String), SaveExecution, Advanced(bool), SecretName(String), SecretValue(String), SaveSecret, RemoveSecret,
     Copy(String), CleanupConfirmed(bool), ToggleServer(String), ToggleTool(String),
@@ -33,23 +38,23 @@ struct Desktop {
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
     config_path:String, picker_window:Option<window::Id>, selected_server:String, config:String, timeout:String, concurrency:String, advanced:bool, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
-    busy:bool, polling:bool, installation_polling:bool, restart_polling:BTreeSet<String>, cleanup_confirmed:bool, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
-    authentication:BTreeMap<String,AuthFlow>, auth_epoch:u64, auth_request:Option<(String,u64)>,
+    busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, cleanup_confirmed:bool, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
+    authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
 }
 impl Desktop {
     fn boot(host:Arc<ApplicationHost>)->(Self,Task<Message>) {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
         let (id,open)=window::open(window::Settings { size:iced::Size::new(1080.0,760.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default() });
-        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),picker_window:None,selected_server:String::new(),config:"{}".into(),timeout:"120".into(),concurrency:"1".into(),advanced:false,secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:false,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_epoch:0,auth_request:None};
+        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),picker_window:None,selected_server:String::new(),config:"{}".into(),timeout:"120".into(),concurrency:"1".into(),advanced:false,secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default()};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
         (state,Task::batch([open.map(Message::Opened),read]))
     }
-    fn refresh(&self)->Task<Message> {
+    fn refresh(&mut self)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
-        let epoch=self.auth_epoch;let window=self.window;
-        Task::perform(async move{client.servers().await},move|result|Message::Servers(epoch,window,result))
+        let (revision,sequence)=self.auth_requests.begin_read();let window=self.window;
+        Task::perform(async move{client.servers().await},move|result|Message::Servers(revision,sequence,window,result))
     }
     fn subscription(&self)->Subscription<Message> {
         Subscription::batch([iced::time::every(Duration::from_secs(1)).map(|_|Message::Tick),window::close_events().map(Message::Closed)])
@@ -61,7 +66,7 @@ impl Desktop {
         Task::perform(async move{client.request(method,&path,Some(body)).await},move |result|Message::Changed(id.clone(),result))
     }
     fn auth_active(&self,id:&str)->bool {
-        self.authentication.get(id).is_some_and(|flow|flow.active()||flow.reconcile) || self.servers["servers"].as_array().into_iter().flatten()
+        self.auth_requests.contains(id) || self.authentication.get(id).is_some_and(|flow|flow.active()||flow.reconcile) || self.servers["servers"].as_array().into_iter().flatten()
             .any(|server|server["server_id"].as_str()==Some(id)&&server["authentication"]["status"]=="authenticating")
     }
     fn clear_secrets(&mut self) {
@@ -73,19 +78,18 @@ impl Desktop {
         for (server,flow) in &mut self.authentication{if server.as_str()!=id{flow.secret.zeroize();}}
     }
     fn close_authentication(&mut self) {
-        self.clear_secrets();self.authentication.clear();self.auth_epoch=self.auth_epoch.wrapping_add(1);
-        if self.auth_request.take().is_some(){self.busy=false;}
-        self.polling=false;self.installation_polling=false;self.restart_polling.clear();
+        self.clear_secrets();self.authentication.clear();self.auth_requests.clear();
+        self.polling=None;self.installation_polling=false;self.restart_polling.clear();
     }
     fn auth_operation(&mut self,id:String,credential_save:bool)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
         if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
-        let (method,suffix,body)=if credential_save {
+        let body=if credential_save {
             let Some(flow)=self.authentication.get_mut(&id).filter(|flow|flow.manual) else{return Task::none();};
             if flow.entry.trim().is_empty()||flow.secret.is_empty(){flow.error=Some("Enter the assigned credential entry name and its value.".into());return Task::none();}
             let body=json!({"set":[{"name":flow.entry.clone(),"value":flow.secret.clone()}],"remove":[]});
             flow.secret.zeroize();flow.phase=AuthPhase::Saving;flow.error=None;
-            (Method::PATCH,"/credentials",body)
+            body
         }else{
             self.clear_secrets();
             let mut flow=AuthFlow::starting();
@@ -94,13 +98,28 @@ impl Desktop {
                 if references.len()==1{flow.entry=references[0].1.clone();}
             }
             self.authentication.insert(id.clone(),flow);
-            (Method::POST,"/authenticate",json!({}))
+            json!({})
         };
-        self.auth_epoch=self.auth_epoch.wrapping_add(1);let epoch=self.auth_epoch;
-        self.auth_request=Some((id.clone(),epoch));self.busy=true;self.error=None;self.notice.clear();self.cleanup_confirmed=false;
+        self.submit_auth_request(client,id,if credential_save{AuthAction::InlineCredential}else{AuthAction::Authenticate},body)
+    }
+    fn settings_credential_operation(&mut self,remove:bool)->Task<Message> {
+        let Some(client)=self.client.clone() else{return Task::none();};
+        let id=self.selected_server.clone();
+        if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
+        if id.is_empty()||self.secret_name.is_empty(){self.error=Some("Select a server and enter the credential entry name.".into());return Task::none();}
+        let body=if remove{json!({"set":[],"remove":[self.secret_name.clone()]})}else{json!({"set":[{"name":self.secret_name.clone(),"value":self.secret_value.clone()}],"remove":[]})};
+        self.secret_value.zeroize();
+        let mut flow=AuthFlow::starting();flow.phase=AuthPhase::Saving;flow.manual=true;flow.entry=self.secret_name.clone();
+        self.authentication.insert(id.clone(),flow);self.error=None;self.notice.clear();
+        self.submit_auth_request(client,id,AuthAction::SettingsCredential,body)
+    }
+    fn submit_auth_request(&mut self,client:NativeClient,id:String,action:AuthAction,body:Value)->Task<Message> {
+        let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
+        self.cleanup_confirmed=false;
         self.expanded_servers.insert(id.clone());
+        let (method,suffix)=if action==AuthAction::Authenticate{(Method::POST,"/authenticate")}else{(Method::PATCH,"/credentials")};
         let path=format!("/api/v1/servers/{}{suffix}",component(&id));
-        Task::perform(async move{client.request(method,&path,Some(body)).await},move|result|Message::AuthFinished(epoch,id.clone(),credential_save,result))
+        Task::perform(async move{client.request(method,&path,Some(body)).await},move|result|Message::AuthFinished(token,id.clone(),action,result))
     }
     fn update(&mut self,message:Message)->Task<Message> {
         match message {
@@ -114,9 +133,11 @@ impl Desktop {
             Message::Quit=>{self.picker_window=None;file_picker::cancel();self.close_authentication();self.client=None;self.session=None;let host=self.host.clone();return Task::perform(async move{host.shutdown().await;},|_|Message::Stopped);}
             Message::Stopped=>return iced::exit(),
             Message::Refresh=>return self.refresh(),
-            Message::Servers(epoch,window,result)=>{
-                if window!=self.window{return Task::none();}self.polling=false;
-                if epoch!=self.auth_epoch{return self.refresh();}
+            Message::Servers(revision,sequence,window,result)=>{
+                if window!=self.window{return Task::none();}
+                if self.polling==Some(sequence){self.polling=None;}
+                if revision!=self.auth_requests.revision(){return self.refresh();}
+                if !self.auth_requests.accept_read(revision,sequence){return Task::none();}
                 match result {Ok(value)=>{
                     if let Some(servers)=value["servers"].as_array(){for server in servers{
                         if let Some(flow)=server["server_id"].as_str().and_then(|id|self.authentication.get_mut(id)){flow.observe(&server["authentication"]);}
@@ -158,11 +179,13 @@ impl Desktop {
             Message::Tools(result)=>match result{Ok(value)=>self.tools=value,Err(error)=>self.error=Some(error)},
             Message::Authenticate(id)=>return self.auth_operation(id,false),
             Message::AuthSave(id)=>return self.auth_operation(id,true),
-            Message::AuthFinished(epoch,id,credential_save,result)=>{
-                if self.auth_request.as_ref()!=Some(&(id.clone(),epoch)){return Task::none();}
-                self.auth_request=None;self.busy=false;self.auth_epoch=self.auth_epoch.wrapping_add(1);
+            Message::AuthFinished(token,id,action,result)=>{
+                if !self.auth_requests.finish(&id,token){return Task::none();}
+                if action==AuthAction::SettingsCredential&&self.page==Page::Settings&&self.selected_server==id{
+                    match &result{Ok(_)=>self.notice="Saved. Review server state for any required next action.".into(),Err(error)=>self.error=Some(error.clone())}
+                }
                 if let Some(flow)=self.authentication.get_mut(&id){match result{
-                    Ok(value)=>flow.result(&value,credential_save),
+                    Ok(value)=>flow.result(&value,action!=AuthAction::Authenticate),
                     Err(error)=>{flow.phase=AuthPhase::Failed;flow.error=Some(error);flow.reconcile=true;flow.secret.zeroize();}
                 }}
                 return self.refresh();
@@ -188,7 +211,7 @@ impl Desktop {
             Message::SaveConfig=>match serde_json::from_str::<Value>(&self.config){Ok(body) if body.is_object()=>return self.operation(self.selected_server.clone(),Method::PATCH,"/config",body),_=>self.error=Some("Enter a JSON object containing the settings you want to change.".into())},
             Message::SecretName(value)=>self.secret_name=value,
             Message::SecretValue(value)=>{self.secret_value.zeroize();self.secret_value=value;}
-            Message::SaveSecret|Message::RemoveSecret=>{let remove=matches!(message,Message::RemoveSecret);if self.busy{return Task::none();}if self.selected_server.is_empty()||self.secret_name.is_empty(){self.error=Some("Select a server and enter the credential entry name.".into());return Task::none();}let body=if remove{json!({"set":[],"remove":[self.secret_name.clone()]})}else{json!({"set":[{"name":self.secret_name.clone(),"value":self.secret_value.clone()}],"remove":[]})};self.secret_value.zeroize();return self.operation(self.selected_server.clone(),Method::PATCH,"/credentials",body);}
+            Message::SaveSecret|Message::RemoveSecret=>return self.settings_credential_operation(matches!(message,Message::RemoveSecret)),
             Message::Copy(value)=>return iced::clipboard::write(value),
             Message::CleanupConfirmed(value)=>self.cleanup_confirmed=value,
             Message::ToggleServer(id)=>{if self.expanded_servers.remove(&id){if let Some(flow)=self.authentication.get_mut(&id){flow.secret.zeroize();}}else{self.clear_secrets();self.expanded_servers.insert(id);}}
@@ -209,7 +232,7 @@ impl Desktop {
                     self.restart_polling.insert(id.clone());
                     reads.push(Task::perform(async move{client.request(Method::GET,&format!("/api/v1/servers?{query}"),None).await},move|result|Message::RestartStatus(id.clone(),result)));
                 }}
-                if !self.polling&&(self.authentication.values().any(|flow|flow.reconcile)||self.servers["servers"].as_array().is_some_and(|records|records.iter().any(|record|record["authentication"]["status"]=="authenticating"))){self.polling=true;reads.push(self.refresh());}
+                if self.polling.is_none()&&(self.authentication.values().any(|flow|flow.reconcile)||self.servers["servers"].as_array().is_some_and(|records|records.iter().any(|record|record["authentication"]["status"]=="authenticating"))){let read=self.refresh();self.polling=Some(self.auth_requests.latest_sequence());reads.push(read);}
                 return Task::batch(reads);
             }
         }

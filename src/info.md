@@ -27,3 +27,11 @@ check or regression test was executed.
 `diagnostics.rs` owns safe first-party HTTP metadata logging. API middleware,
 provider HTTP, native UI requests, direct package downloads and remote MCP
 transports use it without logging secrets, URLs, headers or bodies.
+
+## Window-free authentication fixtures
+
+`ApplicationHost::fixture` is compiled only for unit tests. Tests supply a private
+temporary root and memory-key CredentialStore; the helper constructs UI backend
+objects without a listener, started services, native prompt or Keychain access.
+Production `prepare` and native authority are unchanged. This supports Desktop
+message tests and does not establish real native/provider/MCP compatibility.

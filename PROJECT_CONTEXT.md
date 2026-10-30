@@ -1,5 +1,14 @@
 # Fetch — current project context
 
+October 30 scoped authentication fix: POST authenticate still reports verified
+success only after checking the saved credential with the service. The UI now
+tracks authentication/credential-change requests per server, and backend saves
+check all supported assigned API-key references instead of requiring one entry.
+Independent 25 new cases and93 combined fixtures pass; native binary builds. This
+does not implement unknown provider adapters, storage-only deletion/non-auth
+success or real native/provider/MCP/client acceptance. Protected native testing
+setup and those remaining gaps are tracked in docs/testing/MVP_GAPS.md.
+
 Latest October29 instruction (D81): finish/build/test the local MVP autonomously,
 then install a real MCP through computer interaction and verify it with a separate
 test Codex instance. Preserve everyday clients/personal state and actual isolation.

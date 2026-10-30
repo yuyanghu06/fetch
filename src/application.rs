@@ -67,6 +67,30 @@ impl ApplicationHost {
         self.stopped.store(true,Ordering::Release);self.shutdown_done.notify_waiters();
     }
 }
+#[cfg(test)]
+impl ApplicationHost {
+    /// Window-free UI fixture. Supplied credentials use test-owned memory keys;
+    /// this never binds a listener, starts services or asks the Mac for authority.
+    pub(crate) async fn fixture(root:PathBuf,credentials:Arc<CredentialStore>)->io::Result<Arc<Self>> {
+        private_directory(&root)?;
+        let origin="https://localhost:53672".to_owned();
+        let rcgen::CertifiedKey{cert,signing_key}=rcgen::generate_simple_self_signed(vec!["localhost".into()]).map_err(io::Error::other)?;
+        let certificate_pem=cert.pem();
+        let tls=RustlsConfig::from_der(vec![cert.der().to_vec()],signing_key.serialize_der()).await?;
+        let native=NativeAuthority::new();
+        let oauth=OAuthService::open(origin.clone(),root.clone(),credentials.clone(),native.clone()).map_err(io::Error::other)?;
+        let repository=ServerRepository::new(root.clone());
+        let discovery=DiscoveryService::new(root.join("empty-home"),None);
+        let manager=Manager::new(repository.clone(),credentials,Runner::new(),Installer::new(root.clone(),discovery.clone()));
+        manager.set_origin(origin.clone());
+        let mut state=AppState::new(origin,repository,discovery,oauth.clone()).map_err(io::Error::other)?;
+        state.manager=Some(manager.clone());state.native=Some(native.clone());state.oauth=Some(oauth.clone());
+        let lock=OpenOptions::new().read(true).write(true).create_new(true).mode(0o600).open(root.join("fixture.lock"))?;
+        Ok(Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path:root.join("certificate.pem"),
+            manager,oauth,handle:Handle::new(),listener:Mutex::new(None),tls,_instance_lock:lock,root,
+            show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()}))
+    }
+}
 /// Resolve a build's data folder without reading the environment or creating state.
 pub fn data_root_for_home(home:&Path,development:bool)->io::Result<PathBuf>{
     if !home.is_absolute(){return Err(io::Error::other("Fetch requires an absolute current-user home folder."));}

@@ -1,8 +1,14 @@
 # Architecture folder
 
+October 30 clarification under [D25's API contract](api-contract.md#required-stored-credential-verification--d25)
+distinguishes POST authentication, D31 credential-save verification, multi-value
+credential groups and parallel services. Those implementation limitations are now fixed for supported named API-key
+references and per-server UI requests. The combined 93-fixture suite and native
+build pass; no storage-only exception or live provider/client acceptance follows.
+
 D81 current: local implementation/build/test and protected actual installation/
-client proof are authorized. Native build and68 fixtures pass; live acceptance
-and2 focused credential-contract questions remain pending. D78 already defers
+client proof are authorized. Native build and93 fixtures pass; live acceptance,
+deletion/non-auth outcomes and protected-MCP proof remain pending. D78 already defers
 the custom GitHub CLI adapter; it is not a fresh scope question. The following
 foundation-era paragraphs retain historical context. See [the current run](../testing/LOCAL_MVP_RUN.md).
 

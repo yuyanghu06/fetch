@@ -11,6 +11,49 @@ required shared UI structure. These are broad areas, not seven equal-sized
 fixes or seven remaining endpoints. Some areas overlap. They do not support an
 honest completion percentage or finish date; runtime checks may find more work.
 
+## October 30 — what still blocks testing and full MVP completion
+
+The parallel-authentication fix is implemented. POST authenticate still waits
+for the authenticated service check using the saved key; credential saves can
+check multiple references covered by existing named API-key adapters. Separate
+services have independent UI requests and outcomes. Independent 25 new checks
+(11 backend,14 UI including five Desktop message cases) and the combined 93-test
+suite pass; the locked native binary builds. These are mock-service/window-free
+fixtures, not real provider or native acceptance.
+
+The concrete remainder is:
+
+1. **Finish broader server login/setup.** Existing named support covers Tavily,
+   GitHub, Linear and Railway. Google/Slack/GHL/Pinecone wrappers and native-app
+   integrations still need their actual fresh-login, credential-ownership and
+   verification paths. See the recorded inventory in src/manager/info.md; installing
+   a definition does not make its login supported.
+2. **Complete generic remote authentication proof.** Discovery/browser/token/
+   renewal source exists, but a generic remote connection has no universal
+   supported account-test endpoint. It cannot report authenticated under D25.
+   A bounded protected-MCP proof alternative remains unapproved; provider client/
+   redirect restrictions and actual sign-in/renewal still need verification.
+3. **Resolve credential removal and non-auth settings outcomes.** Supported
+   authentication SET batches now work without a one-entry limit. Pure removal,
+   unbound values and ordinary non-auth environment changes still can be stored
+   but return verification failure under the unchanged D31 gate. Their final
+   response/retention handling is unfinished; no storage-only success was approved.
+4. **Establish the protected native test session.** A separate Codex data folder
+   does not isolate the login Keychain or controlled desktop apps. The last
+   recorded account-setup attempt stopped at administrator Unlock, with no
+   account created. Actual protected OS-session setup and human confirmation
+   are needed before agent-run native/provider/MCP acceptance.
+5. **Run the real workflows and fix findings.** No actual Fetch UI MCP install,
+   provider sign-in, separate test-Codex call or restart/reuse has passed yet.
+   Window/approval/Keychain/TLS and selected protocol/lifecycle/client behavior
+   still need observed results. Begin with Everything, Filesystem and Time in
+   the protected environment, then Tavily/Linear with dedicated test access.
+
+Items 1–3 block the complete selected server inventory; they do not need to prevent
+testing the already-implemented no-login subset once item 4 is established. Full
+MVP readiness still requires item 5. Packaging/signing/DMG remain excluded from
+this local milestone and are not prerequisites for local development testing.
+
 ## October 29 source reassessment
 
 A fresh read-only Planner review and independent Evaluator review at `1276516`
@@ -44,16 +87,16 @@ D81 progress: exact public import/bridge forms and native/browser shared rendere
 are implemented and fixture-tested; real visual/installation acceptance is still
 pending. Generic remote discovery/registration/renewal source now exists, with
 issuer-bound callbacks, but completing authenticated success is blocked on the
-pending verification choice and provider-specific proof. Existing credential
-batch/removal behavior remains unchanged pending its focused decision. Broader
+pending verification choice and provider-specific proof. The October 30 follow-up fixes supported authentication batches; removal and
+non-auth outcomes remain pending their focused decision. Broader
 everyday-provider/wrapper setup is still unfinished. Read [the active run](LOCAL_MVP_RUN.md)
-for actual68-test/build evidence and native-environment handoff. The table below describes the remaining work after these source passes.
+for actual 93-test/build evidence and native-environment handoff. The table below describes the remaining work after these source passes.
 
 | Area | What is still incomplete | What counts as finished | Source to continue from |
 | --- | --- | --- | --- |
 | 1. Provider setup for everyday servers | Fresh setup and stored-credential verification cover only a small recognized provider list. Other required imports can install but return unknown instead of completing sign-in. | Trace every selected server in the existing inventory through its real login/credential ownership, protected storage, authenticated verification, refresh and restart behavior. Record usable versus missing support per integration; do not equate installation or tools/list with authenticated setup. | src/manager/mod.rs::provider_kind/authenticate/verify_stored; docs/architecture/real-use-compatibility.md |
 | 2. General remote OAuth | Generic discovery/registration/PKCE/renewal source is implemented with pinned destinations and exact callback issuer binding. Verified authentication for providers without a separate account API awaits the explicit proof-rule decision; actual login/renewal remains unrun. | Complete the approved verification integration, exercise real supported remote sign-in/renewal and report provider-side client restrictions honestly. No login on ordinary tool calls. | src/manager/remote_auth.rs; src/manager/mod.rs::begin_provider_login/refresh_owned |
-| 3. Credential editing, batches and removal | A successful save currently requires one recognized effective authentication entry with no existing OAuth token. Other environment/custom-header edits, multiple entries and removal-only changes may commit then return verification failure. | Resolve and implement the successful outcomes for these advertised Settings operations consistently with the accepted stored-credential verification requirement. Correctly report committed-but-unverified state and required reauthentication; do not bypass verification or automatically retry an uncertain write. | src/manager/mod.rs::save_credentials/can_verify_batch; docs/architecture/api-contract.md |
+| 3. Credential editing, batches and removal | Supported named authentication SET batches now check all required covered saved values, including new manual values when OAuth exists. Removal-only, unbound and non-auth environment/custom-header edits can still commit then return verification failure; their final outcomes remain unresolved. | Resolve and implement the successful outcomes for these advertised Settings operations consistently with the accepted stored-credential verification requirement. Correctly report committed-but-unverified state and required reauthentication; do not bypass verification or automatically retry an uncertain write. | src/manager/mod.rs::save_credentials_locked/verify_stored_with_manual; docs/architecture/api-contract.md |
 | 4. Real configuration import compatibility | Precise Miro/Vercel/v0/HF endpoints, narrow HF queries, proven mcp-remote bridge forms and curated Everything/Time launcher forms now pass seven fixtures. Full inventory setup and real installation/connection compatibility remain unverified; unknown grammars stay explicit. | Exercise selected safe inventory forms through the actual UI installer/client, preserving source identity and fresh credential references; resolve concrete remaining compatibility findings. | src/discovery/mod.rs; tests/import_compatibility.rs; docs/architecture/real-use-compatibility.md |
 | 5. Shared UI code and acceptance | Native components/theme and browser document/message/form helpers are implemented and compiled. Real visual states, later approved credential-result changes and Railway Figma mapping remain unverified/pending. | Preserve actual layout/masking/actions/scrolling in native checks; integrate final structured credential outcomes and maintain the matching reference index. | src/ui/components.rs; src/ui/theme.rs; src/browser.rs; docs/SHARED_UI_COMPONENTS.md |
 
@@ -102,7 +145,7 @@ replacement is not implemented or being claimed.
 Design follow-up: the coverage index does not yet trace the separate D80 Railway
 callback renderer in src/manager/provider_callback.rs. Its seven distinct response
 texts need explicit specimen mapping/reconciliation. Do not assume the existing
-generic provider callback frames cover them, or add them to the153 count without
+generic provider callback frames cover them, or add them to the 153 count without
 evidence. This is UI-reference maintenance within area5, not an extra backend.
 
 ## Explicitly outside the selected first release

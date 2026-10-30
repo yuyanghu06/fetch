@@ -80,3 +80,10 @@ Review populated, empty, busy, disabled, error, expanded and scrolled states whe
 code changes are selected. Preserve the fixed Install footer and actual long
 Settings layout. Existing authorization still governs builds, tests and runtime
 work. See [FIGMA.md](FIGMA.md) for screenshot evidence and typography limits.
+
+October 30 authentication availability follow-up: the shared credential editor and
+card layouts are unchanged. Their callers now supply per-server request state,
+so a request for one server leaves another server's Authenticate/key-save controls
+available. Same-server actions and stale replies remain guarded. The source
+state combinations and14 passing UI fixtures are recorded in UI_STATE_COVERAGE.md;
+they do not add Figma frames or establish actual native visual acceptance.

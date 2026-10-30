@@ -62,3 +62,14 @@ Source/build review for this change is recorded in the active milestone.
 Pending authentication status, installation progress and each named restart now
 have independent read-in-flight guards. One slow install/restart no longer
 prevents checking a different server's browser sign-in.
+
+## October 30 independent authentication requests
+
+`auth_requests.rs` owns request tokens by server and ordered server-read IDs.
+Explicit authentication, inline key saves and Settings key changes use that
+tracking instead of the general busy flag. Different servers can have outstanding
+requests; a same-server edit/restart/duplicate remains blocked. Closing clears
+request ownership, and old completion/status-read messages cannot replace newer
+results. The existing shared editor, masking, API calls and layout remain.
+Independent tests include helper/Flow states and use a test-only host to exercise
+Desktop messages without opening a window; actual native appearance is separate.

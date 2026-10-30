@@ -1,5 +1,37 @@
 # Project notes
 
+## October 30, 2026 — Implement the approved authentication fix
+
+The user said go and asked for remaining MVP blockers before beginning testing.
+Backend and UI changes now retain POST's saved-key authenticated check, allow
+independent per-service UI requests, and verify all supported assigned API-key
+references in a save. Old OAuth cannot approve a bad newly submitted manual key.
+The independent 25 new tests include five actual Desktop message cases without
+windows; all93 combined fixtures and the locked native binary build pass. Final
+review and delivery are recorded in the scoped milestone. Broader provider setup,
+generic remote verification, deletion/non-auth outcomes, protected native setup
+and actual install/client/restart proof remain. No live provider, native window,
+Keychain or MCP/client workflow was exercised.
+
+## October 30, 2026 — Clarify authentication checks and parallel services
+
+The user reaffirmed that POST authenticate must return credential-based success
+only after an authenticated service check using the saved API key. They asked why
+the implementation only handles one key and whether services can authenticate in
+parallel, and requested an implementation summary. The earlier explanation mixed
+up POST authentication and PATCH credential saving: the one-entry restriction is
+in PATCH. Backend coordination is already per server; the UI has one outstanding
+auth-request slot and blocks other requests until it returns. Multiple browser
+flows can already remain pending after their initial responses.
+
+Plan: preserve POST's verified result and D31's checked-save requirement, use
+per-server UI request tracking, and replace the one-entry shortcut with supported
+credential-group checks. Several values for one service may need one joint test;
+different services can be checked independently. Deletion-only success and the
+previous protected-MCP proof choice remain unresolved. This is a source/document
+review and plan, not an implemented fix or a new test result. See the
+[canonical clarification](docs/architecture/api-contract.md#required-stored-credential-verification--d25).
+
 ## October 29, 2026 — Local MVP implementation and actual verification authorized
 
 The user asked to finish/build/test the local MVP autonomously, install a real
@@ -835,7 +867,7 @@ The user authorized compilation and build-error fixes, then explicitly asked to 
 
 ## October 28, 2026 — Native binary compilation succeeds
 
-`cargo build --locked --bin fetch --message-format short` completed with exit0 in12.61seconds on Rust/Cargo1.95.0, producing target/debug/fetch. Fixed one gateway match-guard syntax error and removed three unused imports; Cargo.lock now resolves the declared dependencies. Independent source/build-evidence review ACCEPT. Four older Keychain API warnings and one unread protocol-field warning remain non-blocking. No tests/test-target builds, binary/app/service launch, native/Keychain/trust/credential action, MCP/provider/client connection, managed server setup or packaging occurred. Runtime behavior remains unverified. Commit/push follows the explicit user instruction.
+`cargo build --locked --bin fetch --message-format short` completed with exit 0 in12.61seconds on Rust/Cargo1.95.0, producing target/debug/fetch. Fixed one gateway match-guard syntax error and removed three unused imports; Cargo.lock now resolves the declared dependencies. Independent source/build-evidence review ACCEPT. Four older Keychain API warnings and one unread protocol-field warning remain non-blocking. No tests/test-target builds, binary/app/service launch, native/Keychain/trust/credential action, MCP/provider/client connection, managed server setup or packaging occurred. Runtime behavior remains unverified. Commit/push follows the explicit user instruction.
 
 D79 fixes/lockfile and current records were delivered in70e0f785fcc560f1af234ea6c9c6a9aadb97fe90, pushed to origin/main with matching local remote-tracking SHA. Compile-only milestone complete; all tests, launches and MCP connections remain paused.
 
@@ -871,7 +903,7 @@ personal configs. The prior proposed Fetch-Testing folder is not the debug defau
 ## October 28, 2026 — Development-default binary compilation
 
 After source/documentation acceptance, cargo build --locked --bin fetch
---message-format short succeeded with exit0 in9.74seconds. Four Keychain API
+--message-format short succeeded with exit 0 in9.74seconds. Four Keychain API
 deprecation warnings and one unread protocol-field warning remain. No tests or
 Fetch executable were run. Fresh Codex configuration/authentication and actual
 MCP installs/connections remain pending; personal config/state was not changed.
@@ -898,7 +930,7 @@ The user then requested independent/bounded list scrolling, always-visible
 Install selected servers and Select all at the top. Implemented fixed header,
 bounded discovery/progress/messages, fixed install/count footer, supported-only
 bulk selection and inactive-state guards. Source flags remain unchanged.
-Independent source review ACCEPT; native binary build exit0 in10.45seconds.
+Independent source review ACCEPT; native binary build exit 0 in10.45seconds.
 No tests or native layout interaction were run; relaunch/manual checks remain.
 
 
@@ -1004,7 +1036,7 @@ processes require explicit Restart to receive background-refreshed tokens.
 
 Inline authentication/manual entry/progress and safe first-party HTTP request
 logs are implemented. Tests and actual browser/provider/CLI/MCP/native behavior
-remain unrun. Final binary compiles exit0 in4.66s; separate Tester and Evaluator
+remain unrun. Final binary compiles exit 0 in4.66s; separate Tester and Evaluator
 source acceptance covers this scoped fix only. Full MVP gaps remain tracked;
 no release or personal client/trust/state edits occurred.
 
@@ -1049,6 +1081,6 @@ areas, not seven tickets, an estimate of equal effort, a percentage or a finish 
 The canonical remaining-work list is docs/testing/MVP_GAPS.md, with concrete
 source references and finish criteria. Existing deferred features remain outside
 the count. Railway sign-in/logging source already compiles, and the credential
-editor is already shared. Its actual login remains untested. The153-state Figma
+editor is already shared. Its actual login remains untested. The 153-state Figma
 index is source/reference evidence; mapping the newer separate Railway callback
 renderer is a recorded follow-up rather than assumed complete visual coverage.

@@ -29,3 +29,12 @@ across separate target runs. After the issuer-response fix added one library
 case, a fresh combined run passed all 68 selected cases with exit 0, including
 all seven disposable HTTPS cases. Earlier failure/retest evidence is preserved.
 See [actual fixture evidence](../milestones/local-working-mvp/evidence/fixture-checks-2026-10-29.md).
+
+## October 30 authentication fixtures
+
+New unit fixtures live beside their owned modules: src/manager/auth_tests.rs
+contains 11 cases and src/ui/auth_tests.rs contains 14, including five real Desktop
+message cases without windows or executed Tasks. All25 pass. A fresh combined
+run passes93/93 and the native binary builds. See
+[the scoped evidence](../milestones/parallel-authentication/evidence.md) for commands
+and limits. No real provider/native/MCP/test-Codex acceptance follows.

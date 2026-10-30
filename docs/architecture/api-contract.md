@@ -795,6 +795,20 @@ When an integration is eventually selected, verify login success, encrypted pers
 
 #### Required stored-credential verification — D25
 
+October 30 clarification: the user reaffirmed that explicit API-key authentication
+returns its verified result from `POST /api/v1/servers/{server_id}/authenticate`.
+The former one-entry condition in credentials PATCH was an implementation
+limitation, not an agreed limit on authentication across services. Different
+servers can authenticate independently; retain one active login per server.
+The implemented fix replaces the UI's single outstanding authentication request
+with per-server tracking and verifies all required references covered by existing
+named service adapters instead of requiring exactly one SET entry. This does not
+add generic username/password or client-secret verification adapters. D31 below
+also gates credential-save success; this clarification does not remove that requirement or
+approve storage-only success for deletion/non-auth changes. The scoped source
+now passes 25 new fixtures (93 combined) and native compilation; actual native,
+provider and MCP/client acceptance is still unrun.
+
 The user explicitly requires authentication success only after a successful credential store and a `2xx` test using that stored credential. They clarified that the test target is **the service's authenticated test endpoint**, not an endpoint literally named lifeboat. This success requirement is confirmed; D27 later approves the reviewed general route policies; D25 itself did not approve them.
 
 For each credential-based authentication flow, require this ordered gate:

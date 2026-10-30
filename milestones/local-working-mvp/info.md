@@ -23,10 +23,24 @@ Notify the user only once the requested working-local outcome is genuinely compl
 
 ## Status and boundaries
 
+October 30 follow-up: the bounded [parallel-authentication fix](../parallel-authentication/info.md)
+passes 25 new fixtures and93 combined checks; native binary compilation succeeds.
+It covers supported named API-key references and independent UI requests. The
+parent milestone remains incomplete: broader provider setup, generic remote
+verification, deletion/non-auth outcomes and actual protected native/client proof
+remain. See the current blocker list in docs/testing/MVP_GAPS.md.
+
+October 30 plan clarification: POST authenticate keeps the saved-key authenticated
+service check before reporting authenticated. Backend coordination is per server;
+planned work removes the UI's one outstanding request limit and PATCH's one-entry
+verification shortcut using supported credential groups. D31's checked-save gate
+remains. No application fix or new test result is recorded in this planning pass.
+See the October 30 entries linked from the rolling snapshot.
+
 In progress. Precise public imports, native/browser shared rendering and generic
 remote OAuth source are implemented. The final locked native binary builds and
 all68 selected fixtures pass together; independent scoped review ACCEPT after
-issuer-binding correction. Clippy exits0 with72 warnings, not strict lint clean.
+issuer-binding correction. Clippy exits 0 with72 warnings, not strict lint clean.
 Credential-save and protected-MCP verification amendments await user decisions.
 Only sandbox-exec is available among inspected local isolation tools. Native Fetch
 currently uses the user's login Keychain; a separate profile alone is insufficient.

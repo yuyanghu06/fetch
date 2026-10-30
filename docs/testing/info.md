@@ -34,3 +34,8 @@ D79 authorizes compilation/build fixes only. The binary build now succeeds; the 
 [DIAGNOSTICS.md](DIAGNOSTICS.md) explains safe request logging and its limits.
 [MVP_GAPS.md](MVP_GAPS.md) records actual incomplete selected source paths;
 source/build checks must not be presented as working-product acceptance.
+
+October 30: LOCAL_MVP_RUN.md and MVP_GAPS.md now distinguish the completed parallel
+authentication fix (25 new fixtures,93 combined pass, native build pass) from
+provider setup, deletion/non-auth outcomes, generic remote proof and protected
+native/client testing still required. Packaging is not a local-testing blocker.

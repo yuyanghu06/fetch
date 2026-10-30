@@ -1,5 +1,68 @@
 # Fetch milestone snapshot
 
+## October 30 — scoped authentication fix accepted
+
+POST authenticate keeps its saved-key authenticated check; supported named
+API-key batches check every required covered value. Authentication and Settings
+credential requests now track each server independently. Independent25 new
+fixtures and93 combined checks pass, the native binary builds and final
+Evaluator ACCEPTs the bounded change. Commit/push delivery is next; no live
+native/provider/MCP/client readiness is claimed.
+
+The user can begin the no-login reference-server subset after the protected
+native session exists. Broader provider setup, generic remote authentication
+proof, deletion/non-auth outcomes and actual installation/client/restart
+acceptance remain the concrete full-MVP blockers.
+
+- [Accept the scoped authentication fix](history/2026-10-30_16-24-52-062867-evaluator-accept-parallel-authentication.md)
+- [Integrate checked credential batches and parallel service authentication](history/2026-10-30_16-24-52-062868-orchestrator-integrate-parallel-authentication-and-blockers.md)
+
+## October 30 — authentication fixes pass independent fixtures and native build
+
+The scoped change now passes 25 new authentication/UI checks and the combined
+93-test suite; the locked native binary builds in 0.54s. Five new tests exercise
+actual Desktop message handling without a window or executing Tasks. POST still
+requires the saved-key authenticated service check. Supported named API-key
+references can be verified in batches; per-server UI requests no longer block
+one another. Final evaluation and commit/push are pending.
+
+Remaining MVP blockers are broader provider/wrapper setup, generic remote login
+proof where no supported service checker exists, credential deletion/non-auth
+outcomes, protected native-session setup and actual installation/provider/client/
+restart acceptance. No source fixture proves those live workflows.
+
+- [Independent fixture/build pass](history/2026-10-30_16-22-11-273949-tester-parallel-authentication-fixtures-and-build.md)
+- [Bounded milestone and criteria](parallel-authentication/info.md)
+- [Current remaining work](../docs/testing/MVP_GAPS.md)
+
+## October 30 — authentication source implemented; independent checks in progress
+
+Backend source now checks supported saved credential groups without a one-entry
+shortcut. UI source tracks authentication and credential-change requests per
+server; same-server ownership and old-response protection remain. Both writers
+compiled their source successfully. A test-only host factory enables actual
+Desktop message tests without a window, Keychain or native authority prompt.
+Independent fixtures/build and final evaluation are pending. This is not full
+MVP/native/provider acceptance.
+
+- [Implement supported multi-entry authentication verification](history/2026-10-30_16-20-04-162340-coder-backend-checked-credential-groups.md)
+- [Implement independent authentication request tracking in the UI](history/2026-10-30_16-20-04-162341-coder-ui-independent-authentication-requests.md)
+- [Provide safe host construction for independent Desktop update tests](history/2026-10-30_16-20-04-162342-orchestrator-safe-window-free-ui-test-fixture.md)
+
+## October 30 — authentication-route clarification and bounded fix plan
+
+User reaffirmed POST authenticate's saved-key service check and requested parallel
+authentication across services. Read-only Planner/source review confirms PATCH's
+one-entry shortcut and the UI's one outstanding auth-request slot are separate
+implementation limitations; backend locks are already per server. Plan: retain
+D25/D31, track UI requests per server, verify actual required credential groups,
+and check independent success/failure, same-server duplicates and stale results.
+No application changes/tests/runtime actions in this pass. Deletion-only success
+and protected-MCP proof remain unselected; protected native testing remains pending.
+
+- [Planner contract/source findings](history/2026-10-30_16-12-16-172362-planner-authentication-route-and-parallel-services.md)
+- [Orchestrator clarification and handoff](history/2026-10-30_16-12-16-172363-orchestrator-authentication-plan-clarification.md)
+
 D81 scoped source/evidence delivery is pushed through f6563b3 with matching local/
 remote SHA and a clean tree at that checkpoint. [Delivery and exact pending handoff](history/2026-10-29_12-24-46-000001-orchestrator-scoped-local-source-delivery.md).
 This record's documentation follow-up is separate; no local MVP completion is claimed.
@@ -21,9 +84,9 @@ All earlier incomplete scope remains tracked below.
 - [Shared native UI source pass](history/2026-10-29_12-01-40-000003-coder-native-shared-ui-source.md)
 
 Native/browser shared helpers, known import forms and generic remote OAuth source
-are implemented. Final locked native build exit0; independent combined suite68/68
+are implemented. Final locked native build exit 0; independent combined suite68/68
 PASS. Initial import assertion failure was corrected/retested. Source review found
-and resolved issuer mix-up; final scoped ACCEPT. Clippy exits0 with72 warnings.
+and resolved issuer mix-up; final scoped ACCEPT. Clippy exits 0 with72 warnings.
 No live UI/MCP/provider acceptance: a copied offline Codex starts with0 servers;
 CUA test-user setup is at administrator Unlock. No account/password/security/trust
 change or real MCP connection. Pending2 credential choices and protected native
@@ -105,7 +168,7 @@ HTTP completion is headers-ready, not terminal streamed-tool completion.
 Install, restart and auth monitoring now run independently.
 
 Final command: cargo build --locked --bin fetch --message-format short,
-exit0 in4.66s (prior integrated build19.64s). Existing four Keychain deprecation
+exit 0 in4.66s (prior integrated build19.64s). Existing four Keychain deprecation
 warnings and one unread protocol field warning remain. Tester and independent
 Evaluator ACCEPT scoped source/build only. No tests/test-target builds, app
 launch, provider/MCP/client requests, npm/CLI setup, personal state/credentials/
@@ -215,7 +278,7 @@ progress details scroll within it. Select all picks supported definitions only
 source flags, discovering or installing. Other pages retain previous scrolling.
 
 Independent source verification and Evaluator ACCEPT. Locked native binary build
-succeeded, exit0 in10.45seconds; existing warnings only. No new tests or native/UI
+succeeded, exit 0 in10.45seconds; existing warnings only. No new tests or native/UI
 execution by agents. Long-list/minimum-window/scroll preservation still need
 manual checks after relaunch. The prior user screenshot is evidence of the old
 overflow, not verification of the fix. See [scope](install-list-controls/info.md).
@@ -238,7 +301,7 @@ an absolute path and preserves input on Cancel. Selection alone does not read
 config content, discover or install. UI/callback lifecycle received independent
 source-verification and Evaluator ACCEPT with no requested fixes.
 
-`cargo build --locked --bin fetch --message-format short` succeeded, exit0 in
+`cargo build --locked --bin fetch --message-format short` succeeded, exit 0 in
 11.35seconds. No tests, app/dialog, login, install or MCP connections were run by
 agents. Interactive checks remain pending after relaunch; prior development path
 separation and all earlier unfinished runtime acceptance remain intact.
@@ -253,7 +316,7 @@ See [picker scope](config-file-picker/info.md) and the updated development guide
 
 ## Latest evidence — development binary compiles
 
-`cargo build --locked --bin fetch --message-format short` succeeded with exit0
+`cargo build --locked --bin fetch --message-format short` succeeded with exit 0
 in9.74seconds after the development-state changes. The binary was not executed.
 Four native Keychain deprecation warnings and one unread protocol-field warning
 remain. The four new regression tests remain unexecuted. No native/MCP/client
@@ -319,7 +382,7 @@ No tests/test targets, binary/application/service launch, MCP/provider connectio
 
 ## Verification and next action
 
-First command: `cargo build --bin fetch --message-format short`, exit101 at src/mcp/mod.rs:151. Corrected build: `cargo build --locked --bin fetch --message-format short`, exit0 in12.61seconds, producing target/debug/fetch. Toolchain1.95.0; dependencies resolved under manifest Rust1.89 compatibility. Four native classic-Keychain deprecation warnings and one unread protocol-error field warning remain. Independent source/build-evidence review ACCEPT. Fixes and Cargo.lock are committed/pushed as70e0f785fcc560f1af234ea6c9c6a9aadb97fe90; local HEAD and origin/main agreed after push. Stop; do not run the executable. Every runtime/test step remains for the user's separate instruction.
+First command: `cargo build --bin fetch --message-format short`, exit101 at src/mcp/mod.rs:151. Corrected build: `cargo build --locked --bin fetch --message-format short`, exit 0 in12.61seconds, producing target/debug/fetch. Toolchain1.95.0; dependencies resolved under manifest Rust1.89 compatibility. Four native classic-Keychain deprecation warnings and one unread protocol-error field warning remain. Independent source/build-evidence review ACCEPT. Fixes and Cargo.lock are committed/pushed as70e0f785fcc560f1af234ea6c9c6a9aadb97fe90; local HEAD and origin/main agreed after push. Stop; do not run the executable. Every runtime/test step remains for the user's separate instruction.
 
 ## Current pass history
 

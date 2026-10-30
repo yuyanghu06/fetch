@@ -6,7 +6,7 @@ Manual credentials require a native Settings capability bound to the exact batch
 
 Source includes Tavily/GitHub authenticated reads and Linear's documented authenticated GraphQL viewer read, plus metadata-driven Linear OAuth with PKCE and owned encrypted refresh state. [Linear MCP](https://linear.app/docs/mcp), [Linear API](https://linear.app/developers/graphql) and the existing architecture/provider research inform these paths. No provider authentication or test was performed during implementation.
 
-The required verification gate has no unchecked-success exception. A single new effective assigned manual credential can succeed only after its readback passes the provider check; unsupported, unreferenced, multi-entry, removal-only or OAuth-shadowed manual changes cannot borrow a previous credential's successful check. They can commit encrypted storage and still return `CREDENTIAL_VERIFICATION_FAILED`, with explicit saved-state guidance. This preserves the unresolved edge-case boundary rather than claiming broad integration support.
+The required verification gate has no unchecked-success exception. Supported assigned manual authentication entries can be saved together; each required value must pass its service check from encrypted readback. An existing OAuth token cannot approve a newly submitted manual value. Unsupported/unreferenced values and removal-only changes can still commit encrypted storage and return `CREDENTIAL_VERIFICATION_FAILED`; their final outcome policy remains unresolved. Multiple values are supported only where existing named adapters cover them.
 
 Stdio servers without an explicit saved working directory now use their private
 server home as both the default HOME and working directory, keeping relative
@@ -60,9 +60,9 @@ their execution separately; writing these fixtures is not a passing result.
 
 Generic grant storage is distinct from authentication proof. Under the current
 D25/D31 contract it still cannot report authenticated without an approved provider
-verification adapter. The two pending user decisions about saved-state success
-and protected-MCP proof have not been implemented. Existing credential batches,
-removal and unknown local setup limitations therefore remain explicit.
+verification adapter. Deletion/non-auth success and protected-MCP proof remain unselected. Supported
+API-key batches are implemented; removal/non-auth outcomes and unknown local
+setup remain explicit gaps.
 
 ## Recorded inventory support, without personal configuration access
 
@@ -84,3 +84,15 @@ or copied for this implementation.
 Read [the remaining-work record](../../docs/testing/MVP_GAPS.md) for operational
 acceptance and follow-ups. The Railway callback now uses the shared first-party
 HTML message helper while preserving its response texts, statuses and headers.
+
+## October 30 checked credential groups
+
+The manager no longer requires exactly one SET entry. Existing named API-key
+adapters collect their supported assigned references, deduplicate shared entries
+and verify all required current manual values. PATCH also verifies every submitted
+covered value when an OAuth token exists; that older token cannot approve a new
+unchecked key. POST and PATCH retain D25/D31 and per-server locking. Arbitrary
+client-secret schemes, unknown/unbound entries and removal-only success are not
+added. The mock verification destination exists only in cfg(test); production
+requests retain the fixed documented service endpoints. Independent new fixture
+results are recorded in the parallel-authentication milestone.

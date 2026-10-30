@@ -4,11 +4,16 @@
 
 ## Active local MVP completion — D81
 
+- [x] Independent Evaluator ACCEPT for the October30 scoped authentication fix;25 new and93 combined fixtures pass, native build passes.
+- [x] October30: distinguish POST authenticate's required check from PATCH's one-entry limitation; inspect backend/UI concurrency with a read-only Planner.
+- [x] Implement per-server UI authentication/credential request tracking; independent fixtures pass.
+- [x] Replace credential-save's one-entry shortcut with supported assigned-reference checks, preserving D25/D31; independent fixtures pass.
+- [x] Verify current stored-key checks, supported multi-entry batches, parallel service outcomes and late-result protection:25 new cases and93 combined fixtures pass; native binary builds. Actual provider acceptance remains pending.
 - [ ] Finish imports, general/provider sign-in, credential outcomes and shared UI.
 - [x] Implement exact known public/bridge imports and curated launcher forms;7 fixture cases pass.
 - [x] Implement native/browser shared helpers/theme; compiled and reviewed, actual visuals pending.
 - [x] Add generic remote discovery/registration/renewal and issuer-bound callback source; full verified provider success still pending.
-- [ ] Resolve the two focused credential-contract choices without reopening settled scope.
+- [ ] Resolve deletion/non-auth credential-change outcomes and protected-MCP authentication proof without reopening the agreed saved-key success check.
 - [x] Run independent combined68 fixture checks and final locked native build; fix the import assertion/issuer finding and retest. Clippy exits0 with72 warnings.
 - [ ] Establish actual protected local environment, separate Codex state and scoped trust.
 - [x] Prepare copied Codex with fresh file-based state; offline app-server starts with0 MCPs and disposable path canaries pass. No real connection/trust/native proof.

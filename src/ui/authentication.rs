@@ -70,9 +70,9 @@ impl Flow {
             Some("unknown") => if self.phase == Phase::Unknown { Phase::Unknown } else { Phase::NeedsVerification },
             _ => return,
         };
-        // A failed manual save may have committed before verification, or failed
-        // before changing the previous unknown state. Keep its known repair UI.
-        if self.phase == Phase::Failed && self.manual && matches!(phase, Phase::Unknown | Phase::NeedsVerification) {
+        // A rejected/uncertain manual save can leave an older credential valid.
+        // That server state must not turn this failed save into apparent success.
+        if self.phase == Phase::Failed && self.manual && phase != Phase::Failed {
             self.reconcile = false;
             return;
         }
