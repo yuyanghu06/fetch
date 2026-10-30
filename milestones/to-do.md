@@ -4,6 +4,7 @@
 
 ## Active local MVP completion — D81
 
+- [x] Commit/push accepted D82 shared authentication source/tests/docs as df094cc; verified matching live refs/clean feature checkpoint. Delivery-record follow-up separate.
 - [x] Fix D82 evaluator login-mode/evidence/manual-header findings and add three regression cases; final 35 manager/110 combined cases and native build pass.
 - [x] D82: user approves shared imported-input/storage/delivery and trusted verification descriptions; D25/D31 stay required.
 - [x] Implement/test/evaluate D82 generic bindings/trusted-description verifier:17 new,35 targeted manager and110 combined cases pass; native build and independent Evaluator ACCEPT. Delivery follows.

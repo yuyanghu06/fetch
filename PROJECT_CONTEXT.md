@@ -4,7 +4,8 @@ D82 generic authentication is implemented: imported names resolve through one
 input module, trusted data describes checks, and one engine builds/tests them
 using encrypted readback. Remote OAuth selection remains independent. Final
 17 new/110 combined fixtures and native build pass; independent evaluation
-ACCEPTs the scoped change and delivery follows. Unknown services still need trusted descriptions and
+ACCEPTs the scoped change; feature delivery is pushed as df094cc (delivery-record
+follow-up separate). Unknown services still need trusted descriptions and
 compatible login ownership, and actual native/provider/MCP/client proof is unrun.
 
 D82 (October 30): user approved generic imported credential inputs/common

@@ -25,7 +25,9 @@ special cases. The prior per-server UI concurrency work remains intact.
 ## Status and boundaries
 
 Complete for the bounded source/fixture scope after independent Evaluator ACCEPT.
-Commit/push delivery follows; the parent local working MVP remains incomplete.
+Feature source/tests/docs are committed and pushed as df094cc with matching
+live refs and a clean checkpoint. This delivery-record follow-up is separate;
+the parent local working MVP remains incomplete.
 The writer separated login mode from verification descriptions, excluded unrelated
 headers from auth evidence and preserved manual-only remote proof. Three new
 regressions pass. Independent 35 targeted manager/110 combined cases and native

@@ -1,5 +1,13 @@
 # Fetch milestone snapshot
 
+## October30 delivery — generic authentication committed and pushed
+
+Accepted D82 source/tests/docs are pushed as df094cc; HEAD/tracking/live remote
+matched with a clean tree. This delivery-record follow-up is separate.
+[Delivery and exact handoff](history/2026-10-30_17-21-02-095274-orchestrator-deliver-generic-authentication.md).
+The bounded source/fixture milestone is complete; the parent working MVP remains
+incomplete. No actual native/provider/MCP/client readiness or completion alert.
+
 ## October 30 — D82 generic authentication accepted
 
 Generic input resolution and the trusted-description verifier are implemented
