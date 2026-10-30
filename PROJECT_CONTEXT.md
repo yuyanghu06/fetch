@@ -1,5 +1,19 @@
 # Fetch — current project context
 
+D82 generic authentication is implemented: imported names resolve through one
+input module, trusted data describes checks, and one engine builds/tests them
+using encrypted readback. Remote OAuth selection remains independent. Final
+17 new/110 combined fixtures and native build pass; independent evaluation
+ACCEPTs the scoped change and delivery follows. Unknown services still need trusted descriptions and
+compatible login ownership, and actual native/provider/MCP/client proof is unrun.
+
+D82 (October 30): user approved generic imported credential inputs/common
+encrypted delivery and one verifier using trusted request descriptions. Internal
+refactor underway; D25/D31 remain and no public verifier schema is added. Prior
+93-test/native-build evidence applies to the previous parallel-authentication
+source only; this change needs its own tests/build/evaluation. Installed CLT tools
+work when selected for the build process; no Mac setting changed.
+
 October 30 scoped authentication fix: POST authenticate still reports verified
 success only after checking the saved credential with the service. The UI now
 tracks authentication/credential-change requests per server, and backend saves

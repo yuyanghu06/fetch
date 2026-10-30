@@ -11,6 +11,13 @@
 
 # Fetch architecture records
 
+October30 D82: generic imported credential inputs and trusted descriptions now
+drive the approved authentication refactor. Storage/delivery is shared; a trusted
+description specifies each check's inputs, request and success condition for one
+generic executor. D25/D31 proof remains required. The internal change adds no new
+public route/config schema or inferred unknown-provider login. Current progress:
+[generic authentication](../../milestones/generic-authentication/info.md).
+
 Updated October28, 2026 after D74. The first Rust developer backend is implemented, tested and pushed. The desktop interface, native app authorization, package installation and MCP sharing are unfinished. Current default: `https://localhost:53671`; no release or live managed-MCP testing.
 
 ## Read before continuing
@@ -28,6 +35,7 @@ One local Rust/macOS app; one saved Fetch connection/token per agent at `/mcp`; 
 | All product decisions | [decisions.md](decisions.md), D74 authorizes building/pushing; the current port follow-up is recorded there. |
 | Existing APIs | [api-contract.md](api-contract.md); exact remaining engineering work is gathered once in the implementation checkpoint. |
 | App connection | [client-authorization.md](client-authorization.md), D71 presented scope approved; [HTTPS/certificates](local-oauth-trust.md), D70. |
+| Shared authentication | [Internal engine and trusted descriptions](authentication-engine.md), D82; imported inputs stay generic and D25/D31 proof is retained. |
 | Settings/secrets | [storage](storage-scope.md), [shown D72 direction and unshown mechanism candidates](secret-storage-settings.md). |
 | Tool/native/runtime | [execution](mcp-execution.md), [connection](mcp-connection.md), [management tools](mcp-management-tools.md), [resources/prompts](mcp-resources-prompts.md). |
 | Remote/raw/catalog | [remote amendment](remote-api-amendment.md), [protocol adapters](mcp-protocol-adapters.md), [catalog](tool-catalog-status.md), [names](mcp-tool-names.md), [presentation](mcp-presentation.md), [interaction relay](mcp-interaction-relay.md). |

@@ -23,6 +23,18 @@ Notify the user only once the requested working-local outcome is genuinely compl
 
 ## Status and boundaries
 
+D82 shared authentication mechanism is complete for source/fixture scope:
+17 new/110 combined cases and native build pass; independent evaluation ACCEPTs.
+Trusted descriptions replace per-service verification functions, while arbitrary
+input names use common encrypted resolution/delivery. Unknown services still need
+proof descriptions and compatible login ownership; real protected native/client
+acceptance and the other parent-MVP gaps remain.
+
+October30 follow-up: the user challenges hardcoded provider/auth-name/test cases
+and asks for shared config-driven authentication. Read-only research and source
+findings are linked from the rolling snapshot. The recommendation is under
+review; D25/D31 and actual provider/native/client blockers remain unchanged.
+
 October 30 follow-up: the bounded [parallel-authentication fix](../parallel-authentication/info.md)
 passes 25 new fixtures and93 combined checks; native binary compilation succeeds.
 It covers supported named API-key references and independent UI requests. The
@@ -57,3 +69,8 @@ Native/browser helper source is compiled and fixture-tested, not visually checke
 No actual MCP installation, native Fetch launch, provider login/client tool call,
 trust change or packaging occurred. Do not mark the local MVP ready or send its
 completion alert. Plan/research/source/test/review reports are linked from the snapshot.
+
+D82 follow-up is now approved and implementing the shared input/verification
+engine. The previously discussed design is no longer merely under review;
+source/fixtures/evaluation for the new milestone are still pending. No unknown
+provider login or real native/client proof is implied.

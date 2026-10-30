@@ -5,6 +5,26 @@ actual computer-use MCP installation and a separate test Codex instance. No DMG,
 packaging, signing/notarization or release work. This file records this run's
 actual results; earlier evidence remains in its original records.
 
+## October 30 D82 generic authentication follow-up
+
+Imported environment/header names now use a generic encrypted-input resolver;
+trusted compiled-in descriptions define authenticated checks for one executor.
+Existing known service facts are data; no caller/imported-config verifier URL
+was added. Standard remote OAuth remains available when adding a description,
+and non-auth settings do not count as credential evidence. D25/D31 remain.
+
+Independent final 17 new cases,35 targeted manager cases and110 combined checks
+pass; locked native binary build exits 0 in 0.43s. Review found/fixed two lifecycle
+regressions before final retest; see
+[the durable evidence](../../milestones/generic-authentication/evidence.md).
+Commands use installed CLT tools process-scoped with no Mac settings change.
+
+Independent scoped evaluation ACCEPTs the completed shared mechanism;
+unknown services still need trusted verification descriptions and documented
+login ownership. Deletion/non-auth outcomes, protected native-session setup and
+actual UI/provider/MCP/test-Codex/restart acceptance remain. No live provider or
+native/Keychain/MCP/client workflow ran in this refactor.
+
 ## October 30 authentication follow-up
 
 The user approved the route/concurrency fix and requested remaining blockers for

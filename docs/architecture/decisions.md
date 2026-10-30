@@ -798,3 +798,25 @@ DMG packaging, signing, notarization and distribution/release work are explicitl
 excluded from this pass. Existing product contracts remain in force; the two
 credential-save/protected-MCP verification amendments sent for user input are
 pending and are not approved by silence or this broad work instruction.
+
+## D82 — Reuse imported credential bindings and declarative verification
+
+October30,2026. After questioning connector-specific hardcoding, the user replied
+yes and do that to generic credential inputs, shared encrypted storage/delivery,
+standard HTTP OAuth and one verifier driven by a small trusted request description.
+
+Read supplied environment/header names and references generically from imported
+configs. Storage/delivery must not require recognizing the provider or matching
+a Rust variable-name list. A trusted verification description defines the
+request destination/method, which saved inputs it uses, their placement and the
+condition proving success. Shared code resolves and executes it; existing service
+request facts may live in data. Ordinary config names do not supply a universal
+proof request or establish that every value is an authentication token.
+
+D25/D31 remain: check encrypted saved readback before authentication/checked-save
+success, cover every submitted authentication value and do not substitute old
+OAuth, public ping or tools/list readiness. Keep generic remote OAuth discovery
+and ownership/lifecycle constraints. This approves the bounded internal refactor;
+it adds no public verifier-URL/settings API, persisted schema migration, deletion/
+non-auth success exception or automatic unknown-provider/wrapper login. Existing
+provider facts and precise unsupported outcomes remain explicit.

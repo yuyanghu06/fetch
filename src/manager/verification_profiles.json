@@ -1,0 +1,255 @@
+[
+  {
+    "id": "tavily",
+    "targets": {
+      "packages": [
+        "tavily-mcp"
+      ],
+      "hosts": [
+        "mcp.tavily.com"
+      ]
+    },
+    "manual": [
+      {
+        "mode": "each",
+        "selectors": [
+          {
+            "source": "environment",
+            "names": [
+              "TAVILY_API_KEY"
+            ]
+          },
+          {
+            "source": "header",
+            "names": [
+              "Authorization"
+            ]
+          }
+        ],
+        "input": "token",
+        "request": {
+          "method": "GET",
+          "url": "https://api.tavily.com/usage",
+          "headers": {},
+          "body": null,
+          "credentials": [
+            {
+              "input": "token",
+              "placement": "header",
+              "name": "Authorization",
+              "prefix": "Bearer ",
+              "strip_prefix": "Bearer "
+            }
+          ],
+          "success": []
+        }
+      }
+    ],
+    "oauth": {
+      "method": "GET",
+      "url": "https://api.tavily.com/usage",
+      "headers": {},
+      "body": null,
+      "credentials": [
+        {
+          "input": "token",
+          "placement": "header",
+          "name": "Authorization",
+          "prefix": "Bearer ",
+          "strip_prefix": "Bearer "
+        }
+      ],
+      "success": []
+    },
+    "login": "manual"
+  },
+  {
+    "id": "github",
+    "targets": {
+      "packages": [
+        "@modelcontextprotocol/server-github"
+      ],
+      "hosts": [
+        "api.githubcopilot.com"
+      ]
+    },
+    "manual": [
+      {
+        "mode": "each",
+        "selectors": [
+          {
+            "source": "environment",
+            "names": [
+              "GITHUB_PERSONAL_ACCESS_TOKEN",
+              "GITHUB_TOKEN"
+            ]
+          },
+          {
+            "source": "header",
+            "names": [
+              "Authorization"
+            ]
+          }
+        ],
+        "input": "token",
+        "request": {
+          "method": "GET",
+          "url": "https://api.github.com/user",
+          "headers": {
+            "User-Agent": "Fetch/0.1",
+            "Accept": "application/vnd.github+json"
+          },
+          "body": null,
+          "credentials": [
+            {
+              "input": "token",
+              "placement": "header",
+              "name": "Authorization",
+              "prefix": "Bearer ",
+              "strip_prefix": "Bearer "
+            }
+          ],
+          "success": []
+        }
+      }
+    ],
+    "oauth": {
+      "method": "GET",
+      "url": "https://api.github.com/user",
+      "headers": {
+        "User-Agent": "Fetch/0.1",
+        "Accept": "application/vnd.github+json"
+      },
+      "body": null,
+      "credentials": [
+        {
+          "input": "token",
+          "placement": "header",
+          "name": "Authorization",
+          "prefix": "Bearer ",
+          "strip_prefix": "Bearer "
+        }
+      ],
+      "success": []
+    },
+    "login": "manual"
+  },
+  {
+    "id": "linear",
+    "targets": {
+      "packages": [],
+      "hosts": [
+        "mcp.linear.app"
+      ]
+    },
+    "manual": [
+      {
+        "mode": "each",
+        "selectors": [
+          {
+            "source": "environment",
+            "names": [
+              "LINEAR_API_KEY"
+            ]
+          },
+          {
+            "source": "header",
+            "names": [
+              "Authorization"
+            ]
+          }
+        ],
+        "input": "token",
+        "request": {
+          "method": "POST",
+          "url": "https://api.linear.app/graphql",
+          "headers": {},
+          "body": {
+            "query": "query FetchCredentialVerification { viewer { id } }"
+          },
+          "credentials": [
+            {
+              "input": "token",
+              "placement": "header",
+              "name": "Authorization",
+              "prefix": "Bearer ",
+              "strip_prefix": "Bearer "
+            }
+          ],
+          "success": [
+            {
+              "rule": "string",
+              "pointer": "/data/viewer/id"
+            },
+            {
+              "rule": "absent",
+              "pointer": "/errors"
+            }
+          ]
+        }
+      }
+    ],
+    "oauth": {
+      "method": "POST",
+      "url": "https://api.linear.app/graphql",
+      "headers": {},
+      "body": {
+        "query": "query FetchCredentialVerification { viewer { id } }"
+      },
+      "credentials": [
+        {
+          "input": "token",
+          "placement": "header",
+          "name": "Authorization",
+          "prefix": "Bearer ",
+          "strip_prefix": "Bearer "
+        }
+      ],
+      "success": [
+        {
+          "rule": "string",
+          "pointer": "/data/viewer/id"
+        },
+        {
+          "rule": "absent",
+          "pointer": "/errors"
+        }
+      ]
+    },
+    "login": "linear"
+  },
+  {
+    "id": "railway",
+    "targets": {
+      "packages": [
+        "@railway/mcp-server"
+      ],
+      "hosts": [
+        "mcp.railway.com"
+      ]
+    },
+    "manual": [],
+    "oauth": {
+      "method": "GET",
+      "url": "https://backboard.railway.com/oauth/me",
+      "headers": {},
+      "body": null,
+      "credentials": [
+        {
+          "input": "token",
+          "placement": "header",
+          "name": "Authorization",
+          "prefix": "Bearer ",
+          "strip_prefix": "Bearer "
+        }
+      ],
+      "success": [
+        {
+          "rule": "string",
+          "pointer": "/sub",
+          "nonempty": true
+        }
+      ]
+    }
+  }
+]

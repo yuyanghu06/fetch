@@ -795,6 +795,14 @@ When an integration is eventually selected, verify login success, encrypted pers
 
 #### Required stored-credential verification — D25
 
+October30 D82 implementation direction: imported environment/header names are
+generic credential input bindings. A trusted internal description selects the
+saved inputs that establish authentication, defines their request placement and
+defines semantic success. One executor uses encrypted readback; names alone do
+not invent proof and non-auth values are not assumed to be tokens. Existing
+routes/results/native-secret authority and D25/D31 success gates remain. There
+is no new public verification-URL field or saved-config migration in this scope.
+
 October 30 clarification: the user reaffirmed that explicit API-key authentication
 returns its verified result from `POST /api/v1/servers/{server_id}/authenticate`.
 The former one-entry condition in credentials PATCH was an implementation

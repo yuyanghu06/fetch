@@ -9,9 +9,9 @@ use crate::{
 };
 use axum::{
     Json, Router,
-    body::Body,
+    body::{Body, Bytes},
     extract::State,
-    http::{HeaderMap, Request, StatusCode, header},
+    http::{HeaderMap, Method, Request, StatusCode, header},
     response::Response,
 };
 use http_body_util::BodyExt;
@@ -44,28 +44,35 @@ impl Authorizer for FixtureAuthority {
     }
 }
 
-struct Observed {
-    authorization: String,
-    respond: oneshot::Sender<StatusCode>,
+pub(super) struct Observed {
+    pub(super) authorization: String,
+    pub(super) method: Method,
+    pub(super) headers: HeaderMap,
+    pub(super) body: Vec<u8>,
+    pub(super) respond: oneshot::Sender<StatusCode>,
 }
-struct MockProvider {
-    endpoint: String,
-    requests: mpsc::UnboundedReceiver<Observed>,
+pub(super) struct MockProvider {
+    pub(super) endpoint: String,
+    pub(super) requests: mpsc::UnboundedReceiver<Observed>,
     task: JoinHandle<()>,
 }
 async fn fake_service(
     State(requests): State<mpsc::UnboundedSender<Observed>>,
+    method: Method,
     headers: HeaderMap,
+    body: Bytes,
 ) -> (StatusCode, Json<Value>) {
     let (respond, response) = oneshot::channel();
     requests
         .send(Observed {
             authorization: headers
                 .get(header::AUTHORIZATION)
-                .unwrap()
-                .to_str()
-                .unwrap()
+                .and_then(|value| value.to_str().ok())
+                .unwrap_or_default()
                 .to_owned(),
+            method,
+            headers,
+            body: body.to_vec(),
             respond,
         })
         .unwrap();
@@ -76,7 +83,7 @@ async fn fake_service(
     )
 }
 impl MockProvider {
-    async fn new() -> Self {
+    pub(super) async fn new() -> Self {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let endpoint = format!("http://{}/", listener.local_addr().unwrap());
         let (requests, receiver) = mpsc::unbounded_channel();
@@ -92,13 +99,13 @@ impl MockProvider {
             task,
         }
     }
-    async fn next(&mut self) -> Observed {
+    pub(super) async fn next(&mut self) -> Observed {
         tokio::time::timeout(Duration::from_secs(3), self.requests.recv())
             .await
             .expect("expected a request to the disposable authenticated service")
             .expect("mock service closed")
     }
-    fn no_more_requests(&mut self) {
+    pub(super) fn no_more_requests(&mut self) {
         assert!(self.requests.try_recv().is_err());
     }
 }
@@ -108,13 +115,16 @@ impl Drop for MockProvider {
     }
 }
 
-struct Fixture {
+pub(super) struct Fixture {
     _directory: TempDir,
-    manager: Arc<Manager>,
-    app: Router,
+    pub(super) manager: Arc<Manager>,
+    pub(super) app: Router,
 }
 impl Fixture {
-    fn new(endpoint: &str) -> Self {
+    pub(super) fn new(endpoint: &str) -> Self {
+        Self::with_profile(endpoint, None)
+    }
+    pub(super) fn with_profile(endpoint: &str, profile: Option<super::verification::Profile>) -> Self {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().join("state");
         let repository = ServerRepository::new(root.clone());
@@ -126,6 +136,7 @@ impl Fixture {
         let mut manager = Manager::new(repository.clone(), store, Runner::new(), installer);
         let mutable = Arc::get_mut(&mut manager).unwrap();
         mutable.verification_test_endpoint = Some(endpoint.to_owned());
+        mutable.verification_test_profile = profile;
         mutable.http = reqwest::Client::builder()
             .no_proxy()
             .timeout(Duration::from_secs(3))
@@ -146,7 +157,7 @@ impl Fixture {
             app,
         }
     }
-    fn local(&self, id: &str, package: &str, bindings: &[(&str, &str)], manual: Value) {
+    pub(super) fn local(&self, id: &str, package: &str, bindings: &[(&str, &str)], manual: Value) {
         let record = json!({
             "server_id":id,"name":id,"runtime":{"status":"stopped","error":null},
             "authentication":{"status":"unknown","error":null},"restart_required":false,"restart":null,
@@ -158,7 +169,7 @@ impl Fixture {
         self.manager.repository.save(id, &record).unwrap();
         self.store(id, manual, Value::Null);
     }
-    fn remote_github(&self, id: &str, manual: Value, oauth: &str) {
+    pub(super) fn remote_github(&self, id: &str, manual: Value, oauth: &str) {
         let record = json!({
             "server_id":id,"name":id,"runtime":{"status":"stopped","error":null},
             "authentication":{"status":"unknown","error":null},"restart_required":false,"restart":null,
@@ -174,7 +185,7 @@ impl Fixture {
             json!({"provider":"github","access_token":oauth}),
         );
     }
-    fn store(&self, id: &str, manual: Value, oauth: Value) {
+    pub(super) fn store(&self, id: &str, manual: Value, oauth: Value) {
         self.manager
             .credentials
             .save(
@@ -185,7 +196,7 @@ impl Fixture {
             )
             .unwrap();
     }
-    fn post(&self, id: &str) -> JoinHandle<(StatusCode, Value)> {
+    pub(super) fn post(&self, id: &str) -> JoinHandle<(StatusCode, Value)> {
         let app = self.app.clone();
         let request = Request::builder()
             .method("POST")
@@ -197,7 +208,7 @@ impl Fixture {
             .unwrap();
         tokio::spawn(async move { decode(app.oneshot(request).await.unwrap()).await })
     }
-    fn save(&self, id: &str, patch: Value) -> JoinHandle<Result<Value, ManagementError>> {
+    pub(super) fn save(&self, id: &str, patch: Value) -> JoinHandle<Result<Value, ManagementError>> {
         let manager = self.manager.clone();
         let id = id.to_owned();
         tokio::spawn(async move {
@@ -209,7 +220,7 @@ impl Fixture {
         })
     }
 }
-async fn decode(response: Response) -> (StatusCode, Value) {
+pub(super) async fn decode(response: Response) -> (StatusCode, Value) {
     let status = response.status();
     assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
     (
@@ -217,13 +228,13 @@ async fn decode(response: Response) -> (StatusCode, Value) {
         serde_json::from_slice(&response.into_body().collect().await.unwrap().to_bytes()).unwrap(),
     )
 }
-async fn done<T>(task: JoinHandle<T>) -> T {
+pub(super) async fn done<T>(task: JoinHandle<T>) -> T {
     tokio::time::timeout(Duration::from_secs(3), task)
         .await
         .unwrap()
         .unwrap()
 }
-fn clean_response(value: &Value, secrets: &[&str]) {
+pub(super) fn clean_response(value: &Value, secrets: &[&str]) {
     let serialized = value.to_string();
     for secret in secrets {
         assert!(

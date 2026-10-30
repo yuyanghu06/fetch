@@ -2,8 +2,14 @@
 mod railway;
 mod provider_callback;
 mod remote_auth;
+mod bindings;
+mod verification;
 #[cfg(test)]
 mod auth_tests;
+#[cfg(test)]
+mod generic_auth_tests;
+#[cfg(test)]
+mod verification_tests;
 use crate::diagnostics::{send as provider_send, UpstreamOperation};
 use crate::{authority::Caller, credentials::{CredentialStore, SecretDocument}, installation::{Installer, opaque, private_directory}, native_auth::{NativeAuthority, SettingsCapability}, runner::{Runner, ServerRoute, TransportConfig, ExecutionPolicy}, storage::ServerRepository};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
@@ -29,9 +35,11 @@ pub struct Manager {
     locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>, live:Mutex<BTreeMap<String,Live>>, attempts:Mutex<BTreeMap<(String,String),Value>>, flows:Mutex<BTreeMap<String,ProviderFlow>>, origin:RwLock<String>, http:reqwest::Client, stopping:AtomicBool, stop:Arc<Notify>,
     #[cfg(test)]
     verification_test_endpoint:Option<String>,
+    #[cfg(test)]
+    verification_test_profile:Option<verification::Profile>,
 }
 impl Manager {
-    pub fn new(repository:ServerRepository,credentials:Arc<CredentialStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,credentials,runner,installer,locks:Mutex::new(BTreeMap::new()),live:Mutex::new(BTreeMap::new()),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),http:reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none()).build().expect("static provider HTTP configuration"),#[cfg(test)] verification_test_endpoint:None})}
+    pub fn new(repository:ServerRepository,credentials:Arc<CredentialStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,credentials,runner,installer,locks:Mutex::new(BTreeMap::new()),live:Mutex::new(BTreeMap::new()),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),http:reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none()).build().expect("static provider HTTP configuration"),#[cfg(test)] verification_test_endpoint:None,#[cfg(test)] verification_test_profile:None})}
     pub fn set_origin(&self,origin:String){if let Ok(mut value)=self.origin.write(){*value=origin;}}
     async fn lock(&self,id:&str)->Arc<Mutex<()>>{self.locks.lock().await.entry(id.to_owned()).or_insert_with(||Arc::new(Mutex::new(()))).clone()}
     fn record(&self,id:&str)->Result<Value,ManagementError>{self.repository.get_saved(id).map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.ok_or_else(||ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."))}
@@ -126,7 +134,7 @@ impl Manager {
         let gate=self.lock(id).await;let _guard=gate.lock().await;let captured=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
         if live.authenticating{return Err(busy("Authentication is active. Monitor server status first."));}
         if let Some(existing)=live.restart{if self.attempts.lock().await.get(&(id.to_owned(),existing.clone())).is_some_and(|v|v["status"]=="restarting"){let mut error=ManagementError::new(409,"RESTART_IN_PROGRESS","A restart or reconnect is already active.");error.extra=json!({"restart_id":existing});error.next_steps=vec![restart_step(id,&existing)];return Err(error);}}
-        if provider_kind(&captured)==Provider::Railway&&captured["config"]["kind"]!="remote"{
+        if self.auth_provider(&captured)==Provider::Railway&&captured["config"]["kind"]!="remote"{
             let installation=railway::installation_id(&captured).ok_or_else(invalid_config)?;
             self.installer.ensure_railway_cli(installation).await.map_err(|_|ManagementError::new(503,"SERVER_RUNTIME_UNAVAILABLE","Railway's private CLI could not be prepared. Retry Connect after checking network access; no server was restarted."))?;
         }
@@ -166,7 +174,7 @@ impl Manager {
     async fn route(&self,record:&Value)->Result<ServerRoute,ManagementError>{
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let config=&record["config"];let document=self.secrets(id)?;
         {let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.current_manual_hashes=manual_hashes(&document);state.oauth_present=document["oauth"]["access_token"].is_string();}
-        let railway=provider_kind(record)==Provider::Railway;
+        let railway=self.auth_provider(record)==Provider::Railway;
         let railway_token=if railway{
             if document["oauth"]["provider"]!="railway"||document["oauth"]["verified"]!=true
                 ||document["oauth"]["expires_at"].as_u64().is_none_or(|expiry|expiry<=now()){return Err(auth_required());}
@@ -176,12 +184,8 @@ impl Manager {
             let headers=remote_headers(config,&document)?;
             let endpoint=config["connection"]["url"].as_str().ok_or_else(invalid)?.to_owned();if config["connection"]["transport"]=="sse"{TransportConfig::Sse{endpoint,headers}}else{TransportConfig::Http{endpoint,headers}}
         }else{
-            let mut environment=BTreeMap::new();for binding in config["environment"].as_array().ok_or_else(invalid)?{
-                let name=binding["name"].as_str().ok_or_else(invalid)?;
-                if railway&&["RAILWAY_API_TOKEN","RAILWAY_TOKEN","HOME","PATH","RAILWAY_NO_AUTO_UPDATE","RAILWAY_NO_TELEMETRY"].contains(&name){continue;}
-                let reference=binding["credential_ref"].as_str().ok_or_else(invalid)?;let value=document["manual"][reference].as_str().ok_or_else(auth_required)?;
-                environment.insert(name.to_owned(),value.to_owned());
-            }
+            let skip:&[&str]=if railway{&["RAILWAY_API_TOKEN","RAILWAY_TOKEN","HOME","PATH","RAILWAY_NO_AUTO_UPDATE","RAILWAY_NO_TELEMETRY"]}else{&[]};
+            let mut environment=bindings::InputBindings::from_record(record)?.resolve_source(bindings::Source::Environment,&document,skip)?;
             let home=self.repository.root().join("servers").join(format!("{:x}",Sha256::digest(id.as_bytes()))).join("home");private_directory(&home).map_err(|_|ManagementError::new(500,"SERVER_START_FAILED","The private server home could not be prepared."))?;
             let executable:PathBuf=config["executable"].as_str().ok_or_else(invalid)?.into();let path=executable.parent().map(|p|format!("{}:/usr/bin:/bin",p.display())).unwrap_or_else(||"/usr/bin:/bin".into());environment.entry("PATH".into()).or_insert(path);environment.entry("HOME".into()).or_insert_with(||home.to_string_lossy().into_owned());environment.entry("LANG".into()).or_insert_with(||"en_US.UTF-8".into());
             if let Some(token)=railway_token{
@@ -205,7 +209,7 @@ impl Manager {
             let record=match self.record(id){Ok(record)=>record,Err(_)=>continue};
             if self.refresh_owned(&record).await.is_err(){self.verification_failed(id).await;continue;}
             let mut connected=false;
-            match self.route(&record).await{Ok(route)=>{if self.runner.configure(route).await.is_ok() && matches!(tokio::time::timeout(Duration::from_secs(30),self.runner.connect(id)).await,Ok(Ok(()))){let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.applied=Some(record["config"].clone());state.applied_manual_hashes=state.current_manual_hashes.clone();if matches!(provider_kind(&record),Provider::None){state.auth=json!({"status":"not_required","error":null});}connected=true;}},Err(_)=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"required","error":null});}}
+            match self.route(&record).await{Ok(route)=>{if self.runner.configure(route).await.is_ok() && matches!(tokio::time::timeout(Duration::from_secs(30),self.runner.connect(id)).await,Ok(Ok(()))){let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.applied=Some(record["config"].clone());state.applied_manual_hashes=state.current_manual_hashes.clone();if matches!(self.auth_provider(&record),Provider::None){state.auth=json!({"status":"not_required","error":null});}connected=true;}},Err(_)=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"required","error":null});}}
             drop(guard);
             if connected {self.observe_features(id).await;}
             self.schedule_refresh(id.to_owned()).await;
@@ -240,48 +244,30 @@ impl Manager {
     async fn verify_stored(&self,record:&Value)->Result<(),ManagementError>{
         self.verify_stored_with_manual(record,&[]).await
     }
-    async fn verify_stored_with_manual(&self,record:&Value,submitted:&[String])->Result<(),ManagementError>{
-        let id=record["server_id"].as_str().ok_or_else(invalid)?;let document=self.secrets(id)?;let provider=provider_kind(record);
-        if provider==Provider::Railway&&(document["oauth"]["provider"]!="railway"
-            ||document["oauth"]["expires_at"].as_u64().is_none_or(|expiry|expiry<=now())){return Err(verification_error());}
-        let assigned=assigned_manual_references(record);
-        if submitted.iter().any(|name|!assigned.contains(name)){return Err(verification_error());}
-        let oauth=if record["config"]["kind"]=="remote"||provider==Provider::Railway{document["oauth"]["access_token"].as_str()}else{None};
-        let mut required:BTreeSet<&str>=submitted.iter().map(String::as_str).collect();
-        if oauth.is_none(){required.extend(assigned.iter().map(String::as_str));}
-        if required.is_empty()&&oauth.is_none(){return Err(verification_error());}
-        // Resolve every required value before probing so a missing member cannot
-        // be silently replaced by a working sibling or by an old OAuth credential.
-        let tokens:Vec<&str>=required.iter().map(|name|document["manual"][*name].as_str().ok_or_else(verification_error)).collect::<Result<_,_>>()?;
-        for token in tokens{self.verify_credential(provider,token).await?;}
-        if let Some(token)=oauth{self.verify_credential(provider,token).await?;}
-        Ok(())
-    }
-    async fn verify_credential(&self,provider:Provider,token:&str)->Result<(),ManagementError>{
-        let endpoint=match provider{
-            Provider::Tavily=>"https://api.tavily.com/usage",
-            Provider::Github=>"https://api.github.com/user",
-            Provider::Linear=>"https://api.linear.app/graphql",
-            Provider::Railway=>railway::ME,
-            _=>return Err(verification_error()),
-        };
+    fn verification_profile(&self,record:&Value)->Option<verification::Profile>{
         #[cfg(test)]
-        let endpoint=self.verification_test_endpoint.as_deref().unwrap_or(endpoint);
-        let token=token.strip_prefix("Bearer ").unwrap_or(&token);
-        let response=match provider{
-            Provider::Tavily=>provider_send(UpstreamOperation::ProviderVerification,self.http.get(endpoint).bearer_auth(token)).await,
-            Provider::Github=>provider_send(UpstreamOperation::ProviderVerification,self.http.get(endpoint).bearer_auth(token).header("User-Agent","Fetch/0.1").header("Accept","application/vnd.github+json")).await,
-            Provider::Linear=>provider_send(UpstreamOperation::ProviderVerification,self.http.post(endpoint).bearer_auth(token).json(&json!({"query":"query FetchCredentialVerification { viewer { id } }"}))).await,
-            Provider::Railway=>provider_send(UpstreamOperation::ProviderVerification,self.http.get(endpoint).bearer_auth(token)).await,
-            _=>return Err(verification_error())
-        }.map_err(|_|verification_error())?;
-        if !response.status().is_success(){return Err(verification_error());}
-        match provider{
-            Provider::Linear=>{let value=bounded_json(response).await.map_err(|_|verification_error())?;if !value["data"]["viewer"]["id"].is_string()||value.get("errors").is_some(){return Err(verification_error());}},
-            Provider::Railway=>{let value=bounded_json(response).await.map_err(|_|verification_error())?;if !railway::subject_is_present(&value){return Err(verification_error());}},
-            _=>{}
-        }
-        Ok(())
+        if let Some(profile)=&self.verification_test_profile{if profile.matches_record(record){return Some(profile.clone());}}
+        verification::builtin_for(record).cloned()
+    }
+    fn auth_provider(&self,record:&Value)->Provider{
+        provider_for_profile(record,self.verification_profile(record).as_ref())
+    }
+    fn has_stored_authentication(&self,record:&Value,document:&Value)->Result<bool,ManagementError>{
+        let inputs=bindings::InputBindings::from_record(record).map_err(|_|verification_error())?;
+        let references=self.verification_profile(record).map(|profile|profile.manual_references(&inputs)).unwrap_or_default();
+        Ok(document["oauth"]["access_token"].is_string() || references.iter().any(|entry|document["manual"][entry].is_string()))
+    }
+    async fn verify_stored_with_manual(&self,record:&Value,submitted:&[String])->Result<(),ManagementError>{
+        let id=record["server_id"].as_str().ok_or_else(invalid)?;let document=self.secrets(id)?;
+        if self.auth_provider(record)==Provider::Railway&&(document["oauth"]["provider"]!="railway"
+            ||document["oauth"]["expires_at"].as_u64().is_none_or(|expiry|expiry<=now())){return Err(verification_error());}
+        let bindings=bindings::InputBindings::from_record(record).map_err(|_|verification_error())?;
+        let profile=self.verification_profile(record).ok_or_else(verification_error)?;
+        let oauth=if record["config"]["kind"]=="remote"||self.auth_provider(record)==Provider::Railway{document["oauth"]["access_token"].as_str()}else{None};
+        let plan=profile.bind(&bindings,&document,submitted,oauth)?;
+        #[cfg(test)]
+        let plan=if let Some(endpoint)=&self.verification_test_endpoint{plan.with_endpoint(endpoint)}else{plan};
+        plan.execute(&self.http).await
     }
     pub async fn authenticate(self:&Arc<Self>,id:&str)->Result<Value,ManagementError>{
         use crate::diagnostics::{authentication_outcome,AuthenticationOutcome as Outcome};
@@ -297,15 +283,15 @@ impl Manager {
         let gate=self.lock(id).await;let _guard=gate.lock().await;let record=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
         if self.active_restart(id,&live).await{return Err(busy("Monitor the active restart before authenticating."));}
         if live.authenticating{return Ok(auth_response(id,"authenticating",vec![server_step(id)]));}
-        match provider_kind(&record){
+        match self.auth_provider(&record){
             Provider::None=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"not_required","error":null});return Ok(auth_response(id,"not_required",vec![]));},
-            Provider::Unknown=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"unknown","error":null});return Ok(auth_response(id,"unknown",vec![settings_step("Fetch has no documented credential ownership and verification adapter for this server. Review its setup requirements; readiness alone cannot prove provider login.")]));},
+            Provider::Unknown if self.verification_profile(&record).is_none()=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"unknown","error":null});return Ok(auth_response(id,"unknown",vec![settings_step("Imported credential inputs can be stored and supplied to this server, but Fetch has no trusted verification description for its authentication. Review its setup requirements; readiness alone cannot prove provider login.")]));},
             _=>{}
         }
         let document=self.secrets(id)?;
-        let has_values=document["oauth"]["access_token"].is_string() || assigned_manual_references(&record).iter().any(|entry|document["manual"][entry].is_string());
-        let browser_supported=provider_kind(&record)==Provider::Railway || (matches!(provider_kind(&record),Provider::Linear|Provider::Remote) && record["config"]["kind"]=="remote");
-        let retry_browser=browser_supported&&(live.auth["status"]=="failed"||(provider_kind(&record)==Provider::Railway
+        let has_values=self.has_stored_authentication(&record,&document)?;
+        let browser_supported=self.auth_provider(&record)==Provider::Railway || (matches!(self.auth_provider(&record),Provider::Linear|Provider::Remote) && record["config"]["kind"]=="remote");
+        let retry_browser=browser_supported&&(live.auth["status"]=="failed"||(self.auth_provider(&record)==Provider::Railway
             &&(document["oauth"]["verified"]!=true||document["oauth"]["refresh_in_progress"]==true)));
         if has_values && !retry_browser {
             if self.refresh_owned(&record).await.is_err() || self.verify_stored(&record).await.is_err(){self.verification_failed(id).await;return Err(verification_error());}
@@ -314,7 +300,7 @@ impl Manager {
         }
         if browser_supported {
             let revision=live.revision;let attempt=opaque("provider");let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.authenticating=true;state.auth_deadline=now()+600;state.auth_attempt=Some(attempt.clone());state.auth=json!({"status":"authenticating","error":null});drop(states);
-            let instructions=if provider_kind(&record)==Provider::Railway{"Complete Railway sign-in in your browser and choose workspace/project access. Fetch requests normal member access, privately saves the new credential and verifies your Railway identity."}else{"Complete the provider sign-in in your browser. Fetch will privately save and verify the new credential."};
+            let instructions=if self.auth_provider(&record)==Provider::Railway{"Complete Railway sign-in in your browser and choose workspace/project access. Fetch requests normal member access, privately saves the new credential and verifies your Railway identity."}else{"Complete the provider sign-in in your browser. Fetch will privately save and verify the new credential."};
             let manager=self.clone();let server=id.to_owned();let request_id=crate::diagnostics::current_request_id();
             tokio::spawn(crate::diagnostics::with_request_context(request_id,async move{
                 if let Err(error)=manager.begin_provider_login(&record,revision,&attempt).await{
@@ -328,7 +314,7 @@ impl Manager {
     }
     async fn begin_provider_login(self:&Arc<Self>,record:&Value,revision:u64,attempt:&str)->Result<(),ManagementError>{
         if self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
-        let id=record["server_id"].as_str().ok_or_else(invalid)?;let provider=provider_kind(record);
+        let id=record["server_id"].as_str().ok_or_else(invalid)?;let provider=self.auth_provider(record);
         let callback=if provider==Provider::Railway{Some(provider_callback::Listener::bind().await?)}else{None};
         let redirect=if let Some(callback)=&callback{callback.redirect().to_owned()}else{
             let origin=self.origin.read().map_err(|_|auth_required())?.clone();if origin.is_empty(){return Err(auth_required());}
@@ -428,7 +414,7 @@ impl Manager {
         let record=self.record(&flow.server)?;
         if flow.expires<=now(){return Err(ManagementError::new(400,"AUTHENTICATION_TIMEOUT","This provider login expired. Start a fresh sign-in."));}
         if live.revision!=flow.revision||live.auth_attempt.as_deref()!=Some(flow.state.as_str())
-            ||!live.authenticating||error.is_some()||provider_kind(&record)!=flow.provider||self.stopping.load(Ordering::SeqCst){
+            ||!live.authenticating||error.is_some()||self.auth_provider(&record)!=flow.provider||self.stopping.load(Ordering::SeqCst){
             return Err(ManagementError::new(400,"AUTHENTICATION_FAILED","Provider login was denied, cancelled or its saved settings changed."));
         }
         // Generic metadata may deliberately use distinct public authorization
@@ -460,9 +446,10 @@ impl Manager {
         self.schedule_refresh(flow.server).await;Ok(())
     }
     fn mark_oauth_verified(&self,record:&Value)->Result<(),ManagementError>{
-        if !matches!(provider_kind(record),Provider::Railway|Provider::Remote){return Ok(());}
+        if !matches!(self.auth_provider(record),Provider::Railway|Provider::Remote){return Ok(());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let mut document=self.secrets(id)?;
-        if !document["oauth"]["access_token"].is_string()||document["oauth"]["provider"]!=provider_kind(record).name(){return Err(auth_required());}
+        if self.auth_provider(record)==Provider::Remote&&!document["oauth"]["access_token"].is_string(){return Ok(());}
+        if !document["oauth"]["access_token"].is_string()||document["oauth"]["provider"]!=self.auth_provider(record).name(){return Err(auth_required());}
         document["oauth"]["verified"]=json!(true);
         self.credentials.save(id,&SecretDocument::new(serde_json::to_vec(&document).map_err(|_|store_error())?)).map_err(|_|store_error())?;
         if self.secrets(id)?["oauth"]["verified"]!=true{return Err(store_error());}Ok(())
@@ -479,7 +466,7 @@ impl Manager {
     async fn refresh_owned(&self,record:&Value)->Result<(),ManagementError>{
         if self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let mut document=self.secrets(id)?;let oauth=document["oauth"].clone();
-        let provider=provider_kind(record);
+        let provider=self.auth_provider(record);
         // Railway rotates refresh tokens. An interrupted exchange must never
         // retry a possibly consumed token, including after an application restart.
         if matches!(provider,Provider::Railway|Provider::Remote)&&oauth["refresh_in_progress"]==true{return Err(auth_required());}
@@ -569,9 +556,22 @@ fn validate_bindings(value:&Value,header:bool,record:&Value)->Result<(),Manageme
     if !record["credentials"].as_array().is_some_and(|a|a.iter().any(|v|v["name"]==reference)){return Err(invalid_config());}
 }Ok(())}
 fn safe_argument_edit(record:&Value,args:&[String])->bool{let name=record["config"]["package"]["name"].as_str().unwrap_or("");match name{"@modelcontextprotocol/server-filesystem"=>!args.is_empty()&&args.iter().all(|s|Path::new(s).is_absolute()&&!s.contains(['\0','\r','\n'])) ,"mcp-server-time"=>args.iter().all(|s|s.strip_prefix("--local-timezone=").is_some_and(|v|!v.is_empty()&&v.chars().all(|c|c.is_ascii_alphanumeric()||"/_+-".contains(c)))),_=>args.is_empty()}}
-#[derive(Clone,Copy,PartialEq,Eq)]enum Provider{None,Tavily,Linear,Github,Railway,Remote,Unknown}
-impl Provider {fn name(self)->&'static str{match self{Self::None=>"none",Self::Tavily=>"tavily",Self::Linear=>"linear",Self::Github=>"github",Self::Railway=>"railway",Self::Remote=>"remote",Self::Unknown=>"unknown"}}}
-fn provider_kind(record:&Value)->Provider{if railway::matches_record(record){return Provider::Railway;}match record["config"]["package"]["name"].as_str(){Some("@modelcontextprotocol/server-everything"|"@modelcontextprotocol/server-filesystem"|"mcp-server-time")=>Provider::None,Some("tavily-mcp")=>Provider::Tavily,Some("@modelcontextprotocol/server-github")=>Provider::Github,_=>{let url=record["config"]["connection"]["url"].as_str().and_then(|s|url::Url::parse(s).ok());match url.as_ref().and_then(url::Url::host_str){Some("mcp.linear.app")=>Provider::Linear,Some("mcp.tavily.com")=>Provider::Tavily,Some("api.githubcopilot.com")=>Provider::Github,_ if record["config"]["kind"]=="remote"=>Provider::Remote,_=>Provider::Unknown}}}}
+#[derive(Clone,Copy,PartialEq,Eq)]enum Provider{None,Manual,Linear,Railway,Remote,Unknown}
+impl Provider {fn name(self)->&'static str{match self{Self::None=>"none",Self::Manual=>"manual",Self::Linear=>"linear",Self::Railway=>"railway",Self::Remote=>"remote",Self::Unknown=>"unknown"}}}
+// Provider classification here controls existing login/lifecycle behavior only.
+// Credential input names and HTTP verification are resolved by trusted data plans.
+fn provider_kind(record:&Value)->Provider{provider_for_profile(record,verification::builtin_for(record))}
+fn provider_for_profile(record:&Value,profile:Option<&verification::Profile>)->Provider{
+    if railway::matches_record(record){return Provider::Railway;}
+    if matches!(record["config"]["package"]["name"].as_str(),Some("@modelcontextprotocol/server-everything"|"@modelcontextprotocol/server-filesystem"|"mcp-server-time")){return Provider::None;}
+    if record["config"]["kind"]=="remote"{
+        match profile.map(|profile|profile.login).unwrap_or_default(){
+            verification::LoginMode::Manual=>Provider::Manual,
+            verification::LoginMode::Linear=>Provider::Linear,
+            verification::LoginMode::Standard=>Provider::Remote,
+        }
+    }else if profile.is_some(){Provider::Manual}else{Provider::Unknown}
+}
 fn checked_linear_endpoint(value:&str)->Result<String,ManagementError>{let u=url::Url::parse(value).map_err(|_|auth_required())?;if u.scheme()!="https"||!matches!(u.host_str(),Some("mcp.linear.app"|"linear.app"|"api.linear.app"))||!u.username().is_empty()||u.password().is_some()||u.fragment().is_some(){return Err(auth_required());}Ok(value.to_owned())}
 async fn bounded_json(mut response:reqwest::Response)->Result<Value,ManagementError>{if !response.status().is_success()||response.content_length().is_some_and(|n|n>1024*1024){return Err(auth_required());}let mut bytes=vec![];while let Some(chunk)=response.chunk().await.map_err(|_|auth_required())?{if bytes.len()+chunk.len()>1024*1024{return Err(auth_required());}bytes.extend_from_slice(&chunk);}serde_json::from_slice(&bytes).map_err(|_|auth_required())}
 fn oauth_document(token:&Value,provider:Provider,client:&str,endpoint:&str,resource:Option<&str>,prior_refresh:Option<&str>)->Result<Value,ManagementError>{
@@ -587,17 +587,10 @@ fn oauth_document(token:&Value,provider:Provider,client:&str,endpoint:&str,resou
 fn now()->u64{SystemTime::now().duration_since(UNIX_EPOCH).map(|d|d.as_secs()).unwrap_or(0)}
 fn manual_hashes(document:&Value)->BTreeMap<String,String>{document["manual"].as_object().map(|o|o.iter().filter_map(|(name,v)|v.as_str().map(|s|(name.clone(),format!("{:x}",Sha256::digest(s.as_bytes()))))).collect()).unwrap_or_default()}
 fn pending_manual(live:&Live,config:&Value)->bool{if live.applied.is_none(){return false;}live.oauth_restart_pending || config["environment"].as_array().into_iter().flatten().chain(config["connection"]["headers"].as_array().into_iter().flatten()).filter_map(|v|v["credential_ref"].as_str()).any(|name|live.current_manual_hashes.get(name)!=live.applied_manual_hashes.get(name))}
-fn assigned_manual_references(record:&Value)->Vec<String>{
-    // These are existing named service adapters, not inferred authentication for
-    // arbitrary environment values or unknown provider headers.
-    if !matches!(provider_kind(record),Provider::Tavily|Provider::Linear|Provider::Github){return vec![];}
-    if record["config"]["kind"]=="remote"{return record["config"]["connection"]["headers"].as_array().into_iter().flatten().filter(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))).filter_map(|v|v["credential_ref"].as_str().map(str::to_owned)).collect::<BTreeSet<_>>().into_iter().collect();}
-    let variables:&[&str]=match provider_kind(record){Provider::Tavily=>&["TAVILY_API_KEY"],Provider::Linear=>&["LINEAR_API_KEY"],Provider::Github=>&["GITHUB_PERSONAL_ACCESS_TOKEN","GITHUB_TOKEN"],_=>&[]};
-    record["config"]["environment"].as_array().into_iter().flatten().filter(|v|v["name"].as_str().is_some_and(|s|variables.contains(&s))).filter_map(|v|v["credential_ref"].as_str().map(str::to_owned)).collect::<BTreeSet<_>>().into_iter().collect()
-}
 fn remote_headers(config:&Value,document:&Value)->Result<BTreeMap<String,String>,ManagementError>{
-    let oauth=document["oauth"]["access_token"].as_str();let mut headers=BTreeMap::new();
-    for binding in config["connection"]["headers"].as_array().ok_or_else(invalid)?{let name=binding["name"].as_str().ok_or_else(invalid)?;if oauth.is_some()&&name.eq_ignore_ascii_case("Authorization"){continue;}if reserved_header(name){return Err(invalid_config());}let reference=binding["credential_ref"].as_str().ok_or_else(invalid)?;let value=document["manual"][reference].as_str().ok_or_else(auth_required)?;if value.contains(['\r','\n','\0']){return Err(invalid_credential());}headers.insert(name.to_owned(),value.to_owned());}
+    let oauth=document["oauth"]["access_token"].as_str();
+    let mut headers=bindings::InputBindings::from_config(config)?.resolve_source(bindings::Source::Header,document,if oauth.is_some(){&["Authorization"]}else{&[]})?;
+    for(name,value)in &headers{if reserved_header(name){return Err(invalid_config());}if value.contains(['\r','\n','\0']){return Err(invalid_credential());}}
     if let Some(token)=oauth{if document["oauth"]["expires_at"].as_u64().is_some_and(|t|t<=now()){return Err(auth_required());}headers.insert("Authorization".into(),format!("Bearer {token}"));}Ok(headers)
 }
 fn reserved_header(name:&str)->bool{let lower=name.to_ascii_lowercase();["host","content-type","content-length","accept","connection","origin","cookie","transfer-encoding","te","trailer","upgrade"].contains(&lower.as_str())||lower.starts_with("mcp-")||lower.starts_with("proxy-")}

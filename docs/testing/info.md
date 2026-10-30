@@ -39,3 +39,7 @@ October 30: LOCAL_MVP_RUN.md and MVP_GAPS.md now distinguish the completed paral
 authentication fix (25 new fixtures,93 combined pass, native build pass) from
 provider setup, deletion/non-auth outcomes, generic remote proof and protected
 native/client testing still required. Packaging is not a local-testing blocker.
+
+D82 generic-authentication evidence is now110 combined passing fixtures and a
+passing native build. LOCAL_MVP_RUN.md/MVP_GAPS.md distinguish the completed
+shared mechanism from missing provider descriptions/wrapper login and live proof.

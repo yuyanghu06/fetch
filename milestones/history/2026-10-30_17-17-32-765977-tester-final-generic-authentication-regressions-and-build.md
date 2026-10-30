@@ -1,0 +1,10 @@
+# Verify corrected generic-authentication source and native build
+
+- Local timestamp / acting role / milestone: 2026-10-30T17:17:32.765977-04:00 / Tester / generic-authentication.
+- Requested scope: Complete D82 generic imported inputs/trusted request descriptions without weakening stored-credential proof or remote OAuth.
+- Starting repository state: main36d0f47 plus scoped source/docs/tests; preliminary107 fixtures passed but evaluator withheld acceptance for login-selection regressions.
+- Work performed / changed files: Independent Tester added17 cases total in generic_auth_tests.rs/verification_tests.rs and extended the disposable auth harness without weakening original assertions. Three post-review cases cover production login-mode selection, actual manual remote POST without OAuth and unrelated saved-header evidence.
+- Decisions: No new public descriptor URL/API schema, no saved-record migration, no guessed bearer treatment for ordinary inputs and no automatic unknown-provider login. Preserve D25/D31/native authority/per-server ownership.
+- Checks and evidence: All commands use process-scoped DEVELOPER_DIR=/Library/Developer/CommandLineTools. cargo test --locked --lib manager:: exits0 with35/35. cargo test --locked --lib --test backend --test development_https --test environment_paths --test import_compatibility --test local_mvp_acceptance --test raw_json exits0 with110/110 (lib64,backend16,HTTPS7,paths4,imports7,MVP11,raw1). cargo build --locked --bin fetch --message-format short exits0 in0.43s. Existing four Security bridge deprecations and unread MCP field remain. Root inspected the final log at /tmp/fetch-generic-auth-final-tests.log and source assertions.
+- Resulting state / acceptance: Independent scoped PASS. No automated failures; initial passing fixtures were expanded after material source-review findings. No real provider/native/Keychain/MCP/client acceptance.
+- Remaining work and handoff: Final independent evaluation and delivery documentation/commit/push. Broader provider descriptions/wrapper setup, deletion/non-auth outcomes and actual protected native/client/restart proof remain unfinished.

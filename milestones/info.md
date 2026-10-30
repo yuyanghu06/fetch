@@ -56,3 +56,7 @@ provider-support limits. Source/build evidence is separate from live login.
 scoped fix, independent 25 new/93 combined fixtures and native build. It preserves
 D25/D31 and the actual protected-native/provider/client acceptance work still
 required for the parent local working MVP.
+
+[Generic authentication](generic-authentication/info.md) implements D82: imported
+inputs and trusted descriptions use shared storage/delivery/verification code.
+It follows the completed parallel-request fix and retains its acceptance tests.

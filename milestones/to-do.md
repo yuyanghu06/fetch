@@ -4,9 +4,12 @@
 
 ## Active local MVP completion — D81
 
+- [x] Fix D82 evaluator login-mode/evidence/manual-header findings and add three regression cases; final 35 manager/110 combined cases and native build pass.
+- [x] D82: user approves shared imported-input/storage/delivery and trusted verification descriptions; D25/D31 stay required.
+- [x] Implement/test/evaluate D82 generic bindings/trusted-description verifier:17 new,35 targeted manager and110 combined cases pass; native build and independent Evaluator ACCEPT. Delivery follows.
 - [x] Commit/push accepted parallel-authentication source/tests/docs as b194de7 and verify matching live remote/clean checkpoint; delivery-record follow-up separate.
-- [x] Independent Evaluator ACCEPT for the October30 scoped authentication fix;25 new and93 combined fixtures pass, native build passes.
-- [x] October30: distinguish POST authenticate's required check from PATCH's one-entry limitation; inspect backend/UI concurrency with a read-only Planner.
+- [x] Independent Evaluator ACCEPT for the October 30 scoped authentication fix;25 new and93 combined fixtures pass, native build passes.
+- [x] October 30: distinguish POST authenticate's required check from PATCH's one-entry limitation; inspect backend/UI concurrency with a read-only Planner.
 - [x] Implement per-server UI authentication/credential request tracking; independent fixtures pass.
 - [x] Replace credential-save's one-entry shortcut with supported assigned-reference checks, preserving D25/D31; independent fixtures pass.
 - [x] Verify current stored-key checks, supported multi-entry batches, parallel service outcomes and late-result protection:25 new cases and93 combined fixtures pass; native binary builds. Actual provider acceptance remains pending.
@@ -15,7 +18,7 @@
 - [x] Implement native/browser shared helpers/theme; compiled and reviewed, actual visuals pending.
 - [x] Add generic remote discovery/registration/renewal and issuer-bound callback source; full verified provider success still pending.
 - [ ] Resolve deletion/non-auth credential-change outcomes and protected-MCP authentication proof without reopening the agreed saved-key success check.
-- [x] Run independent combined68 fixture checks and final locked native build; fix the import assertion/issuer finding and retest. Clippy exits0 with72 warnings.
+- [x] Run independent combined68 fixture checks and final locked native build; fix the import assertion/issuer finding and retest. Clippy exits 0 with72 warnings.
 - [ ] Establish actual protected local environment, separate Codex state and scoped trust.
 - [x] Prepare copied Codex with fresh file-based state; offline app-server starts with0 MCPs and disposable path canaries pass. No real connection/trust/native proof.
 - [ ] Complete administrator authentication at the prepared Users&Groups Unlock prompt and establish the protected native session; no test account created yet.
@@ -50,7 +53,7 @@ older checkpoints below retain history. No completion percentage or ETA is claim
 - [x] Implement Railway callback/refresh/verification, private CLI preparation and official root import; scoped source review and binary build accepted.
 - [x] Add safe first-party incoming/outgoing HTTP diagnostics and shared auth outcome source.
 - [x] Poll auth, installations and separate restarts independently in source.
-- [x] Independent final source review ACCEPT and final binary compilation exit0 in4.66s; no runtime acceptance.
+- [x] Independent final source review ACCEPT and final binary compilation exit 0 in4.66s; no runtime acceptance.
 - [ ] Complete broader selected auth/credential/import gaps listed in docs/testing/MVP_GAPS.md.
 
 ## Inline server authentication

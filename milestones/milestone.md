@@ -1,5 +1,72 @@
 # Fetch milestone snapshot
 
+## October 30 — D82 generic authentication accepted
+
+Generic input resolution and the trusted-description verifier are implemented
+and independently accepted after lifecycle corrections. Seventeen new cases,
+35 targeted manager cases and110 combined checks pass; native binary builds.
+Existing check facts are trusted data, input names come from saved imported
+bindings, and adding proof preserves standard remote OAuth. D25/D31 remain.
+Commit/push delivery is next. Parent local working MVP remains incomplete;
+no real provider/native/MCP/client result is claimed.
+
+- [Accept the shared authentication engine](history/2026-10-30_17-19-45-557612-evaluator-accept-shared-authentication-engine.md)
+- [Integrate generic authentication and its verified limits](history/2026-10-30_17-19-45-557613-orchestrator-integrate-generic-authentication.md)
+
+## October 30 — generic engine passes corrected fixtures and native build
+
+D82 implementation now resolves imported inputs generically and runs trusted
+request descriptions through one verifier. Existing service check facts are data.
+Remote OAuth remains independent of descriptor presence; only actual auth refs
+or OAuth count as stored authentication. Review findings were fixed and three
+regressions added. Independent 17 new cases,35 targeted manager cases and110
+combined checks pass; native binary builds in 0.43s. Final evaluation/delivery
+remain. Unknown providers still need trusted proof descriptions and compatible
+login ownership; no live native/provider/MCP/client success is claimed.
+
+- [Fix login selection independently of verification profiles](history/2026-10-30_17-17-32-765976-coder-preserve-generic-oauth-with-verification-data.md)
+- [Verify corrected generic-authentication source and native build](history/2026-10-30_17-17-32-765977-tester-final-generic-authentication-regressions-and-build.md)
+
+## October 30 — generic source compiles; lifecycle review fixes pending
+
+Shared input resolver/verifier and trusted data profiles are implemented. The
+first independent 32 manager and107 combined cases pass, but final acceptance is
+withheld: review found new descriptions could disable generic OAuth, and unrelated
+saved headers could be mistaken for existing authentication. Correct login-mode
+selection/evidence, add production-path regressions and rerun before accepting.
+No live provider/native/MCP/client proof or readiness notification.
+
+- [Implement shared input resolution and trusted verification descriptions](history/2026-10-30_17-13-48-867235-coder-generic-verifier-source.md)
+- [Run initial independent generic-authentication fixtures](history/2026-10-30_17-13-48-867236-tester-generic-authentication-preliminary-fixtures.md)
+- [Request corrections to generic login classification](history/2026-10-30_17-13-48-867237-evaluator-request-generic-oauth-lifecycle-fixes.md)
+
+## October 30 — D82 generic-authentication implementation active
+
+User approved the shared engine and trusted descriptions. Planner accepted; one
+writer owns Manager/helpers/data and independent Tester/Evaluator own checks and
+review. No provider-name gate on input storage/delivery; proof semantics remain
+D25/D31. Missing descriptions and wrapper-login limits stay explicit. The
+installed CLT toolchain works process-scoped, resolving the prior shell/license
+block without a global change. Source/test/build/review work is in progress.
+
+- [Plan](history/2026-10-30_17-05-50-737001-planner-generic-authentication-implementation.md)
+- [Scope and acceptance](generic-authentication/info.md)
+
+## October 30 — generic authentication design under review
+
+The user questions connector-specific hardcoding and asks for reusable functions
+using imported credential names. Source/research confirm those inputs can drive
+shared storage/delivery and standard HTTP OAuth. Direct service proof is a Fetch
+D25 requirement, not a universal MCP health method. Current Manager recognition,
+auth-name lists and request cases are hardcoded. A shared engine with trusted
+request descriptions is proposed; no implementation/success-rule change approved.
+No new product tests/builds or live connector actions occurred. The current shell
+now blocks developer-tool Git/Python execution on an Xcode-license requirement;
+prior 93-test/build evidence is historical and unchanged.
+
+- [Primary research](history/2026-10-30_16-51-25-000001-researcher-generic-authentication-boundaries.md)
+- [Clarification and handoff](history/2026-10-30_16-51-25-000002-orchestrator-generic-authentication-clarification.md)
+
 ## October 30 delivery — scoped feature committed and pushed
 
 Accepted code/tests are delivered as b194de7; local HEAD, tracking ref and live

@@ -11,6 +11,21 @@ required shared UI structure. These are broad areas, not seven equal-sized
 fixes or seven remaining endpoints. Some areas overlap. They do not support an
 honest completion percentage or finish date; runtime checks may find more work.
 
+## October 30 D82 — shared authentication mechanism implemented
+
+The former Rust service-name/credential-name verification switches are replaced
+by generic imported bindings, trusted data profiles and one request/response
+executor. Separate login-mode metadata preserves standard remote OAuth.
+Independent 17 new cases and110 combined checks pass; native binary builds.
+
+What remains is integration-specific evidence/data and actual runtime acceptance:
+Google/Slack and other unknown services still need trusted authenticated-check
+descriptions and compatible fresh-login/token ownership. A base config supplies
+input names, not that proof. Adding a descriptor can now reuse the same executor;
+private wrapper login may still need adaptation. Removal/non-auth save outcomes
+and protected native UI/provider/client/restart acceptance remain unchanged.
+This refactor does not automatically make the full inventory authenticated.
+
 ## October 30 — what still blocks testing and full MVP completion
 
 The parallel-authentication fix is implemented. POST authenticate still waits
@@ -30,7 +45,8 @@ The concrete remainder is:
    a definition does not make its login supported.
 2. **Complete generic remote authentication proof.** Discovery/browser/token/
    renewal source exists, but a generic remote connection has no universal
-   supported account-test endpoint. It cannot report authenticated under D25.
+   supported account-test endpoint. Without a matching trusted verification
+   description, it cannot report authenticated under D25.
    A bounded protected-MCP proof alternative remains unapproved; provider client/
    redirect restrictions and actual sign-in/renewal still need verification.
 3. **Resolve credential removal and non-auth settings outcomes.** Supported
@@ -94,7 +110,7 @@ for actual 93-test/build evidence and native-environment handoff. The table belo
 
 | Area | What is still incomplete | What counts as finished | Source to continue from |
 | --- | --- | --- | --- |
-| 1. Provider setup for everyday servers | Fresh setup and stored-credential verification cover only a small recognized provider list. Other required imports can install but return unknown instead of completing sign-in. | Trace every selected server in the existing inventory through its real login/credential ownership, protected storage, authenticated verification, refresh and restart behavior. Record usable versus missing support per integration; do not equate installation or tools/list with authenticated setup. | src/manager/mod.rs::provider_kind/authenticate/verify_stored; docs/architecture/real-use-compatibility.md |
+| 1. Provider setup for everyday servers | Fresh setup and stored-credential verification cover only a small recognized provider list. Other required imports can install but return unknown instead of completing sign-in. | Trace every selected server in the existing inventory through its real login/credential ownership, protected storage, authenticated verification, refresh and restart behavior. Record usable versus missing support per integration; do not equate installation or tools/list with authenticated setup. | src/manager/mod.rs::auth_provider/authenticate/verify_stored; src/manager/verification_profiles.json; docs/architecture/real-use-compatibility.md |
 | 2. General remote OAuth | Generic discovery/registration/PKCE/renewal source is implemented with pinned destinations and exact callback issuer binding. Verified authentication for providers without a separate account API awaits the explicit proof-rule decision; actual login/renewal remains unrun. | Complete the approved verification integration, exercise real supported remote sign-in/renewal and report provider-side client restrictions honestly. No login on ordinary tool calls. | src/manager/remote_auth.rs; src/manager/mod.rs::begin_provider_login/refresh_owned |
 | 3. Credential editing, batches and removal | Supported named authentication SET batches now check all required covered saved values, including new manual values when OAuth exists. Removal-only, unbound and non-auth environment/custom-header edits can still commit then return verification failure; their final outcomes remain unresolved. | Resolve and implement the successful outcomes for these advertised Settings operations consistently with the accepted stored-credential verification requirement. Correctly report committed-but-unverified state and required reauthentication; do not bypass verification or automatically retry an uncertain write. | src/manager/mod.rs::save_credentials_locked/verify_stored_with_manual; docs/architecture/api-contract.md |
 | 4. Real configuration import compatibility | Precise Miro/Vercel/v0/HF endpoints, narrow HF queries, proven mcp-remote bridge forms and curated Everything/Time launcher forms now pass seven fixtures. Full inventory setup and real installation/connection compatibility remain unverified; unknown grammars stay explicit. | Exercise selected safe inventory forms through the actual UI installer/client, preserving source identity and fresh credential references; resolve concrete remaining compatibility findings. | src/discovery/mod.rs; tests/import_compatibility.rs; docs/architecture/real-use-compatibility.md |

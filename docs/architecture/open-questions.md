@@ -13,6 +13,13 @@
 
 # Current implementation checkpoint
 
+October30 D82 resolves the generic-authentication design question: use imported
+input names, shared encrypted storage/delivery and one verifier driven by trusted
+request descriptions. The internal implementation needs its own checks; it does
+not approve a public verifier-settings API, deletion/non-auth success or generic
+MCP readiness as service-authentication proof. Those existing outcome/proof
+questions remain separate. See the active generic-authentication milestone.
+
 October28, 2026. D73 replaces the ten-group approval backlog with [one consolidated implementation plan](build-readiness.md). The earlier count mixed approved product behavior, engineering work and later release/testing prerequisites; it is superseded, not a fresh requirement list.
 
 ## Remaining decisions checklist

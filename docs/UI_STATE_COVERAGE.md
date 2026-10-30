@@ -318,3 +318,9 @@ invalid inherited links to other pages were removed.
 | Client error specimen 8 | [44:513](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=44-513) |
 | Minimum window · 760×520 client | [44:517](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=44-517) |
 
+
+D82 changes backend unknown-auth guidance to explain that imported inputs can
+be stored/supplied while a trusted verification description is missing. Existing
+Unknown inline phase/guidance rendering is reused; no new visual branch or Figma
+frame is claimed. Generic input names remain dynamic data in the shared editor.
+Actual native/authentication visual acceptance remains unrun.

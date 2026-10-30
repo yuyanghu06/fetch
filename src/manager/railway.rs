@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 pub(super) const AUTHORIZE: &str = "https://backboard.railway.com/oauth/auth";
 pub(super) const REGISTER: &str = "https://backboard.railway.com/oauth/register";
 pub(super) const TOKEN: &str = "https://backboard.railway.com/oauth/token";
-pub(super) const ME: &str = "https://backboard.railway.com/oauth/me";
 pub(super) const SCOPES: &str = "openid email profile offline_access workspace:member project:member";
 
 pub(super) fn matches_record(record: &Value) -> bool {
@@ -32,7 +31,4 @@ pub(super) fn cli_bin(root: &Path, record: &Value) -> Option<PathBuf> {
     let bin = directory.join("node_modules/.bin");
     let executable = std::fs::canonicalize(bin.join("railway")).ok()?;
     (executable.starts_with(std::fs::canonicalize(&directory).ok()?) && executable.is_file()).then_some(bin)
-}
-pub(super) fn subject_is_present(value: &Value) -> bool {
-    value["sub"].as_str().is_some_and(|sub| !sub.trim().is_empty())
 }

@@ -35,3 +35,7 @@ temporary root and memory-key CredentialStore; the helper constructs UI backend
 objects without a listener, started services, native prompt or Keychain access.
 Production `prepare` and native authority are unchanged. This supports Desktop
 message tests and does not establish real native/provider/MCP compatibility.
+
+D82 Manager now separates generic imported input resolution, trusted verification
+descriptions and generic HTTP checks. The existing native/UI/runner APIs and
+public configuration schema remain; unit fixtures use disposable keys/services.

@@ -1,5 +1,42 @@
 # Research context and practical limits
 
+## October 30 — Reusable authentication and imported credential names
+
+The user asked to use shared functions and credential names from base MCP
+configs, and questioned connector-specific hardcoding. This discussion does not
+approve a new verification policy or implementation.
+
+Source inspection confirms generic discovery of supplied environment/header
+names and generic encrypted readback/delivery in the runner. Authentication is
+more restrictive: `provider_kind`, `assigned_manual_references` and
+`verify_credential` in src/manager/mod.rs hardcode service recognition, accepted
+auth-variable names and verification requests. Those are implementation choices.
+
+The [MCP authorization standard](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
+defines discovery-based HTTP OAuth; local stdio servers receive environment
+values. The [SDK stdio implementation](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/packages/client/src/client/stdio.ts)
+accepts arbitrary names. Config names can drive credential inputs, but do not
+identify a validation URL or say whether a value is a token, path or other setting.
+The [TypeScript OAuth hooks](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/clients/oauth.md)
+and [Rust OAuth design](https://github.com/modelcontextprotocol/rust-sdk/blob/main/docs/OAUTH_SUPPORT.md)
+support a shared discovery/storage/refresh flow. The Researcher compared those
+Apache-2.0 SDKs with MIT-licensed mcp-remote, including its coordination issues
+and the Rust discovery advisory. No new library was installed or selected.
+
+There is no universal downstream-service API-key test in these interfaces.
+[MCP ping](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/ping)
+checks responsiveness. A public catalog/connection cannot alone prove that a
+separate Google/Slack credential works. D25's authenticated service request is
+a Fetch success requirement; it is not a standard MCP health method.
+
+Recommendation, awaiting user input: one shared engine using imported bindings
+and standard HTTP OAuth. Where D25 requires a direct service check, use a small
+trusted request description (destination, method, credential placement and
+success condition) with one verifier, rather than new connector control functions.
+That description cannot be inferred from a variable name alone. No new public
+verification setting, unknown-input success exception or readiness-as-login
+substitution is selected. D25/D31 remain unchanged.
+
 Research snapshot: October 26, 2026. These findings informed the discussion; they do not select dependencies or prove a Fetch integration works. Recheck changing documentation, source versions, licenses, and known issues before dependent implementation.
 
 ## Global discovery inputs — rechecked October 27

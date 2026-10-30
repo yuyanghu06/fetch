@@ -1,5 +1,9 @@
 # Append-only pass history
 
+October30 generic-auth research/clarification entries record the user's concern,
+standard/SDK comparison and actual hardcoded cases. They approve no new success
+rule and claim no new product/runtime verification.
+
 D81 local-working-MVP entries distinguish source implementation, the initial
 fixture assertion failure/retests, independent issuer-mixup finding/fix, final68
 fixture/build evidence and offline Codex/native-account handoff. None claims a
@@ -37,3 +41,7 @@ October30 authentication entries separately record the route/concurrency plan,
 backend and UI source passes, window-free test host, independent fixtures and
 build, final evaluation and delivery. They do not claim complete provider/setup
 support or actual protected native/MCP/client readiness.
+
+D82 generic-authentication entries record accepted planning, source changes,
+independent verification, findings/fixes and delivery separately from the earlier
+read-only proposal. Historical evidence remains scoped to its recorded source.

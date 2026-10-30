@@ -1,5 +1,15 @@
 # Architecture folder
 
+[authentication-engine.md](authentication-engine.md) explains D82's implemented
+input resolver, trusted description file and shared verifier, including exact
+trust/proof boundaries. Final110 combined fixtures/native build pass and independent evaluation ACCEPTs
+the scoped change. No new public schema or unknown-provider login is claimed.
+
+October 30 generic-auth review in research.md distinguishes imported input names,
+common encrypted delivery, standard HTTP OAuth and Fetch-specific direct-service
+proof. Current hardcoded cases are documented. Shared config-driven verification
+remains a recommendation, not a newly accepted contract or implementation.
+
 October 30 clarification under [D25's API contract](api-contract.md#required-stored-credential-verification--d25)
 distinguishes POST authentication, D31 credential-save verification, multi-value
 credential groups and parallel services. Those implementation limitations are now fixed for supported named API-key
@@ -31,3 +41,11 @@ D74 authorizes implementation/push without release. developer-foundation.md reco
 D76 selects short behavior/installation/authentication checks. At the user's subsequent request, the initial roster is now Everything, Filesystem, Time, Tavily and Linear in milestones/isolated-mcp-testing/servers.md; follow the link in isolated-testing.md. The external-root layout/access setup remains proposed and all execution is not run. The earlier server-selection wait is fulfilled.
 
 D77 separates full source implementation from user-controlled testing; D78 defers custom GitHub CLI tools. mvp-implementation.md records engineering mechanisms; ../testing/HANDOFF.md records source coverage and unverified limits.
+
+D82 now approves the generic-input/shared-verifier direction researched above.
+Internal implementation is active; no new public verifier settings or weakened
+authentication-success rule is selected. See the generic-authentication milestone.
+
+D82 final fixtures pass 110/110 and native binary builds after login-mode
+regression fixes. authentication-engine.md and the scoped milestone record
+actual evidence and remaining provider/native/client limits.

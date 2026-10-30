@@ -1,12 +1,29 @@
 # Managed servers
 
+## D82 shared input and verification engine
+
+`bindings.rs` imports all configured environment/header names and server-local
+references without a provider-name list. Both local environment and remote-header
+delivery use its generic resolver. `verification_profiles.json` contains the
+trusted data for existing service checks; `verification.rs` binds saved values,
+builds generic header/JSON requests and evaluates HTTP/body success. The old
+`assigned_manual_references` and `verify_credential` service switches are removed.
+Known input names may remain in trusted check selectors because proof needs to
+identify the values a request actually uses; they no longer whitelist storage or
+delivery. See docs/architecture/authentication-engine.md.
+
+Named provider classification remains only for established no-auth, OAuth and
+lifecycle behavior. Unknown inputs can be stored/supplied without invented
+authentication proof. A missing trusted description remains an explicit unknown/
+verification failure; it does not become a successful save or login.
+
 `mod.rs` owns current server state, configuration changes, provider authentication and named restart/reconnect operations. UI and management-tool adapters call these same backend handlers. It overlays live process/queue/authentication state onto saved non-secret records; status GETs do not probe providers or unlock secret storage.
 
 Manual credentials require a native Settings capability bound to the exact batch and current config/credential state. They are encrypted, read back and checked through a supported provider endpoint before a successful response. Unknown integrations remain unknown; tool-list readiness is never substituted for provider authentication.
 
 Source includes Tavily/GitHub authenticated reads and Linear's documented authenticated GraphQL viewer read, plus metadata-driven Linear OAuth with PKCE and owned encrypted refresh state. [Linear MCP](https://linear.app/docs/mcp), [Linear API](https://linear.app/developers/graphql) and the existing architecture/provider research inform these paths. No provider authentication or test was performed during implementation.
 
-The required verification gate has no unchecked-success exception. Supported assigned manual authentication entries can be saved together; each required value must pass its service check from encrypted readback. An existing OAuth token cannot approve a newly submitted manual value. Unsupported/unreferenced values and removal-only changes can still commit encrypted storage and return `CREDENTIAL_VERIFICATION_FAILED`; their final outcome policy remains unresolved. Multiple values are supported only where existing named adapters cover them.
+The required verification gate has no unchecked-success exception. Supported assigned manual authentication entries can be saved together; each required value must pass its service check from encrypted readback. An existing OAuth token cannot approve a newly submitted manual value. Unsupported/unreferenced values and removal-only changes can still commit encrypted storage and return `CREDENTIAL_VERIFICATION_FAILED`; their final outcome policy remains unresolved. Multiple values are verified only where a trusted description covers their request inputs.
 
 Stdio servers without an explicit saved working directory now use their private
 server home as both the default HOME and working directory, keeping relative
@@ -96,3 +113,10 @@ client-secret schemes, unknown/unbound entries and removal-only success are not
 added. The mock verification destination exists only in cfg(test); production
 requests retain the fixed documented service endpoints. Independent new fixture
 results are recorded in the parallel-authentication milestone.
+
+D82 independent final result:17 new cases,35 targeted manager cases and110
+combined fixtures pass; native binary build passes. Production login selection
+uses the same profile-selection path as tests. New remote profiles default to
+standard OAuth; unrelated saved settings do not count as authentication, and
+manual-header-only proof does not create an OAuth record. Source-review findings
+and bounded evidence are recorded in the generic-authentication milestone.

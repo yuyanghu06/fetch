@@ -38,3 +38,9 @@ message cases without windows or executed Tasks. All25 pass. A fresh combined
 run passes93/93 and the native binary builds. See
 [the scoped evidence](../milestones/parallel-authentication/evidence.md) for commands
 and limits. No real provider/native/MCP/test-Codex acceptance follows.
+
+D82 adds 17 independent manager cases across generic_auth_tests.rs and
+verification_tests.rs, sharing the existing disposable auth harness. Final
+35 targeted manager and110 combined cases pass, along with native compilation.
+See milestones/generic-authentication/evidence.md for commands and review/retest
+history. No live provider/native/MCP/client acceptance follows.

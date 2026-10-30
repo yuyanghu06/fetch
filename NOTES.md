@@ -1,5 +1,40 @@
 # Project notes
 
+## October 30, 2026 — Verify the generic authentication implementation
+
+Imported names now use one resolver for encrypted storage references and local/
+remote delivery. Existing service checks moved to trusted data; a shared engine
+supports individual/joint inputs, headers/JSON and response predicates. Initial
+fixtures passed, but independent review found profile/login-mode coupling and
+unrelated saved headers being treated as credentials. Those are fixed with three
+regressions. Final 17 new and110 combined cases pass; native binary builds. Final
+evaluation/delivery are recorded in the scoped milestone. Unknown verifier/login
+requirements, removal/non-auth outcomes and real protected native/client testing
+remain; this is no full-MVP readiness claim.
+
+## October 30, 2026 — Approve and implement generic authentication
+
+The user said yes and do that to the shared-function/config-derived-input
+proposal. D82 records the decision: generic imported names and encrypted
+storage/delivery, standard HTTP OAuth and one verifier driven by trusted request
+descriptions. D25/D31 proof remains required. Unknown inputs can be stored and
+delivered without guessed proof; descriptors explicitly identify which inputs
+a check covers. No new public verifier URL/schema or automatic Google/Slack
+login is selected. Implementation/independent verification is in progress.
+The existing CLT tools work with process-scoped DEVELOPER_DIR; no global toolchain
+or Xcode-license setting was changed.
+
+## October 30, 2026 — Question connector-specific authentication cases
+
+The user asked for reusable authentication functions/config-derived credential
+names and whether Fetch hardcodes supported services. Inspection confirms shared
+storage/launch, but hardcoded provider recognition, auth-variable lists and test
+requests. Primary-standard/SDK research supports generic credential delivery and
+remote OAuth; no universal downstream API-key test is defined. A shared engine
+with imported bindings and trusted verification descriptions is a recommendation,
+not an approved new contract. See docs/architecture/research.md. No source or
+success rule changed in this discussion.
+
 ## October 30, 2026 — Implement the approved authentication fix
 
 The user said go and asked for remaining MVP blockers before beginning testing.
