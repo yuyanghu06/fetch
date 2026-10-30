@@ -1,5 +1,14 @@
 # Fetch milestone snapshot
 
+## October 30 delivery — scoped feature committed and pushed
+
+Accepted code/tests are delivered as b194de7; local HEAD, tracking ref and live
+remote matched with a clean tree after push. This delivery-record follow-up is
+separate. [Delivery and remaining testing handoff](history/2026-10-30_16-25-37-211141-orchestrator-deliver-parallel-authentication.md).
+The parallel-authentication milestone is complete for source/fixture scope; the
+parent local MVP remains incomplete. No real native/provider/MCP/client result
+or completion alert is claimed.
+
 ## October 30 — scoped authentication fix accepted
 
 POST authenticate keeps its saved-key authenticated check; supported named

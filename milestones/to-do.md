@@ -4,6 +4,7 @@
 
 ## Active local MVP completion — D81
 
+- [x] Commit/push accepted parallel-authentication source/tests/docs as b194de7 and verify matching live remote/clean checkpoint; delivery-record follow-up separate.
 - [x] Independent Evaluator ACCEPT for the October30 scoped authentication fix;25 new and93 combined fixtures pass, native build passes.
 - [x] October30: distinguish POST authenticate's required check from PATCH's one-entry limitation; inspect backend/UI concurrency with a read-only Planner.
 - [x] Implement per-server UI authentication/credential request tracking; independent fixtures pass.

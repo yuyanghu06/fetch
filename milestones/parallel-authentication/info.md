@@ -28,7 +28,9 @@ route, storage-only deletion success or generic protected-MCP proof is selected.
 ## Status and boundaries
 
 Complete for the bounded code/fixture scope after independent Evaluator ACCEPT.
-Commit/push delivery is next. Backend and UI writers owned separate modules; the
+Feature source/tests are committed and pushed as b194de7; live refs matched with
+a clean tree at the checkpoint. The delivery-record follow-up is separate.
+Backend and UI writers owned separate modules; the
 Tester owned their new test files. The
 Orchestrator owns documentation and serializes pass history. Tests use disposable
 files, memory-held fixture keys and in-process mock services only. No live MCP,
@@ -38,7 +40,7 @@ pending under the parent local-working-MVP milestone. No release or packaging.
 
 Source passes are implemented: backend compilation passed in 5.67s; UI compilation
 passed in 4.75s. Independent fixtures now pass 25/25 and the combined suite 93/93; the native binary
-build passes in 0.54s. Final evaluation ACCEPTs the scoped change; delivery is next.
+build passes in 0.54s. Final evaluation ACCEPTs the scoped change; feature delivery is pushed as b194de7.
 A cfg(test)-only host factory now permits actual Desktop message testing without
 opening a native window or using production Keychain state. See the rolling
 snapshot for the serialized writer and Orchestrator pass entries.
