@@ -11,6 +11,40 @@ required shared UI structure. These are broad areas, not seven equal-sized
 fixes or seven remaining endpoints. Some areas overlap. They do not support an
 honest completion percentage or finish date; runtime checks may find more work.
 
+## October31 — exact Google and Slack work still missing
+
+The account-check requests are now confirmed: Slack auth.test and Google's
+Drive account-information request can use the shared checker. No new checker is
+needed. Google requires its fixed fields=user option, which the current URL
+validation rejects. Connecting those checks to encrypted saved access and running
+real success/failure tests remain; login storage/renewal is separate. See the
+dated source links in docs/architecture/research.md.
+
+
+Both packages already have setup code. The confirmed Fetch problem is that
+Authenticate returns unknown for these imported local servers, before starting
+setup or checking their saved access. The shared encrypted save/delivery code
+already exists. The missing work is:
+
+- **Google:** its existing browser login writes an unencrypted token.json and
+  reloads/refreshes from that file. Connect those token reads/writes to Fetch's
+  encrypted files and supply saved access when starting the server. The inspected
+  source has no account refresh-token environment input or external-store callback.
+- **Slack:** its existing setup accepts a token and browser cookie; Fetch can
+  already supply both through environment inputs. Connect setup and later renewed
+  values back to Fetch's encrypted store. The package currently saves renewed
+  values through its own store, so Fetch's saved copy is not kept updated.
+- **Both:** add the request that checks newly saved access, then actually connect
+  an account, call tools, restart Fetch and confirm access still works.
+
+Primary current source: [Google login/storage](https://raw.githubusercontent.com/a-bonus/google-docs-mcp/main/src/auth.ts),
+[Slack saved inputs](https://raw.githubusercontent.com/jtalk22/slack-mcp-server/main/lib/token-store.js),
+[Slack setup/check](https://raw.githubusercontent.com/jtalk22/slack-mcp-server/main/scripts/setup-wizard.js).
+This is not installed-version/runtime evidence. No login, credential use or live
+MCP test occurred for this clarification. The exact private storage connection
+still needs to be selected before implementation; no plaintext-cache exception
+or credential migration is approved.
+
 ## October 30 D82 — shared authentication mechanism implemented
 
 The former Rust service-name/credential-name verification switches are replaced

@@ -1,5 +1,12 @@
 # Fetch — current project context
 
+October31 clarification: Google and Slack already have their own sign-in/setup
+code. Fetch's missing work is using that setup while saving updated account
+access in its encrypted files and checking saved access before success. Google's
+current package writes an unencrypted token file; Slack accepts saved token/cookie
+inputs but later renewal writes to its own store. No real connect/tool/restart
+test has passed. Do not describe this as two login systems needing to be rebuilt.
+
 D82 generic authentication is implemented: imported names resolve through one
 input module, trusted data describes checks, and one engine builds/tests them
 using encrypted readback. Remote OAuth selection remains independent. Final

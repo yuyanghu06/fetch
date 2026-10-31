@@ -45,3 +45,11 @@ support or actual protected native/MCP/client readiness.
 D82 generic-authentication entries record accepted planning, source changes,
 independent verification, findings/fixes and delivery separately from the earlier
 read-only proposal. Historical evidence remains scoped to its recorded source.
+
+October31 entries distinguish the global communication-rule edit, actual Google/
+Slack upstream source findings and the correction of earlier broad login claims.
+They contain no new product test, credential or real-world connection result.
+
+The October31 account-check entry records official Slack/Google requests, the
+small Google request-option limitation and remaining saved-access wiring. It
+does not authorize or claim a live credential check.

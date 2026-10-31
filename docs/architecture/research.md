@@ -1,5 +1,29 @@
 # Research context and practical limits
 
+## October31 — Google and Slack already provide usable account checks
+
+The user asked whether the shared checker can reuse existing service requests.
+Yes: the requests are known; a new health-check mechanism is unnecessary.
+
+- [Slack auth.test](https://docs.slack.dev/reference/methods/auth.test/) explicitly
+  checks authentication/identity. Use POST https://slack.com/api/auth.test and
+  require HTTP2xx plus JSON ok:true. The inspected Slack package setup sends its
+  saved Bearer token plus Cookie d value to that request. Actual dedicated-token/
+  cookie success/failure behavior still needs testing.
+- [Google Drive about.get](https://developers.google.com/workspace/drive/api/reference/rest/v3/about/get)
+  reads account information with a Google access token. Its required fields
+  option can request only user information. The actual Google package requests
+  Drive permission, so this is a better fit than assuming OpenID/userinfo scope.
+  Proposed request: GET https://www.googleapis.com/drive/v3/about?fields=user,
+  Bearer access token read through the approved encrypted credential flow.
+
+D82 already supplies method/header/body/response execution. Its current URL
+validation rejects query strings; Google's fixed fields=user option needs a small
+trusted-request change. These requests still need to be connected to saved account
+access; obtaining/refreshing and saving that access is a separate missing task.
+No new public URL field, provider login or success policy is approved by the
+question, and no live request or product test ran.
+
 ## October 30 — Reusable authentication and imported credential names
 
 The user asked to use shared functions and credential names from base MCP

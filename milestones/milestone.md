@@ -1,5 +1,28 @@
 # Fetch milestone snapshot
 
+## October31 — existing Google/Slack checks confirmed
+
+Slack auth.test and Google Drive account information can reuse the shared
+checker. Google needs its fixed fields=user option allowed in the trusted request.
+The checks are known; wiring them to encrypted saved access and handling login
+storage/renewal remain. No application source, live request or test result changed.
+[Source-backed explanation](history/2026-10-31_13-02-43-203191-orchestrator-confirm-google-slack-account-checks.md).
+
+## October31 — global clarity rule saved; Google/Slack explanation corrected
+
+The global AGENTS.md now requires plain descriptions of what works, what is
+missing and what must happen next, with the user's example. Readback confirmed
+the rule once and preserved existing instructions.
+
+Google already has browser sign-in and token refresh; Slack already has setup
+and token/cookie inputs. Fetch still needs a supported way to save their new/
+renewed access encrypted and use it on restart, plus saved-key checks and real
+account/tool/restart tests. Current source confirms Authenticate returns unknown
+for these local servers. No application code or test/build result changed.
+
+- [Actual package login findings](history/2026-10-31_12-49-55-808975-researcher-google-slack-existing-login.md)
+- [Global rule and correction](history/2026-10-31_12-49-55-808976-orchestrator-global-clarity-rule-and-login-correction.md)
+
 ## October30 delivery — generic authentication committed and pushed
 
 Accepted D82 source/tests/docs are pushed as df094cc; HEAD/tracking/live remote

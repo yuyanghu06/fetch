@@ -74,3 +74,14 @@ D82 follow-up is now approved and implementing the shared input/verification
 engine. The previously discussed design is no longer merely under review;
 source/fixtures/evaluation for the new milestone are still pending. No unknown
 provider login or real native/client proof is implied.
+
+October31 correction: Google and Slack already implement their own setup. Fetch
+needs to connect their new/renewed account access to its encrypted files and
+checks, then prove actual connect/tool/restart behavior. This finding replaces
+the overly broad claim that both need new login systems. Details are in the
+current MVP_GAPS.md and new source-research history entries.
+
+October31 account-check clarification: the shared checker can reuse Slack
+auth.test and Google Drive account information. Google requires a fixed fields
+option; source support and saved-access wiring are still pending. Login storage/
+renewal and real account/tool/restart acceptance remain separate.

@@ -1,0 +1,10 @@
+# Check the actual Google and Slack login code
+
+- Local timestamp / acting role / milestone: 2026-10-31T12:49:55.808975-04:00 / Researcher / local-working-mvp.
+- Requested scope: Explain exactly what Google/Slack login work is missing; avoid calling existing upstream login code unfinished.
+- Starting repository state: main e8fb5a2, clean at the start of this pass; prior110-test/native-build evidence remains unchanged.
+- Work performed / changed files: Read-only Researcher inspected primary current source for @a-bonus/google-docs-mcp and @jtalk22/slack-mcp. Root extracted only safe package-name metadata from the already-recorded global Claude inventory; no command/env/header values, credential values or URLs were printed, copied or used.
+- Decisions: Google already has browser sign-in and refresh but writes its own unencrypted token.json; no external account refresh-token store hook was found in inspected auth.ts. Slack already accepts SLACK_TOKEN/SLACK_COOKIE and has setup/renewal; initial environment delivery can reuse Fetch, but renewal currently saves through the package's own store. No new login-system implementation is assumed.
+- Checks and evidence: Primary sources: https://raw.githubusercontent.com/a-bonus/google-docs-mcp/main/src/auth.ts ; https://raw.githubusercontent.com/jtalk22/slack-mcp-server/main/lib/token-store.js ; https://raw.githubusercontent.com/jtalk22/slack-mcp-server/main/scripts/setup-wizard.js . Current upstream code, not installed-version proof. No package/login/account/native/MCP execution or personal credential use.
+- Resulting state / acceptance: Corrected source-backed explanation: Fetch still needs to use existing setup, keep new/renewed access in its encrypted files and perform its required saved-credential check; real use/restart tests remain unrun.
+- Remaining work and handoff: Define the supported private read/write path before implementing Google token storage or Slack renewal updates. Preserve D25/D26/D31 and protected testing; do not silently copy plaintext caches or existing personal credentials.

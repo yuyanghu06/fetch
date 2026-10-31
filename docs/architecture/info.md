@@ -49,3 +49,8 @@ authentication-success rule is selected. See the generic-authentication mileston
 D82 final fixtures pass 110/110 and native binary builds after login-mode
 regression fixes. authentication-engine.md and the scoped milestone record
 actual evidence and remaining provider/native/client limits.
+
+October31 research confirms reusable Slack auth.test and Google Drive account
+checks. The endpoints are known; connecting encrypted saved access and Google
+fixed request options is distinct from login storage/renewal work. No source
+implementation or real-world result is claimed by this research.

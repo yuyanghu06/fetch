@@ -4,6 +4,12 @@
 
 ## Active local MVP completion — D81
 
+- [x] October31: confirm Slack auth.test and Google Drive account-information requests are available for the existing shared checker.
+- [ ] Connect saved Google/Slack access to those known checks; support Google's fixed fields=user request option, then run dedicated real success/failure tests. Login storage/renewal remains separate.
+- [x] October31: save the always-clear explanation rule globally and check actual Google/Slack source before naming missing login work.
+- [ ] Use Google's existing browser sign-in while saving its new/renewed account keys in Fetch's encrypted files and supplying them back. Select the supported private storage connection first.
+- [ ] Use Slack's existing token/cookie inputs and setup, save renewed values back through Fetch, and check the saved pair before success.
+- [ ] Run real Google/Slack account setup, tool calls and restart/reuse in the protected environment; current upstream source research is not a passing live test.
 - [x] Commit/push accepted D82 shared authentication source/tests/docs as df094cc; verified matching live refs/clean feature checkpoint. Delivery-record follow-up separate.
 - [x] Fix D82 evaluator login-mode/evidence/manual-header findings and add three regression cases; final 35 manager/110 combined cases and native build pass.
 - [x] D82: user approves shared imported-input/storage/delivery and trusted verification descriptions; D25/D31 stay required.

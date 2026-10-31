@@ -1,0 +1,10 @@
+# Confirm existing Google and Slack checks can use the shared checker
+
+- Local timestamp / acting role / milestone: 2026-10-31T13:02:43.203191-04:00 / Orchestrator / local-working-mvp.
+- Requested scope: Answer whether Google and Slack have existing authenticated checks that Fetch can reuse.
+- Starting repository state: main e8fb5a2 plus preserved local clarification/global-rule project records; application source unchanged.
+- Work performed / changed files: Read official Slack auth.test and Google Drive about.get documentation, current package Google scopes/Slack setup request, and current shared verifier URL validation. Updated research, notes, remaining-work summary and journal; no application code changed.
+- Decisions: Known requests exist: Slack POST https://slack.com/api/auth.test with2xx and ok:true, using the saved session pair as the package does; Google Drive GET https://www.googleapis.com/drive/v3/about?fields=user with saved access token and a successful account response. These are proposed concrete check details, not a newly approved implementation/credential flow.
+- Checks and evidence: Official primary docs fetched at https://docs.slack.dev/reference/methods/auth.test/ and https://developers.google.com/workspace/drive/api/reference/rest/v3/about/get . Google package source includes Drive permission. Slack setup sends Bearer token and d cookie. Shared verifier currently rejects URL query strings, so Google's required fields option needs a small trusted-request adjustment. No provider/credential/login/MCP tests or code execution.
+- Resulting state / acceptance: The common checker can be reused; endpoint discovery is not the blocker. Connecting saved credentials/renewal to Fetch remains separate, and real-world checks have not run. Prior110-test/build evidence unchanged.
+- Remaining work and handoff: Present the known requests plainly. If implementation is requested, preserve D25/D31/readback, use trusted fixed request options, test invalid/new saved values and retain protected dedicated-account requirements.

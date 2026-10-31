@@ -43,3 +43,8 @@ native/client testing still required. Packaging is not a local-testing blocker.
 D82 generic-authentication evidence is now110 combined passing fixtures and a
 passing native build. LOCAL_MVP_RUN.md/MVP_GAPS.md distinguish the completed
 shared mechanism from missing provider descriptions/wrapper login and live proof.
+
+October31: MVP_GAPS.md now names the actual Google/Slack missing work: use
+existing package setup, keep new/renewed account access in Fetch encrypted files,
+check saved access and run real account/tool/restart tests. The global plain-
+English rule is saved; no application/source-test result changed.

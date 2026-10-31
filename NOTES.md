@@ -1,5 +1,30 @@
 # Project notes
 
+## October31,2026 — Existing Google/Slack checks can reuse the shared checker
+
+The user asked why existing service requests cannot be reused. Official docs
+confirm Slack auth.test and a Google Drive account-information request are
+available. The shared checker can run them; Google requires a fixed fields=user
+request option that current code rejects, so that small change is needed. Saving/
+renewing login access through Fetch's encrypted files is a separate task. No
+application code, credential or real-world test changed in this explanation.
+
+## October 31, 2026 — Explain actual Google/Slack work and save the global clarity rule
+
+The user asked for clear explanations everywhere and requested the rule in
+~/.codex/AGENTS.md. Added the exact example and the requirement to distinguish
+missing code from checks that have not run. Existing global instructions remain.
+
+The earlier claim that Google/Slack need new login code was too broad. Their
+actual packages are @a-bonus/google-docs-mcp and @jtalk22/slack-mcp. Google's
+server already signs in through a browser and refreshes access, but writes an
+unencrypted token.json. Fetch still needs a supported way to save those account
+keys encrypted and supply them back. Slack already accepts a token/cookie pair,
+which Fetch can supply; setup and renewed values still need to be saved back
+through Fetch rather than only the package's own store. Fetch also lacks their
+saved-key checks. Real-world account/tool/restart tests have not run. These are
+findings from current upstream source, not proof of installed-package behavior.
+
 ## October 30, 2026 — Verify the generic authentication implementation
 
 Imported names now use one resolver for encrypted storage references and local/
