@@ -44,6 +44,7 @@ pub(super) enum ManualCheck {
 pub(super) struct RequestSpec {
     pub method: String,
     pub url: String,
+    #[serde(default)] pub query: BTreeMap<String, String>,
     #[serde(default)] pub headers: BTreeMap<String, String>,
     pub body: Option<Value>,
     pub credentials: Vec<Placement>,
@@ -176,7 +177,7 @@ impl BoundRequest {
 
     fn request(&self, client: &reqwest::Client) -> Result<reqwest::RequestBuilder, ManagementError> {
         let method = reqwest::Method::from_bytes(self.spec.method.as_bytes()).map_err(|_| verification_error())?;
-        let mut request = client.request(method, &self.spec.url);
+        let mut request = client.request(method, &self.spec.url).query(&self.spec.query);
         for (name, value) in &self.spec.headers { request = request.header(name, value); }
         let mut body = self.spec.body.clone().unwrap_or_else(|| json!({}));
         let mut has_body = self.spec.body.is_some();

@@ -1,4 +1,7 @@
 //! Encrypted server-local bytes. Persistence is not provider authentication.
+pub(crate) mod document;
+#[cfg(test)]
+mod document_tests;
 use crate::storage::server_directory;
 use aes_gcm::{
     Aes256Gcm, KeyInit, Nonce,
@@ -20,6 +23,7 @@ pub enum CredentialError {
     IntegrityFailed,
     StorageUnavailable,
     TooLarge,
+    InvalidDocument,
 }
 impl std::fmt::Display for CredentialError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -56,6 +60,15 @@ pub struct CredentialStore {
     keys: Arc<dyn KeyProvider>,
     writes: Mutex<()>,
 }
+pub(crate) struct JsonUpdate {
+    pub document: serde_json::Value,
+    pub changed: bool,
+}
+impl std::fmt::Debug for JsonUpdate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("JsonUpdate").field("document", &"[REDACTED]").field("changed", &self.changed).finish()
+    }
+}
 impl CredentialStore {
     pub fn new(root: PathBuf, keys: Arc<dyn KeyProvider>) -> Self {
         Self {
@@ -82,13 +95,40 @@ impl CredentialStore {
         decrypt(server_id, &key, &bytes).map(Some)
     }
     pub fn save(&self, server_id: &str, value: &SecretDocument) -> Result<(), CredentialError> {
-        if value.expose().len() > MAX_SECRET_BYTES {
-            return Err(CredentialError::TooLarge);
-        }
         let _guard = self
             .writes
             .lock()
             .map_err(|_| CredentialError::StorageUnavailable)?;
+        self.save_locked(server_id, value)
+    }
+    pub(crate) fn read_json(&self, server_id: &str) -> Result<Option<serde_json::Value>, CredentialError> {
+        self.read(server_id)?.map(|value| document::decode(value.expose()).map_err(|_| CredentialError::InvalidDocument)).transpose()
+    }
+    pub(crate) fn update_json(
+        &self,
+        server_id: &str,
+        initial: &serde_json::Value,
+        update: impl FnOnce(&mut serde_json::Value) -> Result<(), CredentialError>,
+    ) -> Result<JsonUpdate, CredentialError> {
+        let _guard = self.writes.lock().map_err(|_| CredentialError::StorageUnavailable)?;
+        let saved = self.read_json(server_id)?;
+        let existed = saved.is_some();
+        let mut value = saved.unwrap_or_else(|| initial.clone());
+        if !value.is_object() { return Err(CredentialError::InvalidDocument); }
+        let original = value.clone();
+        update(&mut value)?;
+        let encoded = document::encode(&value).map_err(|_| CredentialError::InvalidDocument)?;
+        let changed = !existed || original != value;
+        if changed {
+            self.save_locked(server_id, &encoded)?;
+            value = self.read_json(server_id)?.ok_or(CredentialError::StorageUnavailable)?;
+        }
+        Ok(JsonUpdate { document: value, changed })
+    }
+    fn save_locked(&self, server_id: &str, value: &SecretDocument) -> Result<(), CredentialError> {
+        if value.expose().len() > MAX_SECRET_BYTES {
+            return Err(CredentialError::TooLarge);
+        }
         // Refuse to overwrite an existing document that cannot be verified with its current key.
         let existing = match server_directory(&self.root, server_id, false).map_err(|_|CredentialError::StorageUnavailable)? {
             Some(dir)=>dir.read("credentials.enc",MAX_SECRET_BYTES+MAGIC.len()+28).map_err(|_|CredentialError::StorageUnavailable)?,None=>None

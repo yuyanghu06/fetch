@@ -224,3 +224,58 @@ fn profile_target_matching_rejects_lookalike_hosts_ports_and_credential_urls() {
         assert!(!profile.matches_record(&json!({"config":{"kind":"remote","connection":{"url":endpoint}}})), "{endpoint}");
     }
 }
+
+#[tokio::test]
+async fn fixed_query_fields_are_encoded_without_putting_saved_credentials_in_the_url() {
+    let profile: Profile = serde_json::from_value(json!({
+        "id":"fixed-query","targets":{"packages":["fixture"],"hosts":[]},
+        "manual":[{"mode":"each","selectors":[{"source":"environment","names":["ARBITRARY_INPUT"]}],
+            "input":"access","request":{
+                "method":"GET","url":"https://verification.fixture.example/check",
+                "query":{"fields":"account,workspace","label":"a+b & two words"},
+                "credentials":[{"input":"access","placement":"header","name":"Authorization","prefix":"Bearer "}],
+                "success":[{"rule":"equals","pointer":"/ok","value":true}]
+            }}],"oauth":null
+    })).unwrap();
+    let (bindings, document) = one_binding();
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    let sender = std::sync::Arc::new(tokio::sync::Mutex::new(Some(sender)));
+    let app = Router::new().fallback(move |uri: axum::http::Uri, headers: axum::http::HeaderMap| {
+        let sender = sender.clone();
+        async move {
+            sender.lock().await.take().unwrap().send((uri, headers)).unwrap();
+            axum::Json(json!({"ok":true}))
+        }
+    });
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let endpoint = format!("http://{}/", listener.local_addr().unwrap());
+    let task = tokio::spawn(async move { axum::serve(listener, app).await.unwrap(); });
+    let plan = profile.bind(&bindings, &document, &[], None).unwrap().with_endpoint(&endpoint);
+    plan.execute(&client()).await.unwrap();
+    let (uri, headers) = receiver.await.unwrap();
+    task.abort();
+    let uri_text = uri.to_string();
+    let observed = url::Url::parse(&format!("http://fixture{uri_text}")).unwrap();
+    let fields: std::collections::BTreeMap<_, _> = observed.query_pairs().into_owned().collect();
+    assert_eq!(fields, [("fields".to_owned(), "account,workspace".to_owned()), ("label".to_owned(), "a+b & two words".to_owned())].into_iter().collect());
+    assert_eq!(headers[header::AUTHORIZATION], "Bearer fixture-token");
+    assert!(!uri_text.contains("fixture-token"));
+}
+
+#[test]
+fn query_support_does_not_allow_inline_query_urls_or_credential_query_placement() {
+    let (bindings, document) = one_binding();
+    for endpoint in [
+        "https://verification.fixture.example/check?token=inline-secret",
+        "https://inline-secret@verification.fixture.example/check",
+    ] {
+        let mut profile = single_profile(json!([]));
+        if let super::verification::ManualCheck::Each { request, .. } = &mut profile.manual[0] {
+            request.url = endpoint.to_owned();
+        }
+        assert!(profile.bind(&bindings, &document, &[], None).is_err());
+    }
+    assert!(serde_json::from_value::<super::verification::Placement>(json!({
+        "input":"access","placement":"query","name":"token"
+    })).is_err());
+}
