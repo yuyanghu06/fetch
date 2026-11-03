@@ -83,3 +83,9 @@ common Railway/Linear/remote web requests and independent fixture evidence.
 Google's encrypted helper integration remains pending by user choice. The
 user's multiple-instance/account requirement and current same-source reuse
 limitation are recorded there and in NOTES.md.
+
+
+Direct-install-inputs records the user-approved direct command/URL POST-body
+extension alongside source-file imports. Source and independent
+verification are accepted:142 unique checks/native build pass. Scoped delivery
+is next; the user explicitly excluded UI work.

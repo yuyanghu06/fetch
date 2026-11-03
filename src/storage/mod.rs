@@ -267,8 +267,10 @@ fn valid_record(id: &str, v: &Value) -> bool {
             || !e["tool_timeouts_ms"].as_object().is_some_and(|o| o.len()<=4096 && o.iter().all(|(k,v)| !k.is_empty() && v.as_u64().is_some_and(|n| n > 0 && n <= 86_400_000))) { return false; }
     }
     if let Some(i) = v.get("_installation") {
-        if !keys(i, &["source_path", "source_name", "installation_id", "protected_args"])
-            || !nonempty(&i["source_path"]) || !nonempty(&i["source_name"]) || !nonempty(&i["installation_id"])
+        let source=keys(i, &["source_path", "source_name", "installation_id", "protected_args"]) && nonempty(&i["source_path"]);
+        let direct=keys(i, &["direct_identity", "source_name", "installation_id", "protected_args"])
+            && i["direct_identity"].as_str().is_some_and(|identity|identity.len()==64 && identity.bytes().all(|byte|byte.is_ascii_digit()||(b'a'..=b'f').contains(&byte)));
+        if !(source||direct) || !nonempty(&i["source_name"]) || !nonempty(&i["installation_id"])
             || !i["protected_args"].as_u64().is_some() { return false; }
     }
     if !c["environment"].as_array().is_some_and(|a| {

@@ -1200,3 +1200,31 @@ same-source duplication workflow has been implemented or change that contract.
 
 After routing is complete, the user wants a walkthrough of the resulting
 behavior. Google implementation remains pending during this routing task.
+
+## November 3, 2026 — Request direct installation inputs
+
+User asks whether installation can also accept URLs/install directions or
+commands through a new key instead of requiring config_path. This requests an
+extension to the public install input, not permission to silently finalize its
+schema, identity/reuse or documentation-execution behavior. Clarification asked:
+actual remote connection URLs and explicit launch definitions, or README/install
+links too? Current source still requires config_path/server_name. Preserve all
+existing authorization, credential and preparation/connect rules. Implementation
+has not started. See milestones/direct-install-inputs/info.md.
+
+## November 3, 2026 — Commands should become internal install definitions
+
+User clarifies desired input: users paste a command and Fetch translates it into
+an internal definition to prepare and run. They do not need to construct the
+nested definition JSON themselves. A complete command/URL input amendment is
+proposed in docs/architecture/api-contract.md, including identity/reuse and
+existing permission/error/progress boundaries. Exact new contract awaits their
+answer; no new install input/parser or application source was implemented.
+
+## November 3, 2026 — Direct install POST body approved; no UI
+
+After the complete direct-command/URL body proposal, user instructed: add it to
+the existing POST route body and do not build any UI. Implement server_name plus
+one config_path/command/url, shared command-to-definition/preparation, described
+reuse/errors and existing authentication/credential boundaries. Existing config
+imports and Google deferral stay. No new route, install screen or duplicate UI.

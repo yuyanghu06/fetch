@@ -111,33 +111,7 @@ impl DiscoveryService {
         let (container, harness) = *found[0];
         if (harness == "codex" && format != "toml") || (harness == "claude_code" && format != "json") || (harness == "opencode" && format == "toml") { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
         let definition = document[container].get(name).ok_or_else(|| error("UNSUPPORTED_CONFIG_FILE"))?;
-        let row = classify(name, definition, harness);
-        if row["status"] != "supported" { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
-        let environment: Vec<Value> = row["credential_variables"].as_array().unwrap().iter().map(|v| json!({"name":v,"credential_ref":v})).collect();
-        let mut args: Vec<String> = if harness == "opencode" {
-            definition["command"].as_array().map(|a| a.iter().skip(1).filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default()
-        } else { definition["args"].as_array().map(|a| a.iter().filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default() };
-        let executable = if harness == "opencode" { definition["command"][0].as_str() } else { definition["command"].as_str() }.unwrap_or("");
-        let package_arguments = if row["type"] == "npm" {
-            if args.first().is_some_and(|a| a == "-y" || a == "--yes") { args.remove(0); }
-            args.iter().skip(1).cloned().collect()
-        } else if row["type"] == "pypi" { args.iter().skip(if args.first().is_some_and(|arg|arg=="--from"){3}else{1}).cloned().collect() } else { Vec::new() };
-        let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
-        let default_timeout_ms=source_default_timeout_ms(harness,definition).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?;
-        let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":default_timeout_ms,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
-        if row["type"] == "remote" {
-            let mut headers=headers;
-            if let Some(reference)=definition["bearer_token_env_var"].as_str(){if !headers.iter().any(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))){headers.push(json!({"name":"Authorization","credential_ref":reference}));}}
-            let endpoint=if let Some(url)=definition["url"].as_str(){
-                Url::parse(url).ok().filter(supported_remote_endpoint).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?
-            }else{
-                mcp_remote(&args).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?.endpoint
-            };
-            // A recognized stdio bridge becomes the existing native remote adapter.
-            // Neither its source header arguments nor its environment values are saved.
-            config["executable"]=Value::Null;config["args"]=json!([]);config["working_directory"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
-        }
-        Ok(CapturedDefinition { row, config, package_arguments })
+        capture_definition(name, definition, harness)
     }
     pub fn scan(&self, config_path: Option<&Path>) -> Result<Value, DiscoveryError> {
         let mut groups = vec![];
@@ -183,6 +157,37 @@ impl DiscoveryService {
         let steps = discovery_steps(&groups);
         Ok(json!({"status":"ok","configs":groups,"next_steps":steps}))
     }
+}
+/// Build one normalized installation capture from an already captured definition.
+/// File imports and direct inputs share this classifier and secret-free config builder.
+pub(crate) fn capture_definition(name: &str, definition: &Value, harness: &str) -> Result<CapturedDefinition, DiscoveryError> {
+    let row = classify(name, definition, harness);
+    if row["status"] != "supported" { return Err(error("UNSUPPORTED_CONFIG_FILE")); }
+    let environment: Vec<Value> = row["credential_variables"].as_array().unwrap().iter().map(|v| json!({"name":v,"credential_ref":v})).collect();
+    let mut args: Vec<String> = if harness == "opencode" {
+        definition["command"].as_array().map(|a| a.iter().skip(1).filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default()
+    } else { definition["args"].as_array().map(|a| a.iter().filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default() };
+    let executable = if harness == "opencode" { definition["command"][0].as_str() } else { definition["command"].as_str() }.unwrap_or("");
+    let package_arguments = if row["type"] == "npm" {
+        if args.first().is_some_and(|a| a == "-y" || a == "--yes") { args.remove(0); }
+        args.iter().skip(1).cloned().collect()
+    } else if row["type"] == "pypi" { args.iter().skip(if args.first().is_some_and(|arg|arg=="--from"){3}else{1}).cloned().collect() } else { Vec::new() };
+    let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
+    let default_timeout_ms=source_default_timeout_ms(harness,definition).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?;
+    let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":default_timeout_ms,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
+    if row["type"] == "remote" {
+        let mut headers=headers;
+        if let Some(reference)=definition["bearer_token_env_var"].as_str(){if !headers.iter().any(|v|v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization"))){headers.push(json!({"name":"Authorization","credential_ref":reference}));}}
+        let endpoint=if let Some(url)=definition["url"].as_str(){
+            Url::parse(url).ok().filter(supported_remote_endpoint).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?
+        }else{
+            mcp_remote(&args).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?.endpoint
+        };
+        // A recognized stdio bridge becomes the existing native remote adapter.
+        // Neither its source header arguments nor its environment values are saved.
+        config["executable"]=Value::Null;config["args"]=json!([]);config["working_directory"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
+    }
+    Ok(CapturedDefinition { row, config, package_arguments })
 }
 fn discovery_steps(groups: &[Value]) -> Vec<Value> {
         let selectable = groups.iter().any(|g| {

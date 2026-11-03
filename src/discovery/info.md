@@ -27,3 +27,9 @@ remote profile alongside the other documented roots and MCP/SSE paths. This
 allows the official remote import without rewriting its destination. Rejection
 of credential-bearing URLs, fragments, queries outside the narrow Hugging Face
 profile and unknown endpoints remains. No connection was made to inspect it.
+
+
+Direct POST inputs and source-file imports now share capture_definition: the
+same literal classifier and secret-free config builder creates both captures.
+File reading/selected-entry semantics remain in DiscoveryService::capture; direct
+command quote parsing and input restrictions live in installation/direct.rs.

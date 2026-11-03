@@ -17,3 +17,9 @@ This module exposes the one protected `/mcp` endpoint. It keeps legacy initializ
 Fetch's eight management tools call a `ManagementBackend` supplied by the application, so installation, authentication, configuration and restart keep the same backend rules as HTTP and Settings. There is no manual credential writer or provider model in this module. Source is unverified; the user controls when any checks or tests start.
 
 D79 corrected the gateway's Rust match-guard syntax and unused imports. The native binary compiles with the resolved lockfile; no MCP messages, sessions or native/runtime behavior were exercised. One unread decoded-error field warning remains.
+
+
+fetch__install_servers describes the same three POST input alternatives: a name
+with config_path, command or url. Its schema enforces exactly one alternative;
+the common backend owns parsing, preparation, reuse, permission and progress
+rules. No separate MCP installer, new tool or UI is introduced.

@@ -838,3 +838,18 @@ and ownership/lifecycle constraints. This approves the bounded internal refactor
 it adds no public verifier-URL/settings API, persisted schema migration, deletion/
 non-auth success exception or automatic unknown-provider/wrapper login. Existing
 provider facts and precise unsupported outcomes remain explicit.
+
+
+## November 3 — Direct installation POST inputs, backend only
+
+After reviewing the complete proposal, the user instructed adding direct inputs
+to the existing POST body and explicitly excluded UI. Accept server_name with
+exactly one config_path/command/url. Translate supported literal commands into
+the existing shared definition/preparation; direct URLs use Streamable HTTP.
+Keep existing config imports, permissions, progress, credential and Connect rules.
+Repeat name plus normalized original direct definition reuses the instance;
+changed name/definition creates another. Unsupported syntax returns item failure;
+malformed bodies return400. No shell/README interpreter, secret-value input, new
+route or UI. The approved amendment is at the end of api-contract.md. Implemented
+source has142 unique passing fixtures and a successful native build; live package/
+provider/client acceptance remains unverified. Google integration remains pending.

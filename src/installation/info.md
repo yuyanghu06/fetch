@@ -34,3 +34,12 @@ existence/permissions/path containment and pinned package metadata gate readines
 no CLI --version is run. npm's official postinstall fetches its binary over HTTPS;
 it does not provide an independent archive checksum. No package install executed
 in this source pass. First-party download HTTP now uses safe diagnostics.
+
+Direct POST bodies also accept server_name plus command or url. direct.rs checks
+literal command syntax before shlex splitting, builds an ordinary shared capture
+and computes a digest of the name/normalized original definition. Existing
+private npm/Python/script/remote preparers and managed Connect hooks handle it.
+Repeated direct identity reuses saved settings/credentials even after edits;
+source-path/name reuse remains separate. Direct progress uses config_path:null
+and never echoes command/URL text. Inputs carry no credential values; no shell
+or documentation interpreter is used. No UI is added for these new inputs.

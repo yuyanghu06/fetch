@@ -1,5 +1,28 @@
 # Fetch milestone snapshot
 
+## November 3 — direct installation body accepted
+
+User approved command/url alternatives in the existing POST body after the full
+proposal and explicitly excluded UI. Independent Researcher selected already
+locked shlex2.0.1 plus restricted syntax checks; Planner completed the bounded
+plan. Coder source is integrated: shared capture/preparation, parsed command/URL
+inputs, saved direct-identity digest and matching MCP schema. Root inspected the
+diff; independent Tester/Evaluator ACCEPT.142 unique checks pass and the locked
+native binary builds (0.35s), with no new warnings. No real package install/
+provider/connection acceptance is claimed; hooks use disposable simulations.
+Scoped delivery is next. Preserve
+concurrent UI/startup edits, source imports and Google deferral.
+[Contract proposal pass](history/2026-11-03_17-56-44-860492-orchestrator-propose-command-install-input.md).
+[Researcher pass](history/2026-11-03_18-04-47-964906-researcher-command-parser-selection.md).
+[Planner pass](history/2026-11-03_18-04-47-965249-planner-direct-install-body-plan.md).
+[Implementation pass](history/2026-11-03_18-08-05-870550-coder-direct-install-body.md).
+[Verification evidence](direct-install-inputs/evidence.md).
+[Tester pass](history/2026-11-03_18-10-43-880763-tester-direct-install-fixtures.md).
+[Orchestrator pass](history/2026-11-03_18-10-43-880970-orchestrator-direct-install-native-build.md).
+[Evaluator pass](history/2026-11-03_18-10-43-881085-evaluator-accept-direct-install-body.md).
+[Scope](direct-install-inputs/info.md). [Pass](history/2026-11-03_17-40-38-021507-orchestrator-scope-direct-install-inputs.md).
+
+
 ## November 3 — shared authentication router accepted
 
 The user clarified selection uses imported command, arguments and environment

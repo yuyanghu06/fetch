@@ -1,5 +1,15 @@
 # Fetch current work
 
+- [x] Clarify pasted-command translation and present complete direct command/URL
+  input amendment in the API contract; existing config imports stay.
+- [x] User approves direct command/url POST body after complete proposal; no UI.
+- [x] Research quote-aware parser and plan shared capture/preparation/identity.
+- [x] Implement backend-only direct input/schema/reuse, preserving imports.
+- [x] Independently test/evaluate direct inputs and build:142 unique checks,
+  native build and Tester/Evaluator ACCEPT. No real install/connection proof.
+- [ ] Commit/push the scoped direct-input extension/evidence; preserve unrelated
+  UI/startup and documentation edits.
+
 - [x] Complete scope sync: dispatch from imported command/args/environment; return
   selected-flow errors without silent alternate-method fallback.
 - [x] Implement common dispatcher and Railway/Linear OAuth consolidation.

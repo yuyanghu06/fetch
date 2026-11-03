@@ -1,5 +1,12 @@
 # Fetch — current project context
 
+November3 active install extension: user approves command/url alternatives in the
+existing POST body after full contract review, explicitly without UI. Reuse the
+shared definition classifier/private installer and existing permission/progress/
+Connect/credential rules. Backend source is implemented;142 unique checks and
+native compilation pass, independent Tester/Evaluator ACCEPT. No real package
+installation/provider/connection acceptance is claimed.
+
 November3 current authentication slice: shared dispatcher implemented,99 fixture
 checks and native compilation pass; independent Tester/Evaluator ACCEPT. No real
 provider/helper/native/client acceptance is claimed. Dispatch is selected from

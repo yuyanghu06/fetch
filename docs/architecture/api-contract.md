@@ -1470,3 +1470,101 @@ encrypted readback and service-authenticated verification gate are unchanged.
 Source compiles and is scoped-source-reviewed; no live authentication claim.
 First-party request logging excludes body/header/query/URL values. Broader
 selected incomplete workflows remain in ../testing/MVP_GAPS.md.
+
+
+## November 3 — Direct command/URL installation amendment, approved for backend implementation
+
+Status: after the complete proposal, the user instructed adding these inputs to
+the existing POST body and explicitly requested no UI. Implement the presented
+server_name + config_path/command/url contract and its described reuse/errors,
+shared preparation and credential boundaries. No new public route or UI.
+
+### Request and supported inputs
+
+Keep POST /api/v1/setup/installations and its servers array (1–256 entries).
+Keep existing source imports unchanged. Each entry requires server_name and
+exactly one of config_path, command, or url. Names and the selected input are
+nonblank strings without NUL; config_path remains absolute. No extra fields or
+query parameters. Existing shared request body limits apply.
+
+Examples, each as one member of servers:
+
+```json
+{"server_name":"example","command":"npx -y @example/mcp-server@1.2.3"}
+```
+
+```json
+{"server_name":"example-remote","url":"https://example.com/mcp"}
+```
+
+```json
+{"server_name":"existing","config_path":"/absolute/path/config.toml"}
+```
+
+The command input is a full launch command string, not the existing imported
+configuration's executable-only command field. Parse it into executable/argument
+strings, respecting quoted arguments; feed those into the existing supported
+literal launch classifier and preparation functions. Initially support the same
+npx/uvx/package-argument and local-script forms as imports, including existing
+supported bridge normalization. Do not expand launcher/flag support implicitly.
+Do not invoke a shell or interpret pipelines, command chains, redirects,
+substitutions or embedded environment-value assignments. Unsupported commands
+fail the selected item; they are not guessed, rewritten into another method or
+executed as shell scripts. A URL entry uses Streamable HTTP and the same current
+supported endpoint checks; existing SSE imports remain unchanged. Documentation/
+README/manifest URLs are not fetched or interpreted in this bounded amendment.
+
+Inputs carry no credential values or new secret-writing authority. Do not
+import ambient environment values or existing CLI credentials. A command that
+requires credential values/setup uses the existing Settings/authentication/
+configuration operations; no automatic credential-name inference is promised.
+This proposal adds no env/header-values field or credential-bearing shell syntax.
+
+### Identity, saving and reuse
+
+Source imports retain exact existing source-path/name identity. A direct entry
+uses its server_name plus normalized original command definition or URL as its
+installation identity, separate from config imports. Tokenized-equivalent quoted/
+whitespace spellings map to the same definition; argument text/order remains
+exact. Repeating that direct identity reuses the saved instance/pinned package/
+settings/credentials. Do not compare only package names or current edited Fetch
+settings. Changing the direct name or definition is a new instance, not an update
+or credential reset. Save the captured nonsecret direct identity with the record;
+generate the ordinary random server ID only for a new instance. No duplicate UI,
+update route or migration of existing records is added.
+
+### Authority, response, lifecycle and errors
+
+Keep existing management permission checks for HTTP/UI/MCP and authorize before
+job/target disclosure. Update fetch__install_servers to accept the same item
+alternatives and call the same backend. Manual secrets remain Settings-only.
+
+Keep 202 with installation_id/status/next_steps, Location and no-store. Keep one
+active group, sequential preparation, current-run job lifetime, partial failure,
+owned cleanup, explicit retry and successful-record reuse. Parsed direct inputs
+are captured for the accepted job; later text/source changes do not retarget it.
+After preparation, run existing Connect; readiness/login errors remain in GET
+servers and never undo successful preparation. Do not automatically Authenticate.
+
+Progress retains installation_id/status/servers/next_steps. Each item keeps
+server_name/server_id/status/error. Existing source items retain config_path;
+direct items have config_path:null and do not echo raw command/URL input in
+progress or diagnostics. No new response error enum is introduced.
+
+Malformed bodies, mixed input alternatives, wrong types, empty fields and exact
+duplicate submitted selections return existing400 INVALID_REQUEST before a job.
+Keep existing401/403 auth,409 INSTALLATION_IN_PROGRESS and acceptance/lifetime
+errors. A well-formed but unsupported command/URL or failed preparation/save is
+an item-level INSTALLATION_FAILED through progress; continue other rows. Never
+expose submitted text, command output or secrets in errors. No fallback method,
+blind retry or implicit update is introduced.
+
+The user has authorized this backend extension. Preserve concurrent source
+edits, Google deferral and existing saved-credential proof rules.
+
+
+Implementation evidence for this amendment: shared capture/private preparation,
+direct-identity digest metadata and matching MCP schema are implemented.142
+unique fixture checks and native compilation pass; independent Tester/Evaluator
+ACCEPT. [Evidence](../../milestones/direct-install-inputs/evidence.md). No UI
+or real package/provider/connection verification is included in this pass.

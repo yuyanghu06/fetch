@@ -492,3 +492,34 @@ approve the proposed private helper/server storage bridge. Package metadata says
 ISC while its actual shipped LICENSE is MIT; retain the shipped license if future
 integration copies/adapts source. [Upstream auth source reference](https://github.com/a-bonus/google-docs-mcp/blob/22856e1fd5d20afe40471683d4c9417910fa9430/src/auth.ts)
 is separate from the authoritative installed distribution inspection.
+
+
+## November 3 — Direct install inputs, preliminary primary-source check
+
+[Official MCP reference-server configuration examples](https://github.com/modelcontextprotocol/servers/blob/main/README.md)
+use command/args launcher definitions (including npx and uvx).
+[Official registry server.json specification](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md)
+describes structured package and remote connection metadata. These are possible
+input references; neither makes an arbitrary README URL an executable install
+definition. No schema parser, catalogue integration, dependencies or code were
+copied/selected by this preliminary scope pass.
+
+
+## November 3 — Command tokenization selected for direct install bodies
+
+Independent Researcher compared [shlex2.0.1](https://docs.rs/shlex/2.0.1/shlex/fn.split.html)
+and [shell-words1.1.1](https://docs.rs/shell-words/1.1.1/shell_words/fn.split.html),
+both maintained, unarchived and MIT OR Apache-2.0. shlex2.0.1 is already in
+Cargo.lock and the local cache and has no runtime dependencies; use it directly
+for quote-aware splitting. Neither parser executes a shell, expands variables
+or rejects operators by itself. [shlex quote-provenance issue](https://github.com/comex/rust-shlex/issues/13)
+and [shell-words operators issue](https://github.com/tmiasko/shell-words/issues/5)
+show why direct-input syntax must be checked before tokenization loses quoting
+or strips comments. Retain the existing literal classifier after tokenization.
+No upstream implementation source is copied; license files remain in the Cargo
+package and the direct dependency is listed in THIRD_PARTY_NOTICES.md.
+
+Existing imported mcp-remote --header values are deliberately discarded during
+capture. New direct commands have no credential-value authority; reject those
+inputs before direct identity is saved. Existing source imports are unchanged.
+The user approved this POST-body extension and explicitly excluded UI work.

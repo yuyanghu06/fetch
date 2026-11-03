@@ -57,3 +57,12 @@ The existing persistent-alias case in local_mvp_acceptance.rs now configures
 stopped disposable routes after Runner restart before resolving aliases, matching
 the existing deletion protection. Configuring does not execute the fixture path.
 Current command/results are recorded in the shared authentication milestone.
+
+## November 3 direct installation POST inputs
+
+`direct_install.rs` contains8 disposable integration cases for command/url/source
+selections, identity/reuse, saved credentials, HTTP authority/progress/errors and
+partial failure. `src/installation/direct_tests.rs` contains6 pure capture and
+supervised-hook cases; hooks simulate outcomes and no actual executable/provider
+runs. New14 plus128 existing checks pass (142 unique); native binary builds.
+See milestones/direct-install-inputs/evidence.md for exact commands and limits.

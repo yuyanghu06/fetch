@@ -1,4 +1,7 @@
 //! Owned, pinned preparation. Constructing this service never downloads or executes anything.
+mod direct;
+#[cfg(test)]
+mod direct_tests;
 use crate::{discovery::{CapturedDefinition, DiscoveryService}, storage::ServerRepository};
 use rand::{RngCore, rngs::OsRng};
 use serde_json::{Value, json};
@@ -17,9 +20,22 @@ const MAX_DOWNLOAD: usize = 256 * 1024 * 1024;
 
 #[derive(Clone, Debug)]
 pub struct InstallError { pub http_status:u16, pub code:&'static str, pub message:&'static str, pub installation_id:Option<String> }
-impl InstallError { fn invalid()->Self { Self{http_status:400,code:"INVALID_REQUEST",message:"Select nonempty configuration-file and server-name pairs.",installation_id:None} } }
+impl InstallError { fn invalid()->Self { Self{http_status:400,code:"INVALID_REQUEST",message:"Supply a server name and exactly one configuration path, literal command or URL for each selection.",installation_id:None} } }
 #[derive(Clone)]
-struct Selection { path:PathBuf, name:String }
+struct Selection { input:SelectionInput, name:String }
+#[derive(Clone)]
+enum SelectionInput { Source(PathBuf), Direct(Result<direct::DirectDefinition,()>) }
+impl Selection {
+    fn config_path(&self)->Option<&Path>{match &self.input{SelectionInput::Source(path)=>Some(path),SelectionInput::Direct(_)=>None}}
+    fn matches_saved(&self,record:&Value)->bool{
+        if record["_installation"]["source_name"]!=self.name{return false;}
+        match &self.input{
+            SelectionInput::Source(path)=>record["_installation"]["source_path"]==json!(path),
+            SelectionInput::Direct(Ok(definition))=>record["_installation"]["direct_identity"]==definition.identity,
+            SelectionInput::Direct(Err(()))=>false,
+        }
+    }
+}
 struct Job { id:String, status:&'static str, items:Vec<Value> }
 struct Jobs { active:Option<String>, all:Vec<Job> }
 pub(crate) struct IdleInstallation<'a> { _guard:tokio::sync::MutexGuard<'a,Jobs> }
@@ -49,17 +65,24 @@ impl Installer {
         let mut selections=Vec::new(); let mut unique=BTreeSet::new();
         for row in rows {
             let o=row.as_object().filter(|o|o.len()==2).ok_or_else(InstallError::invalid)?;
-            let p=o.get("config_path").and_then(Value::as_str).filter(|p|!p.trim().is_empty() && !p.contains('\0') && Path::new(p).is_absolute()).ok_or_else(InstallError::invalid)?;
             let n=o.get("server_name").and_then(Value::as_str).filter(|n|!n.trim().is_empty() && !n.contains('\0')).ok_or_else(InstallError::invalid)?;
-            if !unique.insert((p.to_owned(),n.to_owned())) { return Err(InstallError::invalid()); }
-            selections.push(Selection{path:p.into(),name:n.into()});
+            let (kind,value)=["config_path","command","url"].into_iter().find_map(|key|o.get(key).map(|value|(key,value))).ok_or_else(InstallError::invalid)?;
+            let value=value.as_str().filter(|value|!value.trim().is_empty()&&!value.contains('\0')).ok_or_else(InstallError::invalid)?;
+            if !unique.insert((kind.to_owned(),value.to_owned(),n.to_owned())){return Err(InstallError::invalid());}
+            let input=match kind{
+                "config_path"=>{if !Path::new(value).is_absolute(){return Err(InstallError::invalid());}SelectionInput::Source(value.into())},
+                "command"=>SelectionInput::Direct(direct::command(n,value)),
+                "url"=>SelectionInput::Direct(direct::url(n,value)),
+                _=>unreachable!(),
+            };
+            selections.push(Selection{input,name:n.into()});
         }
         let mut jobs=self.jobs.lock().await;
         if let Some(id)=&jobs.active { return Err(InstallError{http_status:409,code:"INSTALLATION_IN_PROGRESS",message:"An installation is already running. Monitor its progress before submitting another.",installation_id:Some(id.clone())}); }
         if jobs.all.len()>=4096 {return Err(InstallError{http_status:503,code:"INSTALLATION_ACCEPTANCE_FAILED",message:"This Fetch run has reached its installation-history capacity. Existing current-run results remain available.",installation_id:None});}
         if self.stopping.load(Ordering::SeqCst) { return Err(InstallError{http_status:503,code:"INSTALLATION_ACCEPTANCE_FAILED",message:"Fetch is shutting down.",installation_id:None}); }
         let id=opaque("installation");
-        let items=selections.iter().map(|s|json!({"config_path":s.path,"server_name":s.name,"server_id":null,"status":"pending","error":null})).collect();
+        let items=selections.iter().map(|s|json!({"config_path":s.config_path(),"server_name":s.name,"server_id":null,"status":"pending","error":null})).collect();
         jobs.active=Some(id.clone()); jobs.all.push(Job{id:id.clone(),status:"installing",items}); drop(jobs);
         let service=self.clone(); let task_id=id.clone();
         tokio::spawn(async move { service.prepare_group(task_id,selections,hook).await; });
@@ -95,8 +118,11 @@ impl Installer {
     }
     async fn prepare(&self,selection:&Selection)->Result<String,()> {
         let records=self.repository.list_saved().map_err(|_|())?;
-        if let Some(old)=records.iter().find(|v|v["_installation"]["source_path"]==json!(selection.path) && v["_installation"]["source_name"]==selection.name) {return old["server_id"].as_str().map(str::to_owned).ok_or(());}
-        let capture=self.discovery.capture(&selection.path,&selection.name).map_err(|_|())?;
+        if let Some(old)=records.iter().find(|record|selection.matches_saved(record)){return old["server_id"].as_str().map(str::to_owned).ok_or(());}
+        let capture=match &selection.input{
+            SelectionInput::Source(path)=>self.discovery.capture(path,&selection.name).map_err(|_|())?,
+            SelectionInput::Direct(definition)=>definition.as_ref().map_err(|_|())?.capture.clone(),
+        };
         let server_id=opaque("server"); let installation=opaque("package");
         let mut config=capture.config.clone(); let kind=capture.row["type"].as_str().ok_or(())?;
         let prepared=match kind {
@@ -113,7 +139,12 @@ impl Installer {
             .chain(config["connection"]["headers"].as_array().into_iter().flatten().filter_map(|v|v["credential_ref"].as_str()).map(str::to_owned)).collect();
         let credentials:Vec<Value>=names.iter().map(|n|json!({"name":n,"status":"missing"})).collect();
         let protected_args=if kind=="npm" {1} else if kind=="local_script" {config["args"].as_array().map_or(0,Vec::len)} else {0};
-        let record=json!({"server_id":server_id,"name":selection.name,"runtime":{"status":"stopped","error":null},"authentication":{"status":"unknown","error":null},"restart_required":kind=="remote","restart":null,"config":config,"credentials":credentials,"_installation":{"source_path":selection.path,"source_name":selection.name,"installation_id":installation,"protected_args":protected_args}});
+        let mut association=json!({"source_name":selection.name,"installation_id":installation,"protected_args":protected_args});
+        match &selection.input{
+            SelectionInput::Source(path)=>association["source_path"]=json!(path),
+            SelectionInput::Direct(definition)=>association["direct_identity"]=json!(definition.as_ref().map_err(|_|())?.identity),
+        }
+        let record=json!({"server_id":server_id,"name":selection.name,"runtime":{"status":"stopped","error":null},"authentication":{"status":"unknown","error":null},"restart_required":kind=="remote","restart":null,"config":config,"credentials":credentials,"_installation":association});
         if self.repository.save(&server_id,&record).is_err() {let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
         Ok(server_id)
     }
