@@ -2,6 +2,28 @@
 
 # Fetch API contracts under discussion
 
+## November 3 — server deletion
+
+User delegates routine specification to match current APIs. DELETE
+/api/v1/servers/{server_id} accepts no body/query and requires fetch:manage for
+that server. Unknown or hidden IDs return404 SERVER_NOT_FOUND; unauthorized
+management returns403; invalid request400. Active install/auth/restart/calls or
+unresolved remote outcomes return409 SERVER_BUSY without force/cancellation.
+
+The backend blocks new work and closes the idle local process/remote connection,
+then removes that server's Fetch-owned config, encrypted credentials/Keychain key,
+private state and unshared validated installation package. Original configs,
+scripts, shared runtimes/application identity and other servers are preserved.
+Stop failure preserves saved data; cleanup failure500 SERVER_DELETE_FAILED may
+be partial and retains record information for retry when possible. A completed deletion returns
+200 {server_id,status:"deleted",next_steps:[]}; repeated deletion returns404.
+The matching fetch__delete_server tool calls the same backend and permissions.
+The new handler follows URL-shaped API folders; this adds no UI redesign or
+refactor of existing endpoints. No actual server is deleted by implementing it.
+Once cleanup begins, a disconnected caller does not cancel it; the owned worker
+retains lifecycle/installation guards through completion. Inspect server status
+after an uncertain response rather than automatically replaying DELETE.
+
 Current checkpoint D73: one saved Fetch credential/token per agent for `/mcp`; user-completed provider login reused on ordinary calls. Rust/execution and shown auth/Settings directions are settled; shared memory is deferred from this release; MIT and drag-and-drop DMG selected. Use the single build-readiness.md worklist for remaining implementation mechanisms. The unaccepted verification amendment is withdrawn from active review, not approved; preserve D25/D31. Do not turn older draft headings below into fresh broad approval requests. No implementation/live tests authorized.
 
 Latest checkpoint D71: the presented account-free app-connection contract is approved, including its seven operations, Mac confirmation, scopes, token/renewal/revocation/restart defaults and admission bounds. D70 HTTPS and D69 no-account direction remain selected. Exact unshown wire/OS/storage mechanisms and actual client evidence remain open; next is Settings human authority and key protection/unlock/recovery. No implementation or live tests are authorized.

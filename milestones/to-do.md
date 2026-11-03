@@ -1,5 +1,31 @@
 # Fetch current work
 
+## Active — delete server
+
+- [x] Source-read current APIs and independently plan deletion under the user's
+  explicit delegation; preserve unrelated concurrent documentation.
+- [x] Implement shared safe deletion lifecycle/storage/key cleanup plus matching
+  HTTP DELETE and fetch__delete_server management tool.
+- [x] Implement URL-shaped HTTP handler/router and MCP tool/adapters; backend
+  integration and independent verification remain.
+- [x] Independently source-verify/evaluate and document deletion; Tester/Evaluator
+  final source ACCEPT, no material findings.
+- [ ] Commit/push scoped deletion source and records, then start authentication.
+
+## Next — shared asynchronous MCP authentication (after delete)
+
+- [ ] Read current AGENTS, November3 upstream-auth reuse notes and authentication
+  engine source/records; inspect actual current/installed Google package version.
+- [ ] Research/pin reusable Codex Rust OAuth and OpenCode v1.19.4 source, dependencies,
+  licenses/notices and exact reuse boundaries before dependent implementation.
+- [ ] Implement shared async HTTP OAuth/application registrations, URL elicitation
+  and local-helper orchestration, Google per-account state/refresh/storage, and
+  consolidate ordinary Railway/Linear OAuth while preserving their differences.
+- [ ] Verify authorized isolated flows, cancellation/failures/reuse/renewal; record
+  source versus fixtures versus actual-provider evidence and concrete blockers.
+- [ ] Deliver code, upstream attribution and journal; no packaging/release or
+  silent personal credential/config migration.
+
 ## Focused backend change — install and connect
 
 - [x] User selects install invoking existing Restart / Connect and not_required

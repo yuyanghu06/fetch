@@ -22,8 +22,14 @@ impl InstallError { fn invalid()->Self { Self{http_status:400,code:"INVALID_REQU
 struct Selection { path:PathBuf, name:String }
 struct Job { id:String, status:&'static str, items:Vec<Value> }
 struct Jobs { active:Option<String>, all:Vec<Job> }
+pub(crate) struct IdleInstallation<'a> { _guard:tokio::sync::MutexGuard<'a,Jobs> }
 pub struct Installer { root:PathBuf, repository:ServerRepository, discovery:DiscoveryService, jobs:Mutex<Jobs>, runtime_lock:Mutex<()>, stopping:AtomicBool, stop:Notify, client:reqwest::Client }
 impl Installer {
+    pub(crate) async fn idle_for_delete(&self)->Result<IdleInstallation<'_>,()>{
+        let guard=self.jobs.lock().await;
+        if guard.active.is_some(){return Err(());}
+        Ok(IdleInstallation{_guard:guard})
+    }
     pub fn new(root:PathBuf, discovery:DiscoveryService)->Arc<Self> {
         let client = reqwest::Client::builder().connect_timeout(Duration::from_secs(15)).timeout(Duration::from_secs(120))
             .redirect(reqwest::redirect::Policy::custom(|attempt| {

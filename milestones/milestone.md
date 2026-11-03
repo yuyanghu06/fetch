@@ -1,5 +1,33 @@
 # Fetch milestone snapshot
 
+## November 3 — delete server, then shared authentication
+
+Active milestone: [delete-server](delete-server/info.md). User delegates clean
+implementation using existing conventions. DELETE /api/v1/servers/{server_id}
+will use shared per-server management authority, reject busy work, stop the idle
+connection and remove only Fetch-owned state/private packages. HTTP/MCP share
+the backend; source files, scripts, runtimes and unrelated accounts remain.
+Plan accepted; HTTP/MCP adapters are implemented and inspected; backend cleanup/
+lifecycle is implemented; cancellation-owned gates and shutdown handling corrected.
+Tester and Evaluator final source ACCEPT, no material findings. Scoped Git
+delivery is next. No build/runtime or actual deletion ran.
+[Plan evidence](history/2026-11-03_15-11-28-000001-planner-delete-server-contract-and-authentication-queue.md).
+[Backend source](history/2026-11-03_15-27-24-000001-coder-safe-server-deletion-backend.md).
+[Initial source review](history/2026-11-03_15-27-24-000002-tester-delete-cancellation-finding.md).
+[Adapter source evidence](history/2026-11-03_15-16-40-000001-coder-delete-http-and-mcp-adapters.md).
+
+User explicitly queued the shared asynchronous MCP authentication implementation
+after deletion delivery. Preserve that full request: pinned upstream reuse,
+standard HTTP OAuth including existing application registrations, URL-mode
+elicitation/server-owned callbacks, local login helpers with Google first,
+independent encrypted account storage/renewal, shared async ownership/cancel/
+expiry/UI responsiveness, Railway/Linear compatibility, actual verification and
+attribution. Read current AGENTS/November3 notes/authentication-engine first.
+No authentication implementation starts before deletion is delivered.
+
+- [Guard/shutdown correction and Tester acceptance](history/2026-11-03_15-32-49-000001-coder-delete-owned-worker-and-tester-acceptance.md)
+- [Final deletion source acceptance](history/2026-11-03_15-32-49-000002-evaluator-delete-source-acceptance.md)
+
 ## November 3 — installation should leave usable servers running
 
 Active focused milestone: [install-connect](install-connect/info.md). User selects

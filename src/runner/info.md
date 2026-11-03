@@ -1,5 +1,7 @@
 # Managed MCP runner
 
+Idle deletion gates scheduler/lifecycle/metadata work and rejects active/queued/uncertain/unresolved calls rather than canceling them. Bounded close retains the child handle until confirmed exit. Removed IDs cannot reconnect or resolve stale aliases; successful removal clears registry/catalog/continuations and emits catalog changes. Quit enumerates raw contexts including fenced ones. Source-only evidence; no runtime acceptance.
+
 D83 retains safe startup error codes/messages and records explicit provider-auth rejection against both the actual connection identity and its generation. Published-request errors use a brief connection read lock before the atomic latch; no RPC runs under that lock. Startup preparation uses its existing lifecycle protection. A replacement connection is not flagged by an old connection's error. Manager projects this evidence through GET servers, preserving the distinction between usable connection and verified credentials. No new runtime evidence was produced.
 
 The runner owns one upstream connection and one bounded waiting queue per installed server. `transport.rs` sends raw protocol messages over child stdin/stdout, Streamable HTTP or legacy SSE. `scheduler.rs` keeps timed-out or cancelled forwarded calls counted until a real terminal reply or explicit lifecycle recovery. `catalog.rs` preserves definitions and records the selected modern HTTP annotation exclusions, stable names and qualified resource selectors. `raw.rs` keeps upstream JSON values intact while changing only protocol routing fields.

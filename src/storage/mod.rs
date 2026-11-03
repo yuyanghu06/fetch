@@ -120,6 +120,36 @@ impl ServerRepository {
             .ok_or(StorageError::Unavailable)?
             .write("config.json", &bytes)
     }
+    pub(crate) fn remove_installation_package(&self,installation:&str)->Result<(),StorageError>{
+        let Some(suffix)=installation.strip_prefix("package-")else{return Err(StorageError::InvalidRecord);};
+        if suffix.len()!=32||!suffix.bytes().all(|byte|byte.is_ascii_digit()||(b'a'..=b'f').contains(&byte)){return Err(StorageError::InvalidRecord);}
+        let root=Directory::open(&self.root,false)?;
+        let Some(packages)=root.child("packages",false)?else{return Ok(());};
+        let Some(servers)=packages.child("servers",false)?else{return Ok(());};
+        servers.remove_entry(installation,0)
+    }
+    pub(crate) fn clear_server_private_state(&self,id:&str)->Result<(),StorageError>{
+        let Some(directory)=server_directory(&self.root,id,false)?else{return Err(StorageError::Unavailable);};
+        for name in directory.names()?{if name!="config.json"{directory.remove_entry(&name,0)?;}}
+        Ok(())
+    }
+    pub(crate) fn finish_server_delete(&self,id:&str,record:&Value)->Result<(),StorageError>{
+        if !valid_record(id,record){return Err(StorageError::InvalidRecord);}
+        let root=Directory::open(&self.root,false)?;
+        let servers=root.child("servers",false)?.ok_or(StorageError::Unavailable)?;
+        let name=server_directory_name(id);
+        let directory=servers.child(&name,false)?.ok_or(StorageError::Unavailable)?;
+        if directory.names()?.iter().any(|name|name!="config.json"){return Err(StorageError::Unavailable);}
+        directory.remove_file("config.json")?;
+        let name=c_name(&name)?;
+        // SAFETY: unlink only the hashed child under this held server-directory fd.
+        if unsafe{libc::unlinkat(servers.file.as_raw_fd(),name.as_ptr(),libc::AT_REMOVEDIR)}<0{
+            // Keep the association available for a cleanup retry when possible.
+            let bytes=serde_json::to_vec(record).map_err(|_|StorageError::InvalidRecord)?;
+            directory.write("config.json",&bytes)?;return Err(StorageError::Unavailable);
+        }
+        servers.file.sync_all().map_err(|_|StorageError::Unavailable)
+    }
 }
 
 // Saved status is not live evidence in this process. No disk flag can manufacture authentication.
@@ -281,6 +311,41 @@ pub(crate) struct Directory {
     file: File,
 }
 impl Directory {
+    pub(crate) fn remove_file(&self,name:&str)->Result<(),StorageError>{
+        let name=c_name(name)?;
+        // SAFETY: unlinkat does not follow a link at the selected entry.
+        if unsafe{libc::unlinkat(self.file.as_raw_fd(),name.as_ptr(),0)}<0&&std::io::Error::last_os_error().kind()!=std::io::ErrorKind::NotFound{return Err(StorageError::Unavailable);}
+        self.file.sync_all().map_err(|_|StorageError::Unavailable)
+    }
+    fn remove_entry(&self,name:&str,depth:usize)->Result<(),StorageError>{
+        if depth>=128{return Err(StorageError::TooLarge);}
+        let c=c_name(name)?;
+        // SAFETY: stat is an integer/pointer-free C record; fstatat fills it on success.
+        let mut metadata:libc::stat=unsafe{std::mem::zeroed()};
+        // SAFETY: held fd and NUL-terminated single entry name; never follow a symlink.
+        if unsafe{libc::fstatat(self.file.as_raw_fd(),c.as_ptr(),&mut metadata,libc::AT_SYMLINK_NOFOLLOW)}<0{
+            return if std::io::Error::last_os_error().kind()==std::io::ErrorKind::NotFound{Ok(())}else{Err(StorageError::Unavailable)};
+        }
+        if metadata.st_mode&libc::S_IFMT==libc::S_IFDIR{
+            // Child content can have ordinary package/home modes. Open by fd with
+            // NOFOLLOW instead of imposing the private config-file mode on it.
+            let fd=unsafe{libc::openat(self.file.as_raw_fd(),c.as_ptr(),libc::O_RDONLY|libc::O_DIRECTORY|libc::O_NOFOLLOW|libc::O_CLOEXEC)};
+            if fd<0{return Err(StorageError::UnsafePath);}
+            // SAFETY: this uniquely owns the successful openat descriptor.
+            let file=unsafe{File::from_raw_fd(fd)};
+            let opened=file.metadata().map_err(|_|StorageError::Unavailable)?;
+            if !opened.is_dir()||opened.uid()!=effective_uid()||opened.ino()!=metadata.st_ino as u64||opened.dev()!=metadata.st_dev as u64{return Err(StorageError::UnsafePath);}
+            let child=Directory{file};
+            for name in child.names()?{child.remove_entry(&name,depth+1)?;}
+            // SAFETY: remove this exact named directory from its held parent.
+            if unsafe{libc::unlinkat(self.file.as_raw_fd(),c.as_ptr(),libc::AT_REMOVEDIR)}<0{return Err(StorageError::Unavailable);}
+        }else{
+            // Symlinks, ordinary files and sockets are unlinked without reading or
+            // following them. Their external targets are never traversed.
+            if unsafe{libc::unlinkat(self.file.as_raw_fd(),c.as_ptr(),0)}<0{return Err(StorageError::Unavailable);}
+        }
+        self.file.sync_all().map_err(|_|StorageError::Unavailable)
+    }
     fn open(path: &Path, create: bool) -> Result<Self, StorageError> {
         if create && !path_present(path)? {
             std::fs::DirBuilder::new()

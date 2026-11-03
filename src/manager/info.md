@@ -1,5 +1,7 @@
 # Managed servers
 
+deletion.rs implements shared management-authorized deletion. An owned worker retains installer/server/runner gates after caller loss through bounded close, blocking cleanup and state purge. Original configurations/scripts and shared resources stay outside cleanup. Per-ID locks remain for stale waiters; missing records end later refresh/auth work.
+
 D83 connects newly prepared servers through the existing restart backend and waits for its named outcome. Shared startup/restart classification marks successful credential-free connections without a known login requirement not_required, preserves verified provider evidence and exposes required access separately from genuine runtime errors. A ready reused import is not restarted. GET servers projects later explicit provider rejections while preserving newly verified credentials awaiting application. Installation never opens login or invokes arbitrary tools. Source-only acceptance is separate from execution.
 
 ## D82 shared input and verification engine

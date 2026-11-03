@@ -1,5 +1,14 @@
 # Fetch-owned MCP management tools
 
+November 3 deletion: fetch__delete_server accepts only server_id and invokes
+DELETE /api/v1/servers/{server_id}'s shared backend with the same per-server
+fetch:manage permission. It stops/removes only an idle Fetch-managed connection
+and owned config/credentials/key/private package/state, preserving source configs,
+original scripts, runtimes and other servers. Busy409 has no force option;
+missing/repeated targets404, complete success status deleted, cleanup failure
+truthfully reports possible partial removal. Do not automatically replay an
+uncertain deletion response; inspect GET servers first.
+
 November 3 D83: fetch__install_servers uses managed installation's final existing
 Restart / Connect operation and leaves usable servers running by default. No
 separate adapter workflow or route is added. Preparation success, connection

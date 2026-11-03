@@ -1,5 +1,10 @@
 # Milestone records
 
+[Delete server](delete-server/info.md) is the current scoped route/lifecycle work.
+The user's shared-authentication implementation is explicitly queued after it.
+The complete queued request is preserved in
+[shared MCP authentication](shared-mcp-authentication/info.md).
+
 [Install and connect](install-connect/info.md) tracks the selected final Connect
 step, default-on usable servers and truthful no-login status/controls.
 

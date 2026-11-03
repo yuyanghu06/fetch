@@ -4,6 +4,7 @@ mod provider_callback;
 mod remote_auth;
 mod bindings;
 mod verification;
+mod deletion;
 #[cfg(test)]
 mod auth_tests;
 #[cfg(test)]

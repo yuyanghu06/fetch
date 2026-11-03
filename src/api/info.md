@@ -19,3 +19,7 @@ The outer router layer logs every incoming application/OAuth/MCP HTTP request,
 including boundary/fallback failures, through diagnostics.rs. Fetch-owned error
 codes and shared authentication outcomes are logged with generated request
 context; response streams and raw provider data remain unchanged.
+
+The new DELETE /api/v1/servers/{server_id} handler is in
+v1/servers/server_id/delete.rs. It reuses the existing scope/target/error helpers
+and delegates to shared Manager deletion; existing route families remain in place.

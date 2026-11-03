@@ -1,5 +1,7 @@
 # Saved server records
 
+Deletion cleans only validated Fetch-owned package/private-state paths relative to held descriptors. Recursive unlink never follows symlinks and tolerates normal nested package modes. config.json is removed last, with restoration attempted if final directory removal fails. Trees beyond128 levels or the existing4096 entries per-directory limit fail explicitly; no secure-erasure claim.
+
 The repository reads and atomically saves normalized, non-secret local server records. It hashes opaque IDs only for directory names, so IDs cannot escape their server directory. Private directory/file permissions, directory handles and no-follow opens protect owned paths. Invalid records fail the read rather than disappearing.
 
 Disk state never proves a running process or a valid provider login. Public repository reads start with stopped runtime and unknown authentication. Backend-only `get_saved`/`list_saved` retain import associations for reuse. Records support local/remote connections, execution settings, Fetch-owned observations and reference-only credential bindings; the manager overlays actual process and authentication state. Internal source identity is removed from the public projection. Callers must classify launch arguments as non-secret before saving; the repository cannot infer whether arbitrary arguments contain credentials.

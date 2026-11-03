@@ -1,5 +1,7 @@
 # Server preparation
 
+Deletion holds an idle installation guard through cleanup, rejecting active preparation and excluding new source-reuse/autoconnect submissions. Removing the saved association makes a fresh discovery selectable; original definitions, scripts and shared runtimes are preserved.
+
 D83 managed installation adds an awaited per-submission connection hook after preparation. Manager supplies a weak reference and invokes the existing named Restart / Connect operation. Successful connections remain running; auth/start failures do not undo package preparation or stop later rows. Existing ready imports remain untouched. The standalone submit helper remains preparation-only. Installation progress stays pending through the managed connection attempt; GET servers owns runtime/authentication outcomes. This source has not been built or run in this pass.
 
 `mod.rs` captures selected source entries without retaining credential values. It keeps one installation group, prepares entries sequentially, reuses saved successful imports and retains progress for the current run. Packages and runtimes belong under Fetch's private Application Support root; durable server records remain separate.

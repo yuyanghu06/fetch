@@ -1,5 +1,10 @@
 # Client-facing MCP
 
+fetch__delete_server shares Manager's per-server deletion permission, busy checks,
+connection shutdown and owned-state cleanup with the HTTP DELETE handler. The
+management adapter does not delete files or credentials directly. Its metadata
+describes destructive scope, preserved source data and partial/uncertain outcomes.
+
 D83 installation management now invokes managed preparation plus normal Connect;
 successful connections remain running. Its description distinguishes preparation
 from runtime/authentication and directs clients to existing status reads. No
