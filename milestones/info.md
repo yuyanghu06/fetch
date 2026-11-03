@@ -1,5 +1,8 @@
 # Milestone records
 
+[Install and connect](install-connect/info.md) tracks the selected final Connect
+step, default-on usable servers and truthful no-login status/controls.
+
 [Local working MVP](local-working-mvp/info.md) is active under D81: implementation,
 builds and protected actual UI/client testing are authorized; packaging/signing/DMG
 are excluded. Prior execution pauses are historical for this bounded local work.

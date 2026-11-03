@@ -31,8 +31,8 @@ impl ManagementError {
 impl From<crate::installation::InstallError> for ManagementError {fn from(e:crate::installation::InstallError)->Self{let mut error=Self::new(e.http_status,e.code,e.message);if let Some(id)=e.installation_id{error.extra=json!({"installation_id":id});error.next_steps=vec![json!({"actor":"agent","action":"check_installation_status","instructions":format!("After one second GET /api/v1/setup/installations/{id}.")})];}error}}
 impl From<crate::runner::RunError> for ManagementError {fn from(e:crate::runner::RunError)->Self{Self::new(e.http_status,e.code,e.message)}}
 #[derive(Clone)]
-struct Live { auth:Value, applied:Option<Value>, current_manual_hashes:BTreeMap<String,String>, applied_manual_hashes:BTreeMap<String,String>, oauth_restart_pending:bool, oauth_present:bool, revision:u64, authenticating:bool, auth_deadline:u64, auth_attempt:Option<String>, restart:Option<String> }
-impl Default for Live {fn default()->Self{Self{auth:json!({"status":"unknown","error":null}),applied:None,current_manual_hashes:BTreeMap::new(),applied_manual_hashes:BTreeMap::new(),oauth_restart_pending:false,oauth_present:false,revision:0,authenticating:false,auth_deadline:0,auth_attempt:None,restart:None}}}
+struct Live { auth:Value, runtime_error:Option<Value>, applied:Option<Value>, current_manual_hashes:BTreeMap<String,String>, applied_manual_hashes:BTreeMap<String,String>, oauth_restart_pending:bool, oauth_present:bool, revision:u64, authenticating:bool, auth_deadline:u64, auth_attempt:Option<String>, restart:Option<String> }
+impl Default for Live {fn default()->Self{Self{auth:json!({"status":"unknown","error":null}),runtime_error:None,applied:None,current_manual_hashes:BTreeMap::new(),applied_manual_hashes:BTreeMap::new(),oauth_restart_pending:false,oauth_present:false,revision:0,authenticating:false,auth_deadline:0,auth_attempt:None,restart:None}}}
 struct ProviderFlow {server:String, state:String, provider:Provider, verifier:String, client_id:String, token_endpoint:String, redirect:String, resource:Option<String>, remote_metadata:Option<remote_auth::Metadata>, revision:u64, expires:u64, _callback:Option<provider_callback::Lease>}
 pub struct Manager {
     pub repository:ServerRepository, pub credentials:Arc<CredentialStore>, pub runner:Arc<Runner>, pub installer:Arc<Installer>,
@@ -47,7 +47,64 @@ impl Manager {
     pub fn set_origin(&self,origin:String){if let Ok(mut value)=self.origin.write(){*value=origin;}}
     async fn lock(&self,id:&str)->Arc<Mutex<()>>{self.locks.lock().await.entry(id.to_owned()).or_insert_with(||Arc::new(Mutex::new(()))).clone()}
     fn record(&self,id:&str)->Result<Value,ManagementError>{self.repository.get_saved(id).map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.ok_or_else(||ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."))}
-    pub async fn install(self:&Arc<Self>,body:Value)->Result<Value,ManagementError>{Ok(self.installer.submit(body).await?)}
+    pub async fn install(self:&Arc<Self>,body:Value)->Result<Value,ManagementError>{
+        let weak=Arc::downgrade(self);
+        let hook:crate::installation::PreparedHook=Arc::new(move|id|{
+            let weak=weak.clone();Box::pin(async move{if let Some(manager)=weak.upgrade(){manager.connect_installed(id).await;}})
+        });
+        Ok(self.installer.submit_with_connect(body,hook).await?)
+    }
+    async fn connect_installed(self:Arc<Self>,id:String){
+        if self.stopping.load(Ordering::SeqCst){return;}
+        let gate=self.lock(&id).await;let guard=gate.lock().await;
+        if self.stopping.load(Ordering::SeqCst)||self.record(&id).is_err(){return;}
+        // Reused ready imports must not interrupt existing calls or repeat login.
+        if self.runner.snapshot(&id).await["runtime"]["status"]=="ready"{return;}
+        let live=self.live.lock().await.get(&id).cloned().unwrap_or_default();
+        if live.authenticating{return;}
+        let active=if self.active_restart(&id,&live).await{live.restart.clone()}else{None};
+        drop(guard);
+        let attempt=if let Some(attempt)=active{Some(attempt)}else{
+            match self.restart(&id,json!({})).await{
+                Ok(value)=>value["restart_id"].as_str().map(str::to_owned),
+                Err(error) if error.code=="RESTART_IN_PROGRESS"=>error.extra["restart_id"].as_str().map(str::to_owned),
+                Err(error) if error.code=="SERVER_BUSY"=>None,
+                Err(error)=>{self.connection_failed(&id,error.code,error.message).await;None},
+            }
+        };
+        if let Some(attempt)=attempt{loop{
+            if self.stopping.load(Ordering::SeqCst){break;}
+            let status=self.attempts.lock().await.get(&(id.clone(),attempt.clone())).map(|value|value["status"].clone());
+            if status.as_ref().is_none_or(|status|matches!(status.as_str(),Some("succeeded"|"failed"))){break;}
+            tokio::select!{_=tokio::time::sleep(Duration::from_millis(100))=>{},_=self.stop.notified()=>break}
+        }}
+    }
+    async fn connection_failed(&self,id:&str,code:&str,message:&str){
+        let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();
+        state.runtime_error=Some(json!({"code":code,"message":message}));
+        if !self.stopping.load(Ordering::SeqCst)&&matches!(code,"SERVER_AUTH_REQUIRED"|"PROVIDER_AUTH_REQUIRED"){
+            state.auth=json!({"status":"required","error":{"code":code,"message":message}});
+        }
+    }
+    async fn connection_succeeded(&self,id:&str,record:&Value,hashes:BTreeMap<String,String>)->Result<(),ManagementError>{
+        let document=self.secrets(id)?;
+        let bindings=bindings::InputBindings::from_record(record)?;
+        let known_requirement=self.verification_profile(record).is_some()||self.auth_provider(record)==Provider::Railway;
+        let missing=missing_binding(record,document["oauth"]["access_token"].is_string())
+            ||(known_requirement&&!self.has_stored_authentication(record,&document)?);
+        let credential_free=!known_requirement&&bindings.references().is_empty()&&!document["oauth"]["access_token"].is_string();
+        let mut states=self.live.lock().await;
+        if self.stopping.load(Ordering::SeqCst){return Err(ManagementError::new(503,"SERVER_NOT_READY","Fetch is shutting down."));}
+        let state=states.entry(id.to_owned()).or_default();
+        state.applied=Some(record["config"].clone());state.applied_manual_hashes=hashes;state.oauth_restart_pending=false;state.runtime_error=None;
+        if !state.authenticating{
+            if missing{state.auth=json!({"status":"required","error":null});}
+            else if credential_free{
+                state.auth=json!({"status":"not_required","error":null});
+            }
+        }
+        Ok(())
+    }
     pub async fn installation(&self,id:&str)->Result<Value,ManagementError>{Ok(self.installer.progress(id).await?)}
     pub async fn servers_for(&self,caller:&Caller,ids:Vec<String>,restart:Option<String>)->Result<Value,ManagementError>{
         if !caller.can_manage(){return Err(ManagementError::new(403,"FORBIDDEN","Server-management permission is required."));}
@@ -79,7 +136,13 @@ impl Manager {
             record["tool_execution"]=snapshot.get("tool_execution").cloned().unwrap_or_else(||json!({"active_calls":0,"queued_calls":0,"uncertain_calls":0,"max_concurrent_calls":record["config"]["execution"]["max_concurrent_calls"].as_u64().unwrap_or(1),"max_queued_calls":64,"max_queued_bytes":16777216,"queue_wait_timeout_ms":300000}));
             if !self.runner.server_ids().await.iter().any(|known|known==&id){record["tool_execution"]["max_concurrent_calls"]=json!(record["config"]["execution"]["max_concurrent_calls"].as_u64().unwrap_or(1));}
             if record["config"]["kind"]=="remote" {record["unresolved_prior_calls"]=snapshot.get("unresolved_prior_calls").cloned().unwrap_or(json!(0));}
-            let live=self.live.lock().await.get(&id).cloned().unwrap_or_default();record["authentication"]=live.auth.clone();
+            let mut live=self.live.lock().await.get(&id).cloned().unwrap_or_default();
+            if snapshot["provider_auth_required"]==true&&!live.authenticating&&!(live.auth["status"]=="authenticated"&&pending_manual(&live,&record["config"])){
+                live.auth=json!({"status":"required","error":{"code":"PROVIDER_AUTH_REQUIRED","message":"The upstream requires provider authentication. Complete supported setup in Fetch."}});
+                self.live.lock().await.entry(id.clone()).or_default().auth=live.auth.clone();
+            }
+            record["authentication"]=live.auth.clone();
+            if record["runtime"]["status"]!="ready"{if let Some(error)=&live.runtime_error{record["runtime"]=json!({"status":"failed","error":error});}}
             if let Some(applied)=&live.applied{record["restart_required"]=json!(launch_config(applied)!=launch_config(&record["config"]) || pending_manual(&live,&record["config"]));}
             let attempt_id=restart.as_ref().or(live.restart.as_ref());record["restart"]=if let Some(attempt)=attempt_id{self.attempts.lock().await.get(&(id.clone(),attempt.clone())).cloned().unwrap_or(Value::Null)}else{Value::Null};
             if record["restart"]["status"]=="restarting"{next.push(restart_step(&id,attempt_id.unwrap()));}
@@ -134,26 +197,31 @@ impl Manager {
         Ok(json!({"server_id":id,"status":"ok","changed":changed,"restart_required":record["restart_required"],"next_steps":steps}))
     }
     pub async fn restart(self:&Arc<Self>,id:&str,body:Value)->Result<Value,ManagementError>{
+        if self.stopping.load(Ordering::SeqCst){return Err(ManagementError::new(503,"SERVER_NOT_READY","Fetch is shutting down."));}
         let object=body.as_object().ok_or_else(invalid)?;if object.keys().any(|k|k!="force_restart"){return Err(invalid());}let force=match object.get("force_restart"){None=>false,Some(Value::Bool(b))=>*b,_=>return Err(invalid())};
         let gate=self.lock(id).await;let _guard=gate.lock().await;let captured=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
         if live.authenticating{return Err(busy("Authentication is active. Monitor server status first."));}
         if let Some(existing)=live.restart{if self.attempts.lock().await.get(&(id.to_owned(),existing.clone())).is_some_and(|v|v["status"]=="restarting"){let mut error=ManagementError::new(409,"RESTART_IN_PROGRESS","A restart or reconnect is already active.");error.extra=json!({"restart_id":existing});error.next_steps=vec![restart_step(id,&existing)];return Err(error);}}
         if self.auth_provider(&captured)==Provider::Railway&&captured["config"]["kind"]!="remote"{
             let installation=railway::installation_id(&captured).ok_or_else(invalid_config)?;
-            self.installer.ensure_railway_cli(installation).await.map_err(|_|ManagementError::new(503,"SERVER_RUNTIME_UNAVAILABLE","Railway's private CLI could not be prepared. Retry Connect after checking network access; no server was restarted."))?;
+            if self.installer.ensure_railway_cli(installation).await.is_err(){let error=ManagementError::new(503,"SERVER_RUNTIME_UNAVAILABLE","Railway's private CLI could not be prepared. Retry Connect after checking network access; no server was restarted.");self.connection_failed(id,error.code,error.message).await;return Err(error);}
         }
-        if self.refresh_owned(&captured).await.is_err(){self.verification_failed(id).await;return Err(auth_required());}
-        let route=match self.route(&captured).await{Ok(route)=>Some(route),Err(error) if error.code=="CREDENTIALS_WRITE_FAILED"=>{let mut failure=ManagementError::new(500,"RESTART_ACCEPTANCE_FAILED","The private credential context could not be safely captured. Review Settings before retrying.");failure.next_steps=vec![settings_step("Resolve protected-store access before requesting another restart or reconnect.")];return Err(failure);},Err(_)=>None};
+        if let Err(error)=self.refresh_owned(&captured).await{self.connection_failed(id,error.code,error.message).await;return Err(error);}
+        let (route,route_error)=match self.route(&captured).await{
+            Ok(route)=>(Some(route),None),
+            Err(error) if error.code=="CREDENTIALS_WRITE_FAILED"=>{self.connection_failed(id,error.code,error.message).await;let mut failure=ManagementError::new(500,"RESTART_ACCEPTANCE_FAILED","The private credential context could not be safely captured. Review Settings before retrying.");failure.next_steps=vec![settings_step("Resolve protected-store access before requesting another restart or reconnect.")];return Err(failure);},
+            Err(error)=>(None,Some(error)),
+        };
         let attempt=opaque("restart");let remote=captured["config"]["kind"]=="remote";
         let mut registered=self.runner.server_ids().await.iter().any(|known|known==id);
         if !registered {if let Some(route)=&route{self.runner.configure(route.clone()).await?;registered=true;}}
         // Registration and admission gating precede the accepted response.
         if registered {self.runner.begin_restart(id).await?;}
-        self.live.lock().await.entry(id.to_owned()).or_default().restart=Some(attempt.clone());
+        {let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.restart=Some(attempt.clone());state.runtime_error=None;}
         self.phase(id,&attempt,"waiting_for_calls",remote).await;
         let captured_hashes=self.live.lock().await.get(id).map(|state|state.current_manual_hashes.clone()).unwrap_or_default();
         let manager=self.clone();let server=id.to_owned();let restart=attempt.clone();
-        tokio::spawn(async move{if let Some(route)=route{manager.perform_restart(server,restart,captured,route,captured_hashes,force,remote).await;}else{manager.failed_restart(&server,&restart,"SERVER_AUTH_REQUIRED","The saved connection needs valid assigned credentials or supported settings. The old context was not stopped and no call was replayed.",remote).await;manager.runner.reopen_admission(&server).await;}});
+        tokio::spawn(async move{if let Some(route)=route{manager.perform_restart(server,restart,captured,route,captured_hashes,force,remote).await;}else if let Some(error)=route_error{manager.failed_restart(&server,&restart,error.code,error.message,remote).await;manager.runner.reopen_admission(&server).await;}});
         let mut response=json!({"server_id":id,"restart_id":attempt,"status":"restarting","next_steps":[restart_step(id,&attempt)]});if remote{response["operation"]=json!("reconnect");}Ok(response)
     }
     async fn perform_restart(self:Arc<Self>,id:String,attempt:String,captured:Value,route:ServerRoute,captured_hashes:BTreeMap<String,String>,force:bool,remote:bool){
@@ -168,13 +236,15 @@ impl Manager {
         let result=tokio::time::timeout(Duration::from_secs(30),self.runner.connect(&id)).await;
         match result{Ok(Ok(()))=>{
             let gate=self.lock(&id).await;let _guard=gate.lock().await;
+            if let Err(error)=self.connection_succeeded(&id,&captured,captured_hashes).await{
+                drop(_guard);let _=self.runner.disconnect(&id,true).await;self.failed_restart(&id,&attempt,error.code,error.message,remote).await;return;
+            }
             if let Ok(mut latest)=self.record(&id){latest["restart_required"]=json!(launch_config(&latest["config"])!=launch_config(&captured["config"]));let _=self.repository.save(&id,&latest);}
-            {let mut states=self.live.lock().await;let state=states.entry(id.clone()).or_default();state.applied=Some(captured["config"].clone());state.applied_manual_hashes=captured_hashes;state.oauth_restart_pending=false;}
             let mut value=json!({"restart_id":attempt,"status":"succeeded","code":if remote{"CONNECTION_READY"}else{"SERVICE_STARTED"}});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.clone(),attempt),value);self.runner.reopen_admission(&id).await;drop(_guard);self.observe_features(&id).await;
-        },other=>{let(code,message)=match other{Err(_)=>(if remote{"CONNECTION_READY_TIMEOUT"}else{"SERVER_READY_TIMEOUT"},"Replacement readiness did not finish within thirty seconds."),Ok(Err(ref e))if matches!(e.code,"SERVER_AUTH_REQUIRED"|"PROVIDER_AUTH_REQUIRED")=>("SERVER_AUTH_REQUIRED","Provider authentication is required. Complete supported setup before reconnecting."),_=>(if remote{"CONNECTION_FAILED"}else{"SERVER_START_FAILED"},"Compatible communication and a complete tool catalog could not be established.")};let _=self.runner.disconnect(&id,true).await;self.failed_restart(&id,&attempt,code,message,remote).await;}}
+        },other=>{let(code,message)=match other{Err(_)=>(if remote{"CONNECTION_READY_TIMEOUT"}else{"SERVER_READY_TIMEOUT"},"Replacement readiness did not finish within thirty seconds."),Ok(Err(ref error))=>(error.code,error.message),Ok(Ok(()))=>unreachable!()};let _=self.runner.disconnect(&id,true).await;self.failed_restart(&id,&attempt,code,message,remote).await;}}
     }
     async fn phase(&self,id:&str,attempt:&str,phase:&str,remote:bool){let mut value=json!({"restart_id":attempt,"status":"restarting","phase":phase});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.to_owned(),attempt.to_owned()),value);}
-    async fn failed_restart(&self,id:&str,attempt:&str,code:&str,message:&str,remote:bool){let mut value=json!({"restart_id":attempt,"status":"failed","error":{"code":code,"message":message}});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.to_owned(),attempt.to_owned()),value);}
+    async fn failed_restart(&self,id:&str,attempt:&str,code:&str,message:&str,remote:bool){self.connection_failed(id,code,message).await;let mut value=json!({"restart_id":attempt,"status":"failed","error":{"code":code,"message":message}});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.to_owned(),attempt.to_owned()),value);}
     async fn route(&self,record:&Value)->Result<ServerRoute,ManagementError>{
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let config=&record["config"];let document=self.secrets(id)?;
         {let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.current_manual_hashes=manual_hashes(&document);state.oauth_present=document["oauth"]["access_token"].is_string();}
@@ -211,9 +281,22 @@ impl Manager {
             if self.stopping.load(Ordering::SeqCst){break;}let Some(id)=candidate["server_id"].as_str()else{continue};
             let gate=self.lock(id).await;let guard=gate.lock().await;
             let record=match self.record(id){Ok(record)=>record,Err(_)=>continue};
-            if self.refresh_owned(&record).await.is_err(){self.verification_failed(id).await;continue;}
+            if let Err(error)=self.refresh_owned(&record).await{self.connection_failed(id,error.code,error.message).await;continue;}
             let mut connected=false;
-            match self.route(&record).await{Ok(route)=>{if self.runner.configure(route).await.is_ok() && matches!(tokio::time::timeout(Duration::from_secs(30),self.runner.connect(id)).await,Ok(Ok(()))){let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.applied=Some(record["config"].clone());state.applied_manual_hashes=state.current_manual_hashes.clone();if matches!(self.auth_provider(&record),Provider::None){state.auth=json!({"status":"not_required","error":null});}connected=true;}},Err(_)=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"required","error":null});}}
+            match self.route(&record).await{
+                Ok(route)=>match self.runner.configure(route).await{
+                    Ok(())=>match tokio::time::timeout(Duration::from_secs(30),self.runner.connect(id)).await{
+                        Ok(Ok(()))=>{
+                            let hashes=self.live.lock().await.get(id).map(|state|state.current_manual_hashes.clone()).unwrap_or_default();
+                            match self.connection_succeeded(id,&record,hashes).await{Ok(())=>connected=true,Err(error)=>{let _=self.runner.disconnect(id,true).await;self.connection_failed(id,error.code,error.message).await;}}
+                        },
+                        Ok(Err(error))=>{let _=self.runner.disconnect(id,true).await;self.connection_failed(id,error.code,error.message).await;},
+                        Err(_)=>{let _=self.runner.disconnect(id,true).await;self.connection_failed(id,"SERVER_READY_TIMEOUT","Server readiness did not finish within thirty seconds.").await;},
+                    },
+                    Err(error)=>self.connection_failed(id,error.code,error.message).await,
+                },
+                Err(error)=>self.connection_failed(id,error.code,error.message).await,
+            }
             drop(guard);
             if connected {self.observe_features(id).await;}
             self.schedule_refresh(id.to_owned()).await;

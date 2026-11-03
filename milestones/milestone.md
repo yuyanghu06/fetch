@@ -1,6 +1,47 @@
 # Fetch milestone snapshot
 
+## November 3 — installation should leave usable servers running
+
+Active focused milestone: [install-connect](install-connect/info.md). User selects
+installation's final stage invoking existing Restart / Connect, retaining usable
+connections and reporting authentication.status not_required for credential-free
+success without a known login requirement. Keep GET servers status; unknown alone
+must not prompt login. Missing/rejected access requires setup; unrelated start
+errors remain runtime errors. No automatic login or tool calls. Source implemented;
+independent Tester's identity/generation finding is corrected and re-reviewed
+ACCEPT. Final Evaluator's late-response gap is also fixed: provider rejection
+after timeout/cancel updates status without changing the call's original outcome.
+Tester and Evaluator final source ACCEPT; no material findings remain. Scoped
+commit/push integration is next. No builds, tests
+or runtime/provider/MCP actions ran for this change.
+
+- [Implementation](history/2026-11-03_14-55-20-000001-coder-install-connect-source.md)
+- [Independent source finding](history/2026-11-03_14-55-20-000002-tester-install-connect-generation-finding.md)
+
+The installed-discovery fix was rebased onto newer upstream source, independently
+re-reviewed ACCEPT and pushed as9eddd00. Its build/native/Figma evidence remains
+pending. [Delivery and new plan](history/2026-11-03_14-45-40-000001-orchestrator-discovery-delivery-and-install-connect-plan.md).
+
+## November 3 — source layout explained and requirement recorded
+
+Current pass: read-only source inspection plus documentation. The user clarified
+that `src/api` should hold HTTP route handlers grouped by URL path, while other
+folders may contain reusable backend functions. Current implementation differs:
+route handlers are combined in `api/runtime.rs` and some HTTP endpoints live in
+`oauth`/`mcp`. No application source was reorganized; no builds/tests/runtime
+operations ran. Next layout action is a bounded source refactor preserving
+existing routes and shared backend behavior, when requested. Existing MVP and
+installed-discovery work remains unfinished as recorded below.
+[Pass evidence](history/2026-11-03_14-45-09-644674-orchestrator-source-layout-clarification.md).
+
 ## November 3 — newer GitHub work discovered during delivery
+
+- [Late-response correction and Tester acceptance](history/2026-11-03_15-01-26-000001-coder-late-auth-errors-and-tester-recheck.md)
+- [Final D83 source acceptance](history/2026-11-03_15-01-26-000002-evaluator-install-connect-source-acceptance.md)
+
+- [Identity correction](history/2026-11-03_14-57-40-000001-coder-bind-auth-rejections-to-connection.md)
+- [Corrected source acceptance](history/2026-11-03_14-57-40-000002-tester-install-connect-source-acceptance.md)
+- [Final review late-response finding](history/2026-11-03_14-59-42-000001-evaluator-late-authentication-rejection-finding.md)
 
 Pushing the installed-discovery fix was rejected because GitHub had twelve newer
 commits through a7a6e0d. Fetching revealed D81/D82 work absent from the initial

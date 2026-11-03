@@ -1,5 +1,21 @@
 # Shared credential inputs and verification
 
+## November 3 — connection result versus a required login
+
+D83 selects a default connection attempt at the end of successful installation,
+through the same backend operation as Restart / Connect. Successful servers stay
+running. GET /api/v1/servers remains the read for runtime and authentication.
+When a fresh credential-free connection succeeds without a known login requirement,
+authentication.status is not_required and the UI hides its auth controls. Unknown
+alone is not evidence that the user must log in. Required missing/rejected access
+and genuine runtime failures remain distinct; no browser is opened automatically.
+
+not_required describes that usable connection; it is not authenticated provider
+proof or a promise that every protected tool works anonymously. Existing D25/D31
+checks still apply to stored credentials. The new source must preserve later
+explicit auth challenges, pending credential changes, successful installation
+records, ready reuse and shutdown. No new HTTP routes or secret boundaries.
+
 D82, October 30, 2026. This describes the internal refactor. It adds no public
 route, caller-supplied verifier URL or saved-record migration. D25/D31 still
 require the current stored credentials to pass their authenticated check before

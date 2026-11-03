@@ -146,6 +146,13 @@ quitting while the sheet is open. No new test suite was added for this UI contro
 
 ### Discovery list and current unsupported entries
 
+D83 installation source now follows preparation with the
+existing Connect operation. Successful servers stay running; credential-free
+success with no known login requirement reports not_required. Missing/rejected
+access requires setup and ordinary launch failures remain runtime errors. Verify
+this with disposable installations only when execution is authorized; no native
+or provider result is established by source changes.
+
 November 3 source update: previously imported exact configuration-file/name pairs show checked, disabled and labeled "already installed". They are excluded from Select all, selected count and installation submission. Successful progress updates rows immediately, while failed new entries remain retryable. This change has not been compiled, tested or observed in the running UI.
 
 The Install MCPs list has its own bounded scroll area and an always-visible

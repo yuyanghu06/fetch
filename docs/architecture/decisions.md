@@ -1,5 +1,23 @@
 # Confirmed architecture decisions
 
+## D83 — Start installed servers and report when no login is needed
+
+November 3, 2026. User explicitly selects installation invoking the existing
+Restart / Connect backend operation after preparation and leaving successful
+servers running by default. Keep GET /api/v1/servers as the status read, using
+authentication.status not_required when a credential-free connection succeeds
+without a known login requirement. The frontend hides authentication controls
+then; unknown alone must not be treated as requiring login.
+
+Missing/rejected provider access requires setup; actual launch/network/protocol
+errors remain runtime failures. No automatic login or arbitrary tool calls.
+Connection readiness does not establish authenticated provider proof or universal
+tool access; D25/D31 verification remains. Preserve preparation success, distinct
+accounts, named restart status, existing permissions and ready installation reuse.
+This supersedes the earlier preparation-only/no-start sequencing for managed
+installation, without adding routes or granting agent-run runtime/test execution
+in this source pass. See milestones/install-connect/info.md and current journal.
+
 Recorded from the user's design discussion on October 26, 2026. These are design decisions, not implementation-completion claims. Exact API examples and unresolved details are tracked separately in [api-contract.md](api-contract.md) and [open-questions.md](open-questions.md).
 
 ## Current MCP resolution pointers — session audit October28

@@ -118,7 +118,28 @@ struct Server {
     catalog_observed:AtomicBool,
     catalog_observed_at:RwLock<Option<String>>,
     runtime:RwLock<String>,
+    runtime_error:RwLock<Option<RunError>>,
+    auth_rejected_generation:AtomicU64,
     unresolved_prior:AtomicU64,
+}
+impl Server {
+    fn note_auth_error(&self,generation:u64,error:&RunError){
+        if error.code=="PROVIDER_AUTH_REQUIRED"{self.auth_rejected_generation.fetch_max(generation,Ordering::AcqRel);}
+    }
+    async fn note_request_auth_error(&self,generation:u64,connection:&Arc<transport::Connection>,error:&RunError){
+        if error.code!="PROVIDER_AUTH_REQUIRED"{return;}
+        let current=self.connection.read().await;
+        // A request may have retained an old connection across a reconnect.
+        // Inspect its identity as well as its generation; never await between
+        // that check and recording the rejection while holding this read guard.
+        if self.generation.load(Ordering::Acquire)==generation&&current.as_ref().is_some_and(|active|Arc::ptr_eq(active,connection)){
+            self.auth_rejected_generation.fetch_max(generation,Ordering::AcqRel);
+        }
+    }
+    async fn start_failed(&self,generation:u64,error:&RunError){
+        self.note_auth_error(generation,error);
+        *self.runtime_error.write().await=Some(error.clone());*self.runtime.write().await="failed".into();self.scheduler.ready(false);
+    }
 }
 struct Continuation {
     owner_id:String,server_id:String,generation:u64,method:String,
@@ -164,7 +185,7 @@ impl Runner {
         let mut servers=self.servers.write().await;
         self.ensure_running()?;
         if let Some(server)=servers.get(&route.server_id){server.scheduler.update(route.execution.clone());*server.route.write().await=route;}
-        else{servers.insert(route.server_id.clone(),Arc::new(Server{scheduler:Scheduler::new(route.execution.clone()),route:RwLock::new(route),connection:RwLock::new(None),generation:AtomicU64::new(0),lifecycle:Mutex::new(()),tools:RwLock::new(vec![]),catalog_observed:AtomicBool::new(false),catalog_observed_at:RwLock::new(None),runtime:RwLock::new("stopped".into()),unresolved_prior:AtomicU64::new(0)}));}
+        else{servers.insert(route.server_id.clone(),Arc::new(Server{scheduler:Scheduler::new(route.execution.clone()),route:RwLock::new(route),connection:RwLock::new(None),generation:AtomicU64::new(0),lifecycle:Mutex::new(()),tools:RwLock::new(vec![]),catalog_observed:AtomicBool::new(false),catalog_observed_at:RwLock::new(None),runtime:RwLock::new("stopped".into()),runtime_error:RwLock::new(None),auth_rejected_generation:AtomicU64::new(0),unresolved_prior:AtomicU64::new(0)}));}
         Ok(())
     }
     async fn server(&self,id:&str)->Result<Arc<Server>,RunError>{self.servers.read().await.get(id).cloned().ok_or_else(RunError::missing)}
@@ -176,17 +197,18 @@ impl Runner {
         if server.connection.read().await.as_ref().is_some_and(|c|!c.closed.load(Ordering::Acquire)){return Ok(());}
         let generation=server.generation.fetch_add(1,Ordering::AcqRel)+1;
         server.catalog_observed.store(false,Ordering::Release);
-        if let Some(previous)=server.connection.write().await.take(){let local=previous.is_local();let confirmed=previous.close().await;if local&&confirmed{server.scheduler.confirmed_reset();}else if local{return Err(RunError::unavailable());}}
+        if let Some(previous)=server.connection.write().await.take(){let local=previous.is_local();let confirmed=previous.close().await;if local&&confirmed{server.scheduler.confirmed_reset();}else if local{let error=RunError::unavailable();server.start_failed(generation,&error).await;return Err(error);}}
+        *server.runtime_error.write().await=None;
         *server.runtime.write().await="starting".into();
         let route=server.route.read().await.clone();
-        let connection=match transport::Connection::open(&route.transport).await{Ok(c)=>c,Err(e)=>{*server.runtime.write().await="failed".into();return Err(e);}};
+        let connection=match transport::Connection::open(&route.transport).await{Ok(c)=>c,Err(error)=>{server.start_failed(generation,&error).await;return Err(error);}};
         let mut preparing=transport::CloseOnDrop::new(connection.clone());
-        if let Err(error)=connection.setup().await{let _=connection.close().await;*server.runtime.write().await="failed".into();return Err(error);}
+        if let Err(error)=connection.setup().await{let _=connection.close().await;server.start_failed(generation,&error).await;return Err(error);}
         let capabilities=connection.capabilities.read().await.clone();
         let modern_http=connection.modern_http()&&connection.revision.read().await.as_str()==MODERN;
         let tools=if capabilities.get("tools").is_some(){
             match collect(&connection,"tools/list","tools").await.and_then(|definitions|catalog::validate_tools(definitions,modern_http)){
-                Ok(tools)=>tools,Err(error)=>{let _=connection.close().await;*server.runtime.write().await="failed".into();return Err(error);}
+                Ok(tools)=>tools,Err(error)=>{let _=connection.close().await;server.start_failed(generation,&error).await;return Err(error);}
             }
         }else{vec![]};
         if self.stopping.load(Ordering::Acquire){let _=connection.close().await;*server.runtime.write().await="stopped".into();return Err(RunError::not_ready());}
@@ -223,7 +245,7 @@ impl Runner {
             else if !local&&force{let count=server.scheduler.confirmed_reset();server.unresolved_prior.fetch_add(count as u64,Ordering::AcqRel);}
             else if local{return Err(RunError::unavailable());}
         }
-        *server.runtime.write().await="stopped".into();
+        *server.runtime.write().await="stopped".into();*server.runtime_error.write().await=None;
         self.continuations.lock().await.retain(|_,flow|flow.server_id!=id);
         Ok(())
     }
@@ -241,7 +263,8 @@ impl Runner {
         match self.server(id).await{Ok(server)=>{
             let closed=server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire));
             if closed{server.scheduler.ready(false);}
-            json!({"runtime":{"status":if closed{"failed".into()}else{server.runtime.read().await.clone()},"error":if closed{json!({"code":"SERVER_CONNECTION_LOST","message":"The upstream connection ended."})}else{Value::Null}},"tool_execution":server.scheduler.snapshot(),"unresolved_prior_calls":server.unresolved_prior.load(Ordering::Acquire)})
+            let error=server.runtime_error.read().await.clone();let generation=server.generation.load(Ordering::Acquire);
+            json!({"runtime":{"status":if closed{"failed".into()}else{server.runtime.read().await.clone()},"error":if let Some(error)=error{json!({"code":error.code,"message":error.message})}else if closed{json!({"code":"SERVER_CONNECTION_LOST","message":"The upstream connection ended."})}else{Value::Null}},"provider_auth_required":generation!=0&&server.auth_rejected_generation.load(Ordering::Acquire)==generation,"tool_execution":server.scheduler.snapshot(),"unresolved_prior_calls":server.unresolved_prior.load(Ordering::Acquire)})
         },Err(_)=>json!({"runtime":{"status":"stopped","error":null},"tool_execution":{"active_calls":0,"queued_calls":0,"uncertain_calls":0,"max_concurrent_calls":1,"max_queued_calls":64,"max_queued_bytes":16777216,"queue_wait_timeout_ms":300000},"unresolved_prior_calls":0})}
     }
     pub async fn source_revision(&self,id:&str)->Result<String,RunError>{let connection=self.connection(id).await?;let revision=connection.revision.read().await.clone();Ok(revision)}
@@ -345,7 +368,7 @@ impl Runner {
                 let definition=tools.iter().find(|tool|tool.name==name).ok_or_else(||RunError::unsupported(false))?;
                 catalog::mirrored_headers(&definition.definition,&raw::field(&current_params,"arguments").unwrap_or_else(||raw::raw(&json!({}))))?
             }else{BTreeMap::new()};
-            let request=match connection.start(method,current_params,&context,mirrored).await{Ok(request)=>request,Err(error)=>{reservation.complete();return Err(error);}};
+            let request=match connection.start(method,current_params,&context,mirrored).await{Ok(request)=>request,Err(error)=>{server.note_request_auth_error(generation,&connection,&error).await;reservation.complete();return Err(error);}};
             reservation.mark_forwarded();
             let request_id=request.id.clone();let mut response=request.response;
             let mut guard=ActiveGuard{cancel:context.cancel.clone(),armed:true};
@@ -353,20 +376,21 @@ impl Runner {
                 result=&mut response=>result.unwrap_or_else(|_|Err(RunError::unavailable())),
                 _=tokio::time::sleep_until(deadline)=>{
                     reservation.mark_uncertain();connection.cancel(&request_id).await;
-                    let local=connection.is_local();let server=server.clone();
-                    tokio::spawn(async move{if let Ok(result)=response.await{if terminal_response(&result){reservation.complete();}}else if local&&server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire)){/* exit must be confirmed by lifecycle recovery */}});
+                    let local=connection.is_local();let server=server.clone();let connection=connection.clone();
+                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}if terminal_response(&result){reservation.complete();}}else if local&&server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire)){/* exit must be confirmed by lifecycle recovery */}});
                     guard.armed=false;return Err(RunError::timeout());
                 },
                 _=context.cancel.cancelled()=>{
                     reservation.mark_uncertain();connection.cancel(&request_id).await;
-                    tokio::spawn(async move{if let Ok(result)=response.await{if terminal_response(&result){reservation.complete();}}});
+                    let server=server.clone();let connection=connection.clone();
+                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}if terminal_response(&result){reservation.complete();}}});
                     guard.armed=false;return Err(RunError::cancelled(true));
                 },
             };
             guard.armed=false;
             let result=match result{
                 Ok(result)=>result,
-                Err(error)=>{if error.code=="TOOL_RPC_ERROR"||error.code=="MCP_VERSION_UNSUPPORTED"{reservation.complete();}else{reservation.mark_uncertain();}return Err(error);}
+                Err(error)=>{server.note_request_auth_error(generation,&connection,&error).await;if error.code=="TOOL_RPC_ERROR"||error.code=="MCP_VERSION_UNSUPPORTED"{reservation.complete();}else{reservation.mark_uncertain();}return Err(error);}
             };
             if raw::text(&result,"resultType").as_deref()==Some("input_required"){
                 if context.client_revision.is_none(){reservation.mark_uncertain();return Err(RunError::unsupported(true));}
@@ -407,7 +431,8 @@ impl Runner {
     pub async fn list_native(&self,id:&str,method:&str,key:&str)->Result<Vec<Box<RawValue>>,RunError>{
         let connection=self.connection(id).await?;let capability=if method.starts_with("resources/"){"resources"}else{"prompts"};
         if connection.capabilities.read().await.get(capability).is_none(){return Ok(vec![]);}
-        collect(&connection,method,key).await
+        let server=self.server(id).await?;let generation=server.generation.load(Ordering::Acquire);
+        let result=collect(&connection,method,key).await;if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}result
     }
     pub async fn revoke_owner(&self,owner:&str){
         for (_, (caller,cancel)) in self.invocations.lock().await.iter(){if caller==owner{cancel.cancel();}}

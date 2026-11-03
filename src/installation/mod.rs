@@ -6,6 +6,8 @@ use sha2::{Digest, Sha256};
 use std::{collections::BTreeSet, fs, os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt}, io::Write, path::{Path, PathBuf}, sync::{Arc, atomic::{AtomicBool, Ordering}}, time::Duration};
 use tokio::{process::Command, sync::{Mutex, Notify}};
 
+pub(crate) type PreparedHook = Arc<dyn Fn(String) -> std::pin::Pin<Box<dyn std::future::Future<Output=()> + Send>> + Send + Sync>;
+
 pub const NODE_VERSION: &str = "24.22.1";
 pub const UV_VERSION: &str = "0.13.5";
 pub const PYTHON_VERSION: &str = "3.13.18";
@@ -30,6 +32,12 @@ impl Installer {
         Arc::new(Self{repository:ServerRepository::new(root.clone()),root,discovery,jobs:Mutex::new(Jobs{active:None,all:vec![]}),runtime_lock:Mutex::new(()),stopping:AtomicBool::new(false),stop:Notify::new(),client})
     }
     pub async fn submit(self:&Arc<Self>, body:Value)->Result<Value,InstallError> {
+        self.submit_prepared(body,None).await
+    }
+    pub(crate) async fn submit_with_connect(self:&Arc<Self>,body:Value,hook:PreparedHook)->Result<Value,InstallError>{
+        self.submit_prepared(body,Some(hook)).await
+    }
+    async fn submit_prepared(self:&Arc<Self>, body:Value, hook:Option<PreparedHook>)->Result<Value,InstallError> {
         let object=body.as_object().filter(|o|o.len()==1).ok_or_else(InstallError::invalid)?;
         let rows=object.get("servers").and_then(Value::as_array).filter(|a|!a.is_empty() && a.len()<=256).ok_or_else(InstallError::invalid)?;
         let mut selections=Vec::new(); let mut unique=BTreeSet::new();
@@ -48,20 +56,28 @@ impl Installer {
         let items=selections.iter().map(|s|json!({"config_path":s.path,"server_name":s.name,"server_id":null,"status":"pending","error":null})).collect();
         jobs.active=Some(id.clone()); jobs.all.push(Job{id:id.clone(),status:"installing",items}); drop(jobs);
         let service=self.clone(); let task_id=id.clone();
-        tokio::spawn(async move { service.prepare_group(task_id,selections).await; });
+        tokio::spawn(async move { service.prepare_group(task_id,selections,hook).await; });
         Ok(json!({"installation_id":id,"status":"installing","next_steps":[monitor_installation(&id)]}))
     }
     pub async fn progress(&self,id:&str)->Result<Value,InstallError> {
         let jobs=self.jobs.lock().await;
         let job=jobs.all.iter().find(|j|j.id==id).ok_or(InstallError{http_status:404,code:"INSTALLATION_NOT_FOUND",message:"No matching installation exists in this Fetch run.",installation_id:None})?;
-        let steps=if job.status=="installing" {vec![monitor_installation(id)]} else if job.status=="failed" {vec![json!({"actor":"agent","action":"resolve_installation_failures","instructions":"Resolve failed entries and submit only those entries again. Successful installations are preserved."})]} else {vec![json!({"actor":"agent","action":"check_server_status","instructions":"Read the resulting servers through GET /api/v1/servers before authenticating or connecting. Preparation does not establish readiness."})]};
+        let steps=if job.status=="installing" {vec![monitor_installation(id)]} else if job.status=="failed" {vec![json!({"actor":"agent","action":"resolve_installation_failures","instructions":"Resolve failed preparation entries and submit only those entries again. Successful installations are preserved; review their separate runtime/authentication status through GET /api/v1/servers."})]} else {vec![json!({"actor":"agent","action":"check_server_status","instructions":"Read the resulting servers through GET /api/v1/servers. Fetch attempted their normal Connect stage after preparation; required login or connection failure does not undo installation. Review runtime/authentication status before using tools."})]};
         Ok(json!({"installation_id":id,"status":job.status,"servers":job.items,"next_steps":steps}))
     }
-    async fn prepare_group(&self,id:String,selections:Vec<Selection>) {
+    async fn prepare_group(&self,id:String,selections:Vec<Selection>,hook:Option<PreparedHook>) {
         for (index,selection) in selections.iter().enumerate() {
             self.item_state(&id,index,"installing",None,None).await;
             let result=if self.stopping.load(Ordering::SeqCst) {Err(())} else {self.prepare(selection).await};
-            match result {Ok(server_id)=>self.item_state(&id,index,"succeeded",Some(server_id),None).await,Err(())=>self.item_state(&id,index,"failed",None,Some(json!({"code":"INSTALLATION_FAILED","message":"Preparation could not complete. The source, package, runtime or saved configuration needs attention; no credentials were imported."}))).await}
+            match result {
+                Ok(server_id)=>{
+                    // Preparation is durable even if Connect needs login or fails.
+                    self.item_state(&id,index,"installing",Some(server_id.clone()),None).await;
+                    if !self.stopping.load(Ordering::SeqCst){if let Some(hook)=&hook{hook(server_id.clone()).await;}}
+                    self.item_state(&id,index,"succeeded",Some(server_id),None).await;
+                },
+                Err(())=>self.item_state(&id,index,"failed",None,Some(json!({"code":"INSTALLATION_FAILED","message":"Preparation could not complete. The source, package, runtime or saved configuration needs attention; no credentials were imported."}))).await,
+            }
         }
         let mut jobs=self.jobs.lock().await;
         if let Some(job)=jobs.all.iter_mut().find(|j|j.id==id) {job.status=if job.items.iter().any(|v|v["status"]=="failed"){"failed"}else{"succeeded"};}

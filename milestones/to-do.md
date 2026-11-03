@@ -1,10 +1,34 @@
 # Fetch current work
 
+## Focused backend change — install and connect
+
+- [x] User selects install invoking existing Restart / Connect and not_required
+  status through GET servers; source-reviewed bounded plan accepted.
+- [x] Implement preparation/connect sequencing, truthful runtime/auth states,
+  ready reuse and shutdown handling without automatic login or tool execution.
+- [x] Hide no-auth controls and stop treating unknown alone as requiring login.
+- [x] Bind late provider-auth errors to actual active connection/generation;
+  independent Tester re-review ACCEPT, no further material findings.
+- [x] Apply authentication-rejection latch to timeout/cancel detached responses;
+  preserve original uncertainty; Tester/Evaluator final source ACCEPT.
+- [x] Independently source-review/evaluate and document the scoped fix.
+- [ ] Commit/push D83 source and records; preserve unrelated concurrent docs.
+- [ ] Later run authorized compilation/native/runtime checks and reconcile changed
+  Figma specimens; this source pass adds no execution evidence.
+
+## Source organization — November 3 clarification
+
+- [x] Inspect and explain current route/backend folders; record the user's
+  requirement for HTTP handlers under `src/api` in URL-shaped subfolders.
+- [ ] Follow up with a bounded route-layout refactor when requested, including
+  existing OAuth/MCP HTTP adapters; preserve public URLs and shared backend rules.
+  This explanation pass changed documentation only.
+
 ## Focused UI fix — installed discovery
 
 - [x] Fetch newer GitHub history after push rejection; preserve incoming D81/D82
   source/evidence and adapt installed rendering to shared components/theme.
-- [ ] Finish rebase, independently review integrated source and push the fix.
+- [x] Finish rebase, independently review integrated source ACCEPT and push as9eddd00.
 
 - [x] Plan exact-source installed matching shared by HTTP/MCP discovery and UI.
 - [x] Implement backend installed-row metadata and checked/disabled UI state.
@@ -13,7 +37,7 @@
 - [x] Obtain independent Tester source ACCEPT; update relevant guides and API/UI
   state records. No execution-based acceptance is authorized here.
 - [x] Obtain final Evaluator source/documentation ACCEPT; no material findings.
-- [ ] Commit/push the source fix and required project records under existing authorization.
+- [x] Commit/push the source fix and required project records as9eddd00.
 - [ ] Later verify compilation and actual checked/gray rows, new selections,
   long-list/footer behavior and success/failure retry states when execution is
   authorized; reconcile the new Figma specimen. No runtime result claimed.

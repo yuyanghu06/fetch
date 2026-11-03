@@ -309,6 +309,19 @@ The following response example was accepted in the conversation; enum completene
 
 ### Approved installation-submission contract
 
+November 3 D83 amendment: managed installation now follows successful preparation
+with the existing Restart / Connect backend operation and keeps usable servers
+running by default. No new route or input flag is added. The accepted202 stays
+pending while preparation and the bounded connection attempt run. Preparation
+success is preserved if login is needed or connection fails; inspect GET servers
+for runtime/authentication and the named restart outcome, rather than reinstalling.
+Already-ready reused servers are not interrupted. No automatic login or tool
+invocation occurs. Credential-free connection success without a known login
+requirement is authentication.status not_required; required credentials or explicit
+auth rejection are required; unrelated errors remain runtime failures. Readiness
+never creates authenticated provider proof. This amends the older preparation-only
+sequencing below and applies equally through HTTP, native UI and the MCP tool.
+
 October 27, 2026: the user replied "yep good" to the presented installation-submission contract and highlighted source-capture/reuse choices (D34). The shown request/response, validation/active-group/sequential-item rules, current-source capture, pinned-record reuse, preparation boundaries, partial-failure/retry/errors and basic Quit behavior are approved as presented. Concrete source identity/path/preparer/deadline/process-cleanup mechanisms remain later design work. D36 subsequently approves the separately presented progress-GET refinements and full same-run result lookup. Application implementation remains paused.
 
 ```http

@@ -35,6 +35,16 @@ service workflows.
 
 ## October 29 source reconciliation needed
 
+November 3 D83 source change: installation now tries
+the normal Connect operation and report its result through GET servers. A usable
+credential-free server with no known login requirement reports not_required and
+shows no Authenticate button or inline authentication box, including a stale
+previous flow. Unknown alone also does not expose Authenticate. Required/failed
+authentication keeps its existing controls; unrelated launch errors retain their
+runtime presentation. Reconcile these changed branches and the installation
+connection-attempt state in Figma; the recorded153 count and historical fixtures
+do not establish coverage of the changed behavior or runtime appearance.
+
 November 3 source change: discovery now distinguishes already-installed entries
 from new selectable rows. The installed specimen must show a checked disabled
 checkbox and an "already installed" suffix, including when the source is disabled

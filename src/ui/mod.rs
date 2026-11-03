@@ -176,7 +176,7 @@ impl Desktop {
                 self.selected=self.supported_selections();
             }
             Message::Install=>{self.cleanup_confirmed=false;let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
-            Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{"Installation accepted. Preparation and authentication are separate stages.".into()};},Err(error)=>self.error=Some(error)}}
+            Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{"Installation accepted. Fetch will connect prepared servers automatically; required login remains separate.".into()};},Err(error)=>self.error=Some(error)}}
             Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{self.mark_installed_from_progress(&value);let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
                     self.selected.clear();
                     let eligible=self.supported_selections();
@@ -265,14 +265,16 @@ impl Desktop {
             let title=format!("{}  ·  {}  ·  authentication: {}",server["name"].as_str().unwrap_or(&id),runtime,auth);
             let can_change=!self.busy&&!self.auth_active(&id)&&!self.restarts.contains_key(&id);
             let mut controls=row![button("Inspect tools").on_press(Message::Inspect(id.clone())),button("Edit settings").on_press_maybe(can_change.then_some(Message::Choose(id.clone())))].spacing(theme::CONTROL_GAP);
-            if matches!(auth,"required"|"failed"|"unknown"){controls=controls.push(button("Authenticate").on_press_maybe(can_change.then_some(Message::Authenticate(id.clone()))));}
+            if matches!(auth,"required"|"failed"){controls=controls.push(button("Authenticate").on_press_maybe(can_change.then_some(Message::Authenticate(id.clone()))));}
             if server["restart_required"]==true||matches!(runtime,"stopped"|"failed"|"unknown"){controls=controls.push(button("Restart / Connect").on_press_maybe(can_change.then_some(Message::Restart(id.clone(),false))));}
             if server["tool_execution"]["uncertain_calls"].as_u64().unwrap_or(0)>0{controls=controls.push(button("Force restart (may interrupt work)").on_press_maybe(can_change.then_some(Message::Restart(id.clone(),true))));}
             let expanded=self.expanded_servers.contains(&id);
             let mut card=column![components::disclosure(&title,expanded,theme::SERVER_TITLE,Message::ToggleServer(id.clone()))].spacing(theme::CONTROL_GAP);
             if expanded { card=card.push(text(id.clone()).size(theme::SMALL_TEXT)).push(controls);
-            if let Some(flow)=self.authentication.get(&id){card=card.push(self.authentication_view(&id,server,flow));}
-            else if auth=="authenticating"{card=card.push(text("Complete sign-in in your browser. Fetch is checking authentication status…"));}
+            if auth!="not_required"{
+                if let Some(flow)=self.authentication.get(&id){card=card.push(self.authentication_view(&id,server,flow));}
+                else if auth=="authenticating"{card=card.push(text("Complete sign-in in your browser. Fetch is checking authentication status…"));}
+            }
 
             if let Some(error)=server["authentication"]["error"]["message"].as_str(){card=card.push(components::message(error));}
             if let Some(error)=server["runtime"]["error"]["message"].as_str(){card=card.push(components::message(error));}

@@ -1,5 +1,7 @@
 # Managed servers
 
+D83 connects newly prepared servers through the existing restart backend and waits for its named outcome. Shared startup/restart classification marks successful credential-free connections without a known login requirement not_required, preserves verified provider evidence and exposes required access separately from genuine runtime errors. A ready reused import is not restarted. GET servers projects later explicit provider rejections while preserving newly verified credentials awaiting application. Installation never opens login or invokes arbitrary tools. Source-only acceptance is separate from execution.
+
 ## D82 shared input and verification engine
 
 `bindings.rs` imports all configured environment/header names and server-local

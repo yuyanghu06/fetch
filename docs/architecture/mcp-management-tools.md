@@ -1,5 +1,11 @@
 # Fetch-owned MCP management tools
 
+November 3 D83: fetch__install_servers uses managed installation's final existing
+Restart / Connect operation and leaves usable servers running by default. No
+separate adapter workflow or route is added. Preparation success, connection
+readiness and authentication remain distinct; inspect get_servers for the latter
+two. No browser login or arbitrary tool call is automatically initiated.
+
 October 27, 2026. **Presented contract approved in D49, with D48 ongoing descriptive API coverage.** D47 separately approves the presented connection policy. Reuse the existing application APIs; no application implementation is authorized.
 
 ## Standing coverage requirement — D48

@@ -1,5 +1,7 @@
 # Server preparation
 
+D83 managed installation adds an awaited per-submission connection hook after preparation. Manager supplies a weak reference and invokes the existing named Restart / Connect operation. Successful connections remain running; auth/start failures do not undo package preparation or stop later rows. Existing ready imports remain untouched. The standalone submit helper remains preparation-only. Installation progress stays pending through the managed connection attempt; GET servers owns runtime/authentication outcomes. This source has not been built or run in this pass.
+
 `mod.rs` captures selected source entries without retaining credential values. It keeps one installation group, prepares entries sequentially, reuses saved successful imports and retains progress for the current run. Packages and runtimes belong under Fetch's private Application Support root; durable server records remain separate.
 
 Source includes pinned Node 24.22.1, uv 0.13.5 and Python 3.13.18 provisioning, HTTPS download limits, published SHA-256 comparison, private preparation homes/caches and isolated npm/Python environments. No runtime setup or package command was executed during implementation. Fresh-install behavior and all failure/cleanup paths await user-controlled testing.

@@ -14,7 +14,8 @@ evaluation, updated API/UI guides and state coverage, accurate journal. Real
 visual/build/runtime acceptance is separately pending under existing restrictions.
 
 Status: source implemented; independent Tester and Evaluator source/documentation
-ACCEPT with no material findings. Git integration pending. The new
+ACCEPT with no material findings. Rebased onto a7a6e0d, re-reviewed ACCEPT and
+pushed as9eddd00. The new
 installed-row Figma specimen remains unmapped and runtime appearance unobserved.
 No builds, tests, formatters,
 linters, validation scripts, apps/providers/MCP connections or personal-state
