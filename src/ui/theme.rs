@@ -23,6 +23,8 @@ pub(super) const PANEL_PADDING: f32 = 10.0;
 
 // Match Iced's current primary button, full-width input and checkbox defaults.
 pub(super) const BUTTON_PADDING: [f32; 2] = [5.0, 10.0];
+pub(super) const DELETE_BUTTON_PADDING: [f32; 2] = [3.0, 7.0];
+pub(super) const DELETE_ICON_SIZE: f32 = 18.0;
 pub(super) const INPUT_PADDING: f32 = 5.0;
 pub(super) const CHECKBOX_SIZE: f32 = 16.0;
 pub(super) const CHECKBOX_GAP: f32 = 8.0;

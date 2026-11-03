@@ -93,3 +93,24 @@ pub(super) fn tool_disclosure<'a, M: Clone + 'a>(
     }
     widget::container(content).padding(theme::PANEL_PADDING)
 }
+
+pub(super) fn server_header<'a, M: Clone + 'a>(
+    title: &str,
+    expanded: bool,
+    toggle: M,
+    delete: Option<M>,
+    delete_hint: &str,
+) -> Row<'a, M> {
+    row![
+        disclosure(title, expanded, theme::SERVER_TITLE, toggle).width(iced::Fill),
+        widget::tooltip(
+            button(text("×").size(theme::DELETE_ICON_SIZE))
+                .padding(theme::DELETE_BUTTON_PADDING)
+                .on_press_maybe(delete),
+            text(delete_hint.to_owned()),
+            widget::tooltip::Position::Top,
+        ),
+    ]
+    .spacing(theme::CONTROL_GAP)
+    .align_y(iced::Center)
+}

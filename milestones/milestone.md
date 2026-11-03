@@ -1,5 +1,18 @@
 # Fetch milestone snapshot
 
+## November 3 — server-header × ready for user testing
+
+Delete API/tool delivered as64cff43. The user-requested shared × now sits beside
+every server disclosure and invokes that DELETE operation. Confirmed removal
+clears relevant cached state; busy/pending and uncertain-response handling avoid
+duplicate deletion. Independent source ACCEPT; native binary build passes and
+14 existing UI-handler regression checks pass. No actual app/window/deletion or
+personal-state operation ran. [Evidence](history/2026-11-03_16-20-25-000001-orchestrator-delete-button-build-and-ui-checks.md).
+
+Shared authentication remains the next implementation: user emphasized a common
+standard harness/MCP web-auth rewrite for all servers, with no Google-specific
+route or login engine. Completed upstream/helper research is not live auth proof.
+
 ## November 3 — delete server, then shared authentication
 
 Active milestone: [delete-server](delete-server/info.md). User delegates clean

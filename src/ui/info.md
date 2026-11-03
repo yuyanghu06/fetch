@@ -1,5 +1,11 @@
 # Native Fetch interface
 
+server_header shares the disclosure row and small × deletion button. It sends
+body-free DELETE, tracks each server independently, clears confirmed-deleted
+cache/settings/discovery state and invalidates stale reads. Failed/uncertain
+responses refresh rather than automatically retry. Native build and14 existing
+UI-handler checks pass; actual button appearance/deletion remains user-verified.
+
 D83 consumes the existing server authentication status: not_required hides the complete inline authentication panel; unknown alone no longer renders Authenticate. Required/failed states retain their actions. Installation messaging now describes automatic Connect after preparation. GET servers remains status; UI does not infer provider authentication from a successful HTTP response.
 
 Already-installed discovery rows display a checked disabled checkbox and an "already installed" suffix. Backend exact-source associations determine this state; the UI excludes these rows from default/manual/bulk selection, count and install payloads. Successful installation progress updates matching visible rows without another source scan; failed siblings remain retryable. components::installed_checkbox and theme::installed_checkbox keep Iced's disabled box and dim its label; common opacity lives in theme.rs. Runtime appearance and the new Figma specimen remain unverified/unmapped.

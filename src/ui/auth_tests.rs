@@ -71,6 +71,7 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         expanded_tools: BTreeSet::new(),
         authentication: BTreeMap::new(),
         auth_requests: Requests::default(),
+        deletions: BTreeMap::new(),
     };
     (directory, desktop)
 }

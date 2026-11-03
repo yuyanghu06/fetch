@@ -1,5 +1,10 @@
 # Fetch current work
 
+- [x] Prioritize user-requested server-header ×; shared control/DELETE state and
+  stale reply handling implemented. Native build and14 existing UI checks pass.
+- [ ] User verifies actual × appearance/click-through; Figma state mapping pending.
+- [x] Delete API/tool source delivered as64cff43 before authentication work.
+
 ## Active — delete server
 
 - [x] Source-read current APIs and independently plan deletion under the user's

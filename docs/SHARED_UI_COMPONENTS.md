@@ -66,6 +66,12 @@ the actual Navigation, Text input and Message structure above.
 
 ## Current implementation state
 
+November 3: components::server_header pairs the existing disclosure with a small
+× button and tooltip using common theme size/padding. It is shared across all
+server rows; the caller supplies busy/pending availability and deletion action.
+The button calls the existing DELETE API. New Figma specimen reconciliation is
+pending; a passing native build does not establish observed appearance.
+
 Shared Figma components and linked instances exist. Under D81, native code now
 uses src/ui/components.rs and theme.rs for repeated navigation, controls, page
 framing, messages, server cards and disclosures; the credential editor remains

@@ -1,5 +1,12 @@
 # Current UI state coverage
 
+November 3 server-delete control: a shared × appears beside collapsed/expanded
+server headings, with idle/busy/pending/status-refresh tooltip states. Confirmed
+deletion clears the card and cached data; uncertain responses keep status checking
+without replay. Native compilation and14 existing UI checks pass, but this new
+control has not been visually/runtime verified or mapped into the153-specimen
+Figma library. Its count remains unchanged.
+
 Updated October 28, 2026. This is the index for the user's request to mock every
 currently displayable UI element, including authentication and individual settings.
 The official file contains **153 states/specimens**: full page states, reusable
