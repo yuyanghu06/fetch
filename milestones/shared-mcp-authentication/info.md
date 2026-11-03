@@ -8,7 +8,8 @@ remote defaults to HTTP/web OAuth. Return selected-flow errors without silent
 alternate-method fallback. Common dispatcher/OAuth source is implemented;
 independent Tester/Evaluator ACCEPT,99 unique fixture checks and locked native
 build pass. [Evidence](evidence.md) retains the initial stale-alias fixture
-failure/correction and real-provider/native/client limits.
+failure/correction and real-provider/native/client limits. Source/evidence
+delivered as4f18905; live remote/local commit matched.
 Installed Google1.11.3 requires an encrypted storage bridge; the complete private
 bridge is explicitly deferred by the user; finish routing first. No Google-specific route.
 

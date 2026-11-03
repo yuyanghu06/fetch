@@ -18,7 +18,9 @@ Google1.11.3 has no storage hook; the user explicitly keeps its encrypted bridge
 and integration pending while the common router is completed. Multiple instances
 of the same MCP must retain separate methods/credentials/accounts. The existing
 same-source installation reuse remains unchanged. User requests a behavior
-walkthrough after routing completion.
+walkthrough after routing completion. Source/evidence delivered as4f18905;
+live remote and local commit matched. Pre-existing documentation edits remain
+uncommitted. [Delivery pass](history/2026-11-03_16-55-36-339850-orchestrator-deliver-shared-router.md).
 [Verification evidence](shared-mcp-authentication/evidence.md).
 [Tester pass](history/2026-11-03_16-54-04-913350-tester-shared-router-fixtures.md).
 [Orchestrator pass](history/2026-11-03_16-54-04-913622-orchestrator-shared-router-native-build.md).

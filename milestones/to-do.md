@@ -5,8 +5,8 @@
 - [x] Implement common dispatcher and Railway/Linear OAuth consolidation.
 - [x] Independently test/evaluate shared routing and compile the native binary;
   99 unique fixtures pass, native build passes, Tester/Evaluator ACCEPT.
-- [ ] Commit/push the accepted scoped router and evidence, preserving pre-existing
-  uncommitted documentation changes.
+- [x] Commit/push the accepted scoped router and evidence as4f18905; live remote
+  matched. Pre-existing uncommitted documentation changes are preserved.
 - [x] User selects keep Google pending; complete shared router first. Installed
   Google is1.11.3; encrypted helper/server storage bridge is deferred.
 - [ ] After router completion, walk through selected behavior with the user.
