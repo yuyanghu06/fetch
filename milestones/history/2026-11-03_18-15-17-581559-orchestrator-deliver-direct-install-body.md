@@ -1,0 +1,10 @@
+# Deliver the direct installation POST-body extension
+
+- Local timestamp / acting role / milestone: 2026-11-03T18:15:17.581559-05:00 / Orchestrator / direct-install-inputs.
+- Requested scope: Add command/url alternatives to existing POST body without UI; subsequent screenshot question asks why Google still reports unavailable authentication.
+- Starting repository state: Tester/Evaluator ACCEPT;142 unique checks and native build pass. Existing UI/startup/deletion-investigation and earlier documentation edits preserved.
+- Work performed / changed files: Source/evidence committed/pushed as53adad694a2e853c6c9bf6e5811f37ce4cd5393b. Partially staged overlapping documents to exclude unrelated edits. Updated direct milestone/evidence/snapshot/to-do and this delivery record. Explained screenshot using the selected Google deferral; no Google/auth/UI source change.
+- Decisions: Bounded backend extension complete. New POST inputs reuse shared preparation; no UI added. Google helper/consistent encrypted storage integration remains explicitly pending from earlier user choice. Generic Settings guidance cannot implement that missing integration; no failed-login claim is made.
+- Checks and evidence:142 unique fixture checks, locked native build0.35s, independent Tester/Evaluator ACCEPT. git push origin main succeeded; git rev-parse HEAD and git ls-remote origin refs/heads/main matched53adad694a2e853c6c9bf6e5811f37ce4cd5393b. Staged diff whitespace check passed. No real package installation/Connect/provider/helper/native/personal-state operation in this feature.
+- Resulting state / acceptance: Direct input source delivered; Google screenshot reflects known deferred implementation rather than a newly diagnosed account rejection. Other task edits remain outside the scoped commits.
+- Remaining work and handoff: User may call the POST with server_name plus config_path/command/url. Preserve Google deferral until separately selected; full live package/provider/client/native acceptance remains unfinished.

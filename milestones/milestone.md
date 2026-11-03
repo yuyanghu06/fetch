@@ -10,7 +10,8 @@ inputs, saved direct-identity digest and matching MCP schema. Root inspected the
 diff; independent Tester/Evaluator ACCEPT.142 unique checks pass and the locked
 native binary builds (0.35s), with no new warnings. No real package install/
 provider/connection acceptance is claimed; hooks use disposable simulations.
-Scoped delivery is next. Preserve
+Source/evidence delivered as53adad6; live remote/local refs matched.
+[Delivery pass](history/2026-11-03_18-15-17-581559-orchestrator-deliver-direct-install-body.md). Preserve
 concurrent UI/startup edits, source imports and Google deferral.
 [Contract proposal pass](history/2026-11-03_17-56-44-860492-orchestrator-propose-command-install-input.md).
 [Researcher pass](history/2026-11-03_18-04-47-964906-researcher-command-parser-selection.md).

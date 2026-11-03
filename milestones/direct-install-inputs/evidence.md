@@ -33,3 +33,6 @@ Exact already-locked shlex2.0.1 is used as a direct parser dependency with no
 additional runtime dependency or copied upstream source. Config imports and
 private preparation/Connect rules remain. Pre-existing unrelated UI/startup edits
 were preserved and excluded from this feature.
+
+Source/evidence delivered as53adad6; live remote/local refs matched. Unrelated
+UI/startup/deletion-investigation and older documentation edits were preserved.

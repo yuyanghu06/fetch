@@ -35,6 +35,7 @@ submitted text. No UI or manager edits in this feature. Exact shlex dependency
 was already locked; no package/runtime command ran during source implementation.
 
 
-Status: selected backend scope accepted, scoped Git delivery next. No real package
+Status: selected backend scope complete and delivered as53adad6; live remote
+and local source commit matched. No real package
 installation, Connect or provider login was performed. Existing Google deferral
 and broader native/provider/client acceptance remain; no UI is added here.
