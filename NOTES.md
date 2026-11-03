@@ -1144,3 +1144,30 @@ the count. Railway sign-in/logging source already compiles, and the credential
 editor is already shared. Its actual login remains untested. The 153-state Figma
 index is source/reference evidence; mapping the newer separate Railway callback
 renderer is a recorded follow-up rather than assumed complete visual coverage.
+
+## November 3, 2026 — Already-installed discovery rows
+
+Delivery follow-up: the initial checkout was behind GitHub. A rejected push and
+fetch exposed twelve newer commits through a7a6e0d, including broader known
+endpoint/query/bridge imports, generic OAuth, shared UI and newer fixture results.
+The initial unsupported-entry and MVP-status explanations applied to the older
+local source; incoming records supersede them. Preserve newer implementation
+when integrating the checkbox fix. The running screenshot may reflect an older
+binary; no fresh runtime observation or rebuild was performed here.
+
+The user requested that definitions already installed in this Fetch instance
+appear checked and gray in later discovery. Match the exact source file/name
+association already used for installation reuse, preserving distinct accounts.
+Installed entries are excluded from active selections and installation count;
+successful installation progress updates the visible row and failures stay
+retryable. This source change does not broaden provider/import support or
+authorize builds, tests, app/provider/MCP execution, personal-state edits or a
+release. Its new Figma specimen and runtime appearance remain pending.
+
+The user's related URL questions were answered from the recorded import limits:
+Miro/Vercel root URLs and HF query strings are currently rejected before a
+connection attempt. Supporting a hosted endpoint's address does not require
+installing a local package, but preserving queries safely and completing provider
+authentication remain separate implementation/verification work. v0 additionally
+uses unsupported mcp-remote launcher arguments. No support expansion was requested
+or implemented in this fix.

@@ -76,6 +76,17 @@ The native build and68 fixture checks pass; no actual native visual or live logi
 acceptance is claimed. Code Connect and the Railway Figma specimen follow-up are
 still separate reference work.
 
+November 3 discovery usage: an already-installed row reuses the existing checked
+disabled Checkbox state and appends "already installed" to its label. It is not
+part of the active installation selection or count. New supported rows retain
+ordinary checked/unchecked selection and explicit opt-in for source-disabled
+entries. Keep the installed-page specimen reconciliation tracked in
+[UI_STATE_COVERAGE.md](UI_STATE_COVERAGE.md); no new Figma/runtime evidence exists.
+The shared components::installed_checkbox and theme::installed_checkbox functions
+also dim the label using the theme's text color, because the default Iced disabled
+style grays the box only.
+
+
 Review populated, empty, busy, disabled, error, expanded and scrolled states when
 code changes are selected. Preserve the fixed Install footer and actual long
 Settings layout. Existing authorization still governs builds, tests and runtime

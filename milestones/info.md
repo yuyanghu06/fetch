@@ -9,6 +9,14 @@ read-only source reassessment: five known implementation areas, their relative
 size, actual local workflow acceptance and later distribution work. It adds no
 build/runtime evidence or permission to execute.
 
+[Installed discovery](installed-discovery/info.md) tracks checked and disabled
+previous imports, exact-source matching and consistent UI/backend behavior.
+
+The November 3 readiness reviews are linked at the top of the
+[snapshot](milestone.md). They reconcile the pre-fetch local checkout's connector source, four native
+pages, the original planning areas and older foundation-test evidence. They add
+no build/test/runtime acceptance; newer incoming source/evidence supersedes that older five-area snapshot.
+
 [Full-tree handoff](full-tree-handoff/info.md) records the October29 request to
 push all pending work and document the remaining implementation/verification.
 [The current gap list](../docs/testing/MVP_GAPS.md) overrides older source-complete

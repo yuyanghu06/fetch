@@ -1,5 +1,7 @@
 # Native Fetch interface
 
+Already-installed discovery rows display a checked disabled checkbox and an "already installed" suffix. Backend exact-source associations determine this state; the UI excludes these rows from default/manual/bulk selection, count and install payloads. Successful installation progress updates matching visible rows without another source scan; failed siblings remain retryable. components::installed_checkbox and theme::installed_checkbox keep Iced's disabled box and dim its label; common opacity lives in theme.rs. Runtime appearance and the new Figma specimen remain unverified/unmapped.
+
 UI reuse requirement (confirmed October 28): use shared rendering functions or
 modules for repeated navigation, buttons, server cards, plain messages/status,
 text inputs, tool disclosures and checkboxes, with common theme values. Pages supply

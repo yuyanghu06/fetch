@@ -1,5 +1,94 @@
 # Fetch milestone snapshot
 
+## November 3 — newer GitHub work discovered during delivery
+
+Pushing the installed-discovery fix was rejected because GitHub had twelve newer
+commits through a7a6e0d. Fetching revealed D81/D82 work absent from the initial
+local checkout: shared UI/theme, documented remote/bridge import support,
+issuer-bound generic OAuth, checked credential groups, shared verification data,
+parallel authentication and further encrypted-document/token handling. Incoming
+records include substantially newer fixture evidence (including110 combined
+checks for D82); those records supersede the pre-fetch local readiness summary.
+Real native/provider/client acceptance is still not established by those fixtures.
+
+The feature is being rebased onto that work, preserving its auth request tracking
+and shared components. The new installed checkbox now lives in components.rs
+with styling/opacity in theme.rs. Initial immutable review records describe the
+older checkout and earlier implementation; this snapshot corrects their current
+applicability. No tests/build/apps/provider/MCP/personal-state actions were run
+for this integration. Newly discovered D81 is recorded without treating this
+small source fix as an instruction to resume the entire runtime acceptance task.
+
+## November 3 — already-installed discovery rows
+
+Active focused milestone: [installed discovery](installed-discovery/info.md).
+The user requested checked, gray discovery rows for definitions already imported
+into this Fetch instance. Backend matching will reuse exact saved source path/name;
+UI default/manual/bulk selection and submission will exclude those rows. Distinct
+accounts/configuration sources remain separate and backend installation reuse is
+preserved. HTTP and MCP discovery must agree. Successful progress will update
+displayed rows without rereading source files. Source is implemented in discovery,
+the HTTP/MCP adapters and UI. A common eligibility rule excludes installed rows
+from defaults, toggles, Select all, count and submitted payload; successful progress
+updates rows and preserves failed-new-row retries. Checked disabled rows use a
+shared style to dim label text as well as the box. Independent Tester and
+Evaluator source/documentation reviews ACCEPT with no material findings. No new
+build/runtime result exists; source-only commit/push integration is next.
+
+The user's separate Vercel/Miro/HF questions were answered from recorded source
+limits; they do not expand this fix into provider or importer support work.
+No build/test/formatter/linter/validation, app/provider/MCP, personal state or
+release action ran or is newly authorized.
+[Plan evidence](history/2026-11-03_14-27-45-000001-planner-already-installed-discovery.md).
+[Implementation evidence](history/2026-11-03_14-31-55-000001-coder-installed-discovery-state.md).
+[Independent source review](history/2026-11-03_14-35-00-000001-tester-installed-discovery-source-review.md).
+[Final source acceptance](history/2026-11-03_14-34-53-000001-evaluator-installed-discovery-acceptance.md).
+
+## Historical November 3 pre-fetch local-checkout review
+
+This review inspected local 1276516 before fetching newer GitHub commits.
+Its provider/import/UI/test conclusions are superseded by the incoming October
+29–31 records below; it does not describe the integrated repository.
+
+Active goal: finish the selected MCP MVP so Codex, OpenCode and Claude Code can
+each use one Fetch connection for the user's imported servers. Read-only source
+inspection confirms the shared gateway, client authorization, transports and
+management machinery exist; the four backend gaps in
+[MVP_GAPS.md](../docs/testing/MVP_GAPS.md) still prevent claiming general everyday
+inventory coverage. Remaining shared UI extraction is a separate required item.
+
+Known provider setup is limited to Tavily/GitHub verification and Linear/Railway
+browser integrations. Importing definitions deliberately does not copy their
+credentials. General remote OAuth, broader safe launcher/URL imports and correct
+credential batch/removal outcomes remain unfinished. Unknown authentication
+does not by itself prove a no-auth server cannot connect. Railway local children
+still need explicit Restart after background token refresh.
+
+Historical verification remains 37 passing earlier-foundation tests plus later
+successful native binary compilation/source reviews; no new runtime evidence
+was produced. The native/provider/client acceptance roster remains unrun and its
+isolation unprovisioned. No build, test, app/provider/MCP connection, personal-state
+change, packaging or release occurred. Starting checkout was clean main at
+1276516, matching its local origin/main tracking reference; no remote query made.
+
+- [Connector source-review evidence](history/2026-11-03_14-21-37-000001-researcher-connector-readiness-review.md)
+- [Plan, pages and testing-evidence review](history/2026-11-03_14-21-37-000002-planner-plan-pages-and-test-evidence.md)
+- [Independent summary acceptance and integration](history/2026-11-03_14-21-37-000003-evaluator-status-summary-acceptance.md)
+
+All four native pages exist: Servers, Install MCPs, Connect apps and Settings,
+plus browser approval/callback pages. Connect apps provides setup/certificate
+guidance rather than configuring clients automatically. The 153 Figma specimens
+are design/source references, not runtime-tested pages. The original seven
+discussion areas now map to the consolidated build plan: source spans all core
+areas, authentication/import remain incomplete and testing/delivery acceptance
+is outstanding. Independent Evaluator ACCEPT covers this factual summary only.
+Shared role/workflow files referenced under ~/.codex were unavailable; explicitly
+scoped read-only specialists supplied independent review without running checks.
+
+Next: complete a per-server import/authentication coverage record from the
+existing inventory, finish its selected missing flows, then obtain authorized
+isolated end-to-end evidence before switching everyday clients.
+
 ## October31 — existing Google/Slack checks confirmed
 
 Slack auth.test and Google Drive account information can reuse the shared

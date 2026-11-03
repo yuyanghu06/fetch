@@ -61,6 +61,40 @@ impl DiscoveryService {
     pub fn new(home: PathBuf, codex_home: Option<PathBuf>) -> Self {
         Self { home, codex_home }
     }
+    /// Add the same saved source associations that installation reuses.
+    pub fn scan_with_installed(&self, config_path: Option<&Path>, repository: &crate::storage::ServerRepository) -> Result<Value, DiscoveryError> {
+        let mut value = self.scan(config_path)?;
+        let records = repository.list_saved().map_err(|_| DiscoveryError {
+            code: "DISCOVERY_FAILED",
+            message: "Fetch could not safely read its installed server records. Discovery was not completed.",
+            http_status: 500,
+        })?;
+        let mut installed = BTreeMap::new();
+        for record in &records {
+            if let (Some(path), Some(name), Some(id)) = (
+                record["_installation"]["source_path"].as_str(),
+                record["_installation"]["source_name"].as_str(),
+                record["server_id"].as_str(),
+            ) {
+                installed.entry((path, name)).or_insert(id);
+            }
+        }
+        if let Some(groups) = value["configs"].as_array_mut() {
+            for group in groups {
+                let path = group["path"].as_str().unwrap_or("").to_owned();
+                if let Some(rows) = group["servers"].as_array_mut() {
+                    for row in rows {
+                        let id = row["name"].as_str().and_then(|name| installed.get(&(path.as_str(), name))).copied();
+                        row["installed"] = json!(id.is_some());
+                        row["installed_server_id"] = json!(id);
+                        if id.is_some() { row["selected_by_default"] = json!(false); }
+                    }
+                }
+            }
+        }
+        value["next_steps"] = json!(discovery_steps(value["configs"].as_array().map(Vec::as_slice).unwrap_or(&[])));
+        Ok(value)
+    }
     pub fn capture(&self, path: &Path, name: &str) -> Result<CapturedDefinition, DiscoveryError> {
         if !path.is_absolute() || name.trim().is_empty() { return Err(error("INVALID_REQUEST")); }
         let file = OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK).open(path).map_err(|_| error("CONFIG_UNREADABLE"))?;
@@ -146,26 +180,35 @@ impl DiscoveryService {
                 groups.push(group);
             }
         }
+        let steps = discovery_steps(&groups);
+        Ok(json!({"status":"ok","configs":groups,"next_steps":steps}))
+    }
+}
+fn discovery_steps(groups: &[Value]) -> Vec<Value> {
         let selectable = groups.iter().any(|g| {
             g["servers"]
                 .as_array()
-                .is_some_and(|a| a.iter().any(|r| r["status"] == "supported"))
+                .is_some_and(|a| a.iter().any(|r| r["status"] == "supported" && r["installed"] != true))
         });
+        let installed = groups.iter().any(|g| g["servers"].as_array().is_some_and(|rows| rows.iter().any(|r| r["installed"] == true)));
+        let uninstalled = groups.iter().any(|g| g["servers"].as_array().is_some_and(|rows| rows.iter().any(|r| r["installed"] != true)));
         let warnings = groups.iter().any(|g| {
             g["status"] == "failed" || g["warnings"].as_array().is_some_and(|a| !a.is_empty())
         });
         let mut steps = vec![];
         if selectable {
-            steps.push(json!({"actor":"agent","action":"review_discovery_results","instructions":"Review supported rows and the user's selection before submitting file-path/name pairs to installation. Source-disabled rows require explicit opt-in."}));
+            steps.push(json!({"actor":"agent","action":"review_discovery_results","instructions":"Review supported rows that are not already installed and the user's selection before submitting file-path/name pairs to installation. Source-disabled rows require explicit opt-in."}));
+        }
+        if installed {
+            steps.push(json!({"actor":"agent","action":"check_server_status","instructions":"Already-installed rows refer to existing Fetch servers. Review their status through GET /api/v1/servers; do not submit them for installation again. Installation does not prove authentication or readiness."}));
         }
         if warnings {
             steps.push(json!({"actor":"user","action":"review_discovery_warnings","instructions":"Review the configuration warnings. Fetch has not changed the source files or copied credentials."}));
         }
-        if !selectable {
+        if !selectable && (!installed || uninstalled) {
             steps.push(json!({"actor":"user","action":"choose_config_file","instructions":"Choose a supported configuration file or correct its blocked definitions. Do not submit an empty installation request."}));
         }
-        Ok(json!({"status":"ok","configs":groups,"next_steps":steps}))
-    }
+        steps
 }
 fn read_group(path: &Path, expected: Option<&str>) -> Result<Value, DiscoveryError> {
     let mut options = OpenOptions::new();

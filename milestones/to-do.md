@@ -1,5 +1,33 @@
 # Fetch current work
 
+## Focused UI fix — installed discovery
+
+- [x] Fetch newer GitHub history after push rejection; preserve incoming D81/D82
+  source/evidence and adapt installed rendering to shared components/theme.
+- [ ] Finish rebase, independently review integrated source and push the fix.
+
+- [x] Plan exact-source installed matching shared by HTTP/MCP discovery and UI.
+- [x] Implement backend installed-row metadata and checked/disabled UI state.
+- [x] Exclude installed rows from every selection/count/submission path; update
+  successful progress while retaining failed-row retries.
+- [x] Obtain independent Tester source ACCEPT; update relevant guides and API/UI
+  state records. No execution-based acceptance is authorized here.
+- [x] Obtain final Evaluator source/documentation ACCEPT; no material findings.
+- [ ] Commit/push the source fix and required project records under existing authorization.
+- [ ] Later verify compilation and actual checked/gray rows, new selections,
+  long-list/footer behavior and success/failure retry states when execution is
+  authorized; reconcile the new Figma specimen. No runtime result claimed.
+
+- [x] November 3: recheck connector source against the recorded gaps; distinguish
+  existing gateway/client machinery from missing inventory-specific setup and
+  historical foundation tests from unperformed runtime acceptance.
+- [x] November 3: independently reconcile original planning areas, four built
+  native pages and historical testing evidence; obtain Evaluator ACCEPT for the
+  factual status summary, without runtime execution or new scope decisions.
+- [ ] Track import, fresh authentication, verification and renewal coverage for
+  each selected server in the existing inventory; use this to close the four
+  backend gaps below without asking the user to relist their servers.
+
 - [x] Save/push accepted D81 scoped source/tests/evidence through f6563b3; remote/local commit matched. Native authentication, policy choices and real server/client proof remain pending.
 
 ## Active local MVP completion — D81

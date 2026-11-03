@@ -26,6 +26,10 @@ pub(super) fn checkbox<'a, M: Clone + 'a>(selected: bool) -> Checkbox<'a, M> {
         .spacing(theme::CHECKBOX_GAP)
 }
 
+pub(super) fn installed_checkbox<'a, M: Clone + 'a>() -> Checkbox<'a, M> {
+    checkbox(true).style(theme::installed_checkbox)
+}
+
 pub(super) fn navigation<'a, M: Clone + 'a>(actions: [M; 5]) -> Row<'a, M> {
     let [servers, install, connect, settings, quit] = actions;
     row![

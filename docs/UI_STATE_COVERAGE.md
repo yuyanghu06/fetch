@@ -35,6 +35,17 @@ service workflows.
 
 ## October 29 source reconciliation needed
 
+November 3 source change: discovery now distinguishes already-installed entries
+from new selectable rows. The installed specimen must show a checked disabled
+checkbox and an "already installed" suffix, including when the source is disabled
+or has become unsupported. Counts and Select all exclude these rows. Successful
+installation progress changes its matching row to this state without rediscovery;
+failed siblings remain retryable. This additional rendering branch has not been
+mapped into the recorded Figma library or observed in a running window. The
+153-specimen count remains unchanged; add/reconcile this specimen in a future
+design pass rather than claiming existing visual coverage.
+
+
 The existing153 specimens remain the recorded library. The separate D80 Railway
 callback renderer in src/manager/provider_callback.rs is not traced by the
 source/node index below. Its seven distinct response texts (wrong method,

@@ -180,6 +180,8 @@ These explicit-file rules clarify the previously open boundary: an explicitly ch
           "working_directory": null,
           "credential_variables": ["EXAMPLE_API_KEY"],
           "source_enabled": null,
+          "installed": false,
+          "installed_server_id": null,
           "selected_by_default": true,
           "error": null
         }
@@ -191,7 +193,7 @@ These explicit-file rules clarify the previously open boundary: an explicitly ch
     {
       "actor": "agent",
       "action": "review_discovery_results",
-      "instructions": "Review supported rows and the user's selection, then submit selected file-path/name pairs to the installation API. Source-disabled rows require explicit opt-in."
+      "instructions": "Review supported rows that are not already installed and the user's selection, then submit selected file-path/name pairs to the installation API. Source-disabled rows require explicit opt-in."
     }
   ]
 }
@@ -208,12 +210,13 @@ All server-row fields shown are present:
 - `executable`, `script_path`, `working_directory` are safely established local-script/launch metadata or null; do not return raw launch commands/argument arrays. In supported rows, null means omitted/not applicable; in blocked rows it may mean not safely established and is not proof of absence.
 - `credential_variables` is sorted/deduplicated observed destination/forwarded variable names only, never values. Empty does not mean no auth is needed or every required entry is known. Do not resolve parent/remote environment sources merely to populate it.
 - `source_enabled` is an observed literal flag: true, false or null when absent/not established. It is not effective harness state after other layers, nor a newly selected Fetch enabled-setting field.
-- `selected_by_default` is true for supported rows except explicit source-disabled rows; false for blocked/disabled-by-default rows. D35 selects this explicit source-disabled default exception to the earlier all-selected direction.
+- `selected_by_default` is true for supported rows except explicit source-disabled or already-installed rows; false for blocked/disabled-by-default and already-installed rows. D35 selects the source-disabled default exception; the November 3 user request adds the installed-row exception.
+- November 3 installed-row metadata: `installed` is a boolean and `installed_server_id` is the existing Fetch server ID or null. Match the exact saved installation source path and source name, using the same identity as installation reuse. Different source entries/packages/accounts are not merged by name. An installed row stays checked and disabled in the UI even when its current source classification is unsupported or source-disabled. Checked means already present, not selected for another installation; source `status` remains independent from installation, authentication and readiness. Both HTTP discovery and `fetch__discover_servers` use the same backend projection. Reading installed state is local and never starts a server or login; unreadable saved records fail discovery safely rather than marking everything new.
 - Row `error` is null when supported; otherwise a safe `UNSUPPORTED_SERVER_DEFINITION` or `INVALID_SERVER_DEFINITION` with reason. D35 originally reported remote HTTP/SSE/WebSocket or remote-executor STDIO as unsupported. D61 subsequently selects HTTP/SSE upstream scope via separate adapters; its discovery metadata/eligibility schema amendment remains to review before implementation. WebSocket/custom remote executors remain unselected. No discovery-time network contact or raw URL exposure is implied. Unknown execution-affecting syntax stays unsupported, not guessed.
 
 #### Approved selection and safe interpretation
 
-Supported source-disabled rows remain visible and explicitly selectable; submitting that path/name tuple opts into preparing a new Fetch installation. It does not modify the source flag, invent a Fetch enabled-setting feature or start the server automatically. Other supported rows are selected by default; unsupported/invalid rows cannot be selected by UI/guidance. The installation API still independently reads/validates the current definition rather than trusting preview eligibility.
+Supported source-disabled rows that are not already installed remain visible and explicitly selectable; submitting that path/name tuple opts into preparing a new Fetch installation. It does not modify the source flag, invent a Fetch enabled-setting feature or start the server automatically. Other supported, not-installed rows are selected by default; unsupported/invalid and already-installed rows cannot be selected for installation by UI/guidance. Select all, the selected count and submitted rows exclude installed entries. Existing installation API reuse remains idempotent for direct repeated submissions. Fresh preparations independently read/validate the current definition rather than trusting preview eligibility.
 
 Only recognized literal launch forms whose preparation can be safely established are supported. Do not execute shells, interpolation, command/header helpers, include loaders, `env_vars` sources or `{env:...}`/`{file:...}` references. Record safe variable names without copying source environment values. If substitution, unknown working-directory semantics, remote execution or a secret/unknown argument affects package/launch identity, block that row until a supported interpretation is reviewed. Do not resolve a secret to make an otherwise unclear entry importable.
 

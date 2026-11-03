@@ -21,6 +21,7 @@ use zeroize::Zeroize;
 enum Page { Servers, Install, Connect, Settings }
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum AuthAction { Authenticate, InlineCredential, SettingsCredential }
+fn installable(row:&Value)->bool { row["status"]=="supported" && row["installed"]!=true }
 #[derive(Clone)]
 enum Message {
     Page(Page), Opened(window::Id), Closed(window::Id), Tick, Show, Quit, Stopped,
@@ -161,18 +162,25 @@ impl Desktop {
                 self.picker_window=None;
                 match result{Ok(Some(path))=>self.config_path=path,Ok(None)=>{},Err(error)=>self.error=Some(error)}
             }
-            Message::Discover=>{if self.busy||self.picker_window.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;let path=self.config_path.clone();return Task::perform(async move{client.discovery(&path).await},Message::Discovery);}}
-            Message::Discovery(result)=>{self.busy=false;match result {Ok(value)=>{self.selected.clear();if let Some(groups)=value["configs"].as_array(){for group in groups {if let Some(rows)=group["servers"].as_array(){for item in rows{if item["selected_by_default"]==true{if let(Some(path),Some(name))=(group["path"].as_str(),item["name"].as_str()){self.selected.insert((path.into(),name.into()));}}}}}}self.discovery=value;},Err(error)=>self.error=Some(error)}}
-            Message::Select(path,name,selected)=>{if selected{self.selected.insert((path,name));}else{self.selected.remove(&(path,name));}}
+            Message::Discover=>{if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;let path=self.config_path.clone();return Task::perform(async move{client.discovery(&path).await},Message::Discovery);}}
+            Message::Discovery(result)=>{self.busy=false;match result {Ok(value)=>{
+                self.discovery=value;
+                // A discovery read may finish after an in-flight installation succeeds.
+                self.mark_installed_from_progress(&self.progress.clone());
+                self.selected.clear();
+                if let Some(groups)=self.discovery["configs"].as_array(){for group in groups {if let Some(rows)=group["servers"].as_array(){for item in rows{if installable(item)&&item["selected_by_default"]==true{if let(Some(path),Some(name))=(group["path"].as_str(),item["name"].as_str()){self.selected.insert((path.into(),name.into()));}}}}}}
+            },Err(error)=>self.error=Some(error)}}
+            Message::Select(path,name,selected)=>{let key=(path,name);if selected&&self.supported_selections().contains(&key){self.selected.insert(key);}else{self.selected.remove(&key);}}
             Message::SelectAllServers=>{
                 if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
                 self.selected=self.supported_selections();
             }
-            Message::Install=>{self.cleanup_confirmed=false;if self.busy||self.picker_window.is_some()||self.job.is_some()||self.selected.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;let rows=self.selected.iter().cloned().collect();return Task::perform(async move{client.install(rows).await},Message::Installed);}}
+            Message::Install=>{self.cleanup_confirmed=false;let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
             Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{"Installation accepted. Preparation and authentication are separate stages.".into()};},Err(error)=>self.error=Some(error)}}
-            Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
+            Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{self.mark_installed_from_progress(&value);let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
                     self.selected.clear();
-                    if let Some(rows)=value["servers"].as_array(){for item in rows {if item["status"]=="failed" {if let (Some(path),Some(name))=(item["config_path"].as_str(),item["server_name"].as_str()){self.selected.insert((path.into(),name.into()));}}}}
+                    let eligible=self.supported_selections();
+                    if let Some(rows)=value["servers"].as_array(){for item in rows {if item["status"]=="failed" {if let (Some(path),Some(name))=(item["config_path"].as_str(),item["server_name"].as_str()){let key=(path.to_owned(),name.to_owned());if eligible.contains(&key){self.selected.insert(key);}}}}}
                 }
                 self.progress=value;if terminal{self.job=None;return self.refresh();}},Err(error)=>self.error=Some(error)}}
             Message::Inspect(id)=>{if let Some(client)=self.client.clone(){let query=url::form_urlencoded::Serializer::new(String::new()).append_pair("server_id",&id).finish();return Task::perform(async move{client.request(Method::GET,&format!("/api/v1/tools?{query}"),None).await},Message::Tools);}}
@@ -309,23 +317,45 @@ impl Desktop {
         let mut selections=BTreeSet::new();
         if let Some(groups)=self.discovery["configs"].as_array(){for group in groups{
             if let (Some(path),Some(rows))=(group["path"].as_str(),group["servers"].as_array()){for server in rows{
-                if server["status"]=="supported"{if let Some(name)=server["name"].as_str(){selections.insert((path.to_owned(),name.to_owned()));}}
+                if installable(server){if let Some(name)=server["name"].as_str(){selections.insert((path.to_owned(),name.to_owned()));}}
             }}
         }}
         selections
     }
+    fn selected_for_install(&self)->Vec<(String,String)>{
+        self.selected.intersection(&self.supported_selections()).cloned().collect()
+    }
+    fn mark_installed_from_progress(&mut self,progress:&Value){
+        let mut succeeded=BTreeMap::new();
+        if let Some(rows)=progress["servers"].as_array(){for item in rows{
+            if item["status"]=="succeeded"{if let(Some(path),Some(name),Some(id))=(item["config_path"].as_str(),item["server_name"].as_str(),item["server_id"].as_str()){
+                succeeded.insert((path,name),id);
+            }}
+        }}
+        if let Some(groups)=self.discovery["configs"].as_array_mut(){for group in groups{
+            let path=group["path"].as_str().unwrap_or("").to_owned();
+            if let Some(rows)=group["servers"].as_array_mut(){for row in rows{
+                if let Some(id)=row["name"].as_str().and_then(|name|succeeded.get(&(path.as_str(),name))).copied(){
+                    row["installed"]=json!(true);row["installed_server_id"]=json!(id);row["selected_by_default"]=json!(false);
+                }
+            }}
+        }}
+        let eligible=self.supported_selections();
+        self.selected.retain(|key|eligible.contains(key));
+    }
     fn install_view(&self)->Element<'_,Message>{
         let can_select_all=!self.busy&&self.picker_window.is_none()&&self.job.is_none()&&!self.supported_selections().is_empty();
-        let header=column![text("Discover and install").size(theme::PAGE_TITLE),text("Read your global Claude Code, Codex and OpenCode definitions, or choose one absolute configuration path. Imported credentials are never copied."),row![text_input("Optional absolute configuration path",&self.config_path).on_input(Message::ConfigPath),button("Choose file…").on_press_maybe((!self.busy&&self.picker_window.is_none()&&self.job.is_none()).then_some(Message::ChooseConfigFile))].spacing(theme::CONTROL_GAP).align_y(iced::Center),row![button(if self.busy{"Working…"}else{"Discover servers"}).on_press_maybe((!self.busy&&self.picker_window.is_none()).then_some(Message::Discover)),button("Select all").on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP)].spacing(theme::PAGE_GAP);
+        let header=column![text("Discover and install").size(theme::PAGE_TITLE),text("Read your global Claude Code, Codex and OpenCode definitions, or choose one absolute configuration path. Imported credentials are never copied."),row![text_input("Optional absolute configuration path",&self.config_path).on_input(Message::ConfigPath),button("Choose file…").on_press_maybe((!self.busy&&self.picker_window.is_none()&&self.job.is_none()).then_some(Message::ChooseConfigFile))].spacing(theme::CONTROL_GAP).align_y(iced::Center),row![button(if self.busy{"Working…"}else{"Discover servers"}).on_press_maybe((!self.busy&&self.picker_window.is_none()&&self.job.is_none()).then_some(Message::Discover)),button("Select all").on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP)].spacing(theme::PAGE_GAP);
         let mut items=column![].spacing(theme::PAGE_GAP);
         if let Some(error)=&self.error{items=items.push(components::error_message(error.as_str()));}
         if !self.notice.is_empty(){items=items.push(components::message(self.notice.as_str()));}
         let has_rows=self.discovery["configs"].as_array().is_some_and(|groups|groups.iter().any(|group|group["servers"].as_array().is_some_and(|rows|!rows.is_empty())));
         if !has_rows{items=items.push(text("No server definitions to select. Discover servers or review the source messages below."));}
-        if let Some(groups)=self.discovery["configs"].as_array(){for group in groups{let path=group["path"].as_str().unwrap_or("").to_owned();items=items.push(text(path.clone()).size(theme::TOOL_TITLE));if let Some(rows)=group["servers"].as_array(){for server in rows{let name=server["name"].as_str().unwrap_or("").to_owned();let eligible=server["status"]=="supported";let selected=self.selected.contains(&(path.clone(),name.clone()));let mut control=checkbox(selected).label(format!("{} · {}{}",name,server["type"].as_str().unwrap_or("unsupported"),if server["source_enabled"]==false{" · disabled in source; opt in explicitly"}else{""}));if eligible{let path=path.clone();let name=name.clone();control=control.on_toggle(move|value|Message::Select(path.clone(),name.clone(),value));}items=items.push(control);}}if let Some(error)=group["error"]["message"].as_str(){items=items.push(components::message(error));}}}
+        if let Some(groups)=self.discovery["configs"].as_array(){for group in groups{let path=group["path"].as_str().unwrap_or("").to_owned();items=items.push(text(path.clone()).size(theme::TOOL_TITLE));if let Some(rows)=group["servers"].as_array(){for server in rows{let name=server["name"].as_str().unwrap_or("").to_owned();let eligible=installable(server);let installed=server["installed"]==true;let selected=eligible&&self.selected.contains(&(path.clone(),name.clone()));let control=if installed{components::installed_checkbox()}else{checkbox(selected)};let mut control=control.label(format!("{} · {}{}",name,server["type"].as_str().unwrap_or("unsupported"),if installed{" · already installed"}else if server["source_enabled"]==false{" · disabled in source; opt in explicitly"}else{""}));if eligible{let path=path.clone();let name=name.clone();control=control.on_toggle(move|value|Message::Select(path.clone(),name.clone(),value));}items=items.push(control);}}if let Some(error)=group["error"]["message"].as_str(){items=items.push(components::message(error));}}}
         if !self.progress.is_null(){items=items.push(text(format!("Installation: {}",self.progress["status"].as_str().unwrap_or("pending"))));if let Some(rows)=self.progress["servers"].as_array().or_else(||self.progress["items"].as_array()){for item in rows{items=items.push(text(format!("{} · {}",item["server_name"].as_str().unwrap_or("server"),item["status"].as_str().unwrap_or("pending"))));if let Some(error)=item["error"]["message"].as_str(){items=items.push(components::message(error));}}}}
-        let can_install=!self.selected.is_empty()&&!self.busy&&self.picker_window.is_none()&&self.job.is_none();
-        let footer=row![button("Install selected servers").on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",self.selected.len()))].spacing(theme::PAGE_GAP).align_y(iced::Center);
+        let selected_count=self.selected_for_install().len();
+        let can_install=selected_count>0&&!self.busy&&self.picker_window.is_none()&&self.job.is_none();
+        let footer=row![button("Install selected servers").on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",selected_count))].spacing(theme::PAGE_GAP).align_y(iced::Center);
         column![header,scrollable(items).id("fetch-install-discovery").width(iced::Fill).height(iced::Fill),footer].spacing(theme::PAGE_GAP).height(iced::Fill).into()
     }
     fn connect_view(&self)->Element<'_,Message>{

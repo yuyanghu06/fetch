@@ -49,7 +49,7 @@ pub async fn discovery(State(state): State<Arc<AppState>>, request: Request) -> 
         }
         path = Some(PathBuf::from(value));
     }
-    match tokio::task::spawn_blocking(move || state.discovery.scan(path.as_deref())).await {
+    match tokio::task::spawn_blocking(move || state.discovery.scan_with_installed(path.as_deref(), &state.repository)).await {
         Ok(Ok(value)) => Json(value).into_response(),
         Ok(Err(error)) => application_error(
             StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
