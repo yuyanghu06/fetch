@@ -1,5 +1,25 @@
 # Managed servers
 
+## Shared authentication router
+
+`authentication.rs` selects the common handler from saved imported launch and
+connection facts and assigned input requirements. Remote defaults to web OAuth
+except trusted manual-credential compatibility. Local assigned inputs use the
+credential handler; known no-auth servers and unsupported setup retain explicit
+outcomes. Google is identified as a pending helper integration and is not run.
+No CLI command or README instruction is guessed. Account state remains keyed
+by server ID, so the same package can have independent credential owners.
+
+`WebPlan` shares registration requests, authorization URL construction and token
+exchange/refresh HTTP across Railway, Linear and generic remote OAuth. Railway
+keeps its numeric-loopback callback/native registration/scopes/token policy and
+private CLI environment; Linear keeps its endpoint allowlist/resource/public
+client policy. `remote_auth.rs` owns published discovery and DNS/issuer/resource
+validation. Manager retains pending ownership, expiry/revision checks, encrypted
+save/readback, authenticated-service verification and renewal scheduling. Safe
+selected-flow errors reach the existing status/UI without a fallback method.
+No public route, request field or saved credential format changes.
+
 deletion.rs implements shared management-authorized deletion. An owned worker retains installer/server/runner gates after caller loss through bounded close, blocking cleanup and state purge. Original configurations/scripts and shared resources stay outside cleanup. Per-ID locks remain for stale waiters; missing records end later refresh/auth work.
 
 D83 connects newly prepared servers through the existing restart backend and waits for its named outcome. Shared startup/restart classification marks successful credential-free connections without a known login requirement not_required, preserves verified provider evidence and exposes required access separately from genuine runtime errors. A ready reused import is not restarted. GET servers projects later explicit provider rejections while preserving newly verified credentials awaiting application. Installation never opens login or invokes arbitrary tools. Source-only acceptance is separate from execution.

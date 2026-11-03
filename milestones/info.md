@@ -76,3 +76,10 @@ required for the parent local working MVP.
 [Generic authentication](generic-authentication/info.md) implements D82: imported
 inputs and trusted descriptions use shared storage/delivery/verification code.
 It follows the completed parallel-request fix and retains its acceptance tests.
+
+
+The shared-mcp-authentication milestone now tracks the implemented private router,
+common Railway/Linear/remote web requests and independent fixture evidence.
+Google's encrypted helper integration remains pending by user choice. The
+user's multiple-instance/account requirement and current same-source reuse
+limitation are recorded there and in NOTES.md.

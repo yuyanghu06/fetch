@@ -1,5 +1,34 @@
 # Fetch milestone snapshot
 
+## November 3 — shared authentication router accepted
+
+The user clarified selection uses imported command, arguments and environment
+requirements, not README interpretation. Remote defaults to web OAuth; shared
+handlers cover API credentials and supported CLI/local helpers. A selected-flow
+failure is returned to the user without a fallback login method. Existing public
+contracts, account isolation, encrypted readback/proof and responsiveness remain.
+Independent Planner completed the bounded common OAuth/dispatcher plan. Coder
+implemented private configuration dispatch and common registration/URL/token
+requests; Orchestrator inspected the diff. Independent Tester/Evaluator ACCEPT,
+99 unique fixture checks pass and locked native binary compilation succeeds
+(0.74s). Initial stale alias fixture failure was corrected in test setup only;
+no production alias behavior changed. No live provider/helper/native/client
+acceptance is claimed. Installed
+Google1.11.3 has no storage hook; the user explicitly keeps its encrypted bridge
+and integration pending while the common router is completed. Multiple instances
+of the same MCP must retain separate methods/credentials/accounts. The existing
+same-source installation reuse remains unchanged. User requests a behavior
+walkthrough after routing completion.
+[Verification evidence](shared-mcp-authentication/evidence.md).
+[Tester pass](history/2026-11-03_16-54-04-913350-tester-shared-router-fixtures.md).
+[Orchestrator pass](history/2026-11-03_16-54-04-913622-orchestrator-shared-router-native-build.md).
+[Evaluator pass](history/2026-11-03_16-54-04-913739-evaluator-accept-shared-router.md).
+[Implementation pass](history/2026-11-03_16-49-58-499042-coder-shared-authentication-router.md).
+[Research and user scope decisions](history/2026-11-03_16-48-24-958601-researcher-google-helper-and-router-scope.md).
+[Planner pass](history/2026-11-03_16-46-28-931238-planner-shared-authentication-dispatch.md).
+
+
+
 ## November 3 — server-header × ready for user testing
 
 Delete API/tool delivered as64cff43. The user-requested shared × now sits beside

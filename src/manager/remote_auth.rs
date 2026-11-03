@@ -6,7 +6,9 @@
 use super::{ManagementError, auth_required, bounded_json};
 use crate::diagnostics::{UpstreamOperation, send};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::Value;
+#[cfg(test)]
+use serde_json::json;
 use std::{net::{IpAddr, SocketAddr}, time::Duration};
 use url::Url;
 
@@ -123,28 +125,6 @@ fn parse_metadata(value: &Value, expected_issuer: &Url, resource: &Url, scope: O
     })
 }
 
-pub(super) async fn register(metadata: &Metadata, redirect: &str) -> Result<Value, ManagementError> {
-    let endpoint = checked_url(&metadata.registration)?;
-    let response = send(UpstreamOperation::ProviderRegistration, client_for(&endpoint).await?.post(endpoint)
-        .json(&json!({"client_name":"Fetch", "redirect_uris":[redirect],
-            "token_endpoint_auth_method":"none", "grant_types":["authorization_code","refresh_token"],
-            "response_types":["code"]}))).await.map_err(|_| auth_required())?;
-    let registration = bounded_json(response).await?;
-    if registration.get("client_secret").is_some_and(|v| !v.is_null() && v != "")
-        || registration.get("token_endpoint_auth_method").is_some_and(|v| v != "none")
-        || registration.get("redirect_uris").is_some_and(|v| v.as_array().is_none_or(|a| !a.iter().any(|v| v == redirect))) {
-        return Err(auth_required());
-    }
-    Ok(registration)
-}
-
-pub(super) async fn token(metadata: &Metadata, fields: &[(&str, &str)], refresh: bool) -> Result<Value, ManagementError> {
-    let endpoint = checked_url(&metadata.token)?;
-    let response = send(if refresh { UpstreamOperation::ProviderRefresh } else { UpstreamOperation::ProviderTokenExchange },
-        client_for(&endpoint).await?.post(endpoint).form(fields)).await.map_err(|_| auth_required())?;
-    bounded_json(response).await
-}
-
 pub(super) async fn validate_browser_destination(value: &str) -> Result<(), ManagementError> {
     client_for(&checked_url(value)?).await.map(|_| ())
 }
@@ -160,7 +140,7 @@ async fn optional_metadata(endpoint: &Url) -> Result<Option<Value>, ManagementEr
 
 /// DNS answers are checked and pinned on the very client that makes this one
 /// request, closing the resolve/check/connect gap and ignoring inherited proxies.
-async fn client_for(endpoint: &Url) -> Result<reqwest::Client, ManagementError> {
+pub(super) async fn client_for(endpoint: &Url) -> Result<reqwest::Client, ManagementError> {
     let host = endpoint.host_str().ok_or_else(auth_required)?;
     let port = endpoint.port_or_known_default().ok_or_else(auth_required)?;
     let addresses: Vec<SocketAddr> = tokio::time::timeout(Duration::from_secs(5), tokio::net::lookup_host((host, port))).await
@@ -171,7 +151,7 @@ async fn client_for(endpoint: &Url) -> Result<reqwest::Client, ManagementError> 
         .resolve_to_addrs(host, &addresses).build().map_err(|_| auth_required())
 }
 
-fn checked_url(value: &str) -> Result<Url, ManagementError> {
+pub(super) fn checked_url(value: &str) -> Result<Url, ManagementError> {
     if value.len() > MAX_METADATA_URL || value.chars().any(char::is_control) { return Err(auth_required()); }
     let url = Url::parse(value).map_err(|_| auth_required())?;
     let host = url.host_str().ok_or_else(auth_required)?;

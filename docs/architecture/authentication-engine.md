@@ -1,5 +1,31 @@
 # Shared credential inputs and verification
 
+## November 3 — shared startup/authentication dispatch
+
+The user selects routing from saved imported command, arguments and environment
+requirements, not README interpretation. The existing Authenticate HTTP/MCP
+operation calls common setup functions: remote HTTP defaults to web OAuth unless
+trusted compatibility data requires manual credentials; API inputs use assigned
+encrypted entries and native Settings; supported CLI/local helpers reuse their
+existing login. Do not guess arbitrary CLI commands or execute free-form text.
+A failed selected flow returns its safe error through existing responses/status;
+it does not automatically fall back to a different authentication method.
+
+Every instance owns its configuration, authentication method, encrypted
+credentials, pending attempts and renewal separately, including multiple
+instances of the same MCP package using different accounts. Package identity
+selects compatibility code, not an account or shared credential store. The
+existing source-path/name installation reuse remains unchanged in this refactor;
+explicit duplication behavior needs its own complete contract if introduced.
+
+Google is the first requested local helper but is pending by explicit user
+choice while the router is completed. Actual installed1.11.3 writes only a
+refresh token to its hardwired token file and has no storage hook. Reusing its
+callback while keeping helper/server token changes consistently encrypted needs
+the proposed private storage bridge, which is not approved or implemented.
+Browser success alone cannot establish authentication. App credentials may come
+only from assigned encrypted entries; no personal credential or token migration.
+
 ## November 3 — connection result versus a required login
 
 D83 selects a default connection attempt at the end of successful installation,

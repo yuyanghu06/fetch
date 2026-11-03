@@ -44,3 +44,16 @@ verification_tests.rs, sharing the existing disposable auth harness. Final
 35 targeted manager and110 combined cases pass, along with native compilation.
 See milestones/generic-authentication/evidence.md for commands and review/retest
 history. No live provider/native/MCP/client acceptance follows.
+
+
+## November 3 shared authentication router
+
+The router's independent fixtures are in src/manager/router_tests.rs. They cover
+config-driven selection, common web request forms, preserved compatibility,
+Google's pending/no-execution result, isolated accounts of the same package,
+visible background errors and issuer/attempt ownership. They use disposable
+encrypted stores and loopback mocks; there are no real provider/helper logins.
+The existing persistent-alias case in local_mvp_acceptance.rs now configures
+stopped disposable routes after Runner restart before resolving aliases, matching
+the existing deletion protection. Configuring does not execute the fixture path.
+Current command/results are recorded in the shared authentication milestone.

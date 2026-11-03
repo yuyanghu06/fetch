@@ -246,6 +246,18 @@ async fn aliases_survive_restart_and_never_mix_servers_or_reserved_names() {
     assert!(exceptional.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-'));
     drop(runner);
     let restarted = Runner::persistent(directory.path().to_path_buf()).unwrap();
+    // Reloaded aliases resolve only after their saved server routes are configured.
+    // Configuring these stopped fixtures does not start an executable.
+    for server_id in ["first-server", "second-server"] {
+        restarted.configure(ServerRoute {
+            server_id: server_id.into(),
+            transport: TransportConfig::Stdio {
+                executable: PathBuf::from("/this-disposable-executable-does-not-exist"),
+                args: vec![], working_directory: None, environment: BTreeMap::new(),
+            },
+            execution: ExecutionPolicy::default(),
+        }).await.unwrap();
+    }
     assert_eq!(restarted.alias("first-server", "fetch__get_servers").await.unwrap(), first);
     assert_eq!(restarted.resolve_alias(&second).await, Some(("second-server".into(), "fetch__get_servers".into())));
     assert_eq!(restarted.resolve_alias(&exceptional).await, Some(("first-server".into(), "工具 / punctuation?{}".into())));

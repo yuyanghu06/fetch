@@ -1,5 +1,20 @@
 # Fetch current work
 
+- [x] Complete scope sync: dispatch from imported command/args/environment; return
+  selected-flow errors without silent alternate-method fallback.
+- [x] Implement common dispatcher and Railway/Linear OAuth consolidation.
+- [x] Independently test/evaluate shared routing and compile the native binary;
+  99 unique fixtures pass, native build passes, Tester/Evaluator ACCEPT.
+- [ ] Commit/push the accepted scoped router and evidence, preserving pre-existing
+  uncommitted documentation changes.
+- [x] User selects keep Google pending; complete shared router first. Installed
+  Google is1.11.3; encrypted helper/server storage bridge is deferred.
+- [ ] After router completion, walk through selected behavior with the user.
+- [ ] Preserve requirement: multiple instances of the same MCP with independent
+  authentication methods, credentials and accounts; design explicit duplication
+  behavior before changing current same-source installation reuse.
+
+
 - [x] Prioritize user-requested server-header ×; shared control/DELETE state and
   stale reply handling implemented. Native build and14 existing UI checks pass.
 - [ ] User verifies actual × appearance/click-through; Figma state mapping pending.
@@ -19,9 +34,9 @@
 
 ## Next — shared asynchronous MCP authentication (after delete)
 
-- [ ] Read current AGENTS, November3 upstream-auth reuse notes and authentication
+- [x] Read current AGENTS, November3 upstream-auth reuse notes and authentication
   engine source/records; inspect actual current/installed Google package version.
-- [ ] Research/pin reusable Codex Rust OAuth and OpenCode v1.19.4 source, dependencies,
+- [x] Research/pin reusable Codex Rust OAuth and OpenCode v1.19.4 source, dependencies,
   licenses/notices and exact reuse boundaries before dependent implementation.
 - [ ] Implement shared async HTTP OAuth/application registrations, URL elicitation
   and local-helper orchestration, Google per-account state/refresh/storage, and

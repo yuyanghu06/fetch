@@ -461,3 +461,34 @@ No Keychain item, credential/certificate, runtime service, environment or client
 Dedicated read-only source research reused D24/D25/D31 and checked harmless authenticated provider requests: GitHub's authenticated-user endpoint for user/PAT tokens, and Slack auth.test requiring both2xx and ok:true. [The next amendment](credential-verification.md) links primary sources and limits the examples to their token/response semantics; it selects no GitHub CLI or opaque-wrapper integration. A public health endpoint or generic MCP list cannot replace provider authentication.
 
 Researcher and dependent Planner proposed30seconds total for post-save readback/handoff/probes, explicit preflight unsupported-SET rejection, shared422/502/504 verification failures distinct from storage/Fetch-auth failures, atomic batch/current-generation proof and committed-value retention with safe outcome fields. The exception for pure removal/known non-auth/empty batches is explicitly a proposed D31 amendment, never a silent exemption. Root resolved empty/no-op/invalidated-evidence/persistence truth-table details in the review draft. No real credentials, provider probes, client/login or runtime operations occurred.
+
+
+## November 3 — Shared router and Google helper inspection
+
+Read-only Researcher checked these maintained upstream implementations before
+the routing refactor. Exact revisions retain the evidence independently of main:
+
+- [Codex OAuth login, f1b0721c88002066201e7d977c449fbf14f1e499](https://github.com/openai/codex/blob/f1b0721c88002066201e7d977c449fbf14f1e499/codex-rs/rmcp-client/src/perform_oauth_login.rs),
+  Apache-2.0: separates authorization URL presentation and completion. Importing
+  the entire module brings Codex workspace dependencies and storage assumptions.
+- [OpenCode v1.19.4, 148842ef7cb1bc34192b3fff57d0f9721ab9c801](https://github.com/anomalyco/opencode/blob/148842ef7cb1bc34192b3fff57d0f9721ab9c801/packages/opencode/src/mcp/index.ts#L806),
+  MIT: start/authenticate/finish separate configuration, browser and completion.
+  Its TypeScript implementation is a design reference for this Rust product.
+
+The bounded router refactor consolidates Fetch's existing OAuth source and
+retains its existing asynchronous ownership/store/verification code. No upstream
+implementation is copied in this slice, and no additional SDK/workspace dependency
+is introduced. The original preference to reuse suitable upstream source remains
+for later work where practical; these references are not a claim of code reuse.
+
+Actual installed @a-bonus/google-docs-mcp1.11.3 was inspected under Fetch's
+existing development package cache without running it or reading token files.
+Its dist/auth.js saves refresh_token only, owns the callback, and sends browser
+success before code exchange/save. It provides no storage-injection hook.
+google-auth-library renews access in memory. A one-time encrypted import followed
+by the normal plaintext token file would not satisfy consistent encrypted
+ownership. User chose to keep Google pending while finishing routing rather than
+approve the proposed private helper/server storage bridge. Package metadata says
+ISC while its actual shipped LICENSE is MIT; retain the shipped license if future
+integration copies/adapts source. [Upstream auth source reference](https://github.com/a-bonus/google-docs-mcp/blob/22856e1fd5d20afe40471683d4c9417910fa9430/src/auth.ts)
+is separate from the authoritative installed distribution inspection.

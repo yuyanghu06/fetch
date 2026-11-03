@@ -1171,3 +1171,32 @@ installing a local package, but preserving queries safely and completing provide
 authentication remain separate implementation/verification work. v0 additionally
 uses unsupported mcp-remote launcher arguments. No support expansion was requested
 or implemented in this fix.
+
+## November 3, 2026 — Shared authentication routing and multiple instances
+
+Confirmed user direction: the existing Authenticate operation selects common
+setup functions from imported command, arguments and environment requirements.
+It does not interpret README instructions. Remote HTTP servers default to web
+OAuth; shared handlers cover API credentials and supported CLI/local helpers.
+A selected-flow failure returns its safe error to the user without silently
+trying another authentication method.
+
+The user explicitly chose **keep Google pending; complete the shared router
+first** after reviewing the private encrypted helper/server storage bridge.
+Actual Fetch-installed @a-bonus/google-docs-mcp is1.11.3. Its existing callback
+must be reused when integration resumes. The browser success page precedes code
+exchange and token storage and is not proof of completed login. No bridge or
+plaintext fallback is approved by that choice.
+
+The user additionally requires **multiple instances of the same MCP**, each
+independently authenticated using its own method, credentials and account.
+Several Google instances signed into different Google accounts are the concrete
+example; Google is a special integration, while instance separation applies to
+all MCPs. Keep configuration, credentials, pending attempts and renewal tied to
+the individual server instance, never only the package name. The current
+installer already distinguishes different source entries, but reuses an existing
+instance for the same source path/name; this note does not claim an explicit
+same-source duplication workflow has been implemented or change that contract.
+
+After routing is complete, the user wants a walkthrough of the resulting
+behavior. Google implementation remains pending during this routing task.
