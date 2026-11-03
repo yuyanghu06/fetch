@@ -11,8 +11,8 @@ errors remain runtime errors. No automatic login or tool calls. Source implement
 independent Tester's identity/generation finding is corrected and re-reviewed
 ACCEPT. Final Evaluator's late-response gap is also fixed: provider rejection
 after timeout/cancel updates status without changing the call's original outcome.
-Tester and Evaluator final source ACCEPT; no material findings remain. Scoped
-commit/push integration is next. No builds, tests
+Tester and Evaluator final source ACCEPT; no material findings remain. Source is
+committed/pushed as fcf6c34. No builds, tests
 or runtime/provider/MCP actions ran for this change.
 
 - [Implementation](history/2026-11-03_14-55-20-000001-coder-install-connect-source.md)
@@ -38,6 +38,7 @@ installed-discovery work remains unfinished as recorded below.
 
 - [Late-response correction and Tester acceptance](history/2026-11-03_15-01-26-000001-coder-late-auth-errors-and-tester-recheck.md)
 - [Final D83 source acceptance](history/2026-11-03_15-01-26-000002-evaluator-install-connect-source-acceptance.md)
+- [Actual source delivery](history/2026-11-03_15-02-49-000001-orchestrator-deliver-install-connect-source.md)
 
 - [Identity correction](history/2026-11-03_14-57-40-000001-coder-bind-auth-rejections-to-connection.md)
 - [Corrected source acceptance](history/2026-11-03_14-57-40-000002-tester-install-connect-source-acceptance.md)

@@ -16,5 +16,6 @@ reported without automatic browser launch; real launch errors preserved; ready
 reuse uninterrupted; mixed successes retained; later auth challenges/shutdown
 remain correct. Status: source implemented; identity-binding finding fixed and
 independently re-reviewed ACCEPT. Evaluator's detached-response finding is also
-corrected; Tester/Evaluator final source ACCEPT. Git delivery pending. Source-only
+corrected; Tester/Evaluator final source ACCEPT. Source committed/pushed as
+fcf6c34. Source-only
 work here adds no builds/tests/apps/providers/MCP or personal-state operations.
