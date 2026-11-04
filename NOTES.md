@@ -1478,3 +1478,25 @@ original Everything sandbox run and native binary build pass; independent ACCEPT
 See docs/architecture/native-server-storage.md and milestones/native-server-storage/evidence.md.
 Ordinary native descriptor entry and real OS/provider/client acceptance remain
 separate. No personal settings/credentials or old runtime state migrated/deleted.
+
+## November 3, 2026 — Development identity and key reuse ready
+
+User completed Certificate Assistant creation of the dedicated dev signer. Only
+its public fingerprint is saved in Fetch-Development settings; private key stays
+in login Keychain and no global trust/old-item ACL was changed. New launcher
+signs/verifies a separate executable with stable identity; two changed binaries
+passed the same requirement. Keys loaded successfully are remembered until Quit;
+49Rust cases and4launcher fixture checks pass. Existing running Fetch is preserved;
+Quit/reopen with ./scripts/run-development.sh. Existing items may need initial
+approval for the new identity. Native prompt counts remain unmeasured.
+
+
+## November 3, 2026 — First-launch instructions for other agents
+
+User requests project AGENTS.md steps for checking development launch requirements
+on other computers and explaining missing setup. Added per-Mac checks for build
+tools, launcher identity selection, local certificate/private-key presence, human
+Certificate Assistant setup, public fingerprint configuration and build-only
+signature verification. Agents must give concrete next steps, preserve existing
+state and use the signed launcher. Copying source does not provision another Mac's
+signing identity or decrypt its saved credentials. This is documentation only.

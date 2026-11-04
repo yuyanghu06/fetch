@@ -13,6 +13,8 @@ native binary build PASS. Independent Evaluator ACCEPT.
 [Current contracts](../docs/architecture/native-server-storage.md).
 [Complete evidence and remaining limits](native-server-storage/evidence.md).
 [Integration pass](history/2026-11-03_21-10-43-020636-orchestrator-integrate-native-storage.md).
+[Concurrent docs merge](history/2026-11-03_21-12-03-941043-orchestrator-merge-concurrent-development-docs.md).
+[Merge review ACCEPT](history/2026-11-03_21-12-44-288190-evaluator-accept-concurrent-docs-merge.md).
 Ordinary native command/path authoring and real OS/provider/client acceptance
 remain open product work; this is not full-MVP completion. Integrated as3008546. Next: separately review native metadata entry before new
 public fields or per-server handling. Existing personal configs/credentials/state remain untouched.
@@ -124,6 +126,14 @@ ACCEPT; explicit remote Keychain readback and authenticated transport check adde
 [Milestone](native-server-storage/info.md). [Pass](history/2026-11-03_19-53-41-841065-orchestrator-native-storage-inventory.md).
 
 
+## November3 — first-launch checklist for each Mac
+
+Project AGENTS.md now starts with required tool/signer checks, correct launcher
+identity precedence, human certificate setup and exact user guidance when missing.
+It distinguishes reusable source from local keys/fingerprint/logins and requires
+explicit launch scope. Docs-only checks pass; no source/runtime/Keychain changes.
+Independent review ACCEPT. [Review](history/2026-11-03_20-01-44-702738-evaluator-accept-first-launch-agent-checklist.md). [Pass](history/2026-11-03_20-01-19-069965-orchestrator-document-per-mac-first-launch-checks.md).
+
 ## November 3 — full working-tree delivery
 
 User explicitly requests publishing all remaining tracked/untracked changes.
@@ -135,18 +145,32 @@ acceptance is claimed. Feature-specific verification and remaining work below
 retain their original scope. [Publication pass](history/2026-11-03_19-49-42-068944-orchestrator-full-working-tree-delivery.md).
 
 
-## November3 — implement development Keychain prompt fix
+## November3 — development Keychain prompt fix complete
 
-User approved recommended stable DEVELOPMENT identity and process key caching,
-and requested pulling latest main. Remote d19d891 is integrated; duplicate helper
-source commit skipped after comparison, local notes/startup/UI toggle work restored
-and combined with new automatic folder discovery. Recovery autostash retained
-pending verification. Dev signing/cache research and bounded planning complete; source implemented
-and native build passes18.42s. Independent tests/review and final native signing
-identity setup remain. [Pass](history/2026-11-03_19-44-24-282882-researcher-stable-development-signing-design.md). [Pass](history/2026-11-03_19-44-24-283311-planner-successful-key-cache-plan.md). [Pass](history/2026-11-03_19-44-24-283447-coder-key-cache-and-signed-launcher.md).
+Latest remote main integrated with prior local work; duplicate helper source
+skipped and restored UI toggle preserved with new folder discovery. Successful
+individual keys now stay in Zeroizing memory until Quit; new-key OS readback,
+failure exclusion, delete eviction and permanently closed shutdown preserve
+existing encryption/verification. Stable DEVELOPMENT launcher signs/verifies a
+copy with fixed identifier and exact public certificate fingerprint.
 
-no shared unlock key, credential migration or release work selected.
-[Pull pass](history/2026-11-03_19-38-23-174358-orchestrator-pull-latest-before-keychain-fix.md).
+The user created the dedicated signer in Certificate Assistant. Public fingerprint
+settings saved; private key never exported and trust/old item permissions unchanged.
+Actual signed Fetch build succeeds; two changed binaries share the same verified
+identity requirement. Tests:30credentials+1host+18UI,4launcher fixtures; native
+build18.42s. Independent source/final evaluations ACCEPT. Temp fixtures/probes
+removed; persistent signer/settings are intentional dev setup. Existing Fetch and
+services preserved. Quit Fetch then run ./scripts/run-development.sh. Old items
+may need final approval; native prompt counts/rebuild lock/denial remain unmeasured.
+No wrapping-key migration, release signing or packaging selected.
+Source/launcher delivered in515c7b1; final verified recordsd73865d pushed to
+main. Working tree and whitespace checks pass; no outstanding selected work.
+[Delivery](history/2026-11-03_19-53-42-343030-orchestrator-keychain-workflow-delivery.md). [Completion](history/2026-11-03_19-52-53-335817-orchestrator-complete-keychain-development-setup.md).
+[Evidence](keychain-prompts/evidence.md).
+[Pass](history/2026-11-03_19-51-19-045118-evaluator-cache-and-launcher-source-acceptance.md).
+[Pass](history/2026-11-03_19-51-19-045707-tester-key-cache-launcher-and-pull-regressions.md).
+[Pass](history/2026-11-03_19-51-19-046417-orchestrator-configure-and-verify-development-signer.md).
+[Pass](history/2026-11-03_19-51-19-047925-evaluator-development-identity-final-evidence-acceptance.md).
 
 ## November3 — development Keychain prompt investigation
 

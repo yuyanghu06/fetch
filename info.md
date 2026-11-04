@@ -9,3 +9,7 @@ Fetch's first release is the local macOS Rust MCP manager/sharing app. One saved
 The [future project-organizer note](NOTES.md#october-28-2026--future-project-organizer-for-agent-sessions) records Git-like organization of agent sessions, shared Claude Code/Codex project context and MCP servers/setup across computers. It is beyond the first release; implementation choices remain open.
 
 D77 selected MVP source now includes the native interface and backend feature modules, with all testing deferred to the user. Read docs/testing/HANDOFF.md before running builds, apps or connections. packaging/ contains distribution source only. No release has been created.
+
+AGENTS.md begins with the per-Mac development first-launch checklist: prerequisites,
+local signing setup, missing-setup user guidance and signed launcher readiness.
+The checklist supplements the detailed DEVELOPMENT.md instructions.

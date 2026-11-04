@@ -1,0 +1,70 @@
+> **D81 active local work:** Implementation/build/test and protected actual MCP/client checks are authorized; packaging/signing/DMG are excluded. Native build and93 fixtures pass after the October 30 parallel-authentication fix; real UI/provider/MCP proof is still pending. Two focused choices remain unanswered: deletion/non-auth credential-change outcomes under D31, and bounded protected-MCP authentication proof when no separate provider account API exists. Ordinary supported API-key saves retain their required authenticated check. Preserve D25/D31 until answered. See [the current run](../testing/LOCAL_MVP_RUN.md). Older execution-pause paragraphs below are historical.
+
+> **October29 current handoff:** five required implementation areas plus isolated
+> runtime acceptance/fixes and distribution preparation remain. See
+> [MVP_GAPS.md](../testing/MVP_GAPS.md). Railway/auth/logging source compiles;
+> no live acceptance follows. Older D77/D79 checkpoint text below is historical.
+
+> **D79 current checkpoint:** Native binary compilation succeeds with the resolved Cargo.lock after a gateway syntax/import fix. Tests, app launch and MCP connections remain prohibited. No runtime/client/native acceptance is claimed. See [the handoff](../testing/HANDOFF.md). Earlier D77 no-compilation statements describe that historical source-only pass.
+
+> **Historical D77 checkpoint:** initial MVP source was delivered; the user controls starting every build/check/test/launch/connection step. Read [the handoff](../testing/HANDOFF.md). D78 resolves the custom GitHub CLI scope by deferring it. Older implementation checkpoints below are historical.
+
+> **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
+
+# Current implementation checkpoint
+
+October30 D82 resolves the generic-authentication design question: use imported
+input names, shared encrypted storage/delivery and one verifier driven by trusted
+request descriptions. The internal implementation needs its own checks; it does
+not approve a public verifier-settings API, deletion/non-auth success or generic
+MCP readiness as service-authentication proof. Those existing outcome/proof
+questions remain separate. See the active generic-authentication milestone.
+
+October28, 2026. D73 replaces the ten-group approval backlog with [one consolidated implementation plan](build-readiness.md). The earlier count mixed approved product behavior, engineering work and later release/testing prerequisites; it is superseded, not a fresh requirement list.
+
+## Remaining decisions checklist
+
+This is the single-checkpoint index after D73; the older ten-group count is superseded. Use the implementation worklist for engineering details.
+
+## Settled — do not ask again
+
+- One saved Fetch credential/token per agent, one `/mcp` connection for all permitted installed tools; selected OAuth renewal and permissions, no Fetch account.
+- User-completed provider/server login reused for later calls. Normal tool calls do not start login or repeat provider verification.
+- Rust backend, one Fetch process, approved raw data/transport/native scope and queue/deadline/restart behavior.
+- Local HTTPS, per-install certificate direction, encrypted per-server credentials, Keychain-held keys and native Settings manual-secret boundary.
+- Shared memory deferred from this first release.
+- MIT license and a drag-and-drop macOS DMG.
+
+[Confirmed decisions](decisions.md), especially D73 and its referenced decisions, remain canonical. This index does not enlarge old approval scopes.
+
+## Product-scope choice resolved — D78
+
+The user selected deferral of the new Fetch-owned GitHub CLI adapter in D78; importing existing GitHub MCP definitions remains a separate supported-compatibility task. If included, decide named operations and auth ownership together. [GitHub proposal](github-cli-proposal.md).
+
+## Engineering work, gathered once
+
+The [single worklist](build-readiness.md#one-engineering-worklist--not-separate-product-approval-rounds) contains all remaining module/dependency/wire/file/key/launcher/destination/bounds/lifecycle/onboarding/testing/packaging work. Exact unselected mechanisms remain honest engineering tasks, not another broad auth/storage/queue/Rust approval loop. Any meaningful new API/behavior change is presented once, completely, before affected implementation.
+
+The unaccepted [verification amendment](credential-verification.md) is withdrawn from active review. No new storage-only200 exception or policy in it is approved; preserve D25/D31 until an explicit amendment is selected. Native read/prompt admission and precise mechanisms remain worklist items, not falsely claimed historical approvals.
+
+## Historical D73 authorization and future scope
+
+Application implementation, environment provisioning, real Keychain/certificate/credentials/client changes, live testing and release remain paused until explicitly authorized. D46 isolation and D58 actual workflows remain acceptance requirements. Shared memory remains future same-product work; PostgreSQL/retention, graph, extra processes and recorded native-feature deferrals are not current build blockers.
+
+Historical detailed proposals and append-only history preserve evidence/chronology. They must not be used to recreate the superseded ten-group list.
+
+## Source-history audit
+
+[The MCP session audit](mcp-session-audit.md) reconciles all seven available Fetch conversations. No new product decision or build permission was found; already-selected missing mapping/acceptance details were restored to the existing plan. It does not add another backlog or re-open deferred feature work.
+
+## Current implementation status after D74
+
+The first developer-backend foundation is implemented and pushed; the developer command defaults to `https://localhost:53671`. Native approval/token issuance, lasting identity/Keychain, package installation, desktop UI and MCP sharing remain unfinished. Build/push authorization is already granted; the old D73 pause above is historical. Continue the existing build sequence without requesting that permission again. Main MCP tests remain for the later joint isolated environment. No release is authorized.
+
+## November3 — development Keychain prompts
+
+User asks why approximately five identical access dialogs appear and whether
+they can be combined. [Findings and implementation](keychain-prompts.md) now record the user-selected
+stable development identity and process key cache. Source/fixture/signature proof
+passes; protected native prompt-count/lock/denial proof remains. A shared wrapping
+key, credential migration and release work remain unselected.

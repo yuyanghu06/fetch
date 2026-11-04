@@ -429,6 +429,17 @@ process was preserved; explicitly Quit/reopen to use the built binary.
 
 - [x] Pull latest main, preserving remote folder discovery and local UI/startup/docs.
 - [x] Implement successful-key cache, delete eviction, creation readback and Quit cleanup.
-- [ ] Independent cache/backend/host checks and final evaluation.
-- [x] Implement stable dev build/signing workflow; final task-specific identity setup pending human-owned creation.
-- [ ] Validate native identity across rebuilds and protected disposable key access; preserve personal state.
+- [x] Independent cache/backend/host checks and final evaluation.
+- [x] Implement stable dev workflow; user created dedicated signer and public settings are configured.
+- [x] Validate same identity across changed signed binaries; preserve personal state.
+- [ ] Protected native Keychain-item prompt-count/lock/denial proof remains separate.
+
+Development prompt fix is implemented/configured; source delivered515c7b1.
+Normal launcher build/signing passes; use it after explicit Fetch Quit.
+Task recovery autostash removed after preservation/integration checks.
+
+## November3 — per-Mac first-launch instructions
+
+- [x] Add prerequisite/signing checks and concrete missing-setup steps to AGENTS.md.
+- [x] Match launcher precedence/paths and preserve machine-local keys and user authority.
+- [x] Independent read-only review ACCEPT; documentation ready for delivery.

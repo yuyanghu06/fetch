@@ -24,5 +24,13 @@
   ],
   "native_prompt_persistence_tested": false,
   "private_key_exported": false,
-  "app_launched": false
+  "app_launched": false,
+  "default_toolchain_rebuild_metadata": [
+    "designated => identifier \"com.fetch.local.development\" and certificate leaf = H\"8a674d33f736264cb43421e28c2d22493f9c82a5\"",
+    "Identifier=com.fetch.local.development",
+    "CDHash=a7970d62e15d9918be3cebc5d7c629dd844ec6b7",
+    "Authority=Fetch Development Local Signing",
+    "TeamIdentifier=not set"
+  ],
+  "same_fetch_identity_after_rebuild": true
 }

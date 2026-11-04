@@ -7,6 +7,86 @@
 
 > Earlier November3 planning pauses are preserved in [historical checkpoints](milestones/native-server-storage/historical-agent-checkpoints.md). The user has now resumed this scoped work. Discuss any new per-server code before writing it.
 
+# First development launch on each Mac — November 3, 2026
+
+Before the first development launch on a new Mac or unverified checkout, run this
+checklist. Repeat the relevant checks if signing setup is missing or stops working.
+Read [DEVELOPMENT.md](docs/testing/DEVELOPMENT.md) and the current
+[signed launcher](scripts/run-development.sh). These checks do not authorize
+installing tools, changing Keychain/trust settings, or launching Fetch/MCPs beyond
+the user's current request. Development signing is selected; release signing,
+packaging and credential migration remain outside this workflow.
+
+1. **Check the build tools.** Confirm macOS, `cargo`, `rustc`, Apple's command-line
+   developer tools and `/usr/bin/codesign` are available. Read the required Rust
+   version from `Cargo.toml`. Use read-only checks such as `cargo --version`,
+   `rustc --version`, `xcode-select -p` and, when tools are installed,
+   `xcrun --find clang`. If something is missing, tell the user exactly which
+   requirement is missing and how to install it: the official Rust/rustup
+   installer for Rust, or `xcode-select --install` for Apple's command-line tools.
+   The user handles any installer, administrator password or license acceptance.
+   Do not change the Mac's global developer-tool selection automatically.
+
+2. **Find this Mac's selected signing identity.** Follow the launcher's actual
+   precedence: a nonempty `FETCH_DEV_SIGNING_IDENTITY`, otherwise the single-line
+   public fingerprint file at
+   `~/Library/Application Support/Fetch-Development/development-signing-identity`.
+   Resolve `~` from the current HOME; never hardcode another Mac's username.
+   Require exactly 40 hexadecimal digits. If an old environment value overrides
+   a correct file, explain that and guide the user to update/unset the override;
+   do not silently edit shell profiles. Never copy a fingerprint from this
+   repository's example/evidence files or assume another Mac has that identity.
+
+3. **Check that the matching certificate and private key exist locally.** Use
+   read-only public identity/certificate metadata, or the matching entry under
+   Keychain Access → login → My Certificates. Confirm the selected fingerprint
+   belongs to the intended development Code Signing identity and that its private
+   key is present. Show only the relevant metadata; never read/export private
+   keys or saved passwords. Do not treat a self-signed development certificate
+   as needing global trust, or rely only on a valid-identities filter to reject
+   it. The signed build check below establishes whether it can actually sign.
+
+4. **If identity setup is missing, give these user steps.** Open Keychain Access,
+   select login, then Keychain Access → Certificate Assistant → Create a
+   Certificate…. Use the name **Fetch Development Local Signing**, identity type
+   **Self Signed Root**, certificate type **Code Signing**, and login Keychain.
+   Have the user finish Create and any macOS password/approval themselves.
+   Leave trust settings unchanged. After creation, obtain that certificate's
+   public SHA-1 fingerprint, confirm which identity to use, and—with setup
+   authorization—save only its 40 hexadecimal digits on one line in the file
+   above, or guide the user to set `FETCH_DEV_SIGNING_IDENTITY`. Create missing
+   development settings directories privately; preserve existing state/settings.
+   Do not create duplicate identities when a usable selected one already exists.
+
+5. **Verify before launching.** When building/signing is authorized, run
+   `./scripts/run-development.sh --build-only`. It must build successfully, sign
+   a separate executable with identifier `com.fetch.local.development`, and pass
+   strict signature verification. Respect `CARGO_TARGET_DIR`; the resulting
+   executable is `<target>/debug/fetch-development`. If it fails, report the
+   actual missing requirement/error and concrete repair steps. Keep the previous
+   executable and existing data. Do not hide the failure with ad-hoc signing,
+   broad Keychain access, trust changes, or a plaintext-key fallback.
+
+6. **Use the signed development launcher.** Once ready and launch is authorized,
+   use `./scripts/run-development.sh`. Explain that ordinary `cargo run` can
+   produce a different ad-hoc identity after rebuilding. If Fetch is already
+   running, have the user explicitly Quit it before relaunching; closing the
+   window only backgrounds it. Do not kill existing services to clear a port.
+   Existing encrypted items may need final approval for the newly stable identity;
+   do not promise exactly one prompt or claim unobserved native behavior passed.
+
+**Moving to another Mac:** the source/checklist is reusable; the signing identity,
+private key, fingerprint selection and saved logins are local setup. Normally
+create a dedicated development identity on each Mac and configure its own public
+fingerprint. Do not automatically copy private signing keys, Keychain contents or
+Fetch's encrypted application/server state; copied encrypted files alone do not
+supply their decryption keys. Use the existing fresh-authentication workflow on
+that Mac. Any deliberate identity/credential migration needs separate scope.
+
+When reporting readiness, name what was checked, what is still missing, the exact
+next user action, and whether Fetch was actually launched. If setup is incomplete,
+provide the steps above rather than only saying "Keychain access failed."
+
 > **Latest instruction — October 29, 2026 (D81):** Finish the selected local MVP,
 > build and test autonomously, then use computer interaction to install a real
 > MCP server in the protected development test environment and verify it from a

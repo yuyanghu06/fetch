@@ -12,7 +12,34 @@ application-source or personal-state changes were made for this investigation.
 The later user instruction authorizes development signing/cache work only;
 release packaging/signing and credential migration remain excluded.
 
-## Actual observations and source
+## Current scope after the server-storage refactor
+
+The successful-key process cache now applies only to Fetch's own TLS identity and
+coding-app authorization keys. Old provider files/keys remain untouched; provider
+key reads/writes and deletion APIs are removed. New manually entered keys and
+online-client grants use direct Keychain storage, while native servers keep their
+own files. No new Keychain prompt-count result is claimed for this refactor.
+[Current storage contract](native-server-storage.md).
+
+## Earlier implementation after user approval
+
+Stable development signing and successful-key caching are implemented and tested.
+Use scripts/run-development.sh for normal development; plain cargo run still
+uses Cargo's linker-signed executable. The user created the dedicated local Code
+Signing identity in Certificate Assistant; only its public fingerprint is stored
+in development settings. Private keys remain in login Keychain; global trust and
+existing item permissions were not changed. Signature requirements match across
+two changed binaries; actual signed Fetch preparation succeeds.
+
+Successful per-ID keys now remain in zeroizing memory until Quit, with direct OS
+creation readback, failure exclusion, delete eviction and permanently closed
+shutdown. Separate server/purpose keys and encrypted file formats stay unchanged.
+Independent tests:30credential+1host+18UI cases,4launcher fixtures; native build and
+cross-source/final evaluations pass. Actual prompt counts across rebuilt native
+sessions remain unmeasured. See [implementation evidence](../../milestones/keychain-prompts/evidence.md).
+
+## Original observations and source before implementation
+
 
 - The screenshot shows a traditional login-Keychain item-access dialog for the
   label Fetch encrypted local state; it is not the native Settings confirmation.
@@ -64,7 +91,7 @@ needs isolated validation, including setting scope/concurrency/restoration and
 truthful denied/locked behavior. It must not become an automatic retry loop,
 plaintext fallback, or silent success when protected storage is unavailable.
 
-## Options awaiting a user decision
+## Original options (1 and 2 subsequently selected; 3 unselected)
 
 1. **Recommended first: stable development signing.** Give successive local
    builds the same protected developer identity and explicit app identifier.

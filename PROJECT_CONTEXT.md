@@ -15,6 +15,19 @@ No universal support, release, personal-state edits or credential migration clai
 [Current work](milestones/milestone.md). Earlier dated evidence follows and does not
 override the current ownership contract.
 
+
+November3 development Keychain prompt fix: successful individual keys are cached
+in zeroizing memory until Quit, with OS creation readback, failure exclusion and
+shutdown cleanup. After the wrapper refactor this cache applies only to Fetch
+application identity/authorization keys; old provider keys remain untouched and
+new manual/online grants use direct Keychain. Signed dev launcher uses the user-created local identity
+and fixed app identifier across builds. Actual signatures, native build and49Rust
+checks plus4launcher fixtures pass; independent review ACCEPT. Use
+./scripts/run-development.sh after Quit. Old items may need final approval; actual
+native prompt counts are unmeasured. No encrypted-format migration or release work.
+See milestones/keychain-prompts/evidence.md. AGENTS.md now requires a per-Mac
+first-launch prerequisite/signing check with concrete missing-setup instructions.
+
 # Earlier project context and dated evidence
 
 November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); Final merged64 relevant independent fixtures (12 new) and native build pass; Evaluator ACCEPT. Newer installed-row/direct-install/deletion/authentication source is preserved. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.

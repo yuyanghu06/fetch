@@ -992,3 +992,16 @@ code, old state migration/deletion, personal config edits or release work. Initi
 141 fixture checks and native build pass; final review/real package verification
 remain. Historical paused/removal/encrypted-provider paragraphs are superseded
 for this scoped work; historical evidence itself remains intact.
+
+## November 3 — Stable development identity and successful-key reuse
+
+After the prompt investigation/recommendation, user said pull in and go ahead.
+This selects a stable DEVELOPMENT signing identity/identifier and remembering
+successfully loaded individual keys until Quit. It does not select a shared
+wrapping key, encrypted-file migration, release packaging or distribution signing.
+The user completed task-specific Certificate Assistant creation; its private key
+stays in login Keychain. Only a public certificate fingerprint is stored in dev
+settings. Existing data and permissions remain; old items may need final approval
+for the new identity. Cache creation readback/failure/delete/close rules preserve
+existing storage/Settings verification. Actual native prompt count is unmeasured.
+See [the scoped design/evidence](keychain-prompts.md).

@@ -30,9 +30,8 @@ is historical and does not pause this work or reopen settled choices.
    handling before implementing them. Unknown records return clear unsupported
    results. Railway's existing extra-CLI preparation is retained; new native setup
    support needs concrete review.
-2. Finish independent review fixes/retests/integration for the scoped refactor.
-   Initial fixture/native build and confined unmodified Everything check pass;
-   three authentication recovery/reconnect issues are being fixed.
+2. Scoped refactor accepted and integrated:151 checks, separate confined original
+   Everything check and native binary build pass. Independent review fixes resolved.
 3. Actual native Keychain, Finder, Mac confirmation, provider-account login/reuse,
    coding-client and visual acceptance remain unrun. Use the protected environment
    and dedicated accounts; do not treat passing fixtures as that acceptance.
@@ -40,3 +39,12 @@ is historical and does not pause this work or reopen settled choices.
 Shared memory/history, PostgreSQL/retention, graph, extra server processes and release
 work remain deferred. No new watcher, automatic file-change restart, credential
 migration/decryption/deletion, personal config edit or release is authorized.
+
+## Separate development identity work
+
+The concurrent development setup task verified the selected stable signer and
+process cache for existing application keys. Source/fixture/signature evidence
+passes; native prompt-count/lock/denial proof remains. A shared wrapping key,
+credential migration and release work remain unselected. See
+[keychain prompts](keychain-prompts.md). This refactor does not repeat those
+separate native signature checks or claim the new Keychain flow was exercised.

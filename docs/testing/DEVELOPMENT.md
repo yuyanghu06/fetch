@@ -36,6 +36,10 @@ Release means they are disabled, as in normal `cargo run --release`. Explicit
 
 ## Launching
 
+Agents must first follow the per-Mac first-launch checklist at the top of
+[AGENTS.md](../../AGENTS.md). Missing tools or signing setup require concrete
+user setup instructions; a certificate on another Mac is not assumed available.
+
 For a stable development identity across rebuilds, use:
 
 ```sh
