@@ -6,7 +6,7 @@
 - [x] Complete 44 safe focused checks and locked offline native build.
 - [x] Complete independent staged snapshot review: ACCEPT.
 - [x] Commit dependency, connected application and discovery groups.
-- [ ] Commit remaining documentation, push origin/main and verify the remote head.
+- [x] Commit remaining documentation, push origin/main and verify the remote head (bcc1c01).
 
 ## Blender MCP install diagnosis
 
