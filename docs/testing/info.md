@@ -48,3 +48,7 @@ October31: MVP_GAPS.md now names the actual Google/Slack missing work: use
 existing package setup, keep new/renewed account access in Fetch encrypted files,
 check saved access and run real account/tool/restart tests. The global plain-
 English rule is saved; no application/source-test result changed.
+
+For first development launch on each Mac, agents follow the checklist at the top
+of AGENTS.md before the signed-launch flow in DEVELOPMENT.md. Missing local
+tools/identity require concrete user guidance; no new runtime acceptance is implied.

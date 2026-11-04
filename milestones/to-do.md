@@ -396,3 +396,9 @@ process was preserved; explicitly Quit/reopen to use the built binary.
 Development prompt fix is implemented/configured; source delivered515c7b1.
 Normal launcher build/signing passes; use it after explicit Fetch Quit.
 Task recovery autostash removed after preservation/integration checks.
+
+## November3 — per-Mac first-launch instructions
+
+- [x] Add prerequisite/signing checks and concrete missing-setup steps to AGENTS.md.
+- [x] Match launcher precedence/paths and preserve machine-local keys and user authority.
+- [x] Independent read-only review ACCEPT; documentation ready for delivery.

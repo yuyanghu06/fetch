@@ -1,5 +1,13 @@
 # Fetch milestone snapshot
 
+## November3 — first-launch checklist for each Mac
+
+Project AGENTS.md now starts with required tool/signer checks, correct launcher
+identity precedence, human certificate setup and exact user guidance when missing.
+It distinguishes reusable source from local keys/fingerprint/logins and requires
+explicit launch scope. Docs-only checks pass; no source/runtime/Keychain changes.
+Independent review ACCEPT. [Review](history/2026-11-03_20-01-44-702738-evaluator-accept-first-launch-agent-checklist.md). [Pass](history/2026-11-03_20-01-19-069965-orchestrator-document-per-mac-first-launch-checks.md).
+
 ## November 3 — full working-tree delivery
 
 User explicitly requests publishing all remaining tracked/untracked changes.

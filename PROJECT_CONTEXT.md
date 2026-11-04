@@ -7,7 +7,8 @@ and fixed app identifier across builds. Actual signatures, native build and49Rus
 checks plus4launcher fixtures pass; independent review ACCEPT. Use
 ./scripts/run-development.sh after Quit. Old items may need final approval; actual
 native prompt counts are unmeasured. No encrypted-format migration or release work.
-See milestones/keychain-prompts/evidence.md.
+See milestones/keychain-prompts/evidence.md. AGENTS.md now requires a per-Mac
+first-launch prerequisite/signing check with concrete missing-setup instructions.
 
 November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); Final merged64 relevant independent fixtures (12 new) and native build pass; Evaluator ACCEPT. Newer installed-row/direct-install/deletion/authentication source is preserved. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.
 

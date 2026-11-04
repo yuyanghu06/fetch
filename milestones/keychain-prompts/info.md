@@ -20,3 +20,9 @@ may need final human approval for the new identity.
 Limits: actual native prompt counts and lock/denial/provider/client workflows are
 unmeasured. No wrapping key, credential migration, release packaging or global trust
 change. Password entry/credential creation remains human-owned.
+
+
+First-launch documentation follow-up: AGENTS.md now directs agents to check each
+Mac's tools, local signer/fingerprint and signed build readiness, and to give
+concrete Certificate Assistant/tool installation steps when missing. It does not
+provision a second Mac or authorize secret/Keychain migration.

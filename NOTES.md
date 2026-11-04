@@ -1366,3 +1366,14 @@ passed the same requirement. Keys loaded successfully are remembered until Quit;
 49Rust cases and4launcher fixture checks pass. Existing running Fetch is preserved;
 Quit/reopen with ./scripts/run-development.sh. Existing items may need initial
 approval for the new identity. Native prompt counts remain unmeasured.
+
+
+## November 3, 2026 — First-launch instructions for other agents
+
+User requests project AGENTS.md steps for checking development launch requirements
+on other computers and explaining missing setup. Added per-Mac checks for build
+tools, launcher identity selection, local certificate/private-key presence, human
+Certificate Assistant setup, public fingerprint configuration and build-only
+signature verification. Agents must give concrete next steps, preserve existing
+state and use the signed launcher. Copying source does not provision another Mac's
+signing identity or decrypt its saved credentials. This is documentation only.
