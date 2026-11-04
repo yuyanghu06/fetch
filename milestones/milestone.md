@@ -1,5 +1,20 @@
 # Fetch milestone snapshot
 
+## Working-tree delivery — November 4 follow-up
+
+Source committed; remaining documentation ready. Commit remaining guide/records, push both commits, verify remote and record actual delivery. [Latest pass](history/2026-11-04_18-21-54-145647-orchestrator-followup-working-tree-delivery.md).
+
+## Permanent Fetch-only Codex — setup complete
+
+Permanent private client and reusable fetch_codex command are created; only Fetch is configured and apps/plugins are disabled. Independent configuration checks and portable-guide reproduction pass; Evaluator ACCEPT. Old temporary client was removed after exit. [Guide](../docs/testing/CODEX_TEST_CLIENT.md), [scope](persistent-fetch-only-codex/info.md), [completion](history/2026-11-04_18-19-46-687669-orchestrator-persistent-fetch-only-codex.md). Actual sign-in and live Fetch tool use remain untested. Next: new Terminal, fetch_codex login, fetch_codex mcp login fetch, then fetch_codex and /mcp.
+
+## Python package environments and cross-Mac guide — complete
+
+New uvx package installs delegate environments/compatible Python selection to uv, forwarding explicit Python requests and preserving private installation/account storage, package pins and supported args. Existing saved servers and standalone local scripts unchanged.32 focused checks (one new two-server preparation scenario), signed native build in 13.26 seconds, strict signature verification and whitespace checks pass; independent Evaluator ACCEPTs source and cross-Mac guide. Real Blender installation/connection remains unverified: restricted experiment stopped before uv ran, state cleaned. Fetch not relaunched. [Setup guide](../docs/testing/PYTHON_MCP_SETUP.md), [evidence](python-server-environments/evidence.md). Final passes: [tester](history/2026-11-04_18-18-52-541717-tester-verify-python-package-environments.md), [evaluator](history/2026-11-04_18-18-52-542050-evaluator-accept-python-package-environments-and-setup-guide.md), [orchestrator](history/2026-11-04_18-18-52-542214-orchestrator-integrate-python-environments-and-cross-mac-guide.md). Earlier active checkpoints below are historical for this scope; other work remains.
+
+
+
+
 Python pin origin confirmed: D06 approved private tooling and sharing compatible runtimes; the universal exact Python version came from an internal installer choice, not an explicit universal-version decision. [Pass](history/2026-11-04_18-09-35-609619-orchestrator-python-pin-origin.md). No source change.
 
 Python MCP follow-up: separate per-installation venvs already exist; the global Python 3.13.18 requirement is the problem. Codex/Claude Code document launching configured commands; uv manages uvx environments and Python requests. Using uv's own environment handling with per-server version requests is proposed only. [Research](../docs/architecture/research.md#november-4--python-mcp-environments-in-coding-clients), [pass](history/2026-11-04_18-08-39-473609-orchestrator-python-mcp-environments-research.md).

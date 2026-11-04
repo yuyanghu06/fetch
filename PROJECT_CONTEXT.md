@@ -1,3 +1,8 @@
+November 4: Python package environment change complete. uv owns new packaged-server environments/compatible Python selection; explicit requests and private per-installation state retained.32 focused checks, signed native build and independent ACCEPT. Cross-Mac guide: docs/testing/PYTHON_MCP_SETUP.md. Real Blender install/connection unverified; app not relaunched. Existing saved servers/local-script provisioning unchanged.
+
+November 4: permanent Fetch-only Codex test client created outside checkout at ~/Library/Application Support/Fetch-Development/clients/codex-test, with reusable fetch_codex login/startup command. Configuration-only checks show exactly Fetch and apps/plugins off; no actual login/tool call. Old temporary client removed after exit. [Portable setup guide](docs/testing/CODEX_TEST_CLIENT.md).
+
+
 November 4 user selection: Figma Remote must show unsupported with its app-approval reason in Fetch’s import/install screen; Figma Desktop and saved entries stay unchanged. Shared-classifier/UI change complete:19focused checks2new/native build5.38s/independentACCEPT. Native app not relaunched. See milestones/figma-remote-unsupported/info.md.
 
 November 4 Figma diagnosis: dynamic registration returns 403 before browser sign-in. Source sends client_name Fetch; Figma staff document approved-name checks, and current metadata does not advertise public identity JSON support. Approval blocking is likely; callback rejection is unproven. Research only, no source/account changes. See docs/architecture/client-identity-adoption.md.

@@ -1,4 +1,8 @@
+[PYTHON_MCP_SETUP.md](PYTHON_MCP_SETUP.md) is the cross-Mac setup guide for uv-owned Python package installations, private environment/runtime locations, explicit Python requests and current verification limits. Read it with DEVELOPMENT.md and the per-Mac signing checklist.
+
 # User-controlled verification
+
+[CODEX_TEST_CLIENT.md](CODEX_TEST_CLIENT.md) explains how each Mac creates and reuses a permanent Fetch-only Codex client. The current Mac has the private profile and `fetch_codex` launcher; configuration-only checks pass. Actual sign-in and Fetch calls remain untested.
 
 D81 starts actual local implementation and verification. See
 [LOCAL_MVP_RUN.md](LOCAL_MVP_RUN.md) for current work/evidence and protected
@@ -17,7 +21,7 @@ later stage. This assessment adds no runtime evidence or execution authority.
 
 [DEVELOPMENT.md](DEVELOPMENT.md) documents current-home-relative development and
 release paths, importing normal Codex definitions, and a fresh test Codex client
-sharing one Fetch instance with the main client. No profile/login was created.
+sharing one Fetch instance with the main client. Its older proposed profile example is superseded by CODEX_TEST_CLIENT.md; no actual login is claimed.
 
 [FIRST_SESSION.md](FIRST_SESSION.md) records the October 28 follow-up: the
 existing short-test requirements, native launch command and proposed check order.

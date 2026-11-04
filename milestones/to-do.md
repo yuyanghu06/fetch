@@ -1,5 +1,28 @@
 # Fetch current work
 
+## Working-tree delivery — November 4 follow-up
+
+Source committed; remaining documentation ready. Commit remaining guide/records, push both commits, verify remote and record actual delivery. [Latest pass](history/2026-11-04_18-21-54-145647-orchestrator-followup-working-tree-delivery.md).
+
+## Permanent Fetch-only Codex — setup complete
+
+- [x] Create private permanent client/source/config and reusable fetch_codex command.
+- [x] Remove the exited earlier temporary client after confirming no open files.
+- [x] Independently verify only Fetch configured, apps/plugins disabled, login forwarding and separate saved state.
+- [x] Document fresh-Mac setup and independently reproduce it in disposable HOME; no-overwrite check passes.
+- [x] Independent Evaluator ACCEPT and final scoped whitespace check.
+- [ ] User follow-up: fresh OpenAI/Fetch sign-in and actual tool use; no live acceptance claimed by this setup pass.
+
+## Python package server environments — complete
+
+- [x] Confirm selected scope; independent uv source research and bounded plan complete.
+- [x] Preserve explicit Python request in shared uvx import/direct capture.
+- [x] Delegate new package installation to uv with per-installation tool folders; retain legacy environments.
+- [x] Document cross-Mac setup and link AGENTS/README/development entry points.
+- [ ] Observe real Blender package installation/connection in an authorized isolated environment; attempted restricted experiment did not run.
+- [x] 32 focused checks, signed native build/strict verification, independent source/guide review and final evidence.
+
+
 ## Working-tree delivery
 
 - [x] Inspect current diff and accept independent four-commit split.
@@ -13,10 +36,10 @@
 - [x] Check original decision/installer history: private compatible runtimes were selected; forcing every server to 3.13.18 was an internal implementation choice.
 
 - [x] Compare official Codex/Claude Code/uv behavior; confirm Fetch already creates one venv per Python installation.
-- [ ] Settle per-server Python selection and use of uv-owned environments before replacing the global Python pin; recommendation only.
+- [x] User selected uv-owned private package environments and compatible Python selection; implementation tracked above.
 
 - [x] Inspect saved development logs, Python preparation source and bundled uv download catalog; identify unsupported Python 3.13.18 pin (available through 3.13.17).
-- [ ] Repair the Python pin and preserve real installation errors when repair is requested; retry actual installation afterward. Original failure text was discarded, so the precise original error remains unobserved.
+- [ ] Preserve real installation errors in a separately scoped change. The proposed patch-only Python-pin repair is superseded by the selected uv-owned package installation above; original failure text remains unobserved.
 
 ## Figma Remote unsupported import
 

@@ -1,3 +1,5 @@
+For Python package MCP servers, also read [Python MCP setup on another Mac](PYTHON_MCP_SETUP.md). Fetch provisions uv and compatible Python privately; supported uvx installs do not require global Python/uv or a universal Python3.13.18 pin. The guide covers import, version requests, state locations, fresh-Mac setup and verification limits.
+
 # Development state and a fresh Codex client
 
 October 28, 2026. The user selected separate development/final-build state,
@@ -113,6 +115,8 @@ before relying on these defaults; closing its window only backgrounds it. Never
 stop another service automatically to clear a port conflict.
 
 ## Global import and two Codex clients
+
+For the permanent Fetch-only test client, follow [CODEX_TEST_CLIENT.md](CODEX_TEST_CLIENT.md). It includes fresh setup on another Mac, the reusable `fetch_codex` command, separate logins, disabled apps/plugins and configuration checks. This newer guide supersedes the older proposed test-profile path and bare launch example below for this dedicated client.
 
 1. Launch development Fetch with its separate root while leaving discovery on the
    normal current home/global Codex configuration. By default this is

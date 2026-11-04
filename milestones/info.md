@@ -1,3 +1,7 @@
+[Persistent Fetch-only Codex](persistent-fetch-only-codex/info.md) records the permanent separate test client and its checks.
+
+[Python server environments](python-server-environments/info.md) tracks delegating private package/Python preparation to uv and removing the universal package Python pin.
+
 [Working-tree delivery](working-tree-delivery/info.md) records the focused commit split, safe checks and push confirmation.
 
 [Figma Remote unsupported import](figma-remote-unsupported/info.md) tracks the user-selected disabled import row, its reason and shared fresh-install rejection, while preserving Desktop and existing saved instances.

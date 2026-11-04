@@ -1864,3 +1864,18 @@ The supplied logs fail at app registration, before browser sign-in. Current sour
 ## November 4, 2026 — Mark Figma Remote unsupported
 
 User explicitly selected the import/install screen, rather than notes only. Mark the official remote endpoint unsupported with its app-approval reason; preserve the local desktop version and installed records. [Scope](milestones/figma-remote-unsupported/info.md). Implementation complete;19focused checks (2new), native build and independent review pass. Native app not relaunched.
+
+
+## November 4 — Use uv for Python package server environments
+
+User asks to implement normal uv environment/version handling after Blender installation exposed Fetch's incompatible fixed Python pin. Keep per-server package/account separation, honor explicit Python launch requests, and let uv choose compatible Python without forcing3.13.18. [Decision](docs/architecture/decisions.md#november-4--delegate-python-package-server-environments-to-uv), [scope](milestones/python-server-environments/info.md). Implementation/checks pending.
+
+
+## November 4, 2026 — Permanent Fetch-only Codex test client
+
+User selected a permanent separate client under ~/Library/Application Support/Fetch-Development/clients/codex-test and requested the same command for login/startup, old temporary-client cleanup, and setup instructions for other Macs. Created private source/config/state/workspace and launch.command plus ~/.local/bin/fetch_codex. Only Fetch is configured, apps/plugins/remote plugins disabled, file-based logins and no shared daemon. Independent configuration checks pass; no login or real MCP call performed. Old /private/tmp/fetch-codex.NtT334 exited itself and was removed after checking no files were open. Normal client settings and existing services preserved. [Portable guide](docs/testing/CODEX_TEST_CLIENT.md).
+
+
+## November 4 — Python environment change and cross-Mac setup completed
+
+User additionally requests documentation so other computers know how to set it up. [Setup guide](docs/testing/PYTHON_MCP_SETUP.md) is linked from AGENTS/README/development docs and covers fresh local signing/tool setup, automatic private uv/Python downloads, explicit Python requests and no automatic state/key migration. Scoped implementation passes32focused checks and signed native build; independent Evaluator ACCEPTs code and guide. Actual Blender package/connection acceptance remains unrun; the restricted experiment stopped before execution and was cleaned. [Evidence](milestones/python-server-environments/evidence.md). Explicit Quit/relaunch needed to load the change.
