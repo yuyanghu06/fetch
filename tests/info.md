@@ -44,3 +44,8 @@ verification_tests.rs, sharing the existing disposable auth harness. Final
 35 targeted manager and110 combined cases pass, along with native compilation.
 See milestones/generic-authentication/evidence.md for commands and review/retest
 history. No live provider/native/MCP/client acceptance follows.
+
+
+## November 3 automatic discovery
+
+Seven new backend cases cover default discovery without a path, home/.codex folders, exact-file overrides, partial failures, empty/missing/symlinked folders, injected CODEX_HOME defaults and permission checks. Fixtures confirm known paths only, secret suppression and unchanged source bytes. Three new Desktop message cases in src/ui/auth_tests.rs cover first-visit discovery, explicit override/default reset and incompatible-operation guards. These 10 new cases and all 47 relevant backend/import/UI cases pass; native build passes. Desktop Tasks are dropped without execution; no actual native interaction or personal configuration is used.

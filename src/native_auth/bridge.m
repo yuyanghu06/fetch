@@ -16,10 +16,10 @@ void fetch_choose_config_file(FetchConfigFileCallback callback, void *context) {
             if (fetch_config_file_panel || !parent) { callback(context, NULL, 2); return; }
             NSOpenPanel *panel = [NSOpenPanel openPanel];
             fetch_config_file_panel = panel;
-            panel.title = @"Choose an MCP configuration file";
+            panel.title = @"Choose an MCP configuration file or base folder";
             panel.prompt = @"Choose";
             panel.canChooseFiles = YES;
-            panel.canChooseDirectories = NO;
+            panel.canChooseDirectories = YES;
             panel.allowsMultipleSelection = NO;
             panel.showsHiddenFiles = YES;
             panel.directoryURL = [NSFileManager defaultManager].homeDirectoryForCurrentUser;

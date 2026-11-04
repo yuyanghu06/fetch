@@ -49,6 +49,8 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         tools: serde_json::Value::Null,
         selected: BTreeSet::new(),
         config_path: String::new(),
+        custom_config: false,
+        discovery_started: false,
         picker_window: None,
         selected_server: String::new(),
         config: "{}".into(),
@@ -73,6 +75,59 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         auth_requests: Requests::default(),
     };
     (directory, desktop)
+}
+
+#[tokio::test]
+async fn desktop_install_first_visit_discovers_defaults_once_without_a_path() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    assert!(!desktop.custom_config);
+    assert!(!desktop.discovery_started);
+    drop(desktop.update(Message::Page(Page::Install)));
+    assert!(desktop.discovery_started);
+    assert!(desktop.busy);
+    assert!(desktop.config_path.is_empty());
+    assert!(desktop.job.is_none());
+    drop(desktop.update(Message::Discovery(Ok(json!({"configs":[],"next_steps":[]})))));
+    assert!(!desktop.busy);
+    drop(desktop.update(Message::Page(Page::Servers)));
+    drop(desktop.update(Message::Page(Page::Install)));
+    assert!(!desktop.busy, "revisiting Install must not replace an existing discovery");
+}
+
+#[tokio::test]
+async fn desktop_custom_location_is_explicit_and_default_reset_discovers_without_it() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    drop(desktop.update(Message::CustomConfig(true)));
+    assert!(desktop.custom_config);
+    assert!(!desktop.discovery_started);
+    assert!(!desktop.busy);
+    drop(desktop.update(Message::ConfigPath("/fixture/another-home/.codex".into())));
+    drop(desktop.update(Message::Discover));
+    assert!(desktop.discovery_started);
+    assert!(desktop.busy);
+    assert_eq!(desktop.config_path, "/fixture/another-home/.codex");
+    drop(desktop.update(Message::Discovery(Ok(json!({"configs":[],"next_steps":[]})))));
+    drop(desktop.update(Message::CustomConfig(false)));
+    assert!(!desktop.custom_config);
+    assert!(desktop.config_path.is_empty());
+    assert!(desktop.discovery_started);
+    assert!(desktop.busy, "returning to defaults must refresh the normal locations");
+}
+
+#[tokio::test]
+async fn desktop_automatic_discovery_does_not_start_during_an_incompatible_operation() {
+    for blocked in ["busy", "picker", "installation"] {
+        let (_directory, mut desktop) = desktop_fixture().await;
+        match blocked {
+            "busy" => desktop.busy = true,
+            "picker" => desktop.picker_window = desktop.window,
+            "installation" => desktop.job = Some("fixture-installation".into()),
+            _ => unreachable!(),
+        }
+        drop(desktop.update(Message::Page(Page::Install)));
+        assert!(!desktop.discovery_started, "must not start during {blocked}");
+        assert!(desktop.config_path.is_empty());
+    }
 }
 
 #[tokio::test]

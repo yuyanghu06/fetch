@@ -820,3 +820,10 @@ and ownership/lifecycle constraints. This approves the bounded internal refactor
 it adds no public verifier-URL/settings API, persisted schema migration, deletion/
 non-auth success exception or automatic unknown-provider/wrapper login. Existing
 provider facts and precise unsupported outcomes remain explicit.
+
+
+## November 3, 2026 — Find configuration files automatically
+
+The user requested a base-folder install flow without requiring users to locate each Claude/Codex config unless they explicitly choose to. Fetch keeps discovery and selected-server installation separate. Opening Install runs the existing read-only discovery API automatically; no path uses existing home/CODEX_HOME defaults. Optional config_path also accepts a home folder or `.codex` folder, resolving only known paths as described in the API contract. Explicit files retain single-file behavior. No recursive scan of sessions, authentication files, plugins or caches is selected. Source credentials are discarded and files are never modified.
+
+The user clarified the base folder they meant is `.codex` itself. This case reads its `config.toml` directly; the folder's parent supplies the already-selected usual Claude/OpenCode locations. No user file choice is required for ordinary default discovery.

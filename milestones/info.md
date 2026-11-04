@@ -60,3 +60,6 @@ required for the parent local working MVP.
 [Generic authentication](generic-authentication/info.md) implements D82: imported
 inputs and trusted descriptions use shared storage/delivery/verification code.
 It follows the completed parallel-request fix and retains its acceptance tests.
+
+
+[Automatic config discovery](automatic-config-discovery/info.md) records the November 3 scoped folder/API and Install-page change. Default discovery no longer requires choosing each config file; explicit file/folder overrides remain optional. See the snapshot for final checks.

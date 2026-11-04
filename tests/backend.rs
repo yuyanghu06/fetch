@@ -533,3 +533,167 @@ async fn application_method_errors_keep_the_common_json_guidance_field() {
     assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
     assert!(value(response).await["next_steps"].is_array());
 }
+
+fn discovery_uri(path: &Path) -> String {
+    let query = url::form_urlencoded::Serializer::new(String::new())
+        .append_pair("config_path", path.to_str().unwrap())
+        .finish();
+    format!("/api/v1/setup/discovery?{query}")
+}
+
+fn write_discovery_home(home: &Path) -> Vec<(std::path::PathBuf, Vec<u8>)> {
+    let files = [
+        (".claude.json", r#"{"mcpServers":{"claude":{"command":"npx","args":["fixture-claude"],"env":{"API_KEY":"private-folder-secret"}}}}"#),
+        (".codex/config.toml", "[mcp_servers.codex]\ncommand = \"uvx\"\nargs = [\"fixture-codex\"]\n"),
+        (".config/opencode/opencode.json", r#"{"mcp":{"opencode":{"type":"local","command":["npx","fixture-opencode"]}}}"#),
+    ];
+    files.into_iter().map(|(relative, contents)| {
+        let path = home.join(relative);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, contents).unwrap();
+        (path, contents.as_bytes().to_vec())
+    }).collect()
+}
+
+#[tokio::test]
+async fn discovery_finds_default_configs_without_a_user_supplied_path() {
+    let (directory, _, app) = fixture();
+    let home = directory.path().join("fixture-home");
+    let originals = write_discovery_home(&home);
+    let response = app.oneshot(request("/api/v1/setup/discovery")).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = value(response).await;
+    let groups = body["configs"].as_array().unwrap();
+    assert_eq!(groups.len(), 3);
+    for (group, (path, original)) in groups.iter().zip(originals) {
+        assert_eq!(group["path"], path.to_str().unwrap());
+        assert_eq!(group["status"], "ok");
+        assert_eq!(group["servers"][0]["status"], "supported");
+        assert_eq!(std::fs::read(path).unwrap(), original);
+    }
+    assert!(!body.to_string().contains("private-folder-secret"));
+}
+
+#[tokio::test]
+async fn discovery_accepts_home_or_codex_folder_and_returns_actual_file_paths() {
+    let (directory, _, app) = fixture();
+    let home = directory.path().join("chosen-home");
+    let originals = write_discovery_home(&home);
+    // Extra configurations inside auth/session directories must never become imports.
+    let ignored = home.join(".codex/sessions/another/config.toml");
+    std::fs::create_dir_all(ignored.parent().unwrap()).unwrap();
+    std::fs::write(&ignored, "[mcp_servers.recursive_private]\ncommand='npx'\nargs=['recursive-fixture']").unwrap();
+    std::fs::write(home.join(".codex/auth.json"), r#"{"mcpServers":{"private_auth":{"command":"npx","args":["private-auth-fixture"]}}}"#).unwrap();
+    for base in [&home, &home.join(".codex")] {
+        let response = app.clone().oneshot(request(&discovery_uri(base))).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{}", base.display());
+        let body = value(response).await;
+        let groups = body["configs"].as_array().unwrap();
+        assert_eq!(groups.len(), 3);
+        for (group, (path, original)) in groups.iter().zip(&originals) {
+            assert_eq!(group["path"], path.to_str().unwrap());
+            assert_eq!(group["status"], "ok");
+            assert_eq!(group["servers"][0]["status"], "supported");
+            assert_eq!(std::fs::read(path).unwrap(), *original);
+        }
+        let result = body.to_string();
+        for forbidden in ["private-folder-secret", "recursive_private", "private_auth", "private-auth-fixture"] {
+            assert!(!result.contains(forbidden), "unexpected {forbidden}");
+        }
+    }
+}
+
+#[tokio::test]
+async fn discovery_explicit_file_overrides_default_and_neighboring_sources() {
+    let (directory, _, app) = fixture();
+    write_discovery_home(&directory.path().join("fixture-home"));
+    let chosen = directory.path().join("chosen-home");
+    write_discovery_home(&chosen);
+    let codex = chosen.join(".codex/config.toml");
+    let response = app.oneshot(request(&discovery_uri(&codex))).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = value(response).await;
+    assert_eq!(body["configs"].as_array().unwrap().len(), 1);
+    assert_eq!(body["configs"][0]["path"], codex.to_str().unwrap());
+    assert_eq!(body["configs"][0]["harness"], "codex");
+    assert_eq!(body["configs"][0]["servers"][0]["name"], "codex");
+}
+
+#[tokio::test]
+async fn discovery_folder_retains_healthy_sources_when_a_known_file_is_malformed() {
+    let (directory, _, app) = fixture();
+    let home = directory.path().join("chosen-home");
+    write_discovery_home(&home);
+    std::fs::write(home.join(".claude.json"), "private-malformed-source").unwrap();
+    let response = app.oneshot(request(&discovery_uri(&home.join(".codex")))).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = value(response).await;
+    let groups = body["configs"].as_array().unwrap();
+    assert_eq!(groups.len(), 3);
+    assert_eq!(groups[0]["status"], "failed");
+    assert_eq!(groups[0]["error"]["code"], "INVALID_CONFIG_FILE");
+    assert_eq!(groups[1]["servers"][0]["name"], "codex");
+    assert_eq!(groups[2]["servers"][0]["name"], "opencode");
+    assert!(body["next_steps"].as_array().unwrap().iter().any(|step| step["action"] == "review_discovery_warnings"));
+    assert!(!body.to_string().contains("private-malformed-source"));
+}
+
+#[tokio::test]
+async fn discovery_folder_handles_empty_missing_and_symlinked_locations_safely() {
+    let (directory, _, app) = fixture();
+    let empty = directory.path().join("empty-home");
+    std::fs::create_dir(&empty).unwrap();
+    let response = app.clone().oneshot(request(&discovery_uri(&empty))).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(value(response).await["configs"], json!([]));
+
+    let missing = directory.path().join("missing-home");
+    let linked = directory.path().join("linked-home");
+    std::os::unix::fs::symlink(&empty, &linked).unwrap();
+    let linked_with_separator = std::path::PathBuf::from(format!("{}/", linked.display()));
+    for (path, status, code) in [
+        (missing, StatusCode::NOT_FOUND, "CONFIG_NOT_FOUND"),
+        (linked, StatusCode::UNPROCESSABLE_ENTITY, "CONFIG_UNREADABLE"),
+        (linked_with_separator, StatusCode::UNPROCESSABLE_ENTITY, "CONFIG_UNREADABLE"),
+    ] {
+        let response = app.clone().oneshot(request(&discovery_uri(&path))).await.unwrap();
+        assert_eq!(response.status(), status);
+        let body = value(response).await;
+        assert_eq!(body["error"]["code"], code);
+        assert_eq!(body["configs"], json!([]));
+        assert!(body["next_steps"].is_array());
+    }
+}
+
+#[tokio::test]
+async fn discovery_folder_permission_is_checked_before_exposing_file_existence() {
+    let directory = tempfile::tempdir().unwrap();
+    let state = state(directory.path(), Arc::new(FixtureAuthority { manage: false }));
+    let app = router(state);
+    let home = directory.path().join("private-home");
+    write_discovery_home(&home);
+    for path in [&home, &directory.path().join("absent-home")] {
+        let response = app.clone().oneshot(request(&discovery_uri(path))).await.unwrap();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+        let body = value(response).await;
+        assert_eq!(body["error"]["code"], "FORBIDDEN");
+        assert!(!body.to_string().contains("private-home"));
+    }
+}
+
+#[test]
+fn discovery_default_uses_injected_codex_home_while_folder_override_is_self_contained() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join("fixture-home");
+    write_discovery_home(&home);
+    let custom_codex = directory.path().join("custom-codex-home");
+    std::fs::create_dir(&custom_codex).unwrap();
+    std::fs::write(custom_codex.join("config.toml"), "[mcp_servers.custom]\ncommand='uvx'\nargs=['fixture-custom']").unwrap();
+    let discovery = DiscoveryService::new(home.clone(), Some(custom_codex.clone()));
+    let default = discovery.scan(None).unwrap();
+    assert_eq!(default["configs"][1]["path"], custom_codex.join("config.toml").to_str().unwrap());
+    assert_eq!(default["configs"][1]["servers"][0]["name"], "custom");
+    let explicit = discovery.scan(Some(&home)).unwrap();
+    assert_eq!(explicit["configs"][1]["path"], home.join(".codex/config.toml").to_str().unwrap());
+    assert_eq!(explicit["configs"][1]["servers"][0]["name"], "codex");
+}

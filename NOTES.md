@@ -1144,3 +1144,10 @@ the count. Railway sign-in/logging source already compiles, and the credential
 editor is already shared. Its actual login remains untested. The 153-state Figma
 index is source/reference evidence; mapping the newer separate Railway callback
 renderer is a recorded follow-up rather than assumed complete visual coverage.
+
+
+## November 3, 2026 — Find configs without manual file selection
+
+The user wants the install flow to find Claude and Codex configuration files from a base folder by default, with a specific file selected only when explicitly requested. Default discovery already exists; the page currently requires clicking Discover. The scoped update will call it on first opening Install, hide the custom-location controls until requested, and accept home/.codex folders through the same discovery API. Install still uses chosen servers and returned file paths internally.
+
+Follow-up: the user clarified they meant the `.codex` folder itself. Direct `.codex` selection is supported and tested. Scoped source/fixture work passed 47 relevant cases (10 new), native build and independent evaluation. Actual native picker/window interaction and Figma refresh remain pending; wider MVP work is unchanged.

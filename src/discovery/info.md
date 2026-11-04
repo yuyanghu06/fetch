@@ -25,3 +25,8 @@ remote profile alongside the other documented roots and MCP/SSE paths. This
 allows the official remote import without rewriting its destination. Rejection
 of credential-bearing URLs, fragments, queries outside the narrow Hugging Face
 profile and unknown endpoints remains. No connection was made to inspect it.
+
+
+## November 3 — optional base folders
+
+No supplied path keeps the existing global scan, including a valid inherited CODEX_HOME. Optional config_path now accepts a home folder, a `.codex` folder or a single file. Home folders supply their standard children; `.codex` supplies its config.toml and its parent supplies the usual Claude/OpenCode paths. Explicit folders ignore inherited CODEX_HOME. Only known filenames are read; there is no recursive scan. Missing candidate files are skipped and failed candidates are shown beside healthy groups. Directly supplied symlinks are rejected, including directory links with trailing separators. Existing finite reads, no-follow file opens and secret suppression remain.

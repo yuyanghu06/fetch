@@ -11,3 +11,6 @@ reusing the existing AppKit linkage. Its Open panel runs on the main queue and
 returns a selected path or cancellation asynchronously; it does not read config
 contents or create authentication authority. UI lifecycle handling cancels or
 ignores stale selections when the window closes.
+
+
+November 3: the configuration picker permits a single file or directory and continues to show hidden files/folders. It returns only the path; shared backend discovery reads the selected file or known base-folder config paths after Refresh. No credential or native owner-confirmation behavior changed.

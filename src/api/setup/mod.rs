@@ -43,7 +43,7 @@ pub async fn discovery(State(state): State<Arc<AppState>>, request: Request) -> 
             return application_error(
                 StatusCode::BAD_REQUEST,
                 "INVALID_REQUEST",
-                "Use one absolute config_path or no query parameters.",
+                "Use one absolute config_path for a home folder, .codex folder or configuration file, or omit it for automatic discovery.",
                 Some("discovery"),
             );
         }

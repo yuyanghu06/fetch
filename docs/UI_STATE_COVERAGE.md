@@ -324,3 +324,8 @@ be stored/supplied while a trusted verification description is missing. Existing
 Unknown inline phase/guidance rendering is reused; no new visual branch or Figma
 frame is claimed. Generic input names remain dynamic data in the shared editor.
 Actual native/authentication visual acceptance remains unrun.
+
+
+## November 3 Install discovery changes
+
+The current source starts default discovery on first opening Install MCPs. Default mode hides the path input behind Use a different file or folder…. Explicit mode reveals an absolute file/folder input, Choose file or folder… and Use default locations. Refresh servers replaces Discover servers; an empty in-flight read says Looking for server definitions…. The native picker permits one file or directory and keeps hidden files visible. Existing list scrolling, selection and install footer remain. The 153 Figma specimens predate these text/control changes; no new Figma frames or native screenshots are claimed. Independent Desktop message fixtures and backend fixtures cover behavior; native appearance, picker interaction and updated Figma specimens remain pending.

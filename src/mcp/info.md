@@ -5,3 +5,6 @@ This module exposes the one protected `/mcp` endpoint. It keeps legacy initializ
 Fetch's eight management tools call a `ManagementBackend` supplied by the application, so installation, authentication, configuration and restart keep the same backend rules as HTTP and Settings. There is no manual credential writer or provider model in this module. Source is unverified; the user controls when any checks or tests start.
 
 D79 corrected the gateway's Rust match-guard syntax and unused imports. The native binary compiles with the resolved lockfile; no MCP messages, sessions or native/runtime behavior were exercised. One unread decoded-error field warning remains.
+
+
+November 3: fetch__discover_servers describes its optional config_path as a file or home/.codex base folder. The unchanged invocation handler uses the shared discovery service, so agents and native HTTP callers resolve the same known paths. fetch__install_servers still takes explicitly selected config_path/server_name pairs.

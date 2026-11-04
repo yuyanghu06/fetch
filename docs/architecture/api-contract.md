@@ -54,8 +54,8 @@ GET /api/v1/setup/discovery?config_path=/Users/example/.codex/config.toml
 
 ### Input and behavior
 
-- `config_path` is optional and identifies a configuration file on the Mac running Fetch.
-- When supplied, inspect that file.
+- `config_path` is optional and identifies a configuration file or base folder on the Mac running Fetch.
+- When supplied as a file, inspect only that file. A home folder uses standard config paths inside it; a `.codex` folder uses `config.toml` inside it and the usual Claude/OpenCode paths in its parent.
 - When omitted, inspect the current user's normal global Claude Code, Codex, and OpenCode configurations.
 - Read/parse configuration; do not install or start servers, modify the source configuration, or copy credentials as part of this operation.
 - Discover package identity/version requests and launch information for local scripts, plus credential-variable names where they can be identified without exposing values.
@@ -131,7 +131,7 @@ GET /api/v1/setup/discovery?config_path=/absolute/file
 
 #### Approved input, callers and default candidates
 
-Allow Fetch Settings and authenticated setup/management clients with server-management permission. Authorize before exposing any file existence/content metadata. No request body is used; reject a non-empty body without echoing it. Accept at most one non-empty/non-whitespace absolute `config_path`; reject relative paths, NUL, repeated parameters and unknown query parameters with `400 INVALID_REQUEST`. No shell, tilde or environment expansion for supplied paths. Explicit inputs select exactly one local regular file, not a directory/glob, URL or recursive scan.
+Allow Fetch Settings and authenticated setup/management clients with server-management permission. Authorize before exposing any file existence/content metadata. No request body is used; reject a non-empty body without echoing it. Accept at most one non-empty/non-whitespace absolute `config_path`; reject relative paths, NUL, repeated parameters and unknown query parameters with `400 INVALID_REQUEST`. No shell, tilde or environment expansion for supplied paths. November 3 amendment: explicit inputs select one local regular file or a base folder. A folder named `.codex` supplies `config.toml` and its parent supplies `.claude.json` and `.config/opencode/opencode.json` / `opencode.jsonc`; another folder is treated as a home root with the standard paths below. Explicit folder selection ignores inherited CODEX_HOME. Missing candidate files are omitted, failed candidates remain grouped beside healthy sources. Directly supplied symlinks are rejected. No glob, URL or recursive scan is accepted. A missing explicit path returns CONFIG_NOT_FOUND; an unreadable path returns CONFIG_UNREADABLE.
 
 Without a path, inspect the following candidates in this order, resolving built-in `~` from the current user's home directory:
 
@@ -233,7 +233,7 @@ Request errors return `status: failed`, `error: {code,message}`, `configs: []` a
 
 Default-source failures use the same safe source codes inside HTTP-200 source groups, retaining healthy sources. No raw filesystem/parser/provider diagnostics or metadata before authorization. Return `Cache-Control: no-store`. No server/installation IDs or discovery snapshot tokens, package/runtime downloads, ordinary/helper process starts, auth/provider requests, source writes, credential migration or native-settings standardization occur.
 
-Agent guidance mirrors the structured UI selection flow under D32/D33: `agent/review_discovery_results` reviews eligible rows and user choices then uses existing installation POST; `user/review_discovery_warnings` relays needed source corrections without soliciting secrets; `user/choose_config_file` handles empty/blocked-only results by selecting a supported explicit file. Always return next_steps, with [] if no agent follow-up is needed. Do not guide an empty POST or silently opt into source-disabled rows. The UI uses fields/status/errors/warnings/default flags and its own built-in controls, never this prose.
+Agent guidance mirrors the structured UI selection flow under D32/D33: `agent/review_discovery_results` reviews eligible rows and user choices then uses existing installation POST; `user/review_discovery_warnings` relays needed source corrections without soliciting secrets; `user/choose_config_file` handles empty/blocked-only results by optionally selecting a supported file/base folder or correcting source definitions. Always return next_steps, with [] if no agent follow-up is needed. Do not guide an empty POST or silently opt into source-disabled rows. The UI uses fields/status/errors/warnings/default flags and its own built-in controls, never this prose.
 
 D34 remains: this read does not freeze definitions. New/failed installation items read the current definition when their turn starts; already successful Fetch associations retain saved state. No unchanged-since-discovery guarantee is added.
 

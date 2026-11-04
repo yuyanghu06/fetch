@@ -73,3 +73,8 @@ request ownership, and old completion/status-read messages cannot replace newer
 results. The existing shared editor, masking, API calls and layout remain.
 Independent tests include helper/Flow states and use a test-only host to exercise
 Desktop messages without opening a window; actual native appearance is separate.
+
+
+## November 3 — automatic discovery and optional overrides
+
+First opening Install MCPs invokes discovery without requiring a file selection. Refresh servers repeats it. Default locations are used until the user chooses Use a different file or folder…. That action reveals the custom input and native file/folder picker; choosing a path alone does not read or install anything. Refresh applies the explicit override; Use default locations clears it and reloads defaults. The fixed install footer, selection rules and shared controls remain. Discovery is blocked while a picker, installation or incompatible busy operation is active. Source/fixture checks and native compilation are separate from actual picker/window evidence.

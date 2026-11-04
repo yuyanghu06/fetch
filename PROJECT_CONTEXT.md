@@ -1,5 +1,7 @@
 # Fetch — current project context
 
+November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); 47 relevant independent fixtures and native build pass; Evaluator ACCEPT. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.
+
 October31 clarification: Google and Slack already have their own sign-in/setup
 code. Fetch's missing work is using that setup while saving updated account
 access in its encrypted files and checking saved access before success. Google's

@@ -1,5 +1,13 @@
 # Fetch current work
 
+## Automatic config discovery — November 3
+
+- [x] Inspect existing default discovery and obtain independent bounded plan.
+- [x] Implement optional home/.codex folder or file paths and automatic Install-page discovery.
+- [x] Run independent backend/UI fixture checks and native build; 47 relevant cases (10 new) pass, native build passes, independent Evaluator ACCEPT.
+- [x] Record final test/evaluation evidence for the scoped change.
+- [ ] Check actual native picker/Install appearance in the protected environment; fixture checks alone do not establish visual acceptance.
+
 - [x] Save/push accepted D81 scoped source/tests/evidence through f6563b3; remote/local commit matched. Native authentication, policy choices and real server/client proof remain pending.
 
 ## Active local MVP completion — D81

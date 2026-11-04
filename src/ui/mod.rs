@@ -24,7 +24,7 @@ enum AuthAction { Authenticate, InlineCredential, SettingsCredential }
 #[derive(Clone)]
 enum Message {
     Page(Page), Opened(window::Id), Closed(window::Id), Tick, Show, Quit, Stopped,
-    Refresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
+    Refresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), CustomConfig(bool), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
     Select(String,String,bool), SelectAllServers, Install, Installed(Result<Value,String>), Progress(Result<Value,String>),
     Inspect(String), Tools(Result<Value,String>), Authenticate(String), Restart(String,bool),
     AuthFinished(u64,String,AuthAction,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String), AuthDismiss(String),
@@ -36,7 +36,7 @@ impl std::fmt::Debug for Message { fn fmt(&self,f:&mut std::fmt::Formatter<'_>)-
 struct Desktop {
     host: Arc<ApplicationHost>, client: Option<NativeClient>, session: Option<Arc<NativeSettingsSession>>, window:Option<window::Id>,
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
-    config_path:String, picker_window:Option<window::Id>, selected_server:String, config:String, timeout:String, concurrency:String, advanced:bool, secret_name:String, secret_value:String,
+    config_path:String, custom_config:bool, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, config:String, timeout:String, concurrency:String, advanced:bool, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
     busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, cleanup_confirmed:bool, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
     authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
@@ -46,7 +46,7 @@ impl Desktop {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
         let (id,open)=window::open(window::Settings { size:iced::Size::new(1080.0,760.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default() });
-        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),picker_window:None,selected_server:String::new(),config:"{}".into(),timeout:"120".into(),concurrency:"1".into(),advanced:false,secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default()};
+        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),custom_config:false,discovery_started:false,picker_window:None,selected_server:String::new(),config:"{}".into(),timeout:"120".into(),concurrency:"1".into(),advanced:false,secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default()};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
         (state,Task::batch([open.map(Message::Opened),read]))
@@ -123,7 +123,7 @@ impl Desktop {
     }
     fn update(&mut self,message:Message)->Task<Message> {
         match message {
-            Message::Page(page)=>{if self.page!=page{self.clear_secrets();}self.page=page;self.error=None;}
+            Message::Page(page)=>{if self.page!=page{self.clear_secrets();}self.page=page;self.error=None;if page==Page::Install&&!self.discovery_started{return self.update(Message::Discover);}}
             Message::Opened(id)=>{self.window=Some(id);crate::native_auth::install_app_menu();}
             Message::Closed(id)=>{if self.window==Some(id){self.window=None;self.picker_window=None;file_picker::cancel();self.host.native.invalidate_all();self.client=None;self.session=None;self.close_authentication();}}
             Message::Show=>{
@@ -150,6 +150,11 @@ impl Desktop {
                 }}
             }
             Message::ConfigPath(value)=>self.config_path=value,
+            Message::CustomConfig(custom)=>{
+                if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
+                self.custom_config=custom;
+                if !custom{self.config_path.clear();self.discovery_started=false;return self.update(Message::Discover);}
+            }
             Message::ChooseConfigFile=>{
                 if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
                 let Some(id)=self.window else{return Task::none();};
@@ -161,7 +166,7 @@ impl Desktop {
                 self.picker_window=None;
                 match result{Ok(Some(path))=>self.config_path=path,Ok(None)=>{},Err(error)=>self.error=Some(error)}
             }
-            Message::Discover=>{if self.busy||self.picker_window.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;let path=self.config_path.clone();return Task::perform(async move{client.discovery(&path).await},Message::Discovery);}}
+            Message::Discover=>{if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;self.discovery_started=true;let path=if self.custom_config{self.config_path.clone()}else{String::new()};return Task::perform(async move{client.discovery(&path).await},Message::Discovery);}}
             Message::Discovery(result)=>{self.busy=false;match result {Ok(value)=>{self.selected.clear();if let Some(groups)=value["configs"].as_array(){for group in groups {if let Some(rows)=group["servers"].as_array(){for item in rows{if item["selected_by_default"]==true{if let(Some(path),Some(name))=(group["path"].as_str(),item["name"].as_str()){self.selected.insert((path.into(),name.into()));}}}}}}self.discovery=value;},Err(error)=>self.error=Some(error)}}
             Message::Select(path,name,selected)=>{if selected{self.selected.insert((path,name));}else{self.selected.remove(&(path,name));}}
             Message::SelectAllServers=>{
@@ -316,12 +321,21 @@ impl Desktop {
     }
     fn install_view(&self)->Element<'_,Message>{
         let can_select_all=!self.busy&&self.picker_window.is_none()&&self.job.is_none()&&!self.supported_selections().is_empty();
-        let header=column![text("Discover and install").size(theme::PAGE_TITLE),text("Read your global Claude Code, Codex and OpenCode definitions, or choose one absolute configuration path. Imported credentials are never copied."),row![text_input("Optional absolute configuration path",&self.config_path).on_input(Message::ConfigPath),button("Choose file…").on_press_maybe((!self.busy&&self.picker_window.is_none()&&self.job.is_none()).then_some(Message::ChooseConfigFile))].spacing(theme::CONTROL_GAP).align_y(iced::Center),row![button(if self.busy{"Working…"}else{"Discover servers"}).on_press_maybe((!self.busy&&self.picker_window.is_none()).then_some(Message::Discover)),button("Select all").on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP)].spacing(theme::PAGE_GAP);
+        let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
+        let mut header=column![text("Discover and install").size(theme::PAGE_TITLE),text("Fetch automatically finds your global Claude Code, Codex and OpenCode configuration files. Select the servers you want to install. Imported credentials are never copied.")].spacing(theme::PAGE_GAP);
+        if self.custom_config {
+            header=header.push(text("Choose a home folder, a .codex folder, or one configuration file to use instead."))
+                .push(row![text_input("Absolute folder or configuration file path",&self.config_path).on_input(Message::ConfigPath),button("Choose file or folder…").on_press_maybe(available.then_some(Message::ChooseConfigFile))].spacing(theme::CONTROL_GAP).align_y(iced::Center))
+                .push(button("Use default locations").on_press_maybe(available.then_some(Message::CustomConfig(false))));
+        }else{
+            header=header.push(button("Use a different file or folder…").on_press_maybe(available.then_some(Message::CustomConfig(true))));
+        }
+        header=header.push(row![button(if self.busy{"Working…"}else{"Refresh servers"}).on_press_maybe(available.then_some(Message::Discover)),button("Select all").on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP));
         let mut items=column![].spacing(theme::PAGE_GAP);
         if let Some(error)=&self.error{items=items.push(components::error_message(error.as_str()));}
         if !self.notice.is_empty(){items=items.push(components::message(self.notice.as_str()));}
         let has_rows=self.discovery["configs"].as_array().is_some_and(|groups|groups.iter().any(|group|group["servers"].as_array().is_some_and(|rows|!rows.is_empty())));
-        if !has_rows{items=items.push(text("No server definitions to select. Discover servers or review the source messages below."));}
+        if !has_rows{items=items.push(text(if self.busy{"Looking for server definitions…"}else{"No server definitions found. Review the source messages below, refresh, or choose a different file or folder."}));}
         if let Some(groups)=self.discovery["configs"].as_array(){for group in groups{let path=group["path"].as_str().unwrap_or("").to_owned();items=items.push(text(path.clone()).size(theme::TOOL_TITLE));if let Some(rows)=group["servers"].as_array(){for server in rows{let name=server["name"].as_str().unwrap_or("").to_owned();let eligible=server["status"]=="supported";let selected=self.selected.contains(&(path.clone(),name.clone()));let mut control=checkbox(selected).label(format!("{} · {}{}",name,server["type"].as_str().unwrap_or("unsupported"),if server["source_enabled"]==false{" · disabled in source; opt in explicitly"}else{""}));if eligible{let path=path.clone();let name=name.clone();control=control.on_toggle(move|value|Message::Select(path.clone(),name.clone(),value));}items=items.push(control);}}if let Some(error)=group["error"]["message"].as_str(){items=items.push(components::message(error));}}}
         if !self.progress.is_null(){items=items.push(text(format!("Installation: {}",self.progress["status"].as_str().unwrap_or("pending"))));if let Some(rows)=self.progress["servers"].as_array().or_else(||self.progress["items"].as_array()){for item in rows{items=items.push(text(format!("{} · {}",item["server_name"].as_str().unwrap_or("server"),item["status"].as_str().unwrap_or("pending"))));if let Some(error)=item["error"]["message"].as_str(){items=items.push(components::message(error));}}}}
         let can_install=!self.selected.is_empty()&&!self.busy&&self.picker_window.is_none()&&self.job.is_none();

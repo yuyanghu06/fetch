@@ -1,5 +1,12 @@
 # Fetch milestone snapshot
 
+## November 3 — automatic config discovery
+
+Active focused milestone: [automatic config discovery](automatic-config-discovery/info.md).
+Opening Install will read known global config files automatically. Explicit home/.codex folder or single-file selection remains optional; installation still requires selecting servers and pressing Install. Independent fixture checks pass: 47 relevant cases, including 10 new; native binary builds. [Test evidence](history/2026-11-03_19-26-54-226235-tester-automatic-discovery-fixtures.md). Independent Evaluator ACCEPTs the scoped source/fixture change. [Evaluation and integration](history/2026-11-03_19-27-27-851163-evaluator-automatic-discovery-acceptance.md). Actual native picker/window interaction and refreshed Figma specimens remain pending. [Implementation report](history/2026-11-03_19-25-58-185229-coder-folder-discovery-and-ui.md). Existing Google/Slack and protected runtime work below remains unfinished.
+
+[Planner report](history/2026-11-03_19-25-18-599038-planner-automatic-config-discovery.md).
+
 ## October31 — existing Google/Slack checks confirmed
 
 Slack auth.test and Google Drive account information can reuse the shared

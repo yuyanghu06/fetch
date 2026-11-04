@@ -65,12 +65,15 @@ stop another service automatically to clear a port conflict.
 1. Launch development Fetch with its separate root while leaving discovery on the
    normal current home/global Codex configuration. By default this is
    `~/.codex/config.toml`; an existing valid CODEX_HOME changes the source root.
-   In Discover and install, use **Choose file…** beside the optional path field
-   to select that file in the macOS picker, which shows hidden folders such as
-   `.codex`. Selection fills an absolute path; Cancel preserves the current field.
-   Picking alone does not discover or install servers. The field also remains
-   editable and expects an expanded absolute path, not literal `~` or `$HOME`.
-   Obtain the correct path on either Mac with `printf '%s\n' "$HOME/.codex/config.toml"`.
+   Opening Install MCPs automatically discovers those definitions; no path selection is required.
+   To override the defaults, choose **Use a different file or folder…**. Supply an
+   absolute home folder, `.codex` folder or one configuration file, using the native
+   picker or typed path, then press **Refresh servers**. The picker shows hidden
+   files/folders. Cancel preserves the current path. **Use default locations** clears
+   the override and reloads the normal candidates. Supplied paths do not expand `~`
+   or `$HOME`. A `.codex` folder uses its `config.toml` and its parent’s usual
+   Claude/OpenCode paths; a home folder uses its standard config children.
+   Discovery reads only those known files and never installs servers by itself.
 2. Select supported definitions and install them through Fetch. Import reads
    definitions, does not modify the global config and discards source secret
    values. Supported package servers get development-owned installs; existing

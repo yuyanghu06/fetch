@@ -25,9 +25,9 @@ impl std::fmt::Display for DiscoveryError {
 impl std::error::Error for DiscoveryError {}
 fn error(code: &'static str) -> DiscoveryError {
     let (message, http_status) = match code {
-        "INVALID_REQUEST" => ("Choose one absolute configuration file path.", 400),
-        "CONFIG_NOT_FOUND" => ("The selected configuration file was not found.", 404),
-        "CONFIG_UNREADABLE" => ("The configuration file could not be safely read.", 422),
+        "INVALID_REQUEST" => ("Choose one absolute configuration file or folder path.", 400),
+        "CONFIG_NOT_FOUND" => ("The selected configuration file or folder was not found.", 404),
+        "CONFIG_UNREADABLE" => ("The configuration file or folder could not be safely read.", 422),
         "AMBIGUOUS_CONFIG_FILE" => (
             "The selected file contains multiple supported MCP containers.",
             422,
@@ -106,12 +106,33 @@ impl DiscoveryService {
         Ok(CapturedDefinition { row, config, package_arguments })
     }
     pub fn scan(&self, config_path: Option<&Path>) -> Result<Value, DiscoveryError> {
-        let mut groups = vec![];
-        if let Some(path) = config_path {
+        let groups = if let Some(path) = config_path {
             if !path.is_absolute() || path.as_os_str().as_encoded_bytes().contains(&0) {
                 return Err(error("INVALID_REQUEST"));
             }
-            groups.push(read_group(path, None)?);
+            // Remove a trailing separator or `.` before inspecting the final entry,
+            // so a selected directory symlink cannot evade this check as `link/`.
+            let inspection_path: PathBuf = path.components().collect();
+            let metadata = std::fs::symlink_metadata(&inspection_path).map_err(|e| {
+                error(if e.kind() == std::io::ErrorKind::NotFound {
+                    "CONFIG_NOT_FOUND"
+                } else {
+                    "CONFIG_UNREADABLE"
+                })
+            })?;
+            if metadata.file_type().is_symlink() {
+                return Err(error("CONFIG_UNREADABLE"));
+            }
+            if metadata.is_dir() {
+                let (home, codex) = if inspection_path.file_name().is_some_and(|name| name == ".codex") {
+                    (inspection_path.parent().ok_or_else(|| error("INVALID_REQUEST"))?.to_owned(), inspection_path)
+                } else {
+                    (inspection_path.clone(), inspection_path.join(".codex"))
+                };
+                read_candidates(&home, &codex)
+            } else {
+                vec![read_group(path, None)?]
+            }
         } else {
             let codex = self
                 .codex_home
@@ -119,33 +140,8 @@ impl DiscoveryService {
                 .filter(|p| p.is_absolute() && p.is_dir())
                 .cloned()
                 .unwrap_or_else(|| self.home.join(".codex"));
-            let candidates = [
-                (self.home.join(".claude.json"), "claude_code"),
-                (codex.join("config.toml"), "codex"),
-                (self.home.join(".config/opencode/opencode.json"), "opencode"),
-                (
-                    self.home.join(".config/opencode/opencode.jsonc"),
-                    "opencode",
-                ),
-            ];
-            let multiple = candidates[2].0.exists() && candidates[3].0.exists();
-            for (path, harness) in candidates {
-                if matches!(std::fs::symlink_metadata(&path), Err(e) if e.kind() == std::io::ErrorKind::NotFound)
-                {
-                    continue;
-                }
-                let mut group = match read_group(&path, Some(harness)) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        json!({"path":path,"harness":harness,"status":"failed","error":{"code":e.code,"message":e.message},"servers":[],"warnings":[]})
-                    }
-                };
-                if multiple && harness == "opencode" {
-                    group["warnings"] = json!([{"code":"MULTIPLE_CONFIG_FILES","message":"Both OpenCode configuration files exist; Fetch lists them separately."}]);
-                }
-                groups.push(group);
-            }
-        }
+            read_candidates(&self.home, &codex)
+        };
         let selectable = groups.iter().any(|g| {
             g["servers"]
                 .as_array()
@@ -162,10 +158,36 @@ impl DiscoveryService {
             steps.push(json!({"actor":"user","action":"review_discovery_warnings","instructions":"Review the configuration warnings. Fetch has not changed the source files or copied credentials."}));
         }
         if !selectable {
-            steps.push(json!({"actor":"user","action":"choose_config_file","instructions":"Choose a supported configuration file or correct its blocked definitions. Do not submit an empty installation request."}));
+            steps.push(json!({"actor":"user","action":"choose_config_file","instructions":"Choose a home folder, a .codex folder or a supported configuration file, or correct blocked definitions. Do not submit an empty installation request."}));
         }
         Ok(json!({"status":"ok","configs":groups,"next_steps":steps}))
     }
+}
+/// Only known configuration filenames are inspected. Sessions, caches and other
+/// files beneath the chosen roots are never enumerated or recursively scanned.
+fn read_candidates(home: &Path, codex: &Path) -> Vec<Value> {
+    let candidates = [
+        (home.join(".claude.json"), "claude_code"),
+        (codex.join("config.toml"), "codex"),
+        (home.join(".config/opencode/opencode.json"), "opencode"),
+        (home.join(".config/opencode/opencode.jsonc"), "opencode"),
+    ];
+    let multiple = candidates[2].0.exists() && candidates[3].0.exists();
+    let mut groups = vec![];
+    for (path, harness) in candidates {
+        if matches!(std::fs::symlink_metadata(&path), Err(e) if e.kind() == std::io::ErrorKind::NotFound) {
+            continue;
+        }
+        let mut group = match read_group(&path, Some(harness)) {
+            Ok(value) => value,
+            Err(error) => json!({"path":path,"harness":harness,"status":"failed","error":{"code":error.code,"message":error.message},"servers":[],"warnings":[]}),
+        };
+        if multiple && harness == "opencode" {
+            group["warnings"] = json!([{"code":"MULTIPLE_CONFIG_FILES","message":"Both OpenCode configuration files exist; Fetch lists them separately."}]);
+        }
+        groups.push(group);
+    }
+    groups
 }
 fn read_group(path: &Path, expected: Option<&str>) -> Result<Value, DiscoveryError> {
     let mut options = OpenOptions::new();
