@@ -45,6 +45,8 @@ iced = { version = "0.14.0", default-features = false, features = ["wgpu", "toki
 rmcp = { version = "=3.8.0", default-features = false, features = ["auth", "client"] }
 oauth2 = { version = "5", default-features = false }
 async-trait = "0.1"
+iced_term = { path = "vendor/iced_term" }
+portable-pty = "=0.9.0"
 
 [build-dependencies]
 cc = "1"
