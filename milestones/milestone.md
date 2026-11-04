@@ -2,7 +2,7 @@
 
 ## Working-tree delivery — November 4 follow-up
 
-Source committed; remaining documentation ready. Commit remaining guide/records, push both commits, verify remote and record actual delivery. [Latest pass](history/2026-11-04_18-21-54-145647-orchestrator-followup-working-tree-delivery.md).
+Complete: requested source and documentation pushed and remote-confirmed. Actual OpenAI/Fetch login and live MCP/Blender acceptance remain separate product follow-up; no app/session launched or credentials copied during delivery. [Latest pass](history/2026-11-04_18-22-10-968811-orchestrator-followup-working-tree-delivery.md).
 
 ## Permanent Fetch-only Codex — setup complete
 

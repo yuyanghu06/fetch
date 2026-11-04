@@ -10,4 +10,4 @@ Status: complete. 44 focused tests and locked offline native build passed; indep
 
 ## November 4 follow-up
 
-Source committed; remaining documentation ready. Commit remaining guide/records, push both commits, verify remote and record actual delivery.
+Complete: requested source and documentation pushed and remote-confirmed. Actual OpenAI/Fetch login and live MCP/Blender acceptance remain separate product follow-up; no app/session launched or credentials copied during delivery.
