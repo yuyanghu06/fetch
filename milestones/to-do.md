@@ -2,7 +2,7 @@
 
 ## Automatic config discovery — November 3
 
-- [x] Verify the merge with newer installed-row/direct-install/deletion/authentication work;64 relevant cases and native build pass, independent Evaluator ACCEPT. Normal delivery follows.
+- [x] Verify the merge with newer installed-row/direct-install/deletion/authentication work;64 relevant cases and native build pass, independent Evaluator ACCEPT. Delivered as369267a; local/live main refs matched.
 
 - [x] Inspect existing default discovery and obtain independent bounded plan.
 - [x] Implement optional home/.codex folder or file paths and automatic Install-page discovery.
