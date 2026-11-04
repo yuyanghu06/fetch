@@ -1354,3 +1354,15 @@ successfully loaded individual keys until Quit; per-server separation stays.
 It does not select the alternative shared wrapping key or credential migration.
 Local identity setup may need actual macOS human authentication; do not supply
 or capture the user's password. Release signing/packaging remains excluded.
+
+
+## November 3, 2026 — Development identity and key reuse ready
+
+User completed Certificate Assistant creation of the dedicated dev signer. Only
+its public fingerprint is saved in Fetch-Development settings; private key stays
+in login Keychain and no global trust/old-item ACL was changed. New launcher
+signs/verifies a separate executable with stable identity; two changed binaries
+passed the same requirement. Keys loaded successfully are remembered until Quit;
+49Rust cases and4launcher fixture checks pass. Existing running Fetch is preserved;
+Quit/reopen with ./scripts/run-development.sh. Existing items may need initial
+approval for the new identity. Native prompt counts remain unmeasured.

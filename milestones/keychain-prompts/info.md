@@ -1,23 +1,22 @@
-# Repeated development Keychain prompts
+# Fewer development Keychain requests
 
-Goal: explain approximately five identical login-Keychain dialogs and identify
-whether normal access can require fewer approvals. Scope is read-only source,
-public Apple/implementation research and binary/file-existence metadata; no secret
-reads, Keychain/signing/trust changes or native runtime experiments.
+Goal: preserve macOS approval across development rebuilds and avoid repeatedly
+requesting the same successful key, while keeping separate encrypted server keys.
+User approved stable development signing and process caching after investigation.
 
-Status: source and binary metadata reviewed; dedicated Researcher completed
-primary-source comparison. Duplicate key lookups, identical labels and ad-hoc
-rebuild identity are established; exact observed dialog sequence remains untraced.
-Recommendations are stable dev signing and optional per-process cache; one
-wrapping-key alternative needs a new storage/migration decision. No fix selected
-or implemented. Canonical [research/options](../../docs/architecture/keychain-prompts.md).
-Independent Evaluator ACCEPTs scoped findings and proposal limits.
-Completion: report concrete reasons and limits, document recommendations and keep
-personal state untouched. Future implementation needs selected scope and actual
-protected native prompt evidence; do not assume approval from this investigation.
+Status: implemented. Latest remote work and local UI/startup/docs are preserved.
+New cache keeps successful Zeroizing keys, direct creation readback, no failure
+caching, delete eviction and closed/cleared Quit lifecycle. User-created dedicated
+local signing identity is configured by public fingerprint only. Signed Fetch
+build and two changed-binary identity proofs pass.30credential+1host+18UI tests,
+4launcher fixtures and native build pass; independent source/final review ACCEPT.
 
+[Evidence](evidence.md), [canonical design](../../docs/architecture/keychain-prompts.md).
+All temporary fixture/probe state removed. The signer and its public settings file
+are intended persistent development setup. Existing app/services/accounts preserved;
+user should Quit Fetch then run ./scripts/run-development.sh. Old Keychain items
+may need final human approval for the new identity.
 
-User subsequently selected stable DEVELOPMENT signing plus process caching and
-requested latest main pull. Main d19d891 and prior local work are integrated;
-implementation planning is active. Shared wrapping-key migration is not selected.
-Any OS password/approval must remain under actual human control.
+Limits: actual native prompt counts and lock/denial/provider/client workflows are
+unmeasured. No wrapping key, credential migration, release packaging or global trust
+change. Password entry/credential creation remains human-owned.

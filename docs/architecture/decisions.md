@@ -873,3 +873,17 @@ Google implementation deferral is superseded for this bounded work. Implemented
 source has176 passing fixture checks, native build and independent acceptance;
 real Google consent/account/native acceptance remains pending. See
 authentication-engine.md and the shared authentication storage evidence.
+
+
+## November 3 — Stable development identity and successful-key reuse
+
+After the prompt investigation/recommendation, user said pull in and go ahead.
+This selects a stable DEVELOPMENT signing identity/identifier and remembering
+successfully loaded individual keys until Quit. It does not select a shared
+wrapping key, encrypted-file migration, release packaging or distribution signing.
+The user completed task-specific Certificate Assistant creation; its private key
+stays in login Keychain. Only a public certificate fingerprint is stored in dev
+settings. Existing data and permissions remain; old items may need final approval
+for the new identity. Cache creation readback/failure/delete/close rules preserve
+existing storage/Settings verification. Actual native prompt count is unmeasured.
+See [the scoped design/evidence](keychain-prompts.md).

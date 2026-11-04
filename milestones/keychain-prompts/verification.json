@@ -43,5 +43,12 @@
   "trust_settings_changed_by_agent": false,
   "real_keychain_rebuild_prompt_persistence_tested": false,
   "existing_fetch_restarted": false,
-  "fixture_cleanup": true
+  "fixture_cleanup": true,
+  "default_launcher_build": {
+    "command": "./scripts/run-development.sh --build-only",
+    "exit_code": 0,
+    "cargo_seconds": 9.2,
+    "strict_signature_verified": true,
+    "identity_unchanged_after_rebuild": true
+  }
 }

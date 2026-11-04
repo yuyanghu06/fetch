@@ -64,6 +64,7 @@ The first developer-backend foundation is implemented and pushed; the developer 
 ## November3 — development Keychain prompts
 
 User asks why approximately five identical access dialogs appear and whether
-they can be combined. Read-only [findings/options](keychain-prompts.md) recommend
-stable dev identity first, optional in-process keys, and describe one wrapping-key
-alternative. No signing/keychain/cache/storage implementation choice is selected.
+they can be combined. [Findings and implementation](keychain-prompts.md) now record the user-selected
+stable development identity and process key cache. Source/fixture/signature proof
+passes; protected native prompt-count/lock/denial proof remains. A shared wrapping
+key, credential migration and release work remain unselected.
