@@ -11,7 +11,9 @@
 - [x] Independently verify encrypted ACK/CAS, account isolation, lifecycle,
   noninteractive startup, renewal/access proof and raw MCP:176 unique checks,
   native build and Tester/Evaluator ACCEPT. Real Google login remains unrun.
-- [ ] Commit/push scoped shared helper storage/Google adapter and evidence.
+- [x] Commit/push scoped shared helper storage/Google adapter asd19d891; live
+  remote matched. Combined discovery integration188/188 checks/native build pass;
+  independent acceptance/cleanup complete. Real account/native acceptance remains.
 
 ## Automatic config discovery — November 3
 

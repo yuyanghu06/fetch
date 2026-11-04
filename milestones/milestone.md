@@ -2,6 +2,14 @@
 
 ## November 3 — shared helper credential storage accepted
 
+Integrated with newer automatic config discovery. Final188/188 fixture checks
+and native build (0.54s) PASS; independent Tester/Evaluator ACCEPT. Source pushed
+asd19d891 and live main matched. Owned test processes/storage cleaned.
+[Orchestrator report](history/2026-11-03_19-35-51-970660-orchestrator-integrate-helper-storage-with-current-main.md)
+[Tester report](history/2026-11-03_19-35-51-971503-tester-verify-integrated-helper-storage.md)
+[Evaluator report](history/2026-11-03_19-35-51-971680-evaluator-accept-integrated-helper-storage.md)
+[Orchestrator report](history/2026-11-03_19-35-51-972125-orchestrator-deliver-shared-helper-storage.md)
+
 User replied go to the shared bridge with Google first. Independent research
 reverified installed1.11.3 and its nested OAuth2 implementation; Planner completed
 the bounded lifecycle/storage/verification plan. Shared credential/runner core
@@ -11,7 +19,7 @@ retry, config-invalidation and late process-failure issues.176 unique fixture
 checks pass, including OS-confined Node/actual managed-child lifecycle and raw
 MCP checks; locked native build passes (0.48s). Independent Tester/Evaluator
 ACCEPT. Initial sandbox/fixture failures were corrected in tests only. No real
-Google login/installed-helper account/native acceptance is claimed. Delivery next. Preserve callback ownership, per-server
+Google login/installed-helper account/native acceptance is claimed. Delivered asd19d891. Preserve callback ownership, per-server
 encrypted readback/CAS/renewal and service-access proof. No new public route/UI
 or personal credential authority. Existing unrelated edits are preserved; real
 provider account authentication remains unverified.

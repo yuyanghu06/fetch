@@ -15,8 +15,8 @@ provider/helper/native/client acceptance is claimed. Dispatch is selected from
 imported command/arguments/environment needs, using web OAuth by default for
 remote HTTP servers and common API-credential/local-helper handlers. Return
 selected-flow errors without silently switching login methods. User subsequently approved the shared helper credential-storage bridge with
-Google1.11.3 as first adapter. The shared bridge/adapter are implemented;176
-fixture checks, native compilation and independent acceptance pass. Actual
+Google1.11.3 as first adapter. The shared bridge/adapter are implemented;188
+integrated fixture checks, native compilation and independent acceptance pass. Actual
 account authentication remains unverified. Multiple instances of the same MCP must independently own
 authentication methods, credentials and accounts (including different Google
 accounts); no package-global account state. Current same-source installation

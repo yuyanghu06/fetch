@@ -51,3 +51,21 @@ owner revocation, timeout failure reporting, persisted proof clearing, forced
 current app-input proof, execution-only continuity, explicit retry, config error
 ordering and session-fenced late failures. No optional features, new public auth
 route/UI, separate OAuth engine or plaintext token-file fallback were added.
+
+
+## Integration with newer main
+
+First push found newer remote8f2a118 (automatic config discovery). Separate Git
+worktree preserved all primary dirty changes. Helper source cherry-picked without
+changes; four documentation conflicts retain both records. Independent comparison
+verifies18 helper source/fixture blobs and8 incoming discovery blobs unchanged.
+Delivered d19d891; live origin/main matched after push.
+
+Same full Cargo command above, with process-scoped
+`CARGO_TARGET_DIR=/Users/yuyang/Documents/fetch/target` in the integration checkout:
+188/188 PASS (lib126,backend24,HTTPS7,direct8,paths4,imports7,MVP11,raw1).
+Compile21.07s, library30.01s, total55.08s. Native build exit0,0.54s, existing
+warnings only. This includes all21 helper cases and newer8 backend/4 UI fixtures.
+Tester/Evaluator ACCEPT. Zero owned fixture/probe/outside/bridge/evidence roots
+remain; owned child-exit and socket checks pass. Actual Google consent/account
+and native approval remain untested. No personal state/settings were changed.

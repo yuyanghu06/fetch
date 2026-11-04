@@ -5,7 +5,9 @@ implemented.176 unique fixture checks, native build and independent Tester/
 Evaluator ACCEPT. [Storage evidence](helper-storage-evidence.md) includes initial
 fixture failures/corrections, cleanup and limits. Real Google consent/account/
 native acceptance remains untested. This supersedes earlier Google deferral
-notes below; broader authentication work remains unfinished. Scoped delivery next.
+notes below; broader authentication work remains unfinished. Delivered asd19d891
+after integrating newer discovery. Final188 checks/native build/independent
+review pass; owned test state cleaned.
 
 User request November 3: main agent must implement this after delivering the
 delete-server route. Side conversation researched/recorded direction only.

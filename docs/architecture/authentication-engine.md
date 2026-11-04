@@ -48,7 +48,7 @@ assume every callback exports provider tokens to Fetch.
 
 This adds a shared helper-storage boundary. Existing Authenticate remains the
 public operation; no server-specific route/login engine, manual secret channel
-or plaintext-token mode. Shared source is implemented:176 unique checks and native compilation pass;
+or plaintext-token mode. Shared source is implemented:188 integrated checks and native compilation pass;
 independent Tester/Evaluator ACCEPT. Real Google consent/account/native
 acceptance remains unverified.
 
