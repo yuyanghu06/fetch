@@ -117,6 +117,22 @@ async fn malformed_or_duplicate_selections_fail_before_job_or_state_creation() {
 }
 
 #[tokio::test]
+async fn figma_remote_direct_url_does_not_create_an_installed_server() {
+    let fixture = Fixture::new();
+    // Submit directly to preparation: this uses the product URL parser but has
+    // no connection hook, so even the pre-fix behavior cannot contact Figma.
+    let result = fixture.prepare(json!([
+        {"server_name":"figma-remote","url":"https://mcp.figma.com/mcp"}
+    ])).await;
+    assert_eq!(result["status"], "failed");
+    assert_eq!(result["servers"][0]["status"], "failed");
+    assert_eq!(result["servers"][0]["error"]["code"], "INSTALLATION_FAILED");
+    assert!(result["servers"][0]["server_id"].is_null());
+    assert!(fixture.repository.list_saved().unwrap().is_empty());
+    assert!(!fixture.root.join("packages").exists());
+}
+
+#[tokio::test]
 async fn unsupported_items_fail_safely_and_later_url_preparation_continues() {
     let fixture = Fixture::new();
     let result = fixture.prepare(json!([

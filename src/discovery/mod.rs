@@ -132,12 +132,11 @@ impl DiscoveryService {
                 return Err(error("CONFIG_UNREADABLE"));
             }
             if metadata.is_dir() {
-                let (home, codex) = if inspection_path.file_name().is_some_and(|name| name == ".codex") {
-                    (inspection_path.parent().ok_or_else(|| error("INVALID_REQUEST"))?.to_owned(), inspection_path)
+                if inspection_path.file_name().is_some_and(|name| name == ".codex") {
+                    read_known_candidates([(inspection_path.join("config.toml"), "codex")])
                 } else {
-                    (inspection_path.clone(), inspection_path.join(".codex"))
-                };
-                read_candidates(&home, &codex)
+                    read_candidates(&inspection_path, &inspection_path.join(".codex"))
+                }
             } else {
                 vec![read_group(path, None)?]
             }
@@ -214,13 +213,15 @@ fn discovery_steps(groups: &[Value]) -> Vec<Value> {
 /// Only known configuration filenames are inspected. Sessions, caches and other
 /// files beneath the chosen roots are never enumerated or recursively scanned.
 fn read_candidates(home: &Path, codex: &Path) -> Vec<Value> {
-    let candidates = [
+    read_known_candidates([
         (home.join(".claude.json"), "claude_code"),
         (codex.join("config.toml"), "codex"),
         (home.join(".config/opencode/opencode.json"), "opencode"),
         (home.join(".config/opencode/opencode.jsonc"), "opencode"),
-    ];
-    let multiple = candidates[2].0.exists() && candidates[3].0.exists();
+    ])
+}
+fn read_known_candidates<const N: usize>(candidates: [(PathBuf, &str); N]) -> Vec<Value> {
+    let multiple = candidates.iter().filter(|(path, harness)| *harness == "opencode" && path.exists()).count() > 1;
     let mut groups = vec![];
     for (path, harness) in candidates {
         if matches!(std::fs::symlink_metadata(&path), Err(e) if e.kind() == std::io::ErrorKind::NotFound) {
@@ -387,6 +388,17 @@ fn blocked(mut row: Value, invalid: bool) -> Value {
     row["error"] = json!({"code":if invalid{"INVALID_SERVER_DEFINITION"}else{"UNSUPPORTED_SERVER_DEFINITION"},"message":if invalid{"This entry is not a valid supported server definition."}else{"This launch form needs a supported literal configuration; Fetch did not run or resolve it."}});
     row
 }
+fn is_figma_remote(url: &Url) -> bool {
+    url.scheme() == "https"
+        && url.host_str() == Some("mcp.figma.com")
+        && url.port_or_known_default() == Some(443)
+        && matches!(url.path(), "/mcp" | "/mcp/")
+}
+fn unsupported_figma_remote(row: Value) -> Value {
+    let mut row = blocked(row, false);
+    row["error"]["message"] = json!("Figma Remote is unsupported in Fetch because Figma requires approval for connecting apps. Fetch is not currently approved.");
+    row
+}
 fn literal(s: &str) -> bool {
     !s.is_empty() && !s.contains(['\0', '$', '{', '}', '\n', '\r'])
 }
@@ -508,6 +520,9 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
         {
             return blocked(row, false);
         }
+        if is_figma_remote(&url) {
+            return unsupported_figma_remote(row);
+        }
         let transport = match o.get("type").and_then(Value::as_str) {
             Some("sse") => "sse",
             Some("http" | "streamable_http" | "remote") | None => "streamable_http",
@@ -592,6 +607,7 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
         if command == "npx" && is_mcp_remote(&args) {
             if working.is_some() { return blocked(row, false); }
             let Ok(remote)=mcp_remote(&args) else{return blocked(row,false);};
+            if is_figma_remote(&remote.endpoint) { return unsupported_figma_remote(row); }
             row["type"]=json!("remote");
             row["credential_variables"]=json!([]);
             row["connection"]=json!({"transport":remote.transport,"origin":remote.endpoint.origin().ascii_serialization(),"header_names":remote.headers});

@@ -584,13 +584,13 @@ async fn discovery_accepts_home_or_codex_folder_and_returns_actual_file_paths() 
     std::fs::create_dir_all(ignored.parent().unwrap()).unwrap();
     std::fs::write(&ignored, "[mcp_servers.recursive_private]\ncommand='npx'\nargs=['recursive-fixture']").unwrap();
     std::fs::write(home.join(".codex/auth.json"), r#"{"mcpServers":{"private_auth":{"command":"npx","args":["private-auth-fixture"]}}}"#).unwrap();
-    for base in [&home, &home.join(".codex")] {
+    for (base, expected) in [(&home, originals.as_slice()), (&home.join(".codex"), &originals[1..2])] {
         let response = app.clone().oneshot(request(&discovery_uri(base))).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK, "{}", base.display());
         let body = value(response).await;
         let groups = body["configs"].as_array().unwrap();
-        assert_eq!(groups.len(), 3);
-        for (group, (path, original)) in groups.iter().zip(&originals) {
+        assert_eq!(groups.len(), expected.len(), "{}", base.display());
+        for (group, (path, original)) in groups.iter().zip(expected) {
             assert_eq!(group["path"], path.to_str().unwrap());
             assert_eq!(group["status"], "ok");
             assert_eq!(group["servers"][0]["status"], "supported");
@@ -625,7 +625,7 @@ async fn discovery_folder_retains_healthy_sources_when_a_known_file_is_malformed
     let home = directory.path().join("chosen-home");
     write_discovery_home(&home);
     std::fs::write(home.join(".claude.json"), "private-malformed-source").unwrap();
-    let response = app.oneshot(request(&discovery_uri(&home.join(".codex")))).await.unwrap();
+    let response = app.oneshot(request(&discovery_uri(&home))).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let body = value(response).await;
     let groups = body["configs"].as_array().unwrap();
@@ -710,10 +710,10 @@ async fn discovery_folder_preserves_already_installed_source_associations() {
     let response = app.oneshot(request(&discovery_uri(&home.join(".codex")))).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let body = value(response).await;
-    let codex = &body["configs"][1]["servers"][0];
+    assert_eq!(body["configs"].as_array().unwrap().len(), 1);
+    let codex = &body["configs"][0]["servers"][0];
     assert_eq!(codex["installed"], true);
     assert_eq!(codex["installed_server_id"], "existing-codex");
     assert_eq!(codex["selected_by_default"], false);
-    assert_eq!(body["configs"][0]["servers"][0]["installed"], false);
     assert!(body["next_steps"].as_array().unwrap().iter().any(|step| step["action"] == "check_server_status"));
 }

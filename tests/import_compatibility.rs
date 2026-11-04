@@ -15,6 +15,34 @@ fn row<'a>(scan: &'a Value, name: &str) -> &'a Value {
 }
 
 #[test]
+fn figma_remote_is_unavailable_while_desktop_and_other_imports_stay_usable() {
+    let fixture = tempfile::tempdir().unwrap();
+    let path = fixture.path().join("servers.json");
+    let original = source(&path, json!({
+        "figma-remote":{"url":"https://mcp.figma.com/mcp"},
+        "figma-bridge":{"command":"npx","args":["mcp-remote","https://mcp.figma.com/mcp","--transport","http-only"]},
+        "figma-desktop":{"url":"http://127.0.0.1:3845/mcp"},
+        "other":{"url":"https://mcp.miro.com/"}
+    }));
+    let discovery = DiscoveryService::new(fixture.path().into(), None);
+    let scan = discovery.scan(Some(&path)).unwrap();
+    for name in ["figma-remote", "figma-bridge"] {
+        let remote = row(&scan, name);
+        assert_eq!(remote["status"], "unsupported");
+        assert_eq!(remote["selected_by_default"], false);
+        let reason = remote["error"]["message"].as_str().unwrap();
+        assert!(reason.contains("Figma") && reason.contains("Fetch") && reason.contains("approval"), "{reason}");
+        assert!(discovery.capture(&path, name).is_err());
+    }
+    for name in ["figma-desktop", "other"] {
+        assert_eq!(row(&scan, name)["status"], "supported");
+        assert_eq!(row(&scan, name)["selected_by_default"], true);
+        assert_eq!(discovery.capture(&path, name).unwrap().config["kind"], "remote");
+    }
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+}
+
+#[test]
 fn documented_public_endpoints_capture_without_exposing_or_rewriting_the_url() {
     let fixture = tempfile::tempdir().unwrap();
     let path = fixture.path().join("servers.json");
