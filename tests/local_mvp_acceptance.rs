@@ -295,3 +295,52 @@ async fn reading_or_calling_a_stopped_server_never_starts_its_executable() {
     assert_eq!(state["tool_execution"]["queued_calls"], 0);
     runner.shutdown().await;
 }
+
+#[tokio::test(flavor="multi_thread",worker_threads=4)]
+async fn delayed_rejection_from_old_headers_cannot_invalidate_the_renewed_connection() {
+    use axum::{extract::State,Json,response::IntoResponse,routing::post};
+    use futures_util::FutureExt;
+    use std::time::Duration;
+    struct Peer {entered:tokio::sync::Notify,release:tokio::sync::Notify,old_calls:AtomicUsize,new_calls:AtomicUsize}
+    async fn peer(State(peer):State<Arc<Peer>>,headers:HeaderMap,Json(input):Json<Value>)->Response {
+        let id=input["id"].clone();let result=match input["method"].as_str(){
+            Some("initialize")=>json!({"protocolVersion":LEGACY,"capabilities":{"tools":{}},"serverInfo":{"name":"disposable-rejection-peer","version":"1"}}),
+            Some("tools/list")=>json!({"tools":[{"name":"echo","inputSchema":{"type":"object"}}]}),
+            Some("tools/call")=>{
+                if input["params"]["arguments"]["deny_permission"]==true {
+                    return StatusCode::FORBIDDEN.into_response();
+                }
+                if headers.get(header::AUTHORIZATION).is_some_and(|value|value=="Bearer old-fixture") {
+                    peer.old_calls.fetch_add(1,Ordering::SeqCst);peer.entered.notify_one();peer.release.notified().await;
+                    return (StatusCode::UNAUTHORIZED,[(header::WWW_AUTHENTICATE,"Bearer error=\"invalid_token\"")]).into_response();
+                }
+                peer.new_calls.fetch_add(1,Ordering::SeqCst);json!({"content":[{"type":"text","text":"renewed access works"}]})
+            },_=>return StatusCode::ACCEPTED.into_response(),
+        };
+        Json(json!({"jsonrpc":"2.0","id":id,"result":result})).into_response()
+    }
+    let peer_state=Arc::new(Peer{entered:tokio::sync::Notify::new(),release:tokio::sync::Notify::new(),old_calls:AtomicUsize::new(0),new_calls:AtomicUsize::new(0)});
+    let routes=Router::new().route("/mcp",post(peer)).with_state(peer_state.clone());
+    let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let endpoint=format!("http://{}/mcp",listener.local_addr().unwrap());
+    let stop=Arc::new(tokio::sync::Notify::new());let shutdown=stop.clone();
+    let server=tokio::spawn(async move{axum::serve(listener,routes).with_graceful_shutdown(async move{shutdown.notified().await}).await});
+    let runner=Runner::new();
+    let result=std::panic::AssertUnwindSafe(async {
+        // Preserve existing uncertain-call accounting for the two rejected
+        // requests while leaving capacity for one new intentional request.
+        let execution=ExecutionPolicy{max_concurrent_calls:3,..ExecutionPolicy::default()};
+        runner.configure(ServerRoute{server_id:"remote".into(),transport:TransportConfig::Http{endpoint,headers:BTreeMap::from([("Authorization".into(),"Bearer old-fixture".into())])},execution}).await.unwrap();
+        runner.connect("remote").await.unwrap();
+        assert!(runner.call("remote","echo",raw::raw(&json!({"deny_permission":true})),InvocationContext::terminal("disposable-owner".into())).await.is_err());
+        assert_eq!(runner.snapshot("remote").await["provider_auth_required"],false,"a bare permission denial is not proof that login expired");
+        let pending={let runner=runner.clone();tokio::spawn(async move{runner.call("remote","echo",raw::raw(&json!({"message":"do not replay"})),InvocationContext::terminal("disposable-owner".into())).await})};
+        tokio::time::timeout(Duration::from_secs(2),peer_state.entered.notified()).await.unwrap();
+        runner.update_remote_headers("remote",BTreeMap::from([("Authorization".into(),"Bearer renewed-fixture".into())])).await.unwrap();
+        peer_state.release.notify_one();assert!(tokio::time::timeout(Duration::from_secs(3),pending).await.unwrap().unwrap().is_err());
+        assert_eq!(runner.snapshot("remote").await["provider_auth_required"],false,"a rejection of old access is not proof the replacement was rejected");
+        let response=tokio::time::timeout(Duration::from_secs(3),runner.call("remote","echo",raw::raw(&json!({"message":"new intentional call"})),InvocationContext::terminal("disposable-owner".into()))).await.unwrap().unwrap();
+        assert!(response.get().contains("renewed access works"));assert_eq!(peer_state.old_calls.load(Ordering::SeqCst),1);assert_eq!(peer_state.new_calls.load(Ordering::SeqCst),1);
+    }).catch_unwind().await;
+    peer_state.release.notify_one();runner.shutdown().await;stop.notify_one();tokio::time::timeout(Duration::from_secs(3),server).await.unwrap().unwrap().unwrap();
+    if let Err(error)=result{std::panic::resume_unwind(error);}
+}

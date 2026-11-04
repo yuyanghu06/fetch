@@ -1,3 +1,11 @@
+> **November 3 current wrapper direction:** Google/Slack native token interception
+> and the Fetch encrypted-provider handoff described below are superseded. Servers
+> keep native credentials/refresh; online Fetch-client access uses official rmcp
+> and direct Keychain, manual fixed keys use retained PATCH. Initial wrapper tests
+> and build pass; actual provider/native/client acceptance remains. Native setup
+> and folder execution require explicit recorded metadata; normal imports have no
+> approved authoring field yet. See [current plan](../architecture/native-server-storage.md).
+
 # Remaining work for a working Fetch MVP
 
 Updated October 29, 2026 after the full working tree was committed and pushed.

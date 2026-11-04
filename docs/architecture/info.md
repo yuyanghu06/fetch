@@ -1,3 +1,13 @@
+Official Rust auth-only library is now selected. native-server-storage.md lists
+exact Fetch-owned work, delegated work, affected source areas and remaining
+contract choices. Further source/dependency/build/test work remains paused.
+
+The native-server-storage plan now includes the full server/library/Fetch lifecycle,
+what work is unavoidable and the proposed OAuth-only Rust library reduction.
+Library integration remains unselected; source is paused.
+
+[Native server storage](native-server-storage.md) records the current server-owned direction, source inventory and pending public/storage proposals. Prior encrypted-provider plans are historical for current work.
+
 # Architecture folder
 
 [authentication-engine.md](authentication-engine.md) explains D82's implemented

@@ -1,18 +1,23 @@
 # Native human authority
 
-The Keychain delete bridge matches only the explicit Fetch service namespace and hashed account supplied by the server credential store. Missing items count as absent. Application/internal key IDs are excluded by the store. No native Keychain deletion was executed in this source pass.
+NativeAuthority creates temporary sessions only for Fetch's own native Settings
+window. Bearer tokens cannot manufacture these sessions. Closing the window
+invalidates authority even if a request still holds its HTTP client.
 
-This folder creates temporary authority for Fetch's native Settings window and asks macOS to confirm deliberate app approvals and secret changes. Browser or agent tokens cannot create a Settings window capability. A secret-change capability binds the live window, server and exact mutation fingerprint and expires shortly after confirmation.
+Manual fixed-key changes retain fresh Mac confirmation. A SettingsCapability binds
+the live session, selected server and mutation fingerprint, expires after thirty
+seconds, and can be consumed once. Passwords remain in macOS. Storage success is
+separate from account authentication; the backend uses direct Keychain storage for
+approved manual keys. Open server folder needs a live native session but does not
+request secret-save confirmation.
 
-The Objective-C bridge uses LocalAuthentication and the traditional login Keychain. Password entry remains in macOS. Keychain operations do not invoke shell utilities or silently fall back to files. Native behavior, local-build identity and prompts have not been tested in this implementation pass.
+The Objective-C bridge retains LocalAuthentication and application Keychain
+functions. Remote-client grant read/write support is shared OS storage work, not
+server-specific provider interception. Application approval and HTTPS identity
+remain protected. No native Keychain operation or Mac prompt is exercised by the
+window-free UI fixtures; native behavior needs the approved protected session.
 
-D79 compilation built this Objective-C bridge and linked the native binary without calling its functions. The compiler emits four classic-Keychain deprecation warnings; those do not establish a runtime failure and do not authorize switching the selected storage mechanism. Native prompts/Keychain behavior remain untested.
-
-bridge.m also hosts the native config-file picker used by src/ui/file_picker.rs,
-reusing the existing AppKit linkage. Its Open panel runs on the main queue and
-returns a selected path or cancellation asynchronously; it does not read config
-contents or create authentication authority. UI lifecycle handling cancels or
-ignores stale selections when the window closes.
-
-
-November 3: the configuration picker permits a single file or directory and continues to show hidden files/folders. It returns only the path; shared backend discovery reads the selected file or known base-folder config paths after Refresh. No credential or native owner-confirmation behavior changed.
+bridge.m also hosts the config file/folder picker and native application menu.
+The picker runs on the main queue, shows hidden locations and returns only a path
+or cancellation. Backend discovery reads the selected known files later. Picker
+selection does not create authentication authority or change server configuration.

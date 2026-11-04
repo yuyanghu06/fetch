@@ -1,4 +1,6 @@
-//! Explicit real-package diagnostic, never part of the normal fixture suite.
+//! Explicit real-package removal diagnostic, never part of the normal fixture suite.
+//! Removal now preserves packages/native state; historical cleanup timings do not
+//! describe this state-preserving registration removal contract.
 //! Run only inside verified OS confinement; this file does not establish it.
 //! The key provider below is a fixture, so this is not native/Keychain acceptance.
 //! Select exactly one ignored test per process and give it a fresh demo root.
@@ -22,12 +24,6 @@ struct DemoKeys;
 impl KeyProvider for DemoKeys {
     fn key_for_server(&self, _: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError> {
         Ok(Zeroizing::new([69; 32]))
-    }
-    fn delete_key_for_server(&self, _: &str) -> Result<(), CredentialError> {
-        event("package_cleanup_finished_before_fixture_key_delete",json!({
-            "elapsed_ms":DELETE_START.get().map(|start|start.elapsed().as_millis()),"keychain_used":false
-        }));
-        Ok(())
     }
 }
 
@@ -138,8 +134,8 @@ async fn run_demo(root: &Path, manager: &Arc<Manager>, package_spec: &str, conne
     let deleted = deleted.map_err(|_|"Deletion exceeded 240 seconds; its owned worker may still be cleaning up")?
         .map_err(|e|format!("delete {}: {}",e.code,e.message))?;
     event("delete_completed",json!({"elapsed_ms":started.elapsed().as_millis(),"response":deleted}));
-    if deleted["status"] != "deleted" || package.exists() || manager.repository.get_saved(id).map_err(|e|e.to_string())?.is_some() {
-        return Err("Deletion did not remove package and saved record".into());
+    if deleted["status"] != "deleted" || !package.exists() || manager.repository.get_saved(id).map_err(|e|e.to_string())?.is_some() {
+        return Err("Removal must preserve the package and remove only its saved registration".into());
     }
     if fs::read_to_string(&source).map_err(|e|e.to_string())? != config
         || fs::read_to_string(&sentinel).map_err(|e|e.to_string())? != "preserve this disposable canary\n"
@@ -147,7 +143,7 @@ async fn run_demo(root: &Path, manager: &Arc<Manager>, package_spec: &str, conne
         return Err("Preservation or runner removal check failed".into());
     }
     event("preservation_verified",json!({"source_unchanged":true,"unrelated_file_unchanged":true,"runtime_preserved":true,
-        "package_removed":true,"saved_record_removed":true,"runner_removed":true,"keychain_used":false}));
+        "package_preserved":true,"saved_record_removed":true,"runner_removed":true,"keychain_used":false}));
     Ok(())
 }
 

@@ -1,5 +1,46 @@
 # Fetch current work
 
+## Native server storage — November3 scoped refactor accepted
+
+- [x] User resumes scoped implementation/testing; prior pauses below are historical.
+- [x] Implement official library/shared Keychain/native credential ownership/API/UI and state-preserving removal.
+- [x] Initial141 relevant fixture checks and locked native binary build pass.
+- [x] Real confined unmodified Everything2026.8.31 package check and task-root/process cleanup.
+- [x] Fix independent review findings; final151 checks/build pass and Evaluator ACCEPT.
+- [ ] Integrate scoped changes and report native metadata/provider/Finder/Keychain/client limitations.
+- [ ] Future separate contract: public authoring/import of recorded native setup/folder metadata; no schema invented here.
+
+- [x] Record user normal-practice condition: saved expiry/before-use/shared-library renewal; native hidden expiry stays unknown and GET stays read-only.
+- [x] GET metadata and known-expiry scheduling selected and implemented; no universal harness timer claimed.
+
+- [x] Research full server/library/Fetch lifecycle and distinguish mandatory connection work from Fetch product choices.
+- [x] User selects official Rust OAuth-only library replacing handwritten remote auth; updated exact Fetch ownership plan, independently checked by read-only Planner.
+- [x] Scoped plan resumed; background/manual/folder rules implemented. Native metadata authoring remains a separate decision above.
+
+- [x] Record existing authenticate POST as entry point for both button and scheduled renewal; background handles timing only.
+- [x] Quiet sign-in-needed behavior and restricted self-HTTPS route implemented.
+
+- [x] Save global basic-fact/plain-language/decision-focused explanation preference; preserve source pause.
+
+- [x] Retain PATCH /credentials in plan per latest user follow-up; removal superseded.
+- [x] User confirms manual fixed keys through PATCH with shared Keychain saving/delivery.
+- [x] Settings-only fixed-key save/remove reports stored, verified:false; actual account proof remains separate.
+- [x] User selects recorded native setup commands run through authenticate; no README interpreter.
+- [x] Shared launcher consumes explicit internal records; public authoring remains unselected above.
+
+- [x] Pull latest clean main and inspect current implementation with read-only specialists.
+- [x] Record selected native-storage direction and short source inventory; independent proposal review ACCEPT, with remote readback/transport proof explicit.
+- [x] User selected initial proposal with direct Keychain remote OAuth.
+- [x] Full plan reviewed and user resumed; no new per-server recipes added. Concrete native metadata/Railway limits retained.
+- [x] User resumed scoped implementation; initial integrated source/test pass completed. Final review fixes tracked above.
+- [x] Initial independent confined verification and review complete; final fix/retest tracked above.
+- [x] Final evidence recorded; real native OS/provider acceptance remains separate above.
+
+Older provider-encrypted storage implementation tasks/evidence below are historical;
+further provider-store/Google interception expansion is superseded by the current
+request. Preserve unrelated unfinished work and all existing runtime data.
+
+
 - [x] Review and include the full remaining working tree for the user's explicit
   commit/push request. Independent publication review ACCEPT; no new runtime
   acceptance claimed. Confirm final commit/live remote and working-tree state.

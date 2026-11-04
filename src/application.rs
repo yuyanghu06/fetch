@@ -7,7 +7,7 @@ use tokio::io::{AsyncReadExt,AsyncWriteExt};
 
 pub struct ApplicationHost {
     pub state:Arc<AppState>, pub native:Arc<NativeAuthority>,pub certificate_pem:String,pub certificate_path:PathBuf,
-    manager:Arc<Manager>,oauth:Arc<OAuthService>,handle:Handle<std::net::SocketAddr>,
+    manager:Arc<Manager>,oauth:Arc<OAuthService>,credentials:Arc<CredentialStore>,handle:Handle<std::net::SocketAddr>,
     listener:Mutex<Option<TcpListener>>,tls:RustlsConfig,_instance_lock:File,root:PathBuf,
     show:AtomicBool,stopping:AtomicBool,stopped:AtomicBool,shutdown_done:tokio::sync::Notify,
 }
@@ -32,12 +32,13 @@ impl ApplicationHost {
         let oauth=tokio::task::spawn_blocking(move||OAuthService::open(authority_origin,authority_root,authority_store,authority_native)).await.map_err(|_|io::Error::other("Fetch authorization could not start."))?.map_err(io::Error::other)?;
         let codex_home=if inherit_codex_home{std::env::var_os("CODEX_HOME").map(PathBuf::from).filter(|p|p.is_absolute()&&p.is_dir())}else{None};
         let discovery=DiscoveryService::new(discovery_home,codex_home);let repository=ServerRepository::new(root.clone());
-        let runner=Runner::persistent(root.clone()).map_err(io::Error::other)?;let installer=Installer::new(root.clone(),discovery.clone());let manager=Manager::new(repository.clone(),credentials,runner.clone(),installer);manager.set_origin(origin.clone());
+        let runner=Runner::persistent(root.clone()).map_err(io::Error::other)?;let installer=Installer::new(root.clone(),discovery.clone());let manager=Manager::new(repository.clone(),credentials.clone(),runner.clone(),installer);manager.set_origin(origin.clone());
+        configure_authenticate_sender(&manager,&origin,&certificate_pem)?;
         let backend=Arc::new(ManagementAdapter{manager:manager.clone(),discovery:discovery.clone()});
         let gateway=McpGateway::new(runner.clone(),backend,oauth.clone(),origin.clone());
         let mut state=AppState::new(origin,repository,discovery,oauth.clone()).map_err(io::Error::other)?;
         state.manager=Some(manager.clone());state.native=Some(native.clone());state.oauth=Some(oauth.clone());state.gateway=Some(gateway.clone());
-        let host=Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path,manager,oauth,handle:Handle::new(),listener:Mutex::new(Some(listener)),tls,_instance_lock:lock,root,show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()});
+        let host=Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path,manager,oauth,credentials,handle:Handle::new(),listener:Mutex::new(Some(listener)),tls,_instance_lock:lock,root,show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()});
         let mut revocations=host.oauth.subscribe_revocations();let gateway_for_revoke=gateway.clone();
         tokio::spawn(async move{loop{match revocations.recv().await{Ok(owner)=>{runner.revoke_owner(&owner).await;gateway_for_revoke.revoke_owner(&owner).await;},Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=>{gateway_for_revoke.recheck_authority().await;},Err(_)=>break}}});
         Ok(host)
@@ -62,7 +63,7 @@ impl ApplicationHost {
             loop { let done=self.shutdown_done.notified(); if self.stopped.load(Ordering::Acquire){return;} done.await; }
         }
         self.oauth.shutdown();self.manager.shutdown().await;
-        let credentials=self.manager.credentials.clone();
+        let credentials=self.credentials.clone();
         let _=tokio::task::spawn_blocking(move||credentials.clear_cached_keys()).await;
         self.handle.graceful_shutdown(Some(Duration::from_secs(3)));
         let _=fs::remove_file(self.root.join("activation.sock"));
@@ -83,13 +84,13 @@ impl ApplicationHost {
         let oauth=OAuthService::open(origin.clone(),root.clone(),credentials.clone(),native.clone()).map_err(io::Error::other)?;
         let repository=ServerRepository::new(root.clone());
         let discovery=DiscoveryService::new(root.join("empty-home"),None);
-        let manager=Manager::new(repository.clone(),credentials,Runner::new(),Installer::new(root.clone(),discovery.clone()));
+        let manager=Manager::with_grant_store(repository.clone(),Arc::new(crate::remote_oauth::GrantStore::memory(root.clone())),Runner::new(),Installer::new(root.clone(),discovery.clone()));
         manager.set_origin(origin.clone());
         let mut state=AppState::new(origin,repository,discovery,oauth.clone()).map_err(io::Error::other)?;
         state.manager=Some(manager.clone());state.native=Some(native.clone());state.oauth=Some(oauth.clone());
         let lock=OpenOptions::new().read(true).write(true).create_new(true).mode(0o600).open(root.join("fixture.lock"))?;
         Ok(Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path:root.join("certificate.pem"),
-            manager,oauth,handle:Handle::new(),listener:Mutex::new(None),tls,_instance_lock:lock,root,
+            manager,oauth,credentials,handle:Handle::new(),listener:Mutex::new(None),tls,_instance_lock:lock,root,
             show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()}))
     }
 }
@@ -106,3 +107,41 @@ pub fn home_directory()->io::Result<PathBuf>{std::env::var_os("HOME").map(PathBu
 pub async fn show_existing(root:&Path)->io::Result<()>{let mut stream=tokio::time::timeout(Duration::from_secs(2),tokio::net::UnixStream::connect(root.join("activation.sock"))).await.map_err(|_|io::Error::other("Fetch is already running; open it from its Dock or menu."))??;stream.write_all(b"show").await}
 fn private_directory(path:&Path)->io::Result<()>{match fs::symlink_metadata(path){Ok(metadata)=>{if !metadata.is_dir()||metadata.file_type().is_symlink()||metadata.permissions().mode()&0o077!=0||metadata.uid()!=unsafe{libc::geteuid()}{return Err(io::Error::other("Fetch requires an owner-only data folder with mode 700."));}},Err(error)if error.kind()==io::ErrorKind::NotFound=>fs::DirBuilder::new().recursive(true).mode(0o700).create(path)?,Err(error)=>return Err(error)}Ok(())}
 fn write_public_certificate(root:&Path,path:&Path,bytes:&[u8])->io::Result<()>{if let Ok(metadata)=fs::symlink_metadata(path){if !metadata.is_file()||metadata.file_type().is_symlink()||metadata.nlink()!=1{return Err(io::Error::other("Fetch's public certificate path is unsafe."));}}let temporary=root.join(format!(".certificate-{:032x}",rand::random::<u128>()));let result=(||{let mut file=OpenOptions::new().write(true).create_new(true).mode(0o600).custom_flags(libc::O_NOFOLLOW).open(&temporary)?;file.write_all(bytes)?;file.sync_all()?;fs::rename(&temporary,path)?;File::open(root)?.sync_all()})();if result.is_err(){let _=fs::remove_file(temporary);}result}
+
+/// Calls the actual product route with a process-owned, renewal-only credential.
+/// This client trusts only this Fetch installation's certificate and resolves
+/// localhost to the listener we own; it never uses proxy or personal auth state.
+pub(crate) fn configure_authenticate_sender(manager:&Arc<Manager>,origin:&str,certificate_pem:&str)->io::Result<()> {
+    use crate::manager::ManagementError;
+    let certificate=reqwest::Certificate::from_pem(certificate_pem.as_bytes()).map_err(io::Error::other)?;
+    let url=url::Url::parse(origin).map_err(io::Error::other)?;
+    let port=url.port().ok_or_else(||io::Error::other("Fetch's private authentication address requires a port."))?;
+    let client=reqwest::Client::builder().https_only(true).no_proxy().tls_built_in_root_certs(false)
+        .add_root_certificate(certificate).resolve("localhost",std::net::SocketAddr::from(([127,0,0,1],port)))
+        .redirect(reqwest::redirect::Policy::none()).connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(60))
+        .build().map_err(io::Error::other)?;
+    let mut token=reqwest::header::HeaderValue::from_str(&manager.background_token()).map_err(io::Error::other)?;token.set_sensitive(true);
+    let address=origin.to_owned();
+    manager.set_authenticate_sender(Arc::new(move|id:String|{
+        let client=client.clone();let token=token.clone();let address=address.clone();
+        Box::pin(async move{
+            use futures_util::StreamExt;
+            let failure=||ManagementError::new(503,"AUTHENTICATION_REQUEST_FAILED","Fetch could not complete its private renewal request. Check the server status before retrying.");
+            let response=client.post(format!("{address}/api/v1/servers/{}/authenticate",crate::json::path_component(&id)))
+                .header("x-fetch-background-auth",token).json(&serde_json::json!({"interactive":false})).send().await.map_err(|_|failure())?;
+            let status=response.status();let mut stream=response.bytes_stream();let mut bytes=Vec::new();
+            while let Some(chunk)=stream.next().await{let chunk=chunk.map_err(|_|failure())?;if bytes.len()+chunk.len()>1024*1024{return Err(failure());}bytes.extend_from_slice(&chunk);}
+            let value:serde_json::Value=serde_json::from_slice(&bytes).map_err(|_|failure())?;
+            if !status.is_success(){return Err(ManagementError::new(status.as_u16(),"AUTHENTICATION_REQUEST_FAILED","The saved online login could not be renewed. Inspect the server's authentication status; a new sign-in may be required."));}
+            Ok(value)
+        })
+    }));
+    let weak=Arc::downgrade(manager);
+    manager.runner.set_authentication_preflight(Arc::new(move|id:String|{
+        let weak=weak.clone();Box::pin(async move{
+            let Some(manager)=weak.upgrade()else{return Err(crate::runner::RunError::not_ready())};
+            manager.before_remote_use(&id).await.map_err(|error|crate::runner::RunError{http_status:error.http_status,code:error.code,message:error.message,execution:"not_started"})
+        })
+    }));
+    Ok(())
+}

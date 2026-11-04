@@ -1,5 +1,22 @@
 # Fetch — current project context
 
+November3: server-owned native login/files and official rmcp online login/renewal
+are implemented in the scoped refactor. Both user and background requests use the
+existing authenticate route. Manual fixed keys retain the Settings-only PATCH and
+save directly in Keychain; config editing is execution settings only. Server GET
+reports nullable expiry/check times without performing authentication. Removal
+preserves native/legacy/package state. See [current contracts](docs/architecture/native-server-storage.md).
+
+Final151 checks, locked native build and separate confined Everything2026.8.31
+check pass. Independent review findings were fixed/retested; Evaluator ACCEPTs
+the scoped refactor. Real Keychain, Finder, provider accounts and full coding-client acceptance
+remain unrun. Ordinary imports cannot yet author recorded native setup/folder data.
+No universal support, release, personal-state edits or credential migration claimed.
+[Current work](milestones/milestone.md). Earlier dated evidence follows and does not
+override the current ownership contract.
+
+# Earlier project context and dated evidence
+
 November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); Final merged64 relevant independent fixtures (12 new) and native build pass; Evaluator ACCEPT. Newer installed-row/direct-install/deletion/authentication source is preserved. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.
 
 November3 active install extension: user approves command/url alternatives in the

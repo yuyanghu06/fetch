@@ -1,3 +1,9 @@
+[Native server storage](native-server-storage/info.md) is implemented with initial
+fixture/build acceptance; final independent review and real confined MCP check are
+underway. Known native metadata/OS/provider limits remain explicit.
+
+[Native server storage](native-server-storage/info.md) is the active refactor; inspection is complete and proposed contract/storage choices await the user.
+
 # Milestone records
 
 [Delete server](delete-server/info.md) is the current scoped route/lifecycle work.

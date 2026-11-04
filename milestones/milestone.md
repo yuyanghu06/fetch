@@ -1,5 +1,129 @@
 # Fetch milestone snapshot
 
+## November3 — scoped wrapper refactor accepted
+
+User resumed; native provider credentials belong to unmodified server/helpers.
+Official rmcp owns online login/renewal; actual authenticate route handles user and
+restricted background requests. Manual-key PATCH is retained with direct Keychain
+saving; GET exposes safe nullable auth times; config edits execution only; removal
+preserves old/native/package/grant state. All material review findings fixed.
+Final151 checks +separate original Everything confinement check1PASS and locked
+native binary build PASS. Independent Evaluator ACCEPT.
+[Pass](history/2026-11-03_21-10-00-310480-tester-final-native-storage-checks.md) [Pass](history/2026-11-03_21-10-00-310481-evaluator-native-storage-accepted.md)
+[Current contracts](../docs/architecture/native-server-storage.md).
+[Complete evidence and remaining limits](native-server-storage/evidence.md).
+Ordinary native command/path authoring and real OS/provider/client acceptance
+remain open product work; this is not full-MVP completion. Next: integrate scoped
+changes, then separately review native metadata entry before new public fields or
+per-server handling. Existing personal configs/credentials/state remain untouched.
+
+## November 3 — normal-practice condition recorded
+
+User accepts auth timing/status insofar as normal practice. Saved expiry, before-use
+checks and shared library renewal are established; early timer is optional and GET
+fields are Fetch reporting. No hidden native expiry guesses, new polling system or
+source resume inferred. [Plan](../docs/architecture/native-server-storage.md).
+[Pass](history/2026-11-03_20-37-18-125113-orchestrator-standard-auth-behavior-condition.md).
+
+
+## November 3 — auth timing and server GET metadata proposed
+
+User requests how/when checks run and login status/expiry in GET servers. Proposed
+known-expiry scheduling plus connection/use/rejection checks through authenticate;
+GET only reports safe local state. Nullable access_expires_at/last_verified_at,
+existing auth states and native unknowns are specified for review. Official library
+source timing checked; no application/tests/runtime changes.
+[Proposal](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-34-10-731157-orchestrator-auth-timing-and-server-get-proposal.md).
+
+
+## November 3 — recorded setup commands and manual-key PATCH selected
+
+Manual fixed keys use retained PATCH/shared Keychain delivery. Authenticate reads
+explicit recorded setup commands and launches existing native helpers; user rejects
+README interpretation. Exact command/path recording and save/check/remove outcomes
+remain open. Background caller permission explained as proposal; no approval inferred.
+Official library and same authenticate route stay selected. No code/tests resumed.
+[Plan](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-30-49-061815-orchestrator-recorded-native-setup-and-manual-keys.md).
+
+
+## November 3 — official auth library selected; source remains paused
+
+User selects official Rust MCP auth library and asks exact remaining Fetch work
+before coding. Plan now identifies server/library/Fetch responsibilities, necessary
+connection work vs chosen product features, replacement modules and open contracts.
+Raw runner, native auth ownership, Keychain and actual authenticate-route callers
+remain. No Cargo/source/test/runtime changes; prior partial code stays incomplete.
+[Current accepted plan](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-24-22-871619-orchestrator-official-library-selected-plan.md).
+Independent read-only planner confirms the ownership list and identifies partial-source
+mismatches (direct refresh function calls and removed credentials route).
+[Planner pass](history/2026-11-03_20-24-56-219543-planner-official-library-fetch-boundaries.md).
+Next: user reviews remaining work and precise background/manual-key/native-path
+details before source resumes.
+
+
+## November 3 — minimal-wrapper lifecycle research
+
+User wants server-owned behavior and existing libraries used before adding Fetch
+code. Read-only Researcher recommends unchanged local servers plus official Rust
+OAuth-only library/shared Keychain store for online connections, raw runner retained.
+Library adoption remains proposed; same authenticate route/Keychain preserved.
+[Lifecycle and ownership](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-20-08-657443-researcher-minimal-wrapper-lifecycle.md).
+No source/test/runtime work resumed; partial source remains incomplete.
+
+
+## November 3 — button and background call authenticate
+
+User explicitly selects existing authenticate POST for both callers. The route
+owns shared saved-login/renewal/replacement/save/status behavior; scheduler only
+chooses timing. No new refresh route or per-server refresh engine. Still plan
+background browser restrictions and authorized self-request details before coding.
+Source remains paused/incomplete/unbuilt/untested.
+[Plan](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-09-40-949231-orchestrator-shared-authenticate-route-decision.md).
+
+
+## November 3 — global explanation preference saved
+
+User requires basic-fact, plain-language explanations that lead to important
+decisions without jargon clarification loops. Global AGENTS updated and readback
+confirms prior content preserved. No architecture choices changed; Fetch source
+remains paused/incomplete/unbuilt/untested. [Pass](history/2026-11-03_20-07-15-936402-orchestrator-global-basic-explanation-preference.md).
+
+
+## November 3 — retain credentials route; scope under discussion
+
+User revises credentials-route removal to Keychain storage unless native servers
+already handle it. Plan now retains PATCH /credentials. Recommendation: native
+server OAuth stays server-owned; manual keys could use Keychain/shared delivery.
+Exact scope/save/verification/Settings behavior awaits decision; coding remains
+paused and partial source still incomplete/unbuilt/untested.
+[Current plan](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-06-01-786436-orchestrator-retain-credentials-route-plan.md).
+
+
+## November 3 — source paused for complete native-storage plan
+
+User selected Keychain, then asked to plan all route/other changes and discuss any
+server-specific code before writing. Partial Manager/API/UI/remote-Keychain/fixture
+edits are preserved. No builds/tests/runtime/Keychain/Finder operations occurred.
+Current source is incomplete (missing native-state/verification functions and old
+helper/deletion references remain). No working-refactor claim.
+[Complete plan](../docs/architecture/native-server-storage.md). [Pass](history/2026-11-03_20-03-53-183471-orchestrator-native-storage-plan-pause.md).
+Next: review route list and native helper/folder/environment/Railway details with
+the user before further source work.
+
+
+## November 3 — native server storage: pre-code review
+
+Clean main pulled8f2a118 →515c7b1. User selects native server config/login/storage,
+superseding Fetch provider encryption requirements while preserving legacy data.
+Read-only Researcher/Planner audits identify shared app protection and remote-client
+OAuth ownership, environment-only setup and real-folder/deletion limits.
+[Inventory/proposal](../docs/architecture/native-server-storage.md) awaits decisions;
+application source unchanged, no tests/runtime actions. Independent proposal review
+ACCEPT; explicit remote Keychain readback and authenticated transport check added.
+[Review](history/2026-11-03_19-54-32-541617-evaluator-native-storage-proposal.md).
+[Milestone](native-server-storage/info.md). [Pass](history/2026-11-03_19-53-41-841065-orchestrator-native-storage-inventory.md).
+
+
 ## November 3 — full working-tree delivery
 
 User explicitly requests publishing all remaining tracked/untracked changes.

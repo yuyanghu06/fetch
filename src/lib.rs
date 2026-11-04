@@ -15,5 +15,6 @@ pub mod installation;
 pub mod runner;
 pub mod mcp;
 pub mod manager;
+pub mod remote_oauth;
 pub mod application;
 pub mod ui;

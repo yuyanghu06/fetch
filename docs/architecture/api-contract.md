@@ -1,40 +1,18 @@
-> **Current authorization — October28, 2026:** The user authorized starting implementation and pushing to `https://github.com/yuyanghu06/fetch.git`. Do not create a release. Main MCP connection tests are deferred to a later isolated virtual environment using the user’s server inventory. This supersedes earlier implementation/push pauses only; it does not authorize personal-client edits, certificate trust changes, credential migration or live MCP tests.
+# Fetch API contracts
 
-# Fetch API contracts under discussion
+## November3 — current wrapper changes
 
-## November 3 — server deletion
+[Complete current route/body/status/permission contract](native-server-storage.md).
+[Earlier contract text](../../milestones/native-server-storage/historical-api-contract.md)
+preserves historical encrypted-provider and launch-edit requirements; those portions
+are superseded. Discovery, installation, Fetch's own OAuth and raw MCP contracts
+remain except for the explicit amendments below.
 
-User delegates routine specification to match current APIs. DELETE
-/api/v1/servers/{server_id} accepts no body/query and requires fetch:manage for
-that server. Unknown or hidden IDs return404 SERVER_NOT_FOUND; unauthorized
-management returns403; invalid request400. Active install/auth/restart/calls or
-unresolved remote outcomes return409 SERVER_BUSY without force/cancellation.
-
-The backend blocks new work and closes the idle local process/remote connection,
-then removes that server's Fetch-owned config, encrypted credentials/Keychain key,
-private state and unshared validated installation package. Original configs,
-scripts, shared runtimes/application identity and other servers are preserved.
-Stop failure preserves saved data; cleanup failure500 SERVER_DELETE_FAILED may
-be partial and retains record information for retry when possible. A completed deletion returns
-200 {server_id,status:"deleted",next_steps:[]}; repeated deletion returns404.
-The matching fetch__delete_server tool calls the same backend and permissions.
-The new handler follows URL-shaped API folders; this adds no UI redesign or
-refactor of existing endpoints. No actual server is deleted by implementing it.
-Once cleanup begins, a disconnected caller does not cancel it; the owned worker
-retains lifecycle/installation guards through completion. Inspect server status
-after an uncertain response rather than automatically replaying DELETE.
-
-Current checkpoint D73: one saved Fetch credential/token per agent for `/mcp`; user-completed provider login reused on ordinary calls. Rust/execution and shown auth/Settings directions are settled; shared memory is deferred from this release; MIT and drag-and-drop DMG selected. Use the single build-readiness.md worklist for remaining implementation mechanisms. The unaccepted verification amendment is withdrawn from active review, not approved; preserve D25/D31. Do not turn older draft headings below into fresh broad approval requests. No implementation/live tests authorized.
-
-Latest checkpoint D71: the presented account-free app-connection contract is approved, including its seven operations, Mac confirmation, scopes, token/renewal/revocation/restart defaults and admission bounds. D70 HTTPS and D69 no-account direction remain selected. Exact unshown wire/OS/storage mechanisms and actual client evidence remain open; next is Settings human authority and key protection/unlock/recovery. No implementation or live tests are authorized.
-
-D68 approves the presented ordinary tool-call queue/concurrency/settings/cancellation/restart contract. Shared default concurrency1 (configurable), FIFO64 waiting/16MiB arguments,300-second queue wait, selected timeout precedence and5-second documented-limit allowance, existing execution config/tool amendment, hot atomic saves, aggregate server-state counts, uncertainty accounting and D63 remote forced recovery are selected. Exact unshown profile/GET wire schema, numeric upper bounds and native resource/prompt admission remain open. Do not re-review selected behavior; implementation remains paused.
-
-D67 approves the presented native resource list/read/templates, prefixed prompt list/get and supported completion on /mcp, qualified source routing with unchanged returned content/raw ToolResult links, safe ambiguous-link errors,10-second per-source lists, configured server read/get budgets, required modern outer framing/private zero-lifetime hints and catalog-list changes. Live per-resource content subscriptions and native background Tasks are deferred for the initial slice, subject to D58 isolated everyday-workflow acceptance. Exact URI codec/SDK/numeric errors/unshown metadata wire fields remain review/evidence work; implementation remains paused.
-
-Last synchronized: October 27, 2026.
-
-These are design records, not implemented endpoints or a generated OpenAPI specification. Approval of a route's purpose does not resolve every validation, authorization, schema, and runtime detail. Resolve the listed gaps with the user before implementation.
+DELETE /api/v1/servers/{server_id} retains empty request, per-server manage permission,
+idle checks, owned stop and status/errors. It removes only registration, preserving
+native state, packages, old encrypted files/keys and remote grants. Busy work is not
+force-cancelled. Original configs, scripts, personal clients and other instances stay
+untouched. No migration, credential decryption or cleanup is part of this route.
 
 ## Shared conventions accepted in principle
 
@@ -733,193 +711,30 @@ The approved `restart_id` query selects exactly one server/attempt and retains [
 
 Actual HTTP checks, once implementation is authorized: all/selected/duplicate/unknown ID ordering and empty results; pending/failed/unknown runtime/auth versus read success; server-scoped credential presence without values, including deliberately embedded-secret fixtures; reads after original harness entries are removed; no process/login/tool/file-write side effects; denied callers and unreadable records; config edits during restart keep `restart_required`; ordinary active versus named completed attempts follow their separate views. None has been implemented or run.
 
-## Accepted: start server authentication
+## Current: start server authentication
 
-Accepted route:
+POST /api/v1/servers/{server_id}/authenticate retains caller permission, no-store,
+next_steps and existing missing/busy/error rules. Optional interactive:boolean
+defaults true for explicit old requests. Quiet requests require interactive:false
+and cannot open a browser or run local setup. There is no separate refresh route.
 
-```http
-POST /api/v1/servers/{server_id}/authenticate
-```
+Online login/renewal uses official rmcp and shared Keychain storage. Both UI and
+background use this actual HTTP route. Only the private process-owned random
+credential authorizes background self-requests; it grants no other operation.
+Expired access is renewed by the library. Definitively rejected saved access
+requires sign-in for quiet callers and can start fresh SDK login for explicit
+interactive callers. Permission-only403/transient/unsupported-proof errors do not
+start browser login. No uncertain tool action is replayed.
 
-The user approved the resumed setup block on October 26, including this behavior:
+Native interactive setup runs only the exact recorded helper, preserving native
+login/callback/storage/refresh ownership. Missing descriptors return unsupported;
+helper/browser completion alone does not prove account access. Remote verified
+status requires a protected connection check; public setup alone is insufficient.
 
-- Input is the installed server ID in the path; no credential values are supplied in this request.
-- For a supported browser OAuth flow, Fetch opens the system/default browser and returns immediately with `202 Accepted`.
-- User action completes sign-in. The agent checks the existing `GET /api/v1/servers?id=...` operation for authentication status, avoiding a separate auth-progress route.
-- For API-key or macOS-permission setup, return the known Settings/native-permission instructions rather than pretending to start OAuth.
-- If a custom wrapper's login mechanism cannot be determined or controlled, report the missing setup/integration information; do not invent an OAuth flow.
-
-Illustrative response for the accepted OAuth branch; complete endpoint-wide schemas/action vocabulary still need final review:
-
-```json
-{
-  "server_id": "server-a",
-  "status": "authenticating",
-  "next_steps": [
-    {
-      "actor": "user",
-      "action": "complete_browser_login",
-      "instructions": "Complete sign-in in the browser Fetch opened."
-    },
-    {
-      "actor": "agent",
-      "action": "check_server_status",
-      "instructions": "Check this server using the server-information API. Continue its setup only after it is authenticated."
-    }
-  ]
-}
-```
-
-No token/credential values are returned. D23 approves the server GET authentication status fields. Actual provider integrations and token handoff/persistence remain unresolved; the general route-level rules below are approved in D27.
-
-### Approved general authentication-start contract
-
-October 27, 2026. This uses the existing authenticate POST and approved server GET, not another route or auth-attempt ID. Existing method/path/OAuth/manual/unknown branches remain accepted in purpose. D27 accepts the previously reviewed general validation, response, overlap, deadline and retry rules, subject to D26 per-server encrypted credentials. Concrete integration/storage/test mechanisms and the new GitHub CLI proposal remain open. This API proposal does not choose OAuth wire endpoints, crypto/key handling or concrete wrapper integrations.
-
-#### Approved input, callers and side effects
-
-- Accept no body or `{}`. Reject malformed JSON, non-object bodies, any body fields or query parameters with `400 INVALID_REQUEST`; never echo rejected values. Manual credentials/auth codes/tokens do not belong in this input.
-- Settings and authenticated clients with server-management permission may call it. Check authorization before revealing whether the target exists.
-- Unknown server: `404 SERVER_NOT_FOUND`. Known record whose installation is unfinished: `409 SERVER_NOT_INSTALLED`. Require installation, not MCP readiness; some supported integrations need login before tool discovery can succeed.
-- A currently active restart returns `409 SERVER_BUSY` with guidance to monitor its existing server/restart GET. Check this after the target prerequisite and before creating/reusing a login flow.
-- Read saved server/integration metadata and known auth state. Only an explicitly supported integration may start its known login flow. Fetch-owned OAuth may open the default browser and save fresh credentials in the selected encrypted, server-scoped store; wrapper-owned OAuth must meet the ownership/storage contract below rather than being assumed to export its tokens. Do not reinstall/update packages or automatically restart the ordinary server here. Login-helper requirements belong to the concrete integration design.
-- Return `Cache-Control: no-store`. `202` includes `Location` pointing to `GET /api/v1/servers?id={server_id}`. No credential/token/code/login-URL values or raw provider response bodies are returned.
-
-#### Approved branch results
-
-After the prerequisite checks, reuse any active login before deciding whether to start another:
-
-| Condition | HTTP / top-level `status` | Result |
-| --- | --- | --- |
-| This server already has an active login | `202` / `authenticating` | Guide the existing flow; do not reopen the browser, replace the flow or extend its deadline. |
-| Login is known unnecessary | `200` / `not_required` | No browser, `next_steps: []`. |
-| Supported integration already confirms login | `200` / `authenticated` | No new browser login is needed if the existing credential works. Read it back from its successful encrypted storage and perform the authenticated test before this POST returns success; do not use presence or an old unverified result. |
-| Supported browser OAuth can begin | `202` / `authenticating` | Begin one flow, open the default browser, return immediately and guide GET polling. |
-| Known manual API-key/custom-token or macOS-permission setup | `200` / `required` | Specific Settings/native-permission instructions; do not claim browser OAuth or write manual values. |
-| Login mechanism cannot be determined/controlled | `200` / `unknown` | Explain missing setup/integration information; do not guess OAuth or tell the agent to proceed. |
-
-Each successful branch returns `server_id`, `status`, and `next_steps`. The existing OAuth example above remains its response shape. Different servers can authenticate independently. Guidance uses these reviewed route-specific actions:
-
-- `user` / `complete_browser_login`: complete the supported login already opened.
-- `agent` / `check_server_status`: GET this server once per second while its authentication is pending; proceed only after `authenticated` or confirmed `not_required`.
-- `user` / `review_server_settings`: explain known manual/native setup, missing integration information or how to correct a failure. Never ask for a secret in an agent prompt.
-- `agent` / `check_restart_status`: for a busy restart, point to its approved server/attempt-specific GET.
-
-Instructions are specific to the server; the root `server_id` identifies it. This contract retains the common actor/action/instructions structure without requiring an extra per-step target for a single-server response. Empty arrays remain present under D22.
-
-#### Proposed provider authentication and credential-storage contract
-
-October 27 follow-up: the user explicitly requires actual server authentication and credential storage to be accounted for. This is a confirmed scope requirement (D24), not approval of the particular mechanisms below. D27 later accepts the reviewed general route policies. [Current standards/implementation research](research.md#actual-mcp-auth-and-token-ownership--rechecked-october-27) shows no universal local-MCP provider-token export.
-
-Keep three credential boundaries distinct: the assistant's access to Fetch; Fetch's access to an MCP where applicable; and the MCP's access to GitHub/Google/another provider. HTTP OAuth token endpoints standardize the relevant client token exchange. That does not make provider secrets normal MCP tool results. Local stdio credential provision/login remains integration-specific; third-party tokens obtained through URL elicitation stay owned by that server, outside the MCP client.
-
-For every automatically supported integration, review a complete internal agreement covering:
-
-| Question | Required definition/evidence before claiming support |
-| --- | --- |
-| Who performs login and receives tokens? | Name Fetch's trusted backend or the wrapper as the provider OAuth client; identify how login starts and callbacks/results belong to the intended server/account. Browser opening or URL consent alone is not completion. |
-| Where do secrets live? | Identify the authoritative store and whether tokens exist only in process memory or survive restart. Fetch-managed tokens/keys/environment values use each server’s encrypted credential configuration files (D26); non-secret config may hold references. Key protection/file encoding remain open. |
-| How does the running process get access? | Use its documented environment/token-provider/storage interface. Supply only assigned credentials. No token scraping from stdout, stderr, ordinary tool results or unrelated existing caches. A private provisioning interface is not a new public credential-return API. |
-| Who refreshes? | Identify Fetch or the wrapper as owner, how new/rotated credentials replace previous ones safely and how expiry/no-refresh/failure is reported. Do not promise refresh tokens always exist or assume a wrapper refreshes Fetch's separate copy. |
-| What happens on restart/reopen? | Verify fresh credentials are used without migration, encrypted stored state can be reapplied through the documented interface, and memory-only login loss triggers truthful reauthentication guidance. Current usable login does not itself prove durable login. |
-| What proves authentication? | A supported integration's completion/handoff/storage evidence. Mere credential presence, process liveness, tools/list or URL acceptance cannot prove provider login. Keep D23's current-state semantics; do not claim every provider action is permitted. |
-| What happens when support is missing? | Return known Settings/native-permission instructions or unknown integration guidance through the existing POST/GET. Do not advertise automatic login, persistence or renewal that Fetch cannot control/observe. |
-
-A Fetch-owned provider login with a documented process handoff can use the chosen encrypted store directly. A wrapper-owned login needs a separately reviewed store/provisioning arrangement compatible with the user's storage requirements. Its private memory or disk cache is not automatically part of Fetch's encrypted store, and this document authorizes neither plaintext-cache exceptions nor token export forbidden by the protocol. Whether to adapt such a wrapper, use another supported login method or defer that automatic integration remains a user choice. Servers can remain installable without claiming automatic auth support; this is not a new package catalogue/allowlist.
-
-The GitHub local server's documented memory-only OAuth storage is an example requiring that review, not proof that Fetch can persist its token. HTTP upstream auth and URL-elicitation capability/consent are researched context; neither is silently added to the initial local-server MVP. The accepted general 10-minute/overlap/retry policy (D27) does not resolve these concrete integration requirements.
-
-When an integration is eventually selected, verify login success, encrypted persistence where promised, proper server-only handoff, expiry/refresh/rotation, logout/revocation behavior, restart/reopen, old-cache isolation and failure reporting without leaked values. Exact logout operations/public routes are not added by listing that integration-lifecycle requirement.
-
-#### Required stored-credential verification — D25
-
-October30 D82 implementation direction: imported environment/header names are
-generic credential input bindings. A trusted internal description selects the
-saved inputs that establish authentication, defines their request placement and
-defines semantic success. One executor uses encrypted readback; names alone do
-not invent proof and non-auth values are not assumed to be tokens. Existing
-routes/results/native-secret authority and D25/D31 success gates remain. There
-is no new public verification-URL field or saved-config migration in this scope.
-
-October 30 clarification: the user reaffirmed that explicit API-key authentication
-returns its verified result from `POST /api/v1/servers/{server_id}/authenticate`.
-The former one-entry condition in credentials PATCH was an implementation
-limitation, not an agreed limit on authentication across services. Different
-servers can authenticate independently; retain one active login per server.
-The implemented fix replaces the UI's single outstanding authentication request
-with per-server tracking and verifies all required references covered by existing
-named service adapters instead of requiring exactly one SET entry. This does not
-add generic username/password or client-secret verification adapters. D31 below
-also gates credential-save success; this clarification does not remove that requirement or
-approve storage-only success for deletion/non-auth changes. The scoped source
-now passes 25 new fixtures (93 combined) and native compilation; actual native,
-provider and MCP/client acceptance is still unrun.
-
-The user explicitly requires authentication success only after a successful credential store and a `2xx` test using that stored credential. They clarified that the test target is **the service's authenticated test endpoint**, not an endpoint literally named lifeboat. This success requirement is confirmed; D27 later approves the reviewed general route policies; D25 itself did not approve them.
-
-For each credential-based authentication flow, require this ordered gate:
-
-1. Save the credential for the selected server in the approved encrypted store, confirming the write succeeded.
-2. Read back that flow's assigned credential through the store's normal retrieval path. Do not test only the fresh token still held in the OAuth callback, a stale entry or an unrelated cached login.
-3. Use the retrieved credential for a test request to the service's documented authenticated endpoint.
-4. Only after that request returns `2xx` may this flow report authentication success or set `authentication.status: authenticated`.
-
-Store/read failure, request timeout, transport failure or non-`2xx` leaves this flow unsuccessful. A public unauthenticated health check cannot satisfy the requirement. This is a provider/service authentication test, not the MCP `tools/list` readiness check. The selected test should be a harmless read which requires the credential; exact endpoint/method and its authentication/success semantics are integration-specific choices still to review. Do not infer permission for all provider actions from this result.
-
-The gate applies before this flow's success is reported. Subsequent status GETs read that verified result without making a new provider request, preserving D23's read-only/latest-known-state contract. The already-authenticated POST branch also reads back and tests the existing stored credential before returning success, without forcing a new browser login or rewriting an unchanged credential. Additional background recheck/refresh cadence remains an operational policy to review; it does not waive this explicit authentication-operation gate. A configured manual credential can only be called authenticated after the same gate; mere presence still yields no proof.
-
-For server-owned login, the compatible integration must establish the same storage/readback/authenticated-test outcome within the correct credential owner, without exporting third-party tokens through MCP. A memory-only wrapper login does not establish a successful encrypted-store write. If the supported interface cannot establish the required result, do not advertise verified automatic authentication; return truthful required/unknown integration guidance. How such wrapper-owned storage can meet the existing encrypted-store rule is unresolved and requires the user's decision. No storage exception or unsupported token export is selected.
-
-Known no-auth and native-permission-only paths do not invent an HTTP credential test. How those non-token paths report their own successful permission verification must be specified in their supported integrations; this credential-based gate does not settle that policy. Safe retention/replacement/cleanup of a saved-but-unverified credential and recheck/refresh policy also remain for review. No new test endpoint is added to Fetch by this requirement.
-
-#### Shared required verification outcome — D31
-
-October 27: the user requires a successful credentials PATCH `200` to include a test with the newly stored credential, and the same verification-failure code from the earlier authenticate operation. D25 already required authentication success only after encrypted storage/readback and service-authenticated `2xx`; this amendment adds the shared failure outcome, not a claim that storage previously proved login.
-
-Use `CREDENTIAL_VERIFICATION_FAILED` consistently when that required test rejects/fails, times out, cannot run or cannot prove use of the current stored credential. Apply it to a synchronous authenticate error, credentials PATCH verification error and GET `authentication.error.code` after an accepted asynchronous auth flow fails its test. Other login denial/cancellation/expiry/start errors retain their established codes; a failed encrypted save/readback remains a storage failure, not a test failure. Exact non-`200` HTTP mapping and safe cause details remain part of integration/error-policy review; no unshown timeout or generic server call is selected.
-
-A test must actually use the read-back new credential and prove the required authentication. Public health, `tools/list`, or contacting a still-running process that retains an old environment does not satisfy the requirement. The latest phrase "MCP server endpoint" does not establish a universal stdio HTTP endpoint or silently replace D25's previously clarified service-authenticated test with generic MCP readiness. Review the concrete endpoint/request and private handoff with each supported integration before implementation. Never emit raw credential/provider data.
-
-#### Approved login lifecycle, deadline and repeats
-
-- Allow one active login per server. Use a **10-minute overall deadline from acceptance**, shortened by an earlier known provider expiry. D27 accepts this Fetch policy; it is not a protocol requirement. Repeated requests do not extend it.
-- While active, server GET reports `authentication.status: authenticating` and `error: null`.
-- Set credential-based `authenticated` only after supported login/handoff and the D25 successful encrypted-store write, readback and `2xx` service-authentication test. This describes current verified login; continuing durability/renewal still depends on the supported integration. Browser opening, URL consent, tools/list and stored-value presence are not substitutes.
-- Denial, detected cancellation, expiry, accepted-flow startup/storage failure or interrupted login reports GET `authentication.status: failed` and `{code: AUTHENTICATION_FAILED, message: ...}`. A failed required stored-credential test instead reports the shared `CREDENTIAL_VERIFICATION_FAILED` (D31). The safe message states the cause; retain D23's existing error shape/code rather than adding hidden nested enums.
-- Closing a browser tab may be unobservable. Without a cancellation/denial result, keep the flow pending until its deadline; do not claim tab closure was detected.
-- After terminal success/failure, another explicit POST evaluates current auth state and may start a fresh flow if still needed. No automatic browser/login retry. A repeated POST while pending joins the existing flow, including after an uncertain client response.
-- Only the currently active flow may update auth state. Late callbacks/results from expired or replaced flows must not overwrite a newer login.
-- UI closure or client disconnection after acceptance does not cancel the flow. Quit retains its selected process-stop behavior. Cross-Quit/crash recovery and local operation-state lifetime remain unselected/deferred; do not promise a flow survives reopening.
-- A later permitted restart does not wait for login. If that restart invalidates the supported integration's flow, report authentication failure; an independent browser flow need not fail solely because the ordinary server restarted. D27 accepts this overlap policy.
-
-#### Approved authentication request errors
-
-| HTTP | Code | Meaning |
-| --- | --- | --- |
-| `400` | `INVALID_REQUEST` | Invalid body/query; no values echoed. |
-| `401` / `403` | `UNAUTHENTICATED` / `FORBIDDEN` | Fetch login absent/invalid or management permission absent. |
-| `404` | `SERVER_NOT_FOUND` | Unknown server. |
-| `409` | `SERVER_NOT_INSTALLED` / `SERVER_BUSY` | Installation unfinished or restart active; do not create login. |
-| `500` | `AUTHENTICATION_START_FAILED` | Fetch cannot accept/start this flow; no `202` for unaccepted work. Failures after acceptance appear in the approved GET auth state. |
-
-Request errors return `status: failed`, `error: {code, message}` and `next_steps`. Do not expose target details on authorization failure. The busy branch's safe instructions include the existing attempt-specific monitoring URL; ordinary error replies have no credential/provider details. Example:
-
-```json
-{
-  "status": "failed",
-  "error": {
-    "code": "AUTHENTICATION_START_FAILED",
-    "message": "Fetch could not start sign-in."
-  },
-  "next_steps": []
-}
-```
-
-#### Dependencies and evidence still required
-
-Actual login/storage ownership is now explicitly part of this contract review (D24); do not finalize an automatic-support claim while that agreement is missing. Step 4 still selects the concrete login control, fresh-auth isolation, handoff/persistence, permissions and renewal mechanisms for each supported wrapper. Arbitrary local wrappers do not universally supply a controllable login mechanism; this contract does not promise universal OAuth or working integrations. Exact OAuth wire formats/scopes/key handling remain open. No package installs, login or implementation is authorized by this proposal.
-
-Once implementation is authorized, verify: truthful no-auth/already-auth/manual/native/unknown branches; one flow/browser on repeated/concurrent requests and no extended deadline; GET progress/success/failure; denial, undetectable tab closure, expiry and late callbacks; denied callers/invalid secret-valued bodies without leakage; client/UI disconnection; restart overlap; Quit behavior. These are proposed checks, not tests run.
+GET servers includes nullable authentication.access_expires_at and last_verified_at
+as UTC timestamp strings. It reports cached status without tokens, Keychain reads,
+provider requests or renewal, and does not persist derived request-rejection state.
+See [current details and compatibility limits](native-server-storage.md).
 
 ## Accepted batch-failure policy
 
@@ -932,225 +747,34 @@ The user approved the resumed setup block on October 26:
 
 These items were initially pending because the user had only responded to the earlier server-ID proposal. The later explicit approval of both resumed proposals resolves that status. It does not settle exact error formats, retry idempotency/concurrency, or recovery after Quit/restart.
 
-## Accepted: configuration and credential/environment entry
-
-The user approved this two-route block on October 26 and then explicitly extended the credential operation/store to server-local environment entries and custom auth tokens:
-
-| Route | Accepted behavior |
-| --- | --- |
-| `PATCH /api/v1/servers/{server_id}/config` | Update specified non-secret server settings, such as server arguments, working directory, or credential-variable references. Available to authorized setup agents and the interface. Reuse server information for reads; do not create another config-read route. |
-| `PATCH /api/v1/servers/{server_id}/credentials` | Accept new credential/environment-variable values entered through Fetch Settings, including custom auth tokens; save them in the encrypted per-server store and return names/status only. Restrict manual write authorization to Settings rather than the ordinary agent credential, and do not expose a secret-valued MCP tool input. |
-
-The user clarified that Fetch configurations are generated automatically during installation, so a separate configuration-creation route is unnecessary. The config PATCH edits an installed server's generated settings. This does not settle how to add Fetch's own MCP connection to the external harness configurations; that remains a separate onboarding question.
-
-The same store handles per-server environment entries, including ordinary configuration values, API keys, and custom tokens. Keep each entry assigned to its server ID, with names/references in server configuration and no stored values echoed to agents. Do not create a second environment-variable endpoint without discussing it.
-
-The Settings-only restriction applies to manual/external writes. Trusted backend OAuth grant/refresh processing still updates its corresponding stored credentials automatically, as previously selected.
-
-The exact backend authorization mechanism is not designed; merely omitting an MCP tool would not enforce the restriction on the HTTP API. Exact request fields, update/removal semantics, response envelopes, error codes, custom-token bindings, encryption/key handling, and the effect of changes on running wrappers are unresolved.
-
-### Approved common launch-configuration PATCH contract
-
-October 27, 2026: after credential-reference clarification and research, the user deferred standardizing the individual servers' differing settings to a separate post-MVP scope. "For now settings configs should just handle the standardized fields we're handling. Everything else looks good, feel free to move on" approves the previously presented common launch-field contract (D30). These are Fetch's shared fields, not an MCP-standard settings schema. Manual values remain on the separate Settings-only credentials route. Implementation remains paused.
-
-```http
-PATCH /api/v1/servers/{server_id}/config
-```
-
-Read the current saved server configuration, merge the supplied fields, validate the resulting definition and save it in the D28 durable server-data directory. Do not reread/edit original harness files, update packages/runtimes, write credential values, launch/restart processes, open login or call providers/tools.
-
-#### Approved input and replacement rules
-
-```json
-{
-  "args": ["/example/fetch/server.js", "--timeout", "30"],
-  "working_directory": "/Users/example/projects",
-  "environment": [
-    {"name": "EXAMPLE_API_KEY", "credential_ref": "stored-entry-7"}
-  ]
-}
-```
-
-The example is invented, not a real package/launcher to install. `EXAMPLE_API_KEY` is only the destination variable’s name; `stored-entry-7` is an opaque reference, not the API key. The agent neither submits nor receives the stored value. A config edit only saves a binding. At the selected launch/apply point, the trusted backend retrieves/decrypts the assigned value privately and supplies it directly to that server through its supported interface; exact handoff/key mechanisms remain step-4 decisions. Secret-valued requests remain restricted to the Settings-only credentials route.
-
-D29's broader native-server settings scope is deferred by D30. The MVP does not normalize arbitrary config files, discover/write every server-specific setting, add raw-file APIs or promise live native-settings changes. The existing common launch fields can still express supported arguments and credential bindings; exact safe launcher validation remains an implementation prerequisite.
-
-Only the following three common fields are writable:
-
-| Field | Approved meaning |
-| --- | --- |
-| `args` | Full normalized string array, matching GET's representation. Keep the installed launcher/script/package entrypoint prefix byte-for-byte unchanged; only supported trailing server arguments may differ. Replace the entire list; omitted means unchanged. `[]` is valid only if it preserves a valid installed launch definition. |
-| `working_directory` | Existing accessible absolute directory, or `null` to restore the saved launcher default. Omitted means unchanged. No shell/tilde/environment expansion, directory creation or copying. |
-| `environment` | Full replacement list of `{name, credential_ref}` bindings. `[]` removes editable bindings, not encrypted entries. Names must be unique and match `[A-Za-z_][A-Za-z0-9_]*`; refs are non-empty/non-whitespace opaque strings, matched exactly within this server's assigned credential context. No values, paths or cross-server lookup. A missing local value may remain a missing requirement through GET. Omitted means unchanged. |
-
-`{}` and supplied values identical to the saved definition are valid no-ops. Missing body, malformed JSON, non-object body, unknown fields/query parameters, wrong types and duplicate environment names return `400 INVALID_REQUEST`. Only `working_directory` accepts `null`. Invalid environment-name/ref content is `422 INVALID_CONFIG`; no rejected values are echoed.
-
-The server ID/display name, `kind`, package/version, runtime executable and launch entrypoint are read-only here. The environment list covers editable bindings, not backend-owned runtime/auth material. Package/runtime/entrypoint changes require their separately reviewed operations.
-
-Never accept inline credential values through arguments or ordinary config fields. A supported launcher/integration must establish the editable non-secret argument options. Protected prefix changes, inline credentials and arguments whose secrecy cannot be established return `422 INVALID_CONFIG` with safe guidance. Name-based filtering is not a universal detector. An unchanged known-safe GET array remains a no-op; exact protected-prefix identification and supported option schemas are integration prerequisites before implementation, not a claim of universal arbitrary-argument support.
-
-#### Approved callers, overlap and saving
-
-- Allow Settings and authenticated clients with server-management permission. Authorize before exposing target existence or metadata.
-- Unknown server: `404 SERVER_NOT_FOUND`; known unfinished installation: `409 SERVER_NOT_INSTALLED`. Installation is required, MCP readiness is not.
-- Active authentication: `409 SERVER_BUSY`, with existing-server-GET monitoring guidance. Do not change an active login's settings.
-- Active restart: allow edits. The accepted restart retains its captured settings (D20); any newer saved changes remain for a subsequent restart.
-- Serialize writes per server. Read/merge/validate/save is one operation. For overlapping supplied fields the last committed write wins; omitted fields preserve earlier committed updates. Whole arrays are replaced, not appended/merged. No edit-version/precondition or configuration-history feature is added.
-- Validate the entire resulting definition before saving. Validation failures change nothing. Complete a safe save before `200`; a save failure must not leave a partial/corrupt record. Exact atomic-write/coordination implementation belongs to step 5. This does not promise crash recovery or choose a retention policy.
-- Reference validation may inspect server-scoped metadata; do not decrypt/copy/replace/delete credential values merely to save references. Ordinary non-secret config contains no secret values.
-
-#### Approved application and result
-
-The current process keeps its applied settings. Recompute `restart_required` from saved versus applied launch/manual-environment state. A no-op preserves the existing flag. Restoring settings already matching applied state can clear the flag only when no other unapplied change remains. During restart, its captured settings govern that attempt; success clears the flag only if they match the latest saved settings. Saving never restarts automatically.
-
-Any actual change among these launch/reference fields invalidates saved-configuration authentication evidence: report `authentication.status: unknown` and `error: null` until the supported integration establishes the appropriate result. Do not delete credentials, revoke the running process's access, probe a provider or claim authentication success as part of this save. Apply the saved change and its auth-evidence invalidation together; a late refresh/test result tied to older settings must not authenticate the new configuration. A no-op preserves known auth state. A later explicit authenticate POST may test the applicable existing stored credential under D25 without forcing a fresh browser login. The live process may still work with its old applied settings; GET's authentication field must not imply that newly saved settings passed D25. The exact supported integration's later no-auth/native/credential verification and refresh remain step-4 work.
-
-```json
-{
-  "server_id": "server-a",
-  "status": "ok",
-  "changed": true,
-  "restart_required": true,
-  "next_steps": [
-    {
-      "actor": "user",
-      "action": "review_server_settings",
-      "instructions": "The settings were saved. Choose Restart in Settings to apply them."
-    }
-  ]
-}
-```
-
-Always return `server_id`, `status: ok`, `changed`, `restart_required` and `next_steps` on `200`. `changed: false` means saved values were identical; it can coexist with a previously pending restart. Read the complete saved definition through the approved GET, rather than duplicating it in this response or creating a new read route. Return `Cache-Control: no-store`.
-
-`next_steps` uses the common actor/action/instructions shape. `user/review_server_settings` explains unapplied changes, missing bindings or unknown authentication after an actual edit, without asking an agent for values. Explain that the saved configuration still needs authentication verification; the existing authenticate POST can establish it through the supported integration. Saving itself performs no verification. For an active restart, use `agent/check_restart_status` first and include the approved server/attempt-specific GET URL in instructions; if newer changes remain, explain that another restart will be needed afterward. For `SERVER_BUSY` from active login, use `agent/check_server_status` with the existing server GET and one-second polling guidance. When nothing needs attention use `[]`. Returning guidance performs no action and grants no permissions.
-
-A lost response/client/UI disconnection does not undo a committed save. Read GET before retrying an uncertain result. Repeating the same replacement patch does not accumulate entries, but last-writer-wins still applies if other callers changed supplied fields in between. No asynchronous configuration job or new progress route is added.
-
-#### Approved configuration errors
-
-All error replies use `status: failed`, `error: {code, message}` and `next_steps`. Do not return input/config values, raw file/process/provider output or target details on unauthorized requests.
-
-| HTTP | Code | Meaning |
-| --- | --- | --- |
-| `400` | `INVALID_REQUEST` | Body/query/schema validation failed; no changes. |
-| `401` / `403` | `UNAUTHENTICATED` / `FORBIDDEN` | Fetch login absent/invalid or management permission missing. |
-| `404` | `SERVER_NOT_FOUND` | Unknown target after authorization. |
-| `409` | `SERVER_NOT_INSTALLED` / `SERVER_BUSY` | Installation unfinished or authentication active. |
-| `422` | `INVALID_CONFIG` | Invalid directory/binding, protected launch change or unsupported/unsafe arguments. |
-| `500` | `CONFIG_WRITE_FAILED` | Safe read/validation/save cannot complete. Re-read before retrying an uncertain result. |
-
-#### Proposed acceptance evidence and dependencies
-
-Once implementation is authorized, verify omitted fields survive; full-list replacement/removal/default reset and no-ops; safe GET-to-PATCH args round trips and protected-prefix/secret/unknown-option rejection without leakage; no package/credential/process/provider/original-file side effects; missing local references and no cross-server resolution; denial before target disclosure; concurrent unrelated/overlapping fields; valid records after failed saves; auth-active rejection; restart-active captured-versus-new settings; authentication evidence invalidation only on actual edits; restored applied settings versus other pending changes; and uncertain response/readback behavior.
-
-Supported launcher/argument schemas, reference metadata, saved/applied comparison and exact file/write/key mechanisms remain implementation dependencies to review in their selected steps. None of the HTTP/storage/auth behavior has been implemented or tested. D30 approves the reviewed observable contract. Exact mechanisms and application implementation remain unselected/paused.
-
-### Proposed complete credentials PATCH contract — awaiting feedback
-
-October 27, 2026. The path/purpose and Settings-only manual-value boundary are accepted. The user has reviewed the base batch/save/removal/result/overlap contract and authorized moving on after adding the D31 verified-`200` gate/shared failure code; the new verification-specific HTTP mapping, response fields and edge-case policies below remain explicitly open/proposed, not blanket approvals. Common config PATCH is approved (D30); native-server settings normalization is deferred. This route stores manual server-local environment values, API keys and custom tokens. Backend OAuth grant/refresh writes remain trusted internal processing, not manual inputs here.
-
-```http
-PATCH /api/v1/servers/{server_id}/credentials
-```
-
-The example value is only a placeholder. Real values are entered privately in Fetch Settings, never through an agent prompt or MCP tool:
-
-```json
-{
-  "set": [
-    {"name": "stored-entry-7", "value": "<entered privately in Settings>"}
-  ],
-  "remove": ["obsolete-entry"]
-}
-```
-
-#### Proposed exact input
-
-- `set` and `remove` are optional arrays; omitted means no operation. `{}` and empty arrays are valid no-ops. Require a JSON object body; reject missing/malformed/non-object bodies, unknown fields/query parameters and wrong types with `400 INVALID_REQUEST`.
-- Every set item has exactly `name` and `value`. `name` identifies the same manual server-local entry exposed as GET credential `name` and referenced by config `credential_ref`. Set creates or replaces that entry, without creating/changing environment bindings. `remove` is a list of manual entry names; removing an already absent entry is a no-op.
-- Match names exactly, case-sensitively within the selected server; no trimming, path interpretation, global lookup or cross-server resolution. Names must be non-empty/non-whitespace strings without NUL. Invalid name/value content is `422 INVALID_CREDENTIAL_ENTRY`.
-- Values are strings, preserved exactly without trimming/shell expansion. Empty string is valid for an intentionally empty environment value; removal is explicit, not `null` or empty string. Reject NUL because these entries support process-environment delivery. Presence is not proof of a valid API key.
-- Reject duplicate names in either list or names present in both lists with `400 INVALID_REQUEST`. Only manual entries are editable: backend-owned OAuth grant/access/refresh records and reserved runtime-auth entries are protected; targeting them returns `422 INVALID_CREDENTIAL_ENTRY`.
-- Treat all manual values as secret, including ordinary environment values. Request schema does not select file encoding, crypto format or a database.
-
-#### Proposed authority, prerequisites and overlap
-
-Require backend-verified Settings manual-write authority **and** server-management permission. Ordinary agent/setup OAuth credentials get `403`, even by direct HTTP. No secret-valued MCP tool is exposed. Hiding a tool is not the backend authorization mechanism; concrete Settings authority/key handling remain step-4 choices.
-
-Authorize before revealing existence. Unknown target is `404 SERVER_NOT_FOUND`; known unfinished installation is `409 SERVER_NOT_INSTALLED`. Installation is required, not MCP readiness.
-
-Reject manual writes during **either active authentication or active restart** with `409 SERVER_BUSY`. For login, guide the existing server GET; for restart, guide the approved named server/restart GET, polling once per second. This is a newly proposed credentials-route restriction. D30 still permits non-secret config edits during restart; D20 did not select a secret-value snapshot mechanism. Waiting avoids changing manual values underneath a login/test or accepted restart. Check overlap together with the write, not only before acquiring its coordination boundary. Automatic backend refresh coordination remains integration-specific; no existing auth lifecycle is silently rewritten.
-
-#### Proposed encrypted saving and concurrency
-
-- Validate the entire batch before mutation, then save the resulting manual-entry changes as one complete encrypted operation in this server's D28 durable directory, preserving unrelated manual entries and protected OAuth/runtime-auth material.
-- Serialize per-server writes with related config/credential/auth-state changes and trusted automatic writes. Concurrent requests preserve unrelated entries; last committed operation wins for the same entry. No revision/history or edit-version feature is introduced.
-- Complete successful encrypted save, **private readback and the required successful test using that stored credential** before `200`; do not leave a partially applied batch/corrupt record on failure. No plaintext fallback or plaintext temporary credential file. Exact encryption/key availability/safe-write/locking mechanisms remain to choose; no crash-recovery guarantee is added.
-- Compare values privately for no-op detection. An unchanged batch verifies the existing readable state without an unnecessary rewrite; a changed batch requires encrypted save/readback before the test can establish success. An unchanged value cannot bypass the required verification gate merely because it was already stored. Do not echo values, partial/masked versions, lengths or fingerprints in management replies/errors/logs. Response `changed` describes this authorized operation, not a credential-return API.
-- If save/readback fails or the key/store is unavailable, return safe `500 CREDENTIALS_WRITE_FAILED`; never claim stored or authenticated success. An uncertain failure may require user retry; a complete record may have committed before readback/response failure. No automatic rollback or blind retry is promised.
-
-#### Proposed removal, application and auth state
-
-Removing a stored value does not change config bindings. Any remaining reference is `missing` through GET; guide the user to supply a replacement in Settings or deliberately change/remove the binding through the approved config PATCH. Never silently substitute an empty value. Removal is local storage deletion, not provider revocation and not erasure of the old value already held by a running process.
-
-The current process retains its applied environment until the selected launch/restart point. Recompute `restart_required` from saved versus applied launch/manual-environment state: changes to referenced values can require restart; creating/removing/changing an unreferenced entry alone does not. Preserve other unapplied differences. A no-op preserves the previous flag. Config-reference changes remain on config PATCH; manual-value saving does not bind or restart automatically.
-
-Any actual manual-entry change first invalidates previous authentication evidence: set GET `authentication.status: unknown` and `error: null` while the new state is unverified. The required test then records the supported integration’s verified outcome: credential-based success is `authenticated` only for the current credential/config state; failed verification reports `failed` with `CREDENTIAL_VERIFICATION_FAILED`. A no-op does not invalidate evidence merely by writing, but its `200` still requires the newly required test. Apply value change and invalidation together, and do not let a test/refresh result based on older values authenticate the new saved state. Exact internal comparison/generation/handoff mechanisms remain implementation work.
-
-D31 supersedes the earlier storage-only `200` proposal. After the encrypted save/readback, this operation must perform the supported authenticated test using the newly stored credential **before** returning `200`. It must not test a callback-held input copy, public health, generic `tools/list`, or an old running process that has not received the new credential. Test success must be associated with the same saved credential/config state; stale results cannot produce success.
-
-A failed/unavailable/timed-out/unproven test returns the shared `CREDENTIAL_VERIFICATION_FAILED`, also used by authenticate and its GET result. No `200` or authenticated success is allowed for an unverified credential. Save/readback failures retain `CREDENTIALS_WRITE_FAILED` and do not proceed to verification. Verification never implies permission to run an arbitrary side-effecting tool, open a new browser login or automatically restart the managed server. The supported endpoint/private handoff, test deadline, per-entry versus resulting-server batch proof, no-op/removal-only/non-auth-environment/native-permission handling and exact failure HTTP mapping must be selected during integration design. No unchecked `200` exemption is silently approved.
-
-If storage committed before verification failed, report that fact without leaking values. Proposed explicit failure metadata is `credentials_stored: true` when known, `false` when known no write committed, or `null` when storage outcome is uncertain. This field is proposed, not yet user-selected. Do not silently assert the old value remains, add automatic rollback, or revoke a provider token. Retain-versus-restore policy for a rejected saved value remains open; a revised full error policy must make the actual persistence outcome clear. No new generic test route is added.
-
-#### Proposed result and guidance
-
-```json
-{
-  "server_id": "server-a",
-  "status": "ok",
-  "changed": true,
-  "credentials": [
-    {"name": "stored-entry-7", "status": "stored"},
-    {"name": "obsolete-entry", "status": "missing"}
-  ],
-  "restart_required": true,
-  "next_steps": [
-    {
-      "actor": "user",
-      "action": "review_server_settings",
-      "instructions": "The values were stored and the required credential test passed. Restart through Settings if launch changes are still pending."
-    }
-  ]
-}
-```
-
-A `200` may be returned only after the required stored-credential verification succeeds. Return the shown base fields; no additional success-code field is selected. `credentials` includes affected names only in set-list then remove-list order; no duplicates. A confirmed removed/absent name is `missing`. Use existing GET for all known assigned metadata, not a new read route. `changed: false` means the resulting entries are identical; earlier pending actions can remain. An empty batch returns an empty affected list. This response has no credential values. Do not use this example to approve an unchecked removal, no-auth or unsupported-verifier success; their exact handling remains open under D31.
-
-Guidance retains actor/action/instructions. `user/review_server_settings` explains missing bindings, pending application or a failed/unavailable test, without soliciting values through an agent. The credential PATCH must perform its own required verification before `200`; it cannot defer the test to a next-step authenticate call while reporting success. Unsupported cases explain the integration limitation, not fictional OAuth or a new test route. Busy cases use `agent/check_server_status` or `agent/check_restart_status` and the existing monitoring URL. Include `next_steps: []` when nothing needs attention. Guidance itself performs no action or permission grant.
-
-Return `Cache-Control: no-store`. Disconnecting does not undo a completed save. GET can confirm names/status/pending changes, **not which of two different secret values is stored**. After an uncertain response, Settings may explicitly retry the same replacement batch; it does not append entries, but later writers can still be overwritten. Do not add a secret readback/hash API or automatically replay an uncertain mutation.
-
-#### Proposed credential errors
-
-All errors contain `status: failed`, safe `error: {code,message}` and `next_steps`. Never echo submitted values/raw request bodies, storage/provider/process diagnostics or unauthorized target details.
-
-| HTTP | Code | Meaning |
-| --- | --- | --- |
-| `400` | `INVALID_REQUEST` | Invalid body/schema/query, duplicate or conflicting names. |
-| `401` / `403` | `UNAUTHENTICATED` / `FORBIDDEN` | Fetch login missing/invalid, management permission or Settings write authority missing. |
-| `404` | `SERVER_NOT_FOUND` | Unknown server after authorization. |
-| `409` | `SERVER_NOT_INSTALLED` / `SERVER_BUSY` | Installation unfinished or authentication/restart active; no manual mutation. |
-| `422` | `INVALID_CREDENTIAL_ENTRY` | Invalid names/values or protected OAuth/runtime-auth entry. |
-| `500` | `CREDENTIALS_WRITE_FAILED` | Required store/key/read/save/readback cannot safely complete. |
-| Non-`200`, exact mapping pending | `CREDENTIAL_VERIFICATION_FAILED` | Required test failed or could not establish the new stored credential works. Same code in authenticate/GET verification failures; storage outcome must be stated truthfully. |
-
-#### Proposed acceptance evidence and dependencies
-
-Once implementation is authorized, verify Settings-only direct HTTP enforcement/no secret MCP input; set/update/remove/no-op/empty-string/duplicates/conflicts/NUL; protected/cross-server isolation; whole-batch save/readback failures and no plaintext/value leakage; referenced removal versus unchanged config/missing status; unreferenced changes versus other pending restart state; concurrent unrelated/overlapping/automatic writes; active login/restart rejection; private auth-evidence invalidation/stale-result rejection; only the documented authenticated verification request, no unrelated process/login/revocation effects; no `200` or authenticated success from storage alone; same verification-failure code in both routes and async GET, new-versus-old credential proof, saved-but-unverified/error metadata; and uncertain response/retry without secret readback.
-
-Exact entry/storage/key/locking mechanisms, Settings authority, manual-auth integration tests and process credential application remain later decisions, not assumed complete by this API proposal. No app/HTTP/credential tests have run. The user accepts moving on with D31, but the listed verification-specific policies/mechanisms still need review before implementation; do not treat their absence as an unchecked-success exemption.
+## Current: Fetch settings, manual keys and native folder access
+
+PATCH /api/v1/servers/{server_id}/config and fetch__update_server_config accept
+Fetch execution settings only. Existing execution validation, bounds, merge/removal,
+permissions and save behavior remain. Old args, working_directory, environment and
+connection edits are rejected; there are no compatibility aliases or JSON editors.
+
+PATCH /api/v1/servers/{server_id}/credentials remains for manually entered fixed
+keys. Native Settings authority and fresh exact request-bound Mac confirmation
+are required; ordinary OAuth/agents cannot write keys. Existing set:[{name,value}]
+and remove:[name] inputs operate only on already assigned environment/header refs.
+Reject unknown names and launcher-owned HOME/XDG refs. No native OAuth tokens are
+accepted or intercepted. Shared direct Keychain saving/readback preserves SDK and
+other manual values; failures do not claim success or reveal submitted values.
+Return stored with verified:false, changed/affected names, restart_required and
+next_steps. Explicit reconnect/restart applies changed process inputs. This replaces
+D31's encrypted-write/account-test success requirement for manual storage.
+
+POST /api/v1/servers/{server_id}/open-folder is native Settings only, with empty
+body, no query/path input and no agent MCP tool. Open the recorded actual existing
+native state folder asynchronously in Finder. Unknown/missing location409
+SERVER_FOLDER_UNAVAILABLE; opener failure503 SERVER_FOLDER_OPEN_FAILED. Existing
+malformed/forbidden/missing-server rules remain. No package/HOME guess, native token
+read, file watcher or automatic restart. Ordinary imports cannot yet supply native
+command/path descriptors; that public authoring contract remains unselected.
+
+[Complete current rules](native-server-storage.md). Earlier exact contracts and
+superseded encrypted/launch-edit proposals remain in the historical copy.
 
 ## Accepted: restart contract
 
@@ -1568,3 +1192,16 @@ direct-identity digest metadata and matching MCP schema are implemented.142
 unique fixture checks and native compilation pass; independent Tester/Evaluator
 ACCEPT. [Evidence](../../milestones/direct-install-inputs/evidence.md). No UI
 or real package/provider/connection verification is included in this pass.
+
+
+## November 3 implemented wrapper amendments
+
+The current exact route table/body/status/permissions are in [native-server-storage.md](native-server-storage.md).
+Credentials PATCH is retained for fixed manual keys (native-only Mac-confirmed,
+stored/verified:false), not removed. Authenticate accepts optional interactive
+(default true for explicit calls); restricted background calls require false and
+can only renew online access. GET servers adds nullable access_expires_at and
+last_verified_at without side effects. Config edits execution only. Open-folder is
+native-only, empty request and actual recorded state directory. DELETE removes
+registration while preserving all native/legacy/package/grant state. Fetch's own
+OAuth/TLS/raw-MCP contracts remain. These supersede older conflicting rows above.

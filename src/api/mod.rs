@@ -2,6 +2,8 @@
 pub mod setup;
 pub mod runtime;
 pub mod v1;
+#[cfg(test)]
+mod background_tests;
 
 use crate::{
     authority::{AuthorizationError, Authorizer, Caller},
@@ -70,6 +72,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/v1/setup/installations/{installation_id}", get(runtime::installation))
         .route("/api/v1/servers/{server_id}/config", axum::routing::patch(runtime::config))
         .route("/api/v1/servers/{server_id}/credentials", axum::routing::patch(runtime::credentials))
+        .route("/api/v1/servers/{server_id}/open-folder", axum::routing::post(v1::servers::server_id::open_folder::handler))
         .route("/api/v1/servers/{server_id}/authenticate", axum::routing::post(runtime::authenticate))
         .route("/api/v1/servers/{server_id}/restart", axum::routing::post(runtime::restart))
         .route("/api/v1/servers/{server_id}/tools/{tool_name}/call", axum::routing::post(runtime::call))

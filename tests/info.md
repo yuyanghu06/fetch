@@ -2,7 +2,53 @@
 
 These tests use temporary data, fixture configuration files and test-only authority objects. HTTPS tests open an IPv4 loopback listener on an available port and trust its public certificate only inside that test's HTTP client.
 
-They do not connect MCP servers, contact providers, read personal client configuration, change system certificate trust or access Keychain. Passing these checks does not establish MCP or client compatibility.
+Most checks stay in-process. `isolated_native_mcp.rs` starts synthetic MCP peers
+inside verified macOS resource sandboxes, and the explicit ignored
+`real_native_mcp.rs` checks a separately staged original Everything package.
+Neither uses provider accounts, personal configuration, system trust changes or
+the real Keychain. Passing fixtures does not establish universal compatibility.
+
+## Native server storage verification
+
+Final November3 frozen-source run:151 checks passed, none failed, and the explicit
+real-package case remained ignored in the ordinary suite. That real case also
+passed separately, giving152 distinct exercised cases. The selected command used
+`cargo test --locked --lib` plus backend, development_https, environment_paths,
+import_compatibility, local_mvp_acceptance, raw_json, direct_install,
+isolated_native_mcp and real_native_mcp targets. Native build and independent
+evaluation are recorded separately by the Orchestrator.
+
+`native_state/` contains ordinary HOME/XDG file fixtures with no credential
+interception. Each peer must pass owned-file positive checks and outside-file,
+sibling-state and TCP denial canaries before MCP execution. Tests cover raw large
+numbers/media/argument bytes, explicit restart/file reuse, separate accounts,
+other-server responsiveness and state-preserving registration removal. Owned
+PIDs exit and temporary roots are removed after tests.
+
+`real_native_mcp.rs` is ignored by default. It requires an explicitly marked task
+root, public Node24.22.1 and original Everything2026.8.31 staged separately. It
+does not install packages. Its runtime sandbox denies all network and external
+file access. The November3 explicit run passed:13tools, echo before/after restart,
+preserved package/native/legacy files on removal and confirmed owned child exit.
+All task-created packages, runtime, caches and state were then removed.
+
+`src/remote_oauth/tests.rs` uses fake Keychain storage and scripted SDK HTTP
+responses. It covers instance/root/service/client binding, rotation, missing
+replacement refresh tokens, storage failures, callback state/issuer rejection
+and unmodified manual values. Its real local HTTPS test exercises Fetch's actual
+restricted self-request sender and authenticate route, with a fake remote access
+check; it does not establish real provider or Keychain compatibility. Repeated
+status reads must not contact providers or wait for a blocked renewal.
+
+`src/api/background_tests.rs` checks that background authority is process-owned
+and cannot open login, run native setup, edit configuration/manual keys, invoke
+tools or open Finder. Its fake-Mac-confirmed manual PATCH checks report stored
+with verified:false, reject unassigned values and fail safely on missing Keychain
+readback. This is test authority only, not a real Mac approval result.
+`local_mvp_acceptance.rs` holds a rejected request using old headers until after
+renewal, then checks that its late reply cannot invalidate replacement access or
+replay a tool. `direct_install.rs` checks execution-only public edits and
+opaque legacy bytes remaining unchanged during installation reuse.
 
 Run `cargo test --tests`. The full developer check is `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, then `cargo test`.
 
@@ -104,13 +150,20 @@ echo is verified for Everything; Google remains preparation-only. See
 [optimized evidence](../milestones/delete-server/optimized-evidence.md).
 
 
-## Shared helper credential storage
+## Historical shared helper credential storage
 
-Core bridge_tests.rs and manager/helper_auth_tests.rs add21 checks around the
+The removed core bridge_tests.rs and manager/helper_auth_tests.rs added21 checks around the
 real encrypted store/shared channel/actual Google bootstrap with synthetic
-modules. tests/helper_bridge documents the OS-confined Node peers and support.
+modules. The former tests/helper_bridge documented the OS-confined Node peers and support.
 176 unique selected checks pass; final managed-child test asserts raw results,
 startup authentication and PID/socket cleanup. No real Google/native/account
 execution. Initial sandbox/bootstrap and same-owner fixture failures were fixed
 in tests only; exact commands and cleanup are in the shared authentication
 helper-storage evidence.
+
+## November3 — final native-storage verification
+
+Frozen-source relevant suite151PASS/0fail/1ignored; explicit original Everything
+confinement check separately1PASS. Final build passes; independent Evaluator ACCEPT.
+Exact commands/counts/corrections/cleanup/limits are in
+[milestone evidence](../milestones/native-server-storage/evidence.md).

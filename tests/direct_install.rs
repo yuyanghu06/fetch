@@ -3,26 +3,19 @@ use axum::{Router, body::Body, http::{HeaderMap, Request, StatusCode, header}, r
 use fetch_local::{
     api::{AppState, router},
     authority::{AuthorizationError, Authorizer, Caller},
-    credentials::{CredentialError, CredentialStore, KeyProvider, SecretDocument},
     discovery::DiscoveryService,
     installation::Installer,
     manager::Manager,
+    remote_oauth::GrantStore,
     runner::Runner,
     storage::ServerRepository,
 };
 use http_body_util::BodyExt;
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use std::{path::{Path, PathBuf}, sync::Arc, time::Duration};
 use tempfile::TempDir;
 use tower::ServiceExt;
-use zeroize::Zeroizing;
-
-struct FixtureKeys;
-impl KeyProvider for FixtureKeys {
-    fn key_for_server(&self, _: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError> {
-        Ok(Zeroizing::new([31; 32]))
-    }
-}
 
 struct FixtureAuthority;
 impl Authorizer for FixtureAuthority {
@@ -41,7 +34,6 @@ struct Fixture {
     source: PathBuf,
     installer: Arc<Installer>,
     repository: ServerRepository,
-    credentials: Arc<CredentialStore>,
     app: Router,
 }
 impl Fixture {
@@ -51,12 +43,11 @@ impl Fixture {
         let source = directory.path().join("source.json");
         let discovery = DiscoveryService::new(directory.path().join("empty-home"), None);
         let repository = ServerRepository::new(root.clone());
-        let credentials = Arc::new(CredentialStore::new(root.clone(), Arc::new(FixtureKeys)));
         let installer = Installer::new(root.clone(), discovery.clone());
-        let manager = Manager::new(repository.clone(), credentials.clone(), Runner::new(), installer.clone());
+        let manager = Manager::with_grant_store(repository.clone(), Arc::new(GrantStore::memory(root.clone())), Runner::new(), installer.clone());
         let mut state = AppState::new("https://localhost:53672".into(), repository.clone(), discovery, Arc::new(FixtureAuthority)).unwrap();
         state.manager = Some(manager);
-        Self { _directory:directory, root, source, installer, repository, credentials, app:router(Arc::new(state)) }
+        Self { _directory:directory, root, source, installer, repository, app:router(Arc::new(state)) }
     }
 
     fn write_source(&self, endpoint: &str) {
@@ -146,7 +137,7 @@ async fn unsupported_items_fail_safely_and_later_url_preparation_continues() {
 }
 
 #[tokio::test]
-async fn url_identity_reuse_preserves_saved_settings_and_encrypted_account_access() {
+async fn url_identity_reuse_preserves_saved_settings_and_untouched_legacy_bytes() {
     let fixture = Fixture::new();
     let first = fixture.prepare(json!([{"server_name":"remote","url":"https://mcp.miro.com/"}])).await;
     let server = id(&first, 0).to_owned();
@@ -155,13 +146,16 @@ async fn url_identity_reuse_preserves_saved_settings_and_encrypted_account_acces
     saved["config"]["connection"]["headers"] = json!([{"name":"Authorization","credential_ref":"my-key"}]);
     saved["credentials"] = json!([{"name":"my-key","status":"stored"}]);
     fixture.repository.save(&server, &saved).unwrap();
-    fixture.credentials.save(&server, &SecretDocument::new(br#"{"manual":{"my-key":"disposable-account-secret"},"oauth":null}"#.to_vec())).unwrap();
-    let secret_before = fixture.credentials.read(&server).unwrap().unwrap();
+    // Old ciphertext is deliberately opaque. New code must not read, decrypt,
+    // migrate or remove it while reusing an existing installation.
+    let legacy = fixture.root.join("servers").join(format!("{:x}", Sha256::digest(server.as_bytes()))).join("credentials.enc");
+    let secret_before = b"opaque-disposable-legacy-state\0\xff";
+    std::fs::write(&legacy, secret_before).unwrap();
     let second = fixture.prepare(json!([{"server_name":"remote","url":"https://mcp.miro.com/"}])).await;
     assert_eq!(id(&second, 0), server);
     assert_eq!(fixture.repository.get_saved(&server).unwrap().unwrap(), saved);
-    assert_eq!(fixture.credentials.read(&server).unwrap().unwrap().expose(), secret_before.expose());
-    assert!(!second.to_string().contains("disposable-account-secret"));
+    assert_eq!(std::fs::read(&legacy).unwrap(), secret_before);
+    assert!(!second.to_string().contains("opaque-disposable-legacy-state"));
     assert!(!fixture.root.join("packages").exists());
 }
 
@@ -260,4 +254,46 @@ async fn public_route_accepts_unsupported_item_then_reports_safe_current_run_fai
     assert!(!progress.to_string().contains("fixture-private-command-marker"));
     let fresh = Installer::new(fixture.root.clone(), DiscoveryService::new(Path::new("/not-read-by-progress").into(), None));
     assert_eq!(fresh.progress(installation).await.unwrap_err().code, "INSTALLATION_NOT_FOUND");
+}
+
+#[tokio::test]
+async fn public_configuration_edits_only_fetch_call_limits_and_never_native_launch_fields() {
+    let fixture=Fixture::new();
+    let prepared=fixture.prepare(json!([{"server_name":"remote","url":"https://mcp.miro.com/"}])).await;
+    let server=id(&prepared,0);let uri=format!("/api/v1/servers/{server}/config");
+    let before=fixture.repository.get_saved(server).unwrap().unwrap();
+    for patch in [json!({"args":["changed"]}),json!({"working_directory":"/disposable/changed"}),
+        json!({"environment":[]}),json!({"connection":{"headers":[]}}),
+        json!({"execution":{"default_timeout_ms":45000},"args":[]})] {
+        let (status,_,body)=fixture.request("PATCH",&uri,Some("Bearer fixture-manage"),patch).await;
+        assert_eq!(status,StatusCode::BAD_REQUEST,"{body}");
+        assert_eq!(fixture.repository.get_saved(server).unwrap().unwrap(),before,"rejected changes are atomic");
+    }
+    let (status,_,body)=fixture.request("PATCH",&uri,Some("Bearer fixture-manage"),json!({"execution":{"default_timeout_ms":45000,"max_concurrent_calls":3}})).await;
+    assert_eq!(status,StatusCode::OK,"{body}");
+    let after=fixture.repository.get_saved(server).unwrap().unwrap();
+    assert_eq!(after["config"]["execution"]["default_timeout_ms"],45000);
+    assert_eq!(after["config"]["execution"]["max_concurrent_calls"],3);
+    for key in ["args","working_directory","environment","connection","executable"] {assert_eq!(after["config"][key],before["config"][key]);}
+    let (status,_,_)=fixture.request("PATCH",&uri,Some("Bearer fixture-catalog"),json!({"execution":{"default_timeout_ms":90000}})).await;
+    assert_eq!(status,StatusCode::FORBIDDEN);
+    assert_eq!(fixture.repository.get_saved(server).unwrap().unwrap(),after);
+}
+
+#[tokio::test]
+async fn server_status_reads_do_not_open_or_verify_native_login_or_expose_old_credential_fields() {
+    let fixture=Fixture::new();
+    let prepared=fixture.prepare(json!([{"server_name":"remote","url":"https://mcp.miro.com/"}])).await;
+    let server=id(&prepared,0);let before=fixture.repository.get_saved(server).unwrap().unwrap();
+    for _ in 0..3 {
+        let (status,_,body)=fixture.request("GET",&format!("/api/v1/servers?id={server}"),Some("Bearer fixture-manage"),Value::Null).await;
+        assert_eq!(status,StatusCode::OK);
+        let row=&body["servers"][0];
+        assert_eq!(row["runtime"]["status"],"stopped");
+        assert_eq!(row["authentication"]["status"],"unknown");
+        assert!(row["authentication"]["access_expires_at"].is_null());
+        assert!(row["authentication"]["last_verified_at"].is_null());
+        assert!(row.get("credentials").is_none());
+        assert_eq!(fixture.repository.get_saved(server).unwrap().unwrap(),before);
+    }
 }

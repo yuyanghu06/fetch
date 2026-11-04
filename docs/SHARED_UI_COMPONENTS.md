@@ -1,3 +1,14 @@
+## November 3 wrapper refactor — current source
+
+The shared credential editor now handles only manually entered fixed keys saved
+in Keychain. It says stored, not authenticated; account evidence is separate.
+Settings/inline views share it and the async Open server folder control. The JSON
+server-config editor is removed; Fetch call limits remain. Authentication supports
+explicit native setup/online sign-in, unknown states, and connection expiry/last
+verified text. Earlier Figma specimens below are historical source references;
+new folder/stored/expiry states need design reconciliation and native visual proof.
+No Figma file was edited or native appearance acceptance claimed in this pass.
+
 # Shared UI components
 
 Confirmed October 28: commonly reused UI elements must be shared components in

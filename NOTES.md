@@ -1354,3 +1354,127 @@ successfully loaded individual keys until Quit; per-server separation stays.
 It does not select the alternative shared wrapping key or credential migration.
 Local identity setup may need actual macOS human authentication; do not supply
 or capture the user's password. Release signing/packaging remains excluded.
+
+
+## November 3, 2026 — Use native server configuration and login
+
+User requests pulling first and replacing Fetch's provider credential storage with
+servers' normal files/helpers. Clean main fast-forwarded 8f2a118 to515c7b1. Read-only
+Researcher/Planner audits distinguish native credentials, Fetch remote-client
+OAuth grants and apps authenticating to Fetch. No application source/runtime state
+changed. [Inventory and pending contracts](docs/architecture/native-server-storage.md)
+record the pre-code checkpoint. Historical encrypted-store decisions are superseded
+for current provider storage; old files/keys must remain untouched.
+
+
+## November 3, 2026 — Pause source work for the complete route/change plan
+
+User selected Keychain for remote OAuth, then asked how harnesses avoid per-server
+refresh code. Shared standard remote OAuth differs from local server/helper-owned
+provider refresh. Provider-storage redirection drove earlier Google-specific hooks.
+User now explicitly requests planning every needed change/route before more source
+work and discussing any MCP-specific code first. All writers stopped immediately.
+Partial Manager/API/UI/Keychain-boundary and fixture edits remain incomplete; no
+builds/tests/runtime/Keychain/Finder/provider operations occurred. The route/change
+plan and concrete native-folder/helper/env/Railway compatibility issues are in
+[the architecture record](docs/architecture/native-server-storage.md).
+
+
+## November 3, 2026 — Keep credentials route in the plan
+
+User revises the proposed removal: keep PATCH /credentials and use Keychain unless
+native servers already handle it. Discuss the difference between native OAuth
+refresh/storage and manual API-key delivery. Narrow Keychain/manual-key use is a
+recommendation, not approval of a replacement engine or renewed coding. No source
+changes/tests/runtime access; partial route removal remains pending correction.
+
+
+## November 3, 2026 — Explain basic facts and get to important decisions
+
+User explicitly requests first-principles explanations in ordinary language and
+says repeated jargon clarification wastes time that should go to important
+choices. Updated /Users/yuyang/.codex/AGENTS.md globally: explain who does what,
+why each step exists, the recommendation and practical tradeoff; keep specialist
+details out unless needed for the decision or requested. Existing instructions
+preserved and read back. No architecture choice is inferred. Fetch coding remains
+paused and its partial refactor is still incomplete/unbuilt/untested.
+
+
+## November 3, 2026 — Use the authenticate route for both callers
+
+User says background renewal and the button should both call Fetch's authenticate
+route since it already owns the logic. Record actual route use, one shared remote
+implementation and scheduler timing only. No new refresh endpoint/per-server code.
+Still plan background needs-sign-in vs user browser login and internal request
+permissions before implementation. This clarification does not resume source work.
+
+
+## November 3, 2026 — Walk through the full wrapper lifecycle
+
+User wants maximum reuse, minimal Fetch code and investigation of what MCP servers
+already handle; Fetch should do work only where needed. Read-only researcher/source
+review distinguishes native provider login/refresh from hosted-client access and
+Fetch product requirements. Recommend official shared Rust auth library replacing
+our handwritten remote flow, native server/helpers unchanged, raw runner retained.
+SDK change remains proposed; Keychain and same authenticate route stay selected.
+No source edits, builds/tests, package/server execution or personal state access.
+
+
+## November 3, 2026 — Official library approved; list remaining Fetch work
+
+User approves official shared Rust MCP auth library, asks updated plan and exact
+Fetch responsibilities before any more code. Recorded selection, server/library/
+Fetch ownership, replacement modules and remaining concrete choices. Keep actual
+common authenticate route, Keychain, raw forwarding and native server-owned login.
+No dependency or source edit, build/test/runtime/personal-state operation occurred.
+
+
+## November 3, 2026 — Manual-key PATCH and recorded native setup selected
+
+User confirms manually entered keys via PATCH with shared Keychain saving/delivery.
+Authenticate owns invoking existing native setup; user explicitly chooses recorded
+commands, not interpreting README instructions. Source of command/path records and
+exact save/check/remove/background request contracts remain to review. Explained
+background caller proof as a proposed temporary Fetch-only secret, separate from
+provider login. No source edits, tests/builds or native/server operations resumed.
+
+
+## November 3, 2026 — Explain expiry scheduling and propose server GET metadata
+
+User asks how checking is triggered and whether server GET can show login status/
+expiry. Official Rust source checks saved lifetime/time when retrieving access;
+Claude documents automatic renewal without publishing a fixed cadence. Proposed
+known-expiry wakeup plus connection/use/rejection checks through authenticate,
+side-effect-free GET with nullable expiry/last-verification timestamps. Native
+hidden expiry remains unknown; no provider-token file inspection. No source work
+or tests/builds/runtime/native state access occurred.
+
+
+## November 3, 2026 — Keep expiry behavior conventional
+
+User says as long as this is normally done. Confirm service-supplied expiry,
+before-use checks and library renewal are established behavior. Proactive timers
+are optional; server-GET timestamps are Fetch reporting, not a universal MCP status
+method. Hidden local expiry remains unknown. Source work remains paused.
+
+
+## November 3, 2026 — Resume and implement shared wrapper auth
+
+User authorizes starting. Source uses official rmcp3.8 auth, direct Keychain remote/
+manual-key sections, native server-owned files/renewal, actual selfHTTPS authenticate
+route, safe auth timestamps, execution-only config and registration-only removal.
+Removed custom marker after a test exposed transient-refresh breakage; SDK handles
+renewal/errors. Initial141 relevant fixtures and native build pass. Final review/
+real confined package check pending. No native real-account/OS acceptance; ordinary
+imports cannot author missing native setup/folder descriptors through a new UI/API.
+
+## November3 — server-owned storage refactor accepted
+
+Official rmcp handles online-client login/refresh; native servers/helpers keep
+their own credentials. Retained Settings PATCH saves fixed manual keys directly
+in Keychain. GET cached auth times, execution-only config edits, recorded-folder
+action and state-preserving removal implemented.151 final checks plus separate
+original Everything sandbox run and native binary build pass; independent ACCEPT.
+See docs/architecture/native-server-storage.md and milestones/native-server-storage/evidence.md.
+Ordinary native descriptor entry and real OS/provider/client acceptance remain
+separate. No personal settings/credentials or old runtime state migrated/deleted.

@@ -43,6 +43,9 @@ impl NativeClient {
         }
         Ok(value)
     }
+    pub async fn open_server_folder(&self, id: &str) -> Result<Value, String> {
+        self.request(Method::POST, &format!("/api/v1/servers/{}/open-folder", component(id)), None).await
+    }
     pub async fn servers(&self) -> Result<Value, String> { self.request(Method::GET, "/api/v1/servers", None).await }
     pub async fn discovery(&self, path: &str) -> Result<Value, String> {
         let suffix = if path.is_empty() { String::new() } else { format!("?{}", url::form_urlencoded::Serializer::new(String::new()).append_pair("config_path", path).finish()) };

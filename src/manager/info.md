@@ -1,171 +1,73 @@
 # Managed servers
 
-At app startup, every saved server gets an independent connection attempt.
-Startup waits for all attempts together rather than connecting servers one at a
-time. Each retains its existing lock, saved-credential refresh, readiness timeout,
-authentication/error reporting and feature observation. No login is opened.
+The manager owns installation progress, saved-instance lookup, explicit Connect /
+Restart, authentication status and registration removal. HTTP and MCP interfaces
+use these same functions. Each instance has its own operation lock; independent
+servers can progress together. The runner keeps raw MCP forwarding, queues and
+call deadlines.
 
-## Shared authentication router
+## Native configuration and login
 
-`authentication.rs` selects the common handler from saved imported launch and
-connection facts and assigned input requirements. Remote defaults to web OAuth
-except trusted manual-credential compatibility. Local assigned inputs use the
-credential handler; known no-auth servers and unsupported setup retain explicit
-outcomes. Google1.11.3 now uses the shared helper bridge and existing callback;
-actual provider account login is distinct from fixture evidence.
-No CLI command or README instruction is guessed. Account state remains keyed
-by server ID, so the same package can have independent credential owners.
+Native processes run their original executable and arguments. The shared launcher
+sets distinct HOME, XDG_CONFIG_HOME and XDG_STATE_HOME locations per instance;
+explicit imported working directories are preserved. This helps only servers
+that honor those locations. Fetch does not claim that every server keeps its
+account state there, and does not read, patch, watch or copy native OAuth tokens.
 
-`WebPlan` shares registration requests, authorization URL construction and token
-exchange/refresh HTTP across Railway, Linear and generic remote OAuth. Railway
-keeps its numeric-loopback callback/native registration/scopes/token policy and
-private CLI environment; Linear keeps its endpoint allowlist/resource/public
-client policy. `remote_auth.rs` owns published discovery and DNS/issuer/resource
-validation. Manager retains pending ownership, expiry/revision checks, encrypted
-save/readback, authenticated-service verification and renewal scheduling. Safe
-selected-flow errors reach the existing status/UI without a fallback method.
-No public route, request field or saved credential format changes.
+The native Authenticate operation runs only an exact internally recorded
+`_installation.native_setup` descriptor: executable, args, working_directory and
+state_directory. There is no package-name switch, guessed auth command or README
+interpreter. Missing descriptors return a clear unsupported result. Current public
+imports do not invent these descriptors, so existing packages can require their
+normal manual setup. Helper completion alone leaves account authentication unknown.
 
-deletion.rs implements shared management-authorized deletion. An owned worker retains installer/server/runner gates after caller loss through bounded close, blocking cleanup and state purge. Original configurations/scripts and shared resources stay outside cleanup. Per-ID locks remain for stale waiters; missing records end later refresh/auth work.
+Open server folder uses only a recorded actual state_directory. Unknown, missing
+or shared locations fail clearly; the downloaded package and HOME are not guessed
+as substitutes. Canonical equivalent state directories cannot silently serve two
+instances. The native Settings route controls the Finder operation; agents cannot
+open desktop windows with ordinary management authority.
 
-D83 connects newly prepared servers through the existing restart backend and waits for its named outcome. Shared startup/restart classification marks successful credential-free connections without a known login requirement not_required, preserves verified provider evidence and exposes required access separately from genuine runtime errors. A ready reused import is not restarted. GET servers projects later explicit provider rejections while preserving newly verified credentials awaiting application. Installation never opens login or invokes arbitrary tools. Source-only acceptance is separate from execution.
+## Remote HTTP OAuth
 
-## D82 shared input and verification engine
+The official pinned Rust MCP library owns published discovery, registration,
+PKCE/code exchange, token interpretation and refresh. `remote_oauth/sdk.rs` supplies
+one shared Keychain store and `network.rs` supplies generic HTTPS/destination
+protections. There are no Google, Railway or Linear credential adapters.
 
-`bindings.rs` imports all configured environment/header names and server-local
-references without a provider-name list. Both local environment and remote-header
-delivery use its generic resolver. `verification_profiles.json` contains the
-trusted data for existing service checks; `verification.rs` binds saved values,
-builds generic header/JSON requests and evaluates HTTP/body success. The old
-`assigned_manual_references` and `verify_credential` service switches are removed.
-Known input names may remain in trusted check selectors because proof needs to
-identify the values a request actually uses; they no longer whitelist storage or
-delivery. See docs/architecture/authentication-engine.md.
+The Authenticate button, startup checks, early renewal and expired-access checks
+use the same actual authenticate HTTP route. The background sender has a random
+process-only credential accepted for remote quiet checks/renewal only; it cannot
+open a browser, launch native setup, save keys or call tools. The scheduler only
+chooses timing. The SDK performs renewal and saves replacement tokens; Fetch does
+not run another token refresh implementation. SDK operations stay inside the
+route, and the raw runner does not invoke automatic SDK refresh elsewhere.
 
-Named provider classification remains only for established no-auth, OAuth and
-lifecycle behavior. Unknown inputs can be stored/supplied without invented
-authentication proof. A missing trusted description remains an explicit unknown/
-verification failure; it does not become a successful save or login.
+Remote authentication requires a successful protected transport check in addition
+to the Keychain save/readback. A public initialization, browser page or tool list
+cannot prove protected access. This check does not prove every downstream provider
+account works. Transient SDK renewal errors and rejected/missing login remain
+distinct; no failed MCP action is replayed.
 
-`mod.rs` owns current server state, configuration changes, provider authentication and named restart/reconnect operations. UI and management-tool adapters call these same backend handlers. It overlays live process/queue/authentication state onto saved non-secret records; status GETs do not probe providers or unlock secret storage.
+## Manually entered fixed keys
 
-Manual credentials require a native Settings capability bound to the exact batch and current config/credential state. They are encrypted, read back and checked through a supported provider endpoint before a successful response. Unknown integrations remain unknown; tool-list readiness is never substituted for provider authentication.
+The native Settings-only credentials PATCH stores fixed user-entered keys directly
+in Keychain and supplies only existing assigned environment/header references.
+Fresh request-bound Mac confirmation is preserved. Values assigned to the launcher's
+HOME/XDG locations are rejected. A stored response explicitly has verified:false;
+no invented provider-specific account check turns a successful save into account
+access proof. Native OAuth tokens are never managed through this form.
 
-Source includes Tavily/GitHub authenticated reads and Linear's documented authenticated GraphQL viewer read, plus metadata-driven Linear OAuth with PKCE and owned encrypted refresh state. [Linear MCP](https://linear.app/docs/mcp), [Linear API](https://linear.app/developers/graphql) and the existing architecture/provider research inform these paths. No provider authentication or test was performed during implementation.
+GET server status reads saved non-secret records and cached runtime/authentication
+state only. `access_expires_at` and `last_verified_at` are UTC timestamp strings or
+null; GET does not unlock Keychain, probe providers or refresh tokens.
 
-The required verification gate has no unchecked-success exception. Supported assigned manual authentication entries can be saved together; each required value must pass its service check from encrypted readback. An existing OAuth token cannot approve a newly submitted manual value. Unsupported/unreferenced values and removal-only changes can still commit encrypted storage and return `CREDENTIAL_VERIFICATION_FAILED`; their final outcome policy remains unresolved. Multiple values are verified only where a trusted description covers their request inputs.
+## Removal and verification limits
 
-Stdio servers without an explicit saved working directory now use their private
-server home as both the default HOME and working directory, keeping relative
-writes out of the launch checkout. Explicit imported working directories are
-preserved. The home follows the selected development/release application root.
-This fallback change is source-reviewed, not runtime-verified.
+Deletion closes an idle owned connection and removes only Fetch's registration.
+It preserves native files, packages, remote grants, legacy encrypted files and old
+keys. No migration, decryption, token revocation or cleanup is implied.
 
-Railway support is implemented in railway.rs, provider_callback.rs and the shared OAuth handlers:
-Fetch-owned DCR/public PKCE, encrypted registration and rotating grant ownership,
-stored-token /oauth/me verification, and D80's temporary numeric-loopback native
-callback. The same Authenticate operation is used by UI and MCP; safe outcome
-logging is in the shared handler. Legacy HTTPS callback remains for Linear.
-
-Railway stdio gets only Fetch's verified access token as RAILWAY_API_TOKEN, an
-authoritative private HOME and private CLI/Node PATH. Automatic CLI/skill updates
-and telemetry are disabled. No personal Railway login/config is read or written.
-An existing child needs explicit Restart after token refresh; the server exposes
-restart_required rather than claiming a live environment update.
-
-## October 29 generic remote authentication source
-
-`remote_auth.rs` implements the published MCP protected-resource/issuer discovery,
-public client registration, PKCE browser flow and encrypted renewal context using
-the existing HTTP library. It follows the official [Rust SDK authentication
-design](https://github.com/modelcontextprotocol/rust-sdk/blob/main/docs/OAUTH_SUPPORT.md)
-and [MCP authorization contract](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization);
-no SDK protocol models replace the raw runner and no dependency was added.
-
-Each metadata, registration and token request resolves its destination, rejects
-private/special addresses, pins the checked answers on the request client, uses
-normal HTTPS verification, ignores inherited proxies and refuses redirects.
-Published metadata must match its advertised issuer and the imported resource.
-Refresh must match the encrypted registration, issuer, resource, client and
-token endpoint; interrupted generic rotating refresh is not replayed. Browser
-authorization uses the existing HTTPS callback. A provider that rejects that
-redirect remains unsupported; the Railway-only numeric callback is not expanded.
-
-Generic issuers must publish `authorization_response_iss_parameter_supported: true`.
-Their exact published issuer is kept in the encrypted metadata, and the callback's
-`iss` must equal it before Fetch sends an authorization code or PKCE verifier to
-the token endpoint. Missing/wrong issuer responses fail without an exchange; there
-is no downgrade for providers lacking that mix-up protection. Existing named
-Linear/Railway callback policy is unchanged.
-
-The [official SDK security advisory](https://github.com/modelcontextprotocol/rust-sdk/security/advisories/GHSA-5p52-q7pq-9fq2)
-informed DNS pinning and redirect refusal. The implementation does not invent
-legacy authorization/token/registration URLs when metadata is absent. Seven pure
-fixtures cover metadata provenance, resource/query binding, public-address policy,
-well-known URLs, challenge parsing and saved refresh context. Root coordinates
-their execution separately; writing these fixtures is not a passing result.
-
-Generic grant storage is distinct from authentication proof. Under the current
-D25/D31 contract it still cannot report authenticated without an approved provider
-verification adapter. Deletion/non-auth success and protected-MCP proof remain unselected. Supported
-API-key batches are implemented; removal/non-auth outcomes and unknown local
-setup remain explicit gaps.
-
-## Recorded inventory support, without personal configuration access
-
-These rows describe source coverage from the previously redacted inventory, not
-successful installation, sign-in or operation. No everyday credentials were read
-or copied for this implementation.
-
-| Recorded servers | Current setup/ownership boundary |
-| --- | --- |
-| Everything, Filesystem, Time test references | Explicit no-provider-auth profiles; isolated installation/tool checks still required. |
-| Tavily, GitHub | Manual API credential assignment plus documented authenticated service read; fresh encrypted-save verification still required. |
-| Linear, Railway | Fetch-owned browser login, encrypted tokens and provider verification; Railway gets its private CLI context. Actual provider consent and reuse remain unrun. |
-| PostHog, Calendly, Miro, Hugging Face, v0, hosted Supabase | General remote metadata/registration/login/refresh source is available where published metadata and Fetch's HTTPS callback are supported. No universal account-check endpoint is assumed; unknown verification remains an explicit blocker under D25. |
-| Vercel | Import/general remote source does not establish Vercel's required client approval. Fetch must not impersonate an approved client. |
-| Apple Calendar/Notes/Reminders, iMessage, Blender, Premiere | Native app/OS permission and wrapper setup must be verified in an isolated desktop. Current unknown local classification is not proof of no authentication or working native access. |
-| Four Google accounts, Slack, GHL, Pinecone | Each local wrapper's credential ownership, fresh setup, private handoff and verification still need a documented integration. No universal export of wrapper-held tokens is available. |
-| Photopea, rea, ccmux, node_repl and other custom/local Supabase entry | Existing script/bridge/process setup is source-specific; no Fetch-owned provider adapter or verified no-auth claim has been invented. |
-
-Read [the remaining-work record](../../docs/testing/MVP_GAPS.md) for operational
-acceptance and follow-ups. The Railway callback now uses the shared first-party
-HTML message helper while preserving its response texts, statuses and headers.
-
-## October 30 checked credential groups
-
-The manager no longer requires exactly one SET entry. Existing named API-key
-adapters collect their supported assigned references, deduplicate shared entries
-and verify all required current manual values. PATCH also verifies every submitted
-covered value when an OAuth token exists; that older token cannot approve a new
-unchecked key. POST and PATCH retain D25/D31 and per-server locking. Arbitrary
-client-secret schemes, unknown/unbound entries and removal-only success are not
-added. The mock verification destination exists only in cfg(test); production
-requests retain the fixed documented service endpoints. Independent new fixture
-results are recorded in the parallel-authentication milestone.
-
-D82 independent final result:17 new cases,35 targeted manager cases and110
-combined fixtures pass; native binary build passes. Production login selection
-uses the same profile-selection path as tests. New remote profiles default to
-standard OAuth; unrelated saved settings do not count as authentication, and
-manual-header-only proof does not create an OAuth record. Source-review findings
-and bounded evidence are recorded in the generic-authentication milestone.
-
-
-## Google as the first shared storage adapter
-
-helper_auth.rs supervises Google1.11.3 through its existing helper/callback using
-credentials/bridge.rs. google_helper.mjs maps only its known token path into
-encrypted reads/conditional updates; it patches the actual nested OAuth2 renewal
-method and waits for stored-access verification before returning new tokens.
-Google's refresh-only initial payload and later access/expiry updates share one
-canonical helper section; no duplicate oauth token document is maintained.
-App inputs come only from assigned encrypted entries; private profile paths and
-noninteractive guards prevent personal fallback and unsolicited browser startup.
-
-Manager owns contexts/pending attempts and config/input invalidation; Runner owns
-each normal-process lease. Execution-only edits preserve renewal. Late failure
-callbacks must still own their exact process session after the live-state lock.
-The shared verifier uses the trusted Drive about request with fields=user; only
-unchanged saved revision proof can establish success. D25/D31 stay required,
-including checked app-credential changes. No manual save success exemption.
+Unit/integration fixtures use disposable records, fake Keychain/network/verification
+connections and confined child processes. These are separate from real native
+Finder, Keychain, browser/provider and client acceptance. See the current milestone
+for actual test results and remaining native compatibility limits.

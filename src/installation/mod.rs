@@ -135,16 +135,13 @@ impl Installer {
         let prepared=match prepared {Ok(config)=>config,Err(())=>{let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}};
         config=prepared;
         if self.stopping.load(Ordering::SeqCst){let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
-        let names:BTreeSet<String>=capture.row["credential_variables"].as_array().into_iter().flatten().filter_map(Value::as_str).map(str::to_owned)
-            .chain(config["connection"]["headers"].as_array().into_iter().flatten().filter_map(|v|v["credential_ref"].as_str()).map(str::to_owned)).collect();
-        let credentials:Vec<Value>=names.iter().map(|n|json!({"name":n,"status":"missing"})).collect();
         let protected_args=if kind=="npm" {1} else if kind=="local_script" {config["args"].as_array().map_or(0,Vec::len)} else {0};
         let mut association=json!({"source_name":selection.name,"installation_id":installation,"protected_args":protected_args});
         match &selection.input{
             SelectionInput::Source(path)=>association["source_path"]=json!(path),
             SelectionInput::Direct(definition)=>association["direct_identity"]=json!(definition.as_ref().map_err(|_|())?.identity),
         }
-        let record=json!({"server_id":server_id,"name":selection.name,"runtime":{"status":"stopped","error":null},"authentication":{"status":"unknown","error":null},"restart_required":kind=="remote","restart":null,"config":config,"credentials":credentials,"_installation":association});
+        let record=json!({"server_id":server_id,"name":selection.name,"runtime":{"status":"stopped","error":null},"authentication":{"status":"unknown","error":null},"restart_required":kind=="remote","restart":null,"config":config,"_installation":association});
         if self.repository.save(&server_id,&record).is_err() {let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
         Ok(server_id)
     }

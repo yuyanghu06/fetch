@@ -1,5 +1,5 @@
 //! Independent, window-free checks for concurrent authentication and late replies.
-use super::{AuthAction, Desktop, Message, Page, client::NativeClient};
+use super::{Desktop, Message, Page, client::NativeClient};
 use super::{
     auth_requests::Requests,
     authentication::{Flow, Phase},
@@ -53,10 +53,8 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         discovery_started: false,
         picker_window: None,
         selected_server: String::new(),
-        config: "{}".into(),
         timeout: "120".into(),
         concurrency: "1".into(),
-        advanced: false,
         secret_name: String::new(),
         secret_value: String::new(),
         job: None,
@@ -74,6 +72,7 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         authentication: BTreeMap::new(),
         auth_requests: Requests::default(),
         deletions: BTreeMap::new(),
+        opening_folders: BTreeSet::new(),
     };
     (directory, desktop)
 }
@@ -164,7 +163,6 @@ async fn desktop_authenticate_messages_overlap_and_report_independent_results() 
     drop(desktop.update(Message::AuthFinished(
         tavily,
         "tavily".into(),
-        AuthAction::Authenticate,
         Ok(json!({"status":"authenticated","next_steps":[]})),
     )));
     assert!(desktop.authentication["tavily"].phase == Phase::Authenticated);
@@ -172,7 +170,6 @@ async fn desktop_authenticate_messages_overlap_and_report_independent_results() 
     drop(desktop.update(Message::AuthFinished(
         github,
         "github".into(),
-        AuthAction::Authenticate,
         Err("Fixture authenticated service check failed".into()),
     )));
     assert!(desktop.authentication["github"].phase == Phase::Failed);
@@ -193,7 +190,6 @@ async fn desktop_repeated_same_target_and_restart_do_not_replace_pending_authent
     drop(desktop.update(Message::AuthFinished(
         token + 100,
         "github".into(),
-        AuthAction::Authenticate,
         Ok(json!({"status":"authenticated","next_steps":[]})),
     )));
     assert!(desktop.authentication["github"].phase == Phase::Starting);
@@ -201,28 +197,43 @@ async fn desktop_repeated_same_target_and_restart_do_not_replace_pending_authent
 }
 
 #[tokio::test]
-async fn desktop_settings_save_has_its_own_request_and_clears_the_entered_secret() {
+async fn desktop_folder_opening_leaves_other_authentication_responsive_and_reports_errors() {
     let (_directory, mut desktop) = desktop_fixture().await;
     drop(desktop.update(Message::Authenticate("github".into())));
-    drop(desktop.update(Message::Choose("tavily".into())));
-    drop(desktop.update(Message::SecretName("api-key".into())));
-    drop(desktop.update(Message::SecretValue("disposable-ui-secret".into())));
-    drop(desktop.update(Message::SaveSecret));
-    let token = desktop.auth_requests.latest_sequence();
+    drop(desktop.update(Message::OpenFolder("tavily".into())));
+    assert!(desktop.auth_requests.contains("github"));
+    assert!(desktop.opening_folders.contains("tavily"));
+    assert!(!desktop.busy);
+    drop(desktop.update(Message::Authenticate("tavily".into())));
+    assert!(desktop.auth_requests.contains("tavily"));
+    let sequence=desktop.auth_requests.latest_sequence();
+    drop(desktop.update(Message::OpenFolder("tavily".into())));
+    assert_eq!(desktop.auth_requests.latest_sequence(),sequence);
+    let window=desktop.window;
+    drop(desktop.update(Message::FolderOpened("tavily".into(),window,Err("Native folder location is unsupported".into()))));
+    assert!(!desktop.opening_folders.contains("tavily"));
     assert!(desktop.auth_requests.contains("github"));
     assert!(desktop.auth_requests.contains("tavily"));
-    assert!(desktop.secret_value.is_empty());
-    assert!(desktop.authentication["tavily"].phase == Phase::Saving);
-    assert!(!desktop.busy);
-    drop(desktop.update(Message::AuthFinished(
-        token,
-        "tavily".into(),
-        AuthAction::SettingsCredential,
-        Ok(json!({"status":"ok","next_steps":[]})),
-    )));
-    assert!(desktop.authentication["tavily"].phase == Phase::Authenticated);
-    assert!(desktop.auth_requests.contains("github"));
-    assert!(desktop.notice.starts_with("Saved."));
+    assert_eq!(desktop.error.as_deref(),Some("Native folder location is unsupported"));
+}
+
+#[tokio::test]
+async fn desktop_folder_opening_rejects_unknown_targets_and_replies_from_a_closed_window() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    drop(desktop.update(Message::OpenFolder("unknown".into())));
+    assert!(desktop.opening_folders.is_empty());
+    drop(desktop.update(Message::OpenFolder("github".into())));
+    let old_window=desktop.window;
+    desktop.close_authentication();
+    desktop.window=Some(iced::window::Id::unique());
+    drop(desktop.update(Message::OpenFolder("github".into())));
+    drop(desktop.update(Message::FolderOpened("github".into(),old_window,Ok(json!({"server_id":"github","status":"opened"})))));
+    assert!(desktop.opening_folders.contains("github"));
+    assert!(desktop.notice.is_empty());
+    let window=desktop.window;
+    drop(desktop.update(Message::FolderOpened("github".into(),window,Ok(json!({"server_id":"github","status":"opened"})))));
+    assert!(!desktop.opening_folders.contains("github"));
+    assert_eq!(desktop.notice,"Server folder open request completed.");
 }
 
 #[tokio::test]
@@ -235,7 +246,6 @@ async fn desktop_rejects_status_reads_started_before_authentication_completed() 
     drop(desktop.update(Message::AuthFinished(
         token,
         "github".into(),
-        AuthAction::Authenticate,
         Ok(json!({"status":"authenticated","next_steps":[]})),
     )));
     drop(desktop.update(Message::Servers(
@@ -265,7 +275,6 @@ async fn desktop_old_window_and_old_auth_replies_cannot_overwrite_reopened_state
     drop(desktop.update(Message::AuthFinished(
         old_auth,
         "github".into(),
-        AuthAction::Authenticate,
         Ok(json!({"status":"authenticated","next_steps":[]})),
     )));
     drop(desktop.update(Message::Servers(
@@ -347,8 +356,8 @@ fn status_reads_that_finish_out_of_order_preserve_the_newest_snapshot() {
 fn failed_service_does_not_change_another_services_verified_result() {
     let mut github = Flow::starting();
     let mut tavily = Flow::starting();
-    github.result(&json!({"status":"authenticated","next_steps":[]}), false);
-    tavily.result(&json!({"status":"authenticating","next_steps":[]}), false);
+    github.result(&json!({"status":"authenticated","next_steps":[]}));
+    tavily.result(&json!({"status":"authenticating","next_steps":[]}));
     tavily.observe(&json!({"status":"failed","error":{"message":"Fixture key rejected"}}));
     assert!(github.phase == Phase::Authenticated);
     assert!(!github.reconcile);
@@ -357,25 +366,16 @@ fn failed_service_does_not_change_another_services_verified_result() {
 }
 
 #[test]
-fn rejected_manual_save_is_not_approved_by_an_older_valid_server_credential() {
+fn generic_ok_is_not_proof_of_authentication() {
     let mut flow = Flow::starting();
-    flow.phase = Phase::Failed;
-    flow.manual = true;
-    flow.reconcile = true;
-    flow.error = Some("The submitted credential failed verification".into());
-    flow.observe(&json!({"status":"authenticated","error":null}));
+    flow.result(&json!({"status":"ok","next_steps":[]}));
     assert!(flow.phase == Phase::Failed);
-    assert!(flow.manual);
-    assert!(!flow.reconcile);
-    assert_eq!(
-        flow.error.as_deref(),
-        Some("The submitted credential failed verification")
-    );
+    assert!(flow.error.is_some());
 }
 
 #[test]
-fn server_snapshot_cannot_approve_a_request_still_starting_or_saving() {
-    for phase in [Phase::Starting, Phase::Saving] {
+fn server_snapshot_cannot_approve_a_request_still_starting() {
+    for phase in [Phase::Starting] {
         let mut flow = Flow::starting();
         flow.phase = phase;
         flow.observe(&json!({"status":"authenticated","error":null}));
@@ -386,10 +386,56 @@ fn server_snapshot_cannot_approve_a_request_still_starting_or_saving() {
 #[test]
 fn pending_browser_flow_reports_success_only_after_verified_server_status() {
     let mut flow = Flow::starting();
-    flow.result(&json!({"status":"authenticating","next_steps":[]}), false);
+    flow.result(&json!({"status":"authenticating","next_steps":[]}));
     assert!(flow.phase == Phase::Pending);
     assert!(flow.reconcile);
     flow.observe(&json!({"status":"authenticated","error":null}));
     assert!(flow.phase == Phase::Authenticated);
     assert!(!flow.reconcile);
+}
+
+#[tokio::test]
+async fn manual_key_save_uses_its_own_request_and_never_claims_authenticated_access() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    drop(desktop.update(Message::Authenticate("github".into())));
+    drop(desktop.update(Message::Choose("tavily".into())));
+    drop(desktop.update(Message::SecretName("api-key".into())));
+    drop(desktop.update(Message::SecretValue("disposable-ui-value".into())));
+    drop(desktop.update(Message::SaveSecret));
+    let token=desktop.auth_requests.latest_sequence();
+    assert!(desktop.auth_requests.contains("github"));
+    assert!(desktop.auth_requests.contains("tavily"));
+    assert!(desktop.secret_value.is_empty());
+    assert!(desktop.authentication["tavily"].phase==Phase::Saving);
+    assert!(!desktop.busy);
+    drop(desktop.update(Message::CredentialFinished(token,"tavily".into(),true,Ok(json!({"status":"stored","verified":false,"next_steps":[]})))));
+    assert!(desktop.authentication["tavily"].phase==Phase::Stored);
+    assert!(desktop.auth_requests.contains("github"));
+    assert!(desktop.notice.contains("has not been verified"));
+    desktop.authentication.get_mut("tavily").unwrap().observe(&json!({"status":"authenticated","error":null}));
+    assert!(desktop.authentication["tavily"].phase==Phase::Stored,"a prior account login must not approve this storage operation");
+}
+
+#[tokio::test]
+async fn inline_key_submission_releases_the_ui_value_before_the_request_finishes() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    let mut flow=Flow::starting();flow.phase=Phase::Required;flow.entry="api-key".into();flow.secret="disposable-inline-value".into();
+    desktop.authentication.insert("tavily".into(),flow);
+    drop(desktop.update(Message::AuthSave("tavily".into())));
+    assert!(desktop.authentication["tavily"].secret.is_empty());
+    assert!(desktop.authentication["tavily"].phase==Phase::Saving);
+    let token=desktop.auth_requests.latest_sequence();
+    drop(desktop.update(Message::CredentialFinished(token,"tavily".into(),false,Err("Fixture Keychain write failed".into()))));
+    desktop.authentication.get_mut("tavily").unwrap().observe(&json!({"status":"authenticated","error":null}));
+    assert!(desktop.authentication["tavily"].phase==Phase::Failed);
+    assert_eq!(desktop.authentication["tavily"].error.as_deref(),Some("Fixture Keychain write failed"));
+}
+
+#[test]
+fn stored_response_without_explicit_unverified_result_does_not_approve_an_edit() {
+    let mut flow=Flow::starting();
+    flow.stored(&json!({"status":"stored","verified":true}));
+    assert!(flow.phase==Phase::Failed);
+    flow.observe(&json!({"status":"authenticated","error":null}));
+    assert!(flow.phase==Phase::Failed);
 }

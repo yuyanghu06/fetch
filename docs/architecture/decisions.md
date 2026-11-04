@@ -873,3 +873,122 @@ Google implementation deferral is superseded for this bounded work. Implemented
 source has176 passing fixture checks, native build and independent acceptance;
 real Google consent/account/native acceptance remains pending. See
 authentication-engine.md and the shared authentication storage evidence.
+
+
+## November 3 — Server-owned configuration and provider authentication
+
+The user deliberately supersedes Fetch-managed encrypted provider storage with
+unmodified MCP servers' normal files, authentication and refresh. Remove provider
+credential routes/editors/redirection, including Google interception/private bridge;
+replace manual server editors with native folder access. Preserve independent
+instances and applicable real-authentication checks. Preserve TLS/callback/caller
+protections and Fetch app OAuth. Do not read/migrate/decrypt/delete old credentials
+or state. Remote HTTP OAuth client token ownership must be audited separately.
+
+This is a confirmed direction, not approval of the remaining replacement contracts
+or persistence proposal. [The source inventory/proposal](native-server-storage.md)
+distinguishes selected removals, retained features, limitations and choices.
+
+
+## November 3 — Remote-client Keychain selected; complete plan requested
+
+User selected the initial native-storage proposal with Keychain remote OAuth.
+After implementation began, user requested a complete route/change plan and to
+be told before writing any MCP-specific code. Source work is now paused with
+partial, uncompiled/untested changes preserved. The Keychain selection stands;
+all dependent compatibility details/new server-specific mechanisms must be
+presented before further coding. See native-server-storage.md.
+
+
+## November 3 — Retain credentials route for Keychain consideration
+
+User asks to keep PATCH /api/v1/servers/{server_id}/credentials and use Keychain
+unless native servers handle the need. Route removal is superseded in the plan.
+Explain native OAuth/server refresh vs manually supplied keys and Keychain delivery
+before implementation. Recommended narrow manual-key role, Settings form, exact
+save/verification/removal contract and shared delivery remain proposed. Remote
+OAuth Keychain remains selected; coding stays paused and no source is restored yet.
+
+
+## November 3 — Background and button call the same authenticate route
+
+User explicitly requires both the Authenticate button and background renewal to
+call POST /api/v1/servers/{server_id}/authenticate. Its one shared implementation
+handles saved access, renewal/replacement, persistence and status; scheduler only
+chooses timing. No separate background auth engine or per-server refresh code.
+This specifies actual API-first route use, not merely sharing a lower-level helper.
+Browser permission/request defaults and scheduled self-request authority remain
+precise implementation-contract items to review before coding. Current pause stays.
+
+
+## November 3 — Prefer server-owned behavior and minimal Fetch code
+
+User asks for full lifecycle and to check what servers already handle before
+assigning work to Fetch; wants maximum generality and a literal wrapper. Research
+recommends unchanged native servers/helpers and official Rust OAuth-only library
+for hosted-client auth, keeping raw forwarding. SDK adoption remains proposed;
+current same-authenticate-route and Keychain choices are preserved. Distinguish
+necessary client/process work from product-selected persistence/UI/permissions/
+queues/early scheduling. No new per-server code or source/test resume is inferred.
+See native-server-storage.md for lifecycle/ownership table and compatibility limits.
+
+
+## November 3 — Official Rust auth library selected; plan-only continuation
+
+User says yes use the official library and requests the plan be updated to show
+exactly what Fetch still handles before more code. Select official Rust MCP OAuth
+functions/store interface behind the existing authenticate route, retaining raw
+runner and native server/helper-owned auth. Replace handwritten remote OAuth steps;
+do not add a universal proxy or per-provider replacement handlers. Fetch owns generic
+records/process/route/browser/callback/Keychain/UI integration and its already-selected
+app permissions/queues. Exact background browser request/authority, retained manual-key
+contract and native folder/setup details remain to review. No source/build/test resume.
+
+
+## November 3 — Manual-key PATCH purpose and recorded setup commands
+
+User confirms manual keys use retained PATCH /credentials when applicable with
+shared Keychain saving/delivery. Exact save/check/removal behavior remains pending.
+User wants authenticate to read setup instructions and execute existing required
+functions; explicitly selects recorded setup commands over reading/interpreting
+written setup docs. One shared unmodified-helper launcher, per-instance command/
+state records, no guessed commands or per-provider replacement code. Source of those
+recorded commands/paths needs contract review. Background permission mechanism is
+being explained/proposed, not approved by the reply. No code/tests/runtime resume.
+
+
+## November 3 — Timing and GET authentication metadata requested
+
+User asks how/when checks run, harness behavior and auth status/expiry in server GET.
+Research confirms official Rust library checks saved receipt time/lifetime before
+use (inspected version's early window30s), not universal constant provider polling.
+Propose expiry-driven wakeups plus connection/request/rejection checks all through
+selected authenticate route; GET reads status/expiry only. Proposed safe additions
+access_expires_at/last_verified_at, existing auth states and visibility preserved.
+Native/unreported expiry stays unknown; no secret parsing/probe on read. Exact timing/
+response proposal remains for review, not source implementation approval.
+
+
+## November 3 — Follow established expiry/renewal practice
+
+User accepts timing/status proposal conditional on normal practice. Confirm library
+saved-expiry/before-use checking/shared renewal, honest rejection handling, unknown
+native expiry and read-only status reporting. Clarify early background timer is
+optional, not a universal harness requirement; GET metadata is Fetch's reporting
+schema. No new polling architecture or source-work authorization inferred.
+
+
+## November 3 — Resume scoped wrapper implementation and verification
+
+User says you're good to start after the complete plan discussion. Implement
+selected official Rust auth library, native-owned server login/refresh, manual-key
+PATCH/direct Keychain, actual shared authenticate route, safe auth status timestamps,
+execution-only config, recorded native setup/folder and registration-only removal.
+Concrete interactive request mode/process-restricted self-call, stored/unverified
+manual results and bounded internal native descriptors follow the reviewed purposes.
+No new public native command/path authoring schema is silently selected; ordinary
+imports lacking descriptors return explicit limitations. No new provider-specific
+code, old state migration/deletion, personal config edits or release work. Initial
+141 fixture checks and native build pass; final review/real package verification
+remain. Historical paused/removal/encrypted-provider paragraphs are superseded
+for this scoped work; historical evidence itself remains intact.

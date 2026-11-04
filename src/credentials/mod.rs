@@ -1,14 +1,9 @@
-//! Encrypted server-local bytes. Persistence is not provider authentication.
+//! Protected Fetch application identity and client grants only.
+//! Native provider files and Keychain entries are never read, migrated or removed here.
 mod keychain;
 pub use keychain::MacKeychainKeys;
 #[cfg(test)]
 mod keychain_tests;
-pub(crate) mod document;
-pub(crate) mod bridge;
-#[cfg(test)]
-mod document_tests;
-#[cfg(test)]
-mod bridge_tests;
 use crate::storage::server_directory;
 use aes_gcm::{
     Aes256Gcm, KeyInit, Nonce,
@@ -16,7 +11,6 @@ use aes_gcm::{
 };
 use rand::{RngCore, rngs::OsRng};
 use std::{
-    collections::BTreeSet,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -35,7 +29,7 @@ pub enum CredentialError {
 }
 impl std::fmt::Display for CredentialError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Fetch cannot safely access this server's encrypted credentials.")
+        f.write_str("Fetch cannot safely access its protected application identity or app authorizations.")
     }
 }
 impl std::error::Error for CredentialError {}
@@ -46,7 +40,6 @@ pub trait KeyProvider: Send + Sync {
     fn key_for_server(&self, server_id: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError>;
     /// Existing encrypted files must not cause replacement-key creation.
     fn existing_key_for_server(&self, server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> { self.key_for_server(server_id) }
-    fn delete_key_for_server(&self,_server_id:&str)->Result<(),CredentialError>{Err(CredentialError::KeyUnavailable)}
     /// End this provider's in-memory key session when Fetch quits.
     fn clear_cached_keys(&self) {}
 }
@@ -70,17 +63,7 @@ pub struct CredentialStore {
     root: PathBuf,
     keys: Arc<dyn KeyProvider>,
     writes: Mutex<()>,
-    deleted:Mutex<BTreeSet<String>>,
     application:bool,
-}
-pub(crate) struct JsonUpdate {
-    pub document: serde_json::Value,
-    pub changed: bool,
-}
-impl std::fmt::Debug for JsonUpdate {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("JsonUpdate").field("document", &"[REDACTED]").field("changed", &self.changed).finish()
-    }
 }
 impl CredentialStore {
     pub fn new(root: PathBuf, keys: Arc<dyn KeyProvider>) -> Self {
@@ -88,23 +71,14 @@ impl CredentialStore {
             root,
             keys,
             writes: Mutex::new(()),
-            deleted:Mutex::new(BTreeSet::new()),application:false,
+            application:false,
         }
     }
     pub(crate) fn clear_cached_keys(&self) { self.keys.clear_cached_keys(); }
     /// App tokens and TLS identity use a separate encrypted application tree.
     pub fn application_store(&self)->Self { let mut store=Self::new(self.root.join("application"),self.keys.clone());store.application=true;store }
-    pub(crate) fn delete_server(&self,server_id:&str)->Result<(),CredentialError>{
-        if self.application||server_id.starts_with("fetch-internal:"){return Err(CredentialError::StorageUnavailable);}
-        let _guard=self.writes.lock().map_err(|_|CredentialError::StorageUnavailable)?;
-        self.deleted.lock().map_err(|_|CredentialError::StorageUnavailable)?.insert(server_id.to_owned());
-        self.keys.delete_key_for_server(server_id)?;
-        if let Some(directory)=server_directory(&self.root,server_id,false).map_err(|_|CredentialError::StorageUnavailable)?{
-            directory.remove_file("credentials.enc").map_err(|_|CredentialError::StorageUnavailable)?;
-        }
-        Ok(())
-    }
     pub fn read(&self, server_id: &str) -> Result<Option<SecretDocument>, CredentialError> {
+        self.application_id(server_id)?;
         let Some(dir) = server_directory(&self.root, server_id, false)
             .map_err(|_| CredentialError::StorageUnavailable)?
         else {
@@ -126,32 +100,11 @@ impl CredentialStore {
             .map_err(|_| CredentialError::StorageUnavailable)?;
         self.save_locked(server_id, value)
     }
-    pub(crate) fn read_json(&self, server_id: &str) -> Result<Option<serde_json::Value>, CredentialError> {
-        self.read(server_id)?.map(|value| document::decode(value.expose()).map_err(|_| CredentialError::InvalidDocument)).transpose()
-    }
-    pub(crate) fn update_json(
-        &self,
-        server_id: &str,
-        initial: &serde_json::Value,
-        update: impl FnOnce(&mut serde_json::Value) -> Result<(), CredentialError>,
-    ) -> Result<JsonUpdate, CredentialError> {
-        let _guard = self.writes.lock().map_err(|_| CredentialError::StorageUnavailable)?;
-        let saved = self.read_json(server_id)?;
-        let existed = saved.is_some();
-        let mut value = saved.unwrap_or_else(|| initial.clone());
-        if !value.is_object() { return Err(CredentialError::InvalidDocument); }
-        let original = value.clone();
-        update(&mut value)?;
-        let encoded = document::encode(&value).map_err(|_| CredentialError::InvalidDocument)?;
-        let changed = !existed || original != value;
-        if changed {
-            self.save_locked(server_id, &encoded)?;
-            value = self.read_json(server_id)?.ok_or(CredentialError::StorageUnavailable)?;
-        }
-        Ok(JsonUpdate { document: value, changed })
+    fn application_id(&self,id:&str)->Result<(),CredentialError>{
+        if self.application && matches!(id,"fetch-internal:tls-identity"|"fetch-internal:app-authorization") {Ok(())} else {Err(CredentialError::StorageUnavailable)}
     }
     fn save_locked(&self, server_id: &str, value: &SecretDocument) -> Result<(), CredentialError> {
-        if self.deleted.lock().map_err(|_|CredentialError::StorageUnavailable)?.contains(server_id){return Err(CredentialError::StorageUnavailable);}
+        self.application_id(server_id)?;
         if value.expose().len() > MAX_SECRET_BYTES {
             return Err(CredentialError::TooLarge);
         }
@@ -234,53 +187,66 @@ mod tests {
         }
     }
     #[test]
+    fn provider_records_are_never_read_written_or_unlocked(){
+        struct NoKeys;
+        impl KeyProvider for NoKeys{fn key_for_server(&self,_:&str)->Result<Zeroizing<[u8;32]>,CredentialError>{panic!("provider key access must not occur")}}
+        let temp=tempfile::tempdir().unwrap();let root=temp.path().join("state");
+        let legacy=root.join("servers").join(server_directory_name("native-provider"));
+        std::fs::create_dir_all(&legacy).unwrap();let file=legacy.join("credentials.enc");std::fs::write(&file,b"opaque-legacy-canary").unwrap();
+        let store=CredentialStore::new(root,Arc::new(NoKeys));
+        assert!(matches!(store.read("native-provider"),Err(CredentialError::StorageUnavailable)));
+        assert!(store.save("native-provider",&SecretDocument::new(b"must-not-save".to_vec())).is_err());
+        assert!(store.application_store().read("native-provider").is_err());
+        assert_eq!(std::fs::read(file).unwrap(),b"opaque-legacy-canary");
+    }
+    #[test]
     fn encrypted_roundtrip_random_nonce_and_redacted_debug() {
         let t = tempfile::tempdir().unwrap();
         let root = t.path().join("state");
-        let s = CredentialStore::new(root.clone(), Arc::new(FixtureKeys));
+        let s = CredentialStore::new(root.clone(), Arc::new(FixtureKeys)).application_store();
         let secret = SecretDocument::new(b"private-fixture-value".to_vec());
-        s.save("a", &secret).unwrap();
+        s.save("fetch-internal:tls-identity", &secret).unwrap();
         let file = root
-            .join("servers")
-            .join(server_directory_name("a"))
+            .join("application/servers")
+            .join(server_directory_name("fetch-internal:tls-identity"))
             .join("credentials.enc");
         let a = std::fs::read(&file).unwrap();
         assert!(
             !a.windows(secret.expose().len())
                 .any(|w| w == secret.expose())
         );
-        s.save("a", &secret).unwrap();
+        s.save("fetch-internal:tls-identity", &secret).unwrap();
         assert_ne!(a, std::fs::read(file).unwrap());
-        assert_eq!(s.read("a").unwrap().unwrap().expose(), secret.expose());
+        assert_eq!(s.read("fetch-internal:tls-identity").unwrap().unwrap().expose(), secret.expose());
         assert_eq!(format!("{secret:?}"), "SecretDocument([REDACTED])");
     }
     #[test]
     fn cross_server_copy_tampering_and_missing_keys_preserve_data() {
         let t = tempfile::tempdir().unwrap();
         let root = t.path().join("state");
-        let s = CredentialStore::new(root.clone(), Arc::new(FixtureKeys));
+        let s = CredentialStore::new(root.clone(), Arc::new(FixtureKeys)).application_store();
         let secret = SecretDocument::new(b"fixture".to_vec());
-        s.save("a", &secret).unwrap();
-        s.save("b", &secret).unwrap();
+        s.save("fetch-internal:tls-identity", &secret).unwrap();
+        s.save("fetch-internal:app-authorization", &secret).unwrap();
         let a = root
-            .join("servers")
-            .join(server_directory_name("a"))
+            .join("application/servers")
+            .join(server_directory_name("fetch-internal:tls-identity"))
             .join("credentials.enc");
         let b = root
-            .join("servers")
-            .join(server_directory_name("b"))
+            .join("application/servers")
+            .join(server_directory_name("fetch-internal:app-authorization"))
             .join("credentials.enc");
         let bytes = std::fs::read(&a).unwrap();
         std::fs::write(&b, &bytes).unwrap();
-        assert!(matches!(s.read("b"), Err(CredentialError::IntegrityFailed)));
-        assert!(s.save("b", &secret).is_err());
+        assert!(matches!(s.read("fetch-internal:app-authorization"), Err(CredentialError::IntegrityFailed)));
+        assert!(s.save("fetch-internal:app-authorization", &secret).is_err());
         assert_eq!(std::fs::read(&b).unwrap(), bytes);
-        let missing = CredentialStore::new(root, Arc::new(Missing));
+        let missing = CredentialStore::new(root, Arc::new(Missing)).application_store();
         assert!(matches!(
-            missing.read("a"),
+            missing.read("fetch-internal:tls-identity"),
             Err(CredentialError::KeyUnavailable)
         ));
-        assert!(missing.save("a", &secret).is_err());
+        assert!(missing.save("fetch-internal:tls-identity", &secret).is_err());
         assert_eq!(std::fs::read(a).unwrap(), bytes);
     }
 }

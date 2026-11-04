@@ -14,13 +14,11 @@ use client::{NativeClient, component};
 use iced::{Element, Subscription, Task, window, widget::{column, container, row, scrollable, text}};
 use reqwest::Method;
 use serde_json::{Value, json};
-use std::{collections::{BTreeMap,BTreeSet}, sync::Arc, time::Duration};
 use zeroize::Zeroize;
+use std::{collections::{BTreeMap,BTreeSet}, sync::Arc, time::Duration};
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum Page { Servers, Install, Connect, Settings }
-#[derive(Clone,Copy,PartialEq,Eq)]
-enum AuthAction { Authenticate, InlineCredential, SettingsCredential }
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum Deletion { Pending(u64), Refreshing }
 fn installable(row:&Value)->bool { row["status"]=="supported" && row["installed"]!=true }
@@ -30,27 +28,30 @@ enum Message {
     Refresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), CustomConfig(bool), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
     Select(String,String,bool), SelectAllServers, Install, Installed(Result<Value,String>), Progress(Result<Value,String>),
     Inspect(String), Tools(String,Option<window::Id>,Result<Value,String>), Authenticate(String), Restart(String,bool), Delete(String), Deleted(u64,String,Result<Value,String>),
-    AuthFinished(u64,String,AuthAction,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String), AuthDismiss(String),
+    AuthFinished(u64,String,Result<Value,String>), AuthDismiss(String),
+    CredentialFinished(u64,String,bool,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String),
+    OpenFolder(String), FolderOpened(String,Option<window::Id>,Result<Value,String>),
     Changed(String,Result<Value,String>), RestartStatus(String,Result<Value,String>),
-    Choose(String), Config(String), SaveConfig, Timeout(String), Concurrency(String), SaveExecution, Advanced(bool), SecretName(String), SecretValue(String), SaveSecret, RemoveSecret,
+    Choose(String), Timeout(String), Concurrency(String), SaveExecution,
+    SecretName(String), SecretValue(String), SaveSecret, RemoveSecret,
     Copy(String), CleanupConfirmed(bool), ToggleServer(String), ToggleTool(String),
 }
 impl std::fmt::Debug for Message { fn fmt(&self,f:&mut std::fmt::Formatter<'_>)->std::fmt::Result { f.write_str("FetchNativeMessage") } }
 struct Desktop {
     host: Arc<ApplicationHost>, client: Option<NativeClient>, session: Option<Arc<NativeSettingsSession>>, window:Option<window::Id>,
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
-    config_path:String, custom_config:bool, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, config:String, timeout:String, concurrency:String, advanced:bool, secret_name:String, secret_value:String,
+    config_path:String, custom_config:bool, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, timeout:String, concurrency:String, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
     busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, cleanup_confirmed:bool, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
     authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
-    deletions:BTreeMap<String,Deletion>,
+    deletions:BTreeMap<String,Deletion>, opening_folders:BTreeSet<String>,
 }
 impl Desktop {
     fn boot(host:Arc<ApplicationHost>)->(Self,Task<Message>) {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
         let (id,open)=window::open(window::Settings { size:iced::Size::new(1080.0,760.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default() });
-        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),custom_config:false,discovery_started:false,picker_window:None,selected_server:String::new(),config:"{}".into(),timeout:"120".into(),concurrency:"1".into(),advanced:false,secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),deletions:BTreeMap::new()};
+        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),custom_config:false,discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new()};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
         (state,Task::batch([open.map(Message::Opened),read]))
@@ -94,10 +95,11 @@ impl Desktop {
     fn forget_server(&mut self,id:&str) {
         if let Some(rows)=self.servers["servers"].as_array_mut(){rows.retain(|row|row["server_id"].as_str()!=Some(id));}
         if let Some(origins)=self.tools.get_mut("origins").and_then(Value::as_array_mut){origins.retain(|origin|origin["source"]["server_id"].as_str()!=Some(id));if origins.is_empty(){self.tools=Value::Null;}}
-        if let Some(mut flow)=self.authentication.remove(id){flow.secret.zeroize();}
+        self.authentication.remove(id);
+        self.opening_folders.remove(id);
         self.expanded_servers.remove(id);self.expanded_tools.retain(|key|!key.starts_with(&format!("{id}:")));
         self.restarts.remove(id);self.restart_polling.remove(id);
-        if self.selected_server==id{self.secret_value.zeroize();self.secret_name.clear();self.selected_server.clear();self.config="{}".into();self.timeout="120".into();self.concurrency="1".into();self.advanced=false;}
+        if self.selected_server==id{self.secret_value.zeroize();self.secret_name.clear();self.selected_server.clear();self.timeout="120".into();self.concurrency="1".into();}
         if let Some(groups)=self.discovery["configs"].as_array_mut(){for group in groups{
             let path=group["path"].as_str().unwrap_or("").to_owned();
             if let Some(rows)=group["servers"].as_array_mut(){for row in rows{if row["installed_server_id"].as_str()==Some(id){
@@ -114,51 +116,54 @@ impl Desktop {
     }
     fn clear_other_secrets(&mut self,id:&str) {
         self.secret_value.zeroize();
-        for (server,flow) in &mut self.authentication{if server.as_str()!=id{flow.secret.zeroize();}}
+        for (server,flow) in &mut self.authentication{if server!=id{flow.secret.zeroize();}}
     }
     fn close_authentication(&mut self) {
-        self.clear_secrets();self.authentication.clear();self.auth_requests.clear();
+        self.clear_secrets();self.authentication.clear();self.auth_requests.clear();self.opening_folders.clear();
         self.polling=None;self.installation_polling=false;self.restart_polling.clear();
     }
-    fn auth_operation(&mut self,id:String,credential_save:bool)->Task<Message> {
+    fn auth_operation(&mut self,id:String)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
         if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
-        let body=if credential_save {
-            let Some(flow)=self.authentication.get_mut(&id).filter(|flow|flow.manual) else{return Task::none();};
-            if flow.entry.trim().is_empty()||flow.secret.is_empty(){flow.error=Some("Enter the assigned credential entry name and its value.".into());return Task::none();}
-            let body=json!({"set":[{"name":flow.entry.clone(),"value":flow.secret.clone()}],"remove":[]});
-            flow.secret.zeroize();flow.phase=AuthPhase::Saving;flow.error=None;
-            body
-        }else{
-            self.clear_secrets();
-            let mut flow=AuthFlow::starting();
-            if let Some(server)=self.servers["servers"].as_array().into_iter().flatten().find(|server|server["server_id"].as_str()==Some(id.as_str())) {
-                let references=authentication::credential_references(server);
-                if references.len()==1{flow.entry=references[0].1.clone();}
-            }
-            self.authentication.insert(id.clone(),flow);
-            json!({})
-        };
-        self.submit_auth_request(client,id,if credential_save{AuthAction::InlineCredential}else{AuthAction::Authenticate},body)
-    }
-    fn settings_credential_operation(&mut self,remove:bool)->Task<Message> {
-        let Some(client)=self.client.clone() else{return Task::none();};
-        let id=self.selected_server.clone();
-        if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
-        if id.is_empty()||self.secret_name.is_empty(){self.error=Some("Select a server and enter the credential entry name.".into());return Task::none();}
-        let body=if remove{json!({"set":[],"remove":[self.secret_name.clone()]})}else{json!({"set":[{"name":self.secret_name.clone(),"value":self.secret_value.clone()}],"remove":[]})};
-        self.secret_value.zeroize();
-        let mut flow=AuthFlow::starting();flow.phase=AuthPhase::Saving;flow.manual=true;flow.entry=self.secret_name.clone();
-        self.authentication.insert(id.clone(),flow);self.error=None;self.notice.clear();
-        self.submit_auth_request(client,id,AuthAction::SettingsCredential,body)
-    }
-    fn submit_auth_request(&mut self,client:NativeClient,id:String,action:AuthAction,body:Value)->Task<Message> {
         let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
+        self.clear_secrets();self.authentication.insert(id.clone(),AuthFlow::starting());
         self.cleanup_confirmed=false;
         self.expanded_servers.insert(id.clone());
-        let (method,suffix)=if action==AuthAction::Authenticate{(Method::POST,"/authenticate")}else{(Method::PATCH,"/credentials")};
-        let path=format!("/api/v1/servers/{}{suffix}",component(&id));
-        Task::perform(async move{client.request(method,&path,Some(body)).await},move|result|Message::AuthFinished(token,id.clone(),action,result))
+        let path=format!("/api/v1/servers/{}/authenticate",component(&id));
+        Task::perform(async move{client.request(Method::POST,&path,Some(json!({"interactive":true}))).await},move|result|Message::AuthFinished(token,id.clone(),result))
+    }
+    fn submit_credential_request(&mut self,id:String,body:Value,settings:bool)->Task<Message>{
+        let Some(client)=self.client.clone() else{return Task::none();};
+        let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
+        self.cleanup_confirmed=false;self.expanded_servers.insert(id.clone());
+        let path=format!("/api/v1/servers/{}/credentials",component(&id));
+        Task::perform(async move{client.request(Method::PATCH,&path,Some(body)).await},move|result|Message::CredentialFinished(token,id.clone(),settings,result))
+    }
+    fn save_inline_key(&mut self,id:String)->Task<Message>{
+        if self.client.is_none()||self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
+        let Some(flow)=self.authentication.get_mut(&id)else{return Task::none();};
+        if flow.entry.trim().is_empty()||flow.secret.is_empty(){flow.error=Some("Choose an assigned key entry and enter its value.".into());return Task::none();}
+        let body=authentication::manual_patch(flow.entry.clone(),Some(std::mem::take(&mut flow.secret)));
+        flow.phase=AuthPhase::Saving;flow.storage_result=true;flow.reconcile=false;flow.error=None;
+        self.submit_credential_request(id,body,false)
+    }
+    fn settings_credential_operation(&mut self,remove:bool)->Task<Message>{
+        let id=self.selected_server.clone();
+        if self.client.is_none()||self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
+        if id.is_empty()||self.secret_name.trim().is_empty()||(!remove&&self.secret_value.is_empty()){self.error=Some("Choose an assigned key entry and enter its value.".into());return Task::none();}
+        let body=authentication::manual_patch(self.secret_name.clone(),(!remove).then(||std::mem::take(&mut self.secret_value)));
+        self.secret_value.zeroize();
+        let mut flow=AuthFlow::starting();flow.phase=AuthPhase::Saving;flow.storage_result=true;flow.entry=self.secret_name.clone();
+        self.authentication.insert(id.clone(),flow);self.error=None;self.notice.clear();
+        self.submit_credential_request(id,body,true)
+    }
+    fn open_server_folder(&mut self,id:String)->Task<Message> {
+        if self.deletions.contains_key(&id)||self.opening_folders.contains(&id)||!self.servers["servers"].as_array().into_iter().flatten().any(|server|server["server_id"].as_str()==Some(id.as_str())){return Task::none();}
+        let Some(client)=self.client.clone() else{return Task::none();};
+        self.opening_folders.insert(id.clone());self.error=None;
+        let window=self.window;
+        let target=id.clone();
+        Task::perform(async move{client.open_server_folder(&target).await},move|result|Message::FolderOpened(id.clone(),window,result))
     }
     fn update(&mut self,message:Message)->Task<Message> {
         match message {
@@ -238,46 +243,62 @@ impl Desktop {
                 if self.deletions.get(&id)!=Some(&Deletion::Pending(token)){return Task::none();}
                 self.auth_requests.finish(&id,token);self.auth_requests.invalidate_reads();self.polling=None;
                 match result{
-                    Ok(value) if value["status"]=="deleted"&&value["server_id"].as_str()==Some(id.as_str())=>{self.deletions.remove(&id);self.forget_server(&id);self.notice="Server deleted.".into();}
+                    Ok(value) if value["status"]=="deleted"&&value["server_id"].as_str()==Some(id.as_str())=>{self.deletions.remove(&id);self.forget_server(&id);self.notice="Server registration removed. Its files and credentials were preserved.".into();}
                     result=>{self.deletions.insert(id,Deletion::Refreshing);let error=match result{Err(error)=>error,Ok(_)=>"The server did not confirm deletion.".into()};self.error=Some(format!("{error} Refreshing server status before another delete attempt; deletion will not be retried automatically."));}
                 }
                 return self.refresh();
             }
-            Message::Authenticate(id)=>return self.auth_operation(id,false),
-            Message::AuthSave(id)=>return self.auth_operation(id,true),
-            Message::AuthFinished(token,id,action,result)=>{
+            Message::Authenticate(id)=>return self.auth_operation(id),
+            Message::AuthFinished(token,id,result)=>{
                 if !self.auth_requests.finish(&id,token){return Task::none();}
-                if action==AuthAction::SettingsCredential&&self.page==Page::Settings&&self.selected_server==id{
-                    match &result{Ok(_)=>self.notice="Saved. Review server state for any required next action.".into(),Err(error)=>self.error=Some(error.clone())}
-                }
                 if let Some(flow)=self.authentication.get_mut(&id){match result{
-                    Ok(value)=>flow.result(&value,action!=AuthAction::Authenticate),
-                    Err(error)=>{flow.phase=AuthPhase::Failed;flow.error=Some(error);flow.reconcile=true;flow.secret.zeroize();}
+                    Ok(value)=>flow.result(&value),
+                    Err(error)=>{flow.phase=AuthPhase::Failed;flow.error=Some(error);flow.reconcile=true;}
                 }}
                 return self.refresh();
             }
-            Message::AuthName(id,value)=>{self.clear_other_secrets(&id);if let Some(flow)=self.authentication.get_mut(&id).filter(|flow|flow.manual&&!flow.active()){flow.secret.zeroize();flow.entry=value;}}
-            Message::AuthValue(id,mut value)=>{self.clear_other_secrets(&id);if let Some(flow)=self.authentication.get_mut(&id).filter(|flow|flow.manual&&!flow.active()){flow.secret.zeroize();flow.secret=std::mem::take(&mut value);}value.zeroize();}
+            Message::CredentialFinished(token,id,settings,result)=>{
+                if !self.auth_requests.finish(&id,token){return Task::none();}
+                if let Some(flow)=self.authentication.get_mut(&id){match &result{
+                    Ok(value)=>flow.stored(value),
+                    Err(error)=>{flow.phase=AuthPhase::Failed;flow.storage_result=true;flow.reconcile=false;flow.secret.zeroize();flow.error=Some(error.clone());}
+                }}
+                if settings&&self.page==Page::Settings&&self.selected_server==id{match result{
+                    Ok(value) if value["status"]=="stored"&&value["verified"]==false=>self.notice="Manual key changes saved in macOS Keychain. Account access has not been verified.".into(),
+                    Ok(_)=>self.error=Some("Fetch did not confirm storing the manual key.".into()),
+                    Err(error)=>self.error=Some(error),
+                }}
+                return self.refresh();
+            }
+            Message::AuthName(id,value)=>{self.clear_other_secrets(&id);if let Some(flow)=self.authentication.get_mut(&id).filter(|flow|!flow.active()){flow.secret.zeroize();flow.entry=value;}}
+            Message::AuthValue(id,mut value)=>{self.clear_other_secrets(&id);if let Some(flow)=self.authentication.get_mut(&id).filter(|flow|!flow.active()){flow.secret.zeroize();flow.secret=std::mem::take(&mut value);}value.zeroize();}
+            Message::AuthSave(id)=>return self.save_inline_key(id),
             Message::AuthDismiss(id)=>{if self.authentication.get(&id).is_some_and(|flow|flow.active()||flow.reconcile){return Task::none();}self.authentication.remove(&id);}
 
             Message::Restart(id,force)=>return self.operation(id,Method::POST,"/restart",json!({"force_restart":force})),
             Message::Changed(id,result)=>{self.busy=false;match result{Ok(value)=>{if let Some(restart)=value["restart_id"].as_str(){self.restarts.insert(id,restart.into());}self.notice=if value["status"]=="authenticating"{"Complete the provider's browser sign-in, then Fetch will show the result.".into()}else{"Saved. Review server state for any required next action.".into()};return self.refresh();},Err(error)=>{self.error=Some(error);return self.refresh();}}}
             Message::RestartStatus(id,result)=>{self.restart_polling.remove(&id);match result{Ok(value)=>{let restart=value["servers"].as_array().and_then(|records|records.first()).map(|record|&record["restart"]);if let Some(restart)=restart{if matches!(restart["status"].as_str(),Some("succeeded"|"failed")){self.restarts.remove(&id);self.notice=if restart["status"]=="succeeded"{"Server restart completed.".into()}else{"Server restart failed. Review its state before retrying.".into()};return self.refresh();}}},Err(error)=>{self.error=Some(error);}}}
-            Message::Choose(id)=>{if self.deletions.contains_key(&id){return Task::none();}self.clear_secrets();self.selected_server=id;self.config="{}".into();self.page=Page::Settings;self.advanced=false;
+            Message::Choose(id)=>{if self.deletions.contains_key(&id){return Task::none();}self.clear_secrets();self.selected_server=id;self.secret_name.clear();self.page=Page::Settings;
                 if let Some(record)=self.servers["servers"].as_array().and_then(|rows|rows.iter().find(|row|row["server_id"].as_str()==Some(self.selected_server.as_str()))){self.timeout=(record["config"]["execution"]["default_timeout_ms"].as_u64().unwrap_or(120000)/1000).to_string();self.concurrency=record["config"]["execution"]["max_concurrent_calls"].as_u64().unwrap_or(1).to_string();}
             }
-            Message::Config(value)=>self.config=value,
             Message::Timeout(value)=>self.timeout=value,
             Message::Concurrency(value)=>self.concurrency=value,
-            Message::Advanced(value)=>self.advanced=value,
             Message::SaveExecution=>{
                 let values=self.timeout.parse::<u64>().ok().and_then(|seconds|seconds.checked_mul(1000)).zip(self.concurrency.parse::<u64>().ok());
                 match values{Some((timeout,concurrency)) if timeout>0&&timeout<=86400000&&concurrency>0&&concurrency<=64=>return self.operation(self.selected_server.clone(),Method::PATCH,"/config",json!({"execution":{"default_timeout_ms":timeout,"max_concurrent_calls":concurrency}})),_=>self.error=Some("Enter 1–86400 seconds and 1–64 concurrent calls.".into())}
             }
-            Message::SaveConfig=>match serde_json::from_str::<Value>(&self.config){Ok(body) if body.is_object()=>return self.operation(self.selected_server.clone(),Method::PATCH,"/config",body),_=>self.error=Some("Enter a JSON object containing the settings you want to change.".into())},
-            Message::SecretName(value)=>self.secret_name=value,
-            Message::SecretValue(value)=>{self.secret_value.zeroize();self.secret_value=value;}
+            Message::SecretName(value)=>{self.secret_value.zeroize();self.secret_name=value;}
+            Message::SecretValue(mut value)=>{self.secret_value.zeroize();self.secret_value=std::mem::take(&mut value);value.zeroize();}
             Message::SaveSecret|Message::RemoveSecret=>return self.settings_credential_operation(matches!(message,Message::RemoveSecret)),
+            Message::OpenFolder(id)=>return self.open_server_folder(id),
+            Message::FolderOpened(id,window,result)=>{
+                if window!=self.window||!self.opening_folders.remove(&id){return Task::none();}
+                match result{
+                    Ok(value) if value["status"]=="opened"&&value["server_id"].as_str()==Some(id.as_str())=>self.notice="Server folder open request completed.".into(),
+                    Ok(_)=>self.error=Some("Fetch did not confirm opening the server folder.".into()),
+                    Err(error)=>self.error=Some(error),
+                }
+            }
             Message::Copy(value)=>return iced::clipboard::write(value),
             Message::CleanupConfirmed(value)=>self.cleanup_confirmed=value,
             Message::ToggleServer(id)=>{if self.expanded_servers.remove(&id){if let Some(flow)=self.authentication.get_mut(&id){flow.secret.zeroize();}}else{self.clear_secrets();self.expanded_servers.insert(id);}}
@@ -322,8 +343,8 @@ impl Desktop {
             let id=server["server_id"].as_str().unwrap_or("").to_owned();let runtime=server["runtime"]["status"].as_str().unwrap_or("unknown");let auth=server["authentication"]["status"].as_str().unwrap_or("unknown");
             let title=format!("{}  ·  {}  ·  authentication: {}",server["name"].as_str().unwrap_or(&id),runtime,auth);
             let can_change=!self.busy&&!self.auth_active(&id)&&!self.restarts.contains_key(&id);
-            let mut controls=row![button("Inspect tools").on_press_maybe((!self.deletions.contains_key(&id)).then_some(Message::Inspect(id.clone()))),button("Edit settings").on_press_maybe(can_change.then_some(Message::Choose(id.clone())))].spacing(theme::CONTROL_GAP);
-            if matches!(auth,"required"|"failed"){controls=controls.push(button("Authenticate").on_press_maybe(can_change.then_some(Message::Authenticate(id.clone()))));}
+            let mut controls=row![button("Inspect tools").on_press_maybe((!self.deletions.contains_key(&id)).then_some(Message::Inspect(id.clone()))),button("Settings").on_press_maybe(can_change.then_some(Message::Choose(id.clone())))].spacing(theme::CONTROL_GAP);
+            if matches!(auth,"required"|"failed"|"unknown"){controls=controls.push(button("Authenticate").on_press_maybe(can_change.then_some(Message::Authenticate(id.clone()))));}
             if server["restart_required"]==true||matches!(runtime,"stopped"|"failed"|"unknown"){controls=controls.push(button("Restart / Connect").on_press_maybe(can_change.then_some(Message::Restart(id.clone(),false))));}
             if server["tool_execution"]["uncertain_calls"].as_u64().unwrap_or(0)>0{controls=controls.push(button("Force restart (may interrupt work)").on_press_maybe(can_change.then_some(Message::Restart(id.clone(),true))));}
             let expanded=self.expanded_servers.contains(&id);
@@ -335,6 +356,8 @@ impl Desktop {
                 else if auth=="authenticating"{card=card.push(text("Complete sign-in in your browser. Fetch is checking authentication status…"));}
             }
 
+            card=card.push(text(format!("Connection access expires: {}",server["authentication"]["access_expires_at"].as_str().unwrap_or("unknown"))))
+                .push(text(format!("Last verified connection access: {}",server["authentication"]["last_verified_at"].as_str().unwrap_or("unknown"))));
             if let Some(error)=server["authentication"]["error"]["message"].as_str(){card=card.push(components::message(error));}
             if let Some(error)=server["runtime"]["error"]["message"].as_str(){card=card.push(components::message(error));}
             if let Some(execution)=server.get("tool_execution"){card=card.push(text(format!("Active: {}   Waiting: {}   Uncertain: {}",execution["active_calls"],execution["queued_calls"],execution["uncertain_calls"])));}
@@ -345,32 +368,30 @@ impl Desktop {
         if !self.tools.is_null(){items=items.push(text("Tool definitions").size(theme::SECTION_TITLE));if let Some(origins)=self.tools["origins"].as_array(){for origin in origins{items=items.push(text(format!("{} · {}",origin["source"]["server_id"].as_str().unwrap_or("server"),origin["status"].as_str().unwrap_or("unknown"))));if let Some(tools)=origin["tools"].as_array(){for tool in tools{let name=tool["name"].as_str().unwrap_or("Unnamed tool");let key=format!("{}:{name}",origin["source"]["server_id"].as_str().unwrap_or(""));let expanded=self.expanded_tools.contains(&key);items=items.push(components::tool_disclosure(name,expanded,expanded.then(||serde_json::to_string_pretty(tool).unwrap_or_default()),Message::ToggleTool(key)));}}if origin["status"]!="available"{items=items.push(text("This catalog is incomplete. Review its server state and rejected-tool details."));if let Some(rejected)=origin["rejected_tools"].as_array(){for rejection in rejected{items=items.push(text(format!("{}: {}",rejection["name"].as_str().unwrap_or("Tool"),rejection["message"].as_str().unwrap_or("Compatibility issue"))));}}}}}}
         items.into()
     }
+    fn folder_button(&self,id:String)->Element<'_,Message>{
+        let enabled=!self.deletions.contains_key(&id)&&!self.opening_folders.contains(&id);
+        button(if self.opening_folders.contains(&id){"Opening server folder…"}else{"Open server folder"})
+            .on_press_maybe(enabled.then_some(Message::OpenFolder(id))).into()
+    }
     fn authentication_view<'a>(&'a self,id:&str,server:&'a Value,flow:&'a AuthFlow)->Element<'a,Message>{
         let mut panel=column![text(flow.title()).size(theme::FIELD_TITLE)].spacing(authentication::SPACING);
         if let Some(error)=&flow.error{panel=panel.push(components::message(error));}
         if let Some(error)=&flow.read_error{panel=panel.push(components::message(error));}
         for instruction in &flow.guidance{panel=panel.push(components::message(instruction.as_str()));}
-        if flow.phase==AuthPhase::Unknown{
-            panel=panel.push(text("Fetch cannot start or verify this provider's login yet. Review this server's setup in Settings."))
-                .push(button("Open server settings").on_press_maybe((!self.busy&&!self.auth_active(id)).then_some(Message::Choose(id.to_owned()))));
+        if matches!(flow.phase,AuthPhase::Required|AuthPhase::Unknown|AuthPhase::Failed|AuthPhase::NeedsVerification){
+            panel=panel.push(text("Use the server’s own configuration files and supported login process. Fetch cannot verify every server’s provider login."))
+                .push(self.folder_button(id.to_owned()));
         }
-        if flow.phase==AuthPhase::Failed&&!flow.manual{
-            panel=panel.push(button("Open server settings").on_press_maybe((!self.busy&&!self.auth_active(id)).then_some(Message::Choose(id.to_owned()))));
-        }
-        if flow.manual{
-            let references=authentication::credential_references(server);
-            if references.is_empty(){panel=panel.push(text("No credential binding is configured. Use Edit settings to assign a credential reference before saving; entering a name here does not create a binding."));}
-            else{
-                panel=panel.push(text("Choose the credential entry assigned to this provider:"));
-                for (binding,reference) in references{
-                    panel=panel.push(button(text(format!("{binding} → {reference}"))).on_press_maybe((!self.busy&&!flow.active()&&!self.deletions.contains_key(id)).then_some(Message::AuthName(id.to_owned(),reference))));
-                }
+        let references=authentication::credential_references(server);
+        if !references.is_empty(){
+            for (binding,reference) in references{
+                panel=panel.push(button(text(format!("{binding} → {reference}"))).on_press_maybe((!flow.active()&&!self.auth_active(id)).then_some(Message::AuthName(id.to_owned(),reference))));
             }
             let name_id=id.to_owned();let value_id=id.to_owned();
-            panel=panel.push(authentication::credential_editor(&flow.entry,&flow.secret,!self.busy&&!flow.active()&&!self.deletions.contains_key(id),
+            panel=panel.push(authentication::credential_editor(&flow.entry,&flow.secret,!self.busy&&!self.auth_active(id),
                 move|value|Message::AuthName(name_id.clone(),value),move|value|Message::AuthValue(value_id.clone(),value),Message::AuthSave(id.to_owned()),None));
         }
-        if matches!(flow.phase,AuthPhase::Authenticated|AuthPhase::NotRequired){panel=panel.push(text("Use Restart / Connect to start this server or apply pending settings."));}
+        if matches!(flow.phase,AuthPhase::Authenticated|AuthPhase::NotRequired){panel=panel.push(text("Use Restart / Connect to start this server or apply changes made in its files."));}
         if !flow.active()&&!flow.reconcile{panel=panel.push(button("Hide authentication details").on_press(Message::AuthDismiss(id.to_owned())));}
         container(panel).padding(authentication::SPACING).into()
     }
@@ -441,17 +462,29 @@ impl Desktop {
         format!("I have verified Fetch's connection, provider authentication and imported tools. Review my original MCP configuration entries for these migrated servers: {}. Identify the exact original file/name pairs and show me the intended cleanup. Remove only those original entries after matching them to successful Fetch imports. Preserve the Fetch connection, unrelated entries and all other settings. Do not delete credentials, server data or packages. If the mapping or verification is unclear, ask me before changing it.",names.join(", "))
     }
     fn settings_view(&self)->Element<'_,Message>{
-        let mut items=column![text("Server settings").size(theme::PAGE_TITLE),text("Choose Edit settings on an installed server. Saved launch changes need an explicit Restart or Reconnect."),text(format!("Selected server: {}",if self.selected_server.is_empty(){"None"}else{&self.selected_server})),text("Call limits").size(theme::FIELD_TITLE),text("Seconds allowed for each call. A longer tool-specific limit can override this default."),text_input("120",&self.timeout).on_input(Message::Timeout),text("Calls allowed at once. Additional calls wait in the server's queue."),text_input("1",&self.concurrency).on_input(Message::Concurrency),button("Save call limits").on_press_maybe((!self.busy&&!self.auth_active(&self.selected_server)).then_some(Message::SaveExecution)),authentication::credential_editor(&self.secret_name,&self.secret_value,!self.busy&&!self.auth_active(&self.selected_server),Message::SecretName,Message::SecretValue,Message::SaveSecret,Some(Message::RemoveSecret))].spacing(theme::PAGE_GAP);
-        if let Some(server)=self.servers["servers"].as_array().and_then(|rows|rows.iter().find(|r|r["server_id"].as_str()==Some(self.selected_server.as_str()))){
-            if let Some(credentials)=server["credentials"].as_array(){for entry in credentials{let name=entry["name"].as_str().unwrap_or("").to_owned();items=items.push(row![button(text(name.clone())).on_press(Message::SecretName(name)),text(entry["status"].as_str().unwrap_or("unknown"))].spacing(theme::NAVIGATION_GAP));}}
-            items=items.push(checkbox(self.advanced).label("Show advanced launch and per-tool settings").on_toggle(Message::Advanced));
-            if self.advanced{items=items.push(text("Saved non-secret configuration")).push(text(serde_json::to_string_pretty(&server["config"]).unwrap_or_default()).size(theme::SMALL_TEXT)).push(text("Configuration patch (JSON). Omitted fields keep their current values."))
-                .push(text_input("{}",&self.config).on_input(Message::Config))
-                .push(text("Use args, working_directory, environment references, remote header references or execution.tool_timeouts_ms. Enter actual secret values only in the private field above."))
-                .push(button("Save configuration patch").on_press_maybe((!self.busy&&!self.auth_active(&self.selected_server)).then_some(Message::SaveConfig)));}
+        let mut items=column![text("Server settings").size(theme::PAGE_TITLE),
+            text("Choose Settings on an installed server. Use the server’s own files and authentication process; use Restart / Connect after changes when needed."),
+            text(format!("Selected server: {}",if self.selected_server.is_empty(){"None"}else{&self.selected_server}))].spacing(theme::PAGE_GAP);
+        if self.servers["servers"].as_array().is_some_and(|rows|rows.iter().any(|server|server["server_id"].as_str()==Some(self.selected_server.as_str()))){
+            items=items.push(self.folder_button(self.selected_server.clone()))
+                .push(text("Use the server’s normal setup first. For a required manual API key or fixed token, use an existing assigned entry below."))
+                .push(text("Fetch call limits").size(theme::FIELD_TITLE))
+                .push(text("Seconds allowed for each call. A longer tool-specific limit can override this default."))
+                .push(text_input("120",&self.timeout).on_input(Message::Timeout))
+                .push(text("Calls allowed at once. Additional calls wait in the server’s queue."))
+                .push(text_input("1",&self.concurrency).on_input(Message::Concurrency))
+                .push(button("Save call limits").on_press_maybe((!self.busy&&!self.auth_active(&self.selected_server)).then_some(Message::SaveExecution)));
+            if let Some(server)=self.servers["servers"].as_array().and_then(|rows|rows.iter().find(|server|server["server_id"].as_str()==Some(self.selected_server.as_str()))){
+                let references=authentication::credential_references(server);
+                if !references.is_empty(){
+                    for (binding,reference) in references{items=items.push(button(text(format!("{binding} → {reference}"))).on_press_maybe((!self.busy&&!self.auth_active(&self.selected_server)).then_some(Message::SecretName(reference))));}
+                    items=items.push(authentication::credential_editor(&self.secret_name,&self.secret_value,!self.busy&&!self.auth_active(&self.selected_server),Message::SecretName,Message::SecretValue,Message::SaveSecret,Some(Message::RemoveSecret)));
+                }
+            }
         }
         items.into()
     }
+
 }
 
 pub fn run(host:Arc<ApplicationHost>)->iced::Result{

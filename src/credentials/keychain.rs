@@ -12,7 +12,6 @@ pub(super) enum CreateResult { Created, AlreadyExists }
 pub(super) trait Backend: Send + Sync {
     fn read(&self, service: &str, account: &str) -> Result<Option<Zeroizing<[u8; 32]>>, CredentialError>;
     fn create(&self, service: &str, account: &str, key: &[u8; 32]) -> Result<CreateResult, CredentialError>;
-    fn delete(&self, service: &str, account: &str) -> Result<(), CredentialError>;
 }
 
 /// Independent random file keys remain in the Mac login Keychain. Only successful
@@ -34,6 +33,7 @@ impl MacKeychainKeys {
         if self.closed.load(Ordering::Acquire) { Err(CredentialError::KeyUnavailable) } else { Ok(()) }
     }
     fn key(&self, server_id: &str, create: bool) -> Result<Zeroizing<[u8; 32]>, CredentialError> {
+        if !matches!(server_id,"fetch-internal:tls-identity"|"fetch-internal:app-authorization"){return Err(CredentialError::KeyUnavailable);}
         self.ensure_open()?;
         // Hold the gate through OS access so simultaneous first reads cannot
         // each ask for the same key. Creation/deletion share this same gate.
@@ -65,15 +65,6 @@ impl MacKeychainKeys {
 impl KeyProvider for MacKeychainKeys {
     fn existing_key_for_server(&self, server_id: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError> { self.key(server_id, false) }
     fn key_for_server(&self, server_id: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError> { self.key(server_id, true) }
-    fn delete_key_for_server(&self, server_id: &str) -> Result<(), CredentialError> {
-        if server_id.starts_with("fetch-internal:") { return Err(CredentialError::KeyUnavailable); }
-        let mut keys = self.keys.lock().map_err(|_| CredentialError::KeyUnavailable)?;
-        // Evict even when the subsequent OS deletion fails.
-        keys.remove(server_id);
-        self.ensure_open()?;
-        let account = format!("{:x}", Sha256::digest(server_id.as_bytes()));
-        self.backend.delete(&self.service, &account)
-    }
     fn clear_cached_keys(&self) {
         self.closed.store(true, Ordering::Release);
         // Zeroizing values are erased on removal, including a poisoned gate's
@@ -111,23 +102,10 @@ impl Backend for NativeBackend {
         #[cfg(not(target_os="macos"))]
         { let _ = (service, account, key); Err(CredentialError::KeyUnavailable) }
     }
-    fn delete(&self, service: &str, account: &str) -> Result<(), CredentialError> {
-        #[cfg(target_os="macos")]
-        {
-            use std::ffi::CString;
-            let service = CString::new(service).map_err(|_| CredentialError::KeyUnavailable)?;
-            let account = CString::new(account).map_err(|_| CredentialError::KeyUnavailable)?;
-            // SAFETY: exact service/account buffers remain valid for this synchronous call.
-            let status = unsafe { fetch_keychain_delete(service.as_ptr(), account.as_ptr()) };
-            if status == 0 || status == -25300 { Ok(()) } else { Err(CredentialError::KeyUnavailable) }
-        }
-        #[cfg(not(target_os="macos"))]
-        { let _ = (service, account); Err(CredentialError::KeyUnavailable) }
-    }
+
 }
 #[cfg(target_os="macos")]
 unsafe extern "C" {
-    fn fetch_keychain_delete(service:*const std::ffi::c_char,account:*const std::ffi::c_char)->i32;
     fn fetch_keychain_read(service:*const std::ffi::c_char,account:*const std::ffi::c_char,output:*mut u8,length:usize)->i32;
     fn fetch_keychain_create(service:*const std::ffi::c_char,account:*const std::ffi::c_char,input:*const u8,length:usize)->i32;
 }

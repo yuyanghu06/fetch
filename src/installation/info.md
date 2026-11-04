@@ -1,3 +1,15 @@
+## November 3 current wrapper records
+
+Preparation now writes required installation/launch records without obsolete
+Fetch provider-store status arrays. Original source secrets are still discarded,
+records reused by original identity and no native login is guessed during install.
+Managed Connect remains separate from authentication proof. Removal preserves
+installed packages because they may contain native server account/config files.
+Explicit internal native_setup metadata is validated by storage, but normal imports
+have no new public metadata field or automatic command/path detection. Existing
+Railway extra-CLI preparation is retained unchanged pending explicit compatibility
+review; no new server-specific authentication code was added.
+
 # Server preparation
 
 Deletion holds an idle installation guard through cleanup, rejecting active preparation and excluding new source-reuse/autoconnect submissions. Removing the saved association makes a fresh discovery selectable; original definitions, scripts and shared runtimes are preserved.

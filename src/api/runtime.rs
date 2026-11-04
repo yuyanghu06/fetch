@@ -39,9 +39,30 @@ pub async fn config(State(state):State<Arc<AppState>>,Path(id):Path<String>,requ
     match manager.config(&id,input,&caller).await{Ok(v)=>Json(v).into_response(),Err(e)=>management_error(e)}
 }
 pub async fn authenticate(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
-    let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
-    let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};if input!=json!({}){return invalid();}
-    match manager.authenticate(&id).await{Ok(v)=>{if v["status"]=="authenticating"{accepted(v,Some(format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).finish())))}else{Json(v).into_response()}},Err(e)=>management_error(e)}
+    let background=request.headers().contains_key("x-fetch-background-auth");
+    let manager=if background{
+        let tokens:Vec<_>=request.headers().get_all("x-fetch-background-auth").iter().collect();
+        let valid=match tokens.as_slice(){[token]=>token.to_str().ok(),_=>None};
+        let Some(manager)=state.manager.as_ref().filter(|manager|valid.is_some_and(|token|manager.accepts_background_token(token))) else{
+            return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","This background authentication request is not authorized.",None);
+        };
+        if id.is_empty()||id.contains('\0'){return invalid();}
+        manager.clone()
+    }else{
+        let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};
+        if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
+        match manager(&state){Ok(v)=>v,Err(r)=>return r}
+    };
+    let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};
+    let interactive=match authentication_mode(&input){Ok(value)=>value,Err(reply)=>return reply};
+    if background&&interactive{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Background authentication can only renew existing remote access without opening sign-in.",None);}
+    let result=if background{manager.authenticate_background(&id).await}else{manager.authenticate_mode(&id,interactive).await};
+    match result{Ok(v)=>{if v["status"]=="authenticating"{accepted(v,Some(format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).finish())))}else{Json(v).into_response()}},Err(e)=>management_error(e)}
+}
+fn authentication_mode(input:&Value)->Result<bool,Response>{
+    let object=input.as_object().ok_or_else(invalid)?;
+    if object.keys().any(|key|key!="interactive"){return Err(invalid());}
+    object.get("interactive").map(|value|value.as_bool().ok_or_else(invalid)).unwrap_or(Ok(true))
 }
 pub async fn restart(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
@@ -49,7 +70,7 @@ pub async fn restart(State(state):State<Arc<AppState>>,Path(id):Path<String>,req
     match manager.restart(&id,input).await{Ok(v)=>{let location=v["restart_id"].as_str().map(|attempt|format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).append_pair("restart_id",attempt).finish()));accepted(v,location)},Err(e)=>management_error(e)}
 }
 pub async fn credentials(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
-    let Some(native)=&state.native else{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Open Fetch's native Settings window to change credentials.",None);};
+    let Some(native)=&state.native else{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Open Fetch's native Settings window to save manual keys in macOS Keychain.",None);};
     // A normal OAuth token cannot reach parsing, OS confirmation or the credential store.
     let Some(caller)=native.authorize_settings_headers(request.headers()) else{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Manual credential changes require Fetch's native Settings window.",None);};
     if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
@@ -127,10 +148,10 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
             let allowed:&[&str]=match name {
                 "fetch__discover_servers"=>&["config_path"], "fetch__install_servers"=>&["servers"],
                 "fetch__get_installation"=>&["installation_id"], "fetch__get_servers"=>&["id","restart_id"],
-                "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id"],
+                "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id","interactive"],
                 "fetch__restart_server"=>&["server_id","force_restart"],
                 "fetch__delete_server"=>&["server_id"],
-                "fetch__update_server_config"=>&["server_id","args","working_directory","environment","connection","execution"],
+                "fetch__update_server_config"=>&["server_id","execution"],
                 _=>return Err(RunError::invalid()),
             };
             if input.as_object().is_some_and(|object|object.keys().any(|key|!allowed.contains(&key.as_str()))){return Err(RunError::invalid());}
@@ -145,7 +166,7 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
                 "fetch__install_servers"=>project(self.manager.install(input).await),
                 "fetch__get_installation"=>project(self.manager.installation(input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
                 "fetch__get_servers"=>{if input.get("restart_id").is_some()&&input["id"].as_array().is_none_or(|ids|ids.len()!=1){return Err(RunError::invalid());}let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
-                "fetch__authenticate_server"=>project(self.manager.authenticate(id).await),
+                "fetch__authenticate_server"=>{let interactive=input.get("interactive").map(|value|value.as_bool().ok_or_else(RunError::invalid)).transpose()?.unwrap_or(true);project(self.manager.authenticate_mode(id,interactive).await)},
                 "fetch__restart_server"=>{let mut patch=json!({});if let Some(force)=input.get("force_restart"){patch["force_restart"]=force.clone();}project(self.manager.restart(id,patch).await)},
                 "fetch__delete_server"=>project(self.manager.delete_server(id,&caller).await),
                 "fetch__update_server_config"=>{let id=id.to_owned();let mut patch=input;patch.as_object_mut().ok_or_else(RunError::invalid)?.remove("server_id");project(self.manager.config(&id,patch,&caller).await)},

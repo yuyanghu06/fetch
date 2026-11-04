@@ -1,92 +1,57 @@
 # Native Fetch interface
 
-server_header shares the disclosure row and small × deletion button. It sends
-body-free DELETE, tracks each server independently, clears confirmed-deleted
-cache/settings/discovery state and invalidates stale reads. Failed/uncertain
-responses refresh rather than automatically retry. Native build and14 existing
-UI-handler checks pass; actual button appearance/deletion remains user-verified.
+The native UI calls the same HTTPS APIs as other clients. It has no server process,
+configuration-file, credential-delivery or authentication implementation of its own.
+Closing the window revokes its native Settings session; explicit Quit stops Fetch.
 
-D83 consumes the existing server authentication status: not_required hides the complete inline authentication panel; unknown alone no longer renders Authenticate. Required/failed states retain their actions. Installation messaging now describes automatic Connect after preparation. GET servers remains status; UI does not infer provider authentication from a successful HTTP response.
+## Server setup and manual keys
 
-Already-installed discovery rows display a checked disabled checkbox and an "already installed" suffix. Backend exact-source associations determine this state; the UI excludes these rows from default/manual/bulk selection, count and install payloads. Successful installation progress updates matching visible rows without another source scan; failed siblings remain retryable. components::installed_checkbox and theme::installed_checkbox keep Iced's disabled box and dim its label; common opacity lives in theme.rs. Runtime appearance and the new Figma specimen remain unverified/unmapped.
+Settings keeps Fetch call limits and the shared Open server folder action. The
+folder POST accepts only an installed instance ID and sends no body. Backend
+resolution and the system opener decide whether opening succeeds. Unknown native
+locations are reported as errors; the UI does not assume the package folder is the
+configuration folder. Folder requests track each server separately and do not block
+another server's authentication. Stale replies from a closed window are ignored.
+The arbitrary launch/configuration JSON editor is removed.
 
-UI reuse requirement (confirmed October 28): use shared rendering functions or
-modules for repeated navigation, buttons, server cards, plain messages/status,
-text inputs, tool disclosures and checkboxes, with common theme values. Pages supply
-data, state and callbacks. See [the component definitions](../../docs/SHARED_UI_COMPONENTS.md).
-Matching Figma components exist. `components.rs` now owns common native buttons,
-full-width inputs, checkboxes, navigation, page framing, plain/error messages,
-server-card framing and tool/server disclosure rendering. `theme.rs` owns their
-current sizes, spacing and padding and keeps the Iced Light appearance. Pages
-still supply data, availability and callbacks; these helpers do not call APIs.
-`authentication.rs::credential_editor` remains shared by Settings and inline
-authentication and uses the same controls/theme. Browser rendering is managed
-outside this native module. The current state library is indexed in
-[UI_STATE_COVERAGE.md](../../docs/UI_STATE_COVERAGE.md), including all nine auth
-phases, individual Settings outcomes and interaction/disabled differences.
-The user rejected the earlier styled proposals. Current Figma copies preserve
-this source's controls, hierarchy and scrolling; do not introduce badges,
-colored notices or two-column Settings as part of copying it.
+Use a server's own setup first. For imported environment/header inputs requiring a
+manual fixed key, Settings and inline authentication reuse the single masked
+`authentication::credential_editor`. The existing credentials PATCH requires fresh
+Mac confirmation and direct Keychain saving. The UI moves the submitted value out
+of its field before awaiting the request, clears other stale entry fields, and
+never logs secret-bearing messages. A storage result is displayed separately from
+account authentication; even an older authenticated snapshot cannot approve a
+failed or uncertain save. Native OAuth files and remote OAuth renewal are not
+manual key edits.
 
-Iced renders a light native window. The window holds a short-lived in-process Settings session and calls the same HTTPS application APIs as agents. Server records, installation progress and restart outcomes drive controls; next_steps text is never interpreted as UI instructions. Manual secret changes go through the existing credential PATCH and a fresh backend Mac confirmation. Closing the window drops its authority and leaves backend work running; Quit requests backend shutdown.
+Explicit Authenticate is available for unknown, required or failed status and sends interactive:true. Unknown never means that login is unnecessary; recorded native setup runs or returns a clear unsupported result. Authentication, manual saves and
+server reads have per-instance request ownership in auth_requests.rs. Pending
+responses are monitored without opening repeated browser flows. Unknown native
+login behavior remains an honest setup limitation. Expanded server cards display
+safe connection expiry and last-verified timestamps; null values stay unknown.
+The UI displays human next_steps text, but never executes it or uses it to select
+workflow actions. Raw tool definitions are shown without rewriting them.
 
-The D77 interface source was initially delivered without compilation or tests;
-later binary-build evidence is recorded in the milestone. The October29 shared
-native extraction is awaiting the coordinated build and actual UI checks. The
-UI does not edit client configurations, install certificate trust or execute
-tools merely to inspect them.
+## Shared controls and existing installation behavior
 
-Server/tool details expand individually. Call limits have ordinary controls, while launch/reference/per-tool edits have an optional advanced editor. Manual secrets are hidden on entry; closing the window immediately revokes native authority even if an HTTP request still holds a client clone. Internal HTTPS trusts the installation certificate with built-in public roots disabled. Named monitoring survives status-read errors; retries select failed installation rows only.
+components.rs owns ordinary buttons, inputs, checkboxes, navigation, page/message
+framing, server cards and disclosures. theme.rs owns common visual values and the
+Iced light appearance. The shared server_header includes registration removal;
+confirmed removal clears only UI caches and explains that files and credentials
+were preserved. Server/tool details expand independently.
 
-The Install MCPs path field has a Choose file… control using file_picker.rs and
-the existing AppKit bridge. The native picker shows hidden files, permits one
-file, and returns its absolute path without reading its contents. Cancel leaves
-the field unchanged; Discover servers remains the explicit API action. Native
-UI calls are dispatched to the main queue while Rust awaits completion. This
-change does not add an API, automatic import or configuration write.
+Opening Install discovers normal global definitions automatically. Optional file
+or folder selection uses file_picker.rs and the native AppKit picker, including
+hidden locations. Selecting a path alone does not install anything. Existing
+source/name associations show checked disabled installed rows; these do not enter
+manual/bulk selection or install payloads. Progress updates rows, while failed
+siblings remain retryable. The discovery list scrolls inside a bounded area; the
+Select all toolbar and Install selected servers footer remain visible.
 
-The Install MCPs page reserves a bounded scrolling area for discovery rows and
-installation progress, with its action footer outside the scroll area. The
-Install selected servers button stays mounted and is disabled when there is no
-selection or another incompatible operation is active. Other pages retain their
-whole-page scrolling. This keeps long imports from hiding the install control.
+## Evidence boundaries
 
-Select all sits in the fixed toolbar above the discovery list. It selects only
-supported path/name pairs, including disabled-source supported rows as an
-explicit user choice, without changing source flags or starting installation.
-When all selectable rows are selected, it reads Unselect all and clears the
-selection on click. A partial selection still offers Select all.
-Busy, picker and active-install states disable the bulk action. The footer shows
-the selected count; reopened windows retain the same minimum dimensions.
-Locked native compilation passed; actual layout interaction remains unverified.
-
-
-Inline authentication is implemented in `authentication.rs` and `mod.rs`.
-`authentication.rs` owns card-local authentication presentation/state and the
-credential editor shared with Settings. Existing config references supply
-credential names; backend authentication statuses drive UI decisions. Human
-next_steps text may be displayed but is never executed or used to route actions.
-Railway browser sign-in is now implemented in the shared manager; source/build
-evidence and live verification remain separate. Other unknown integrations
-show their precise unsupported result, never a generic Saved notice.
-Source/build review for this change is recorded in the active milestone.
-
-Pending authentication status, installation progress and each named restart now
-have independent read-in-flight guards. One slow install/restart no longer
-prevents checking a different server's browser sign-in.
-
-## October 30 independent authentication requests
-
-`auth_requests.rs` owns request tokens by server and ordered server-read IDs.
-Explicit authentication, inline key saves and Settings key changes use that
-tracking instead of the general busy flag. Different servers can have outstanding
-requests; a same-server edit/restart/duplicate remains blocked. Closing clears
-request ownership, and old completion/status-read messages cannot replace newer
-results. The existing shared editor, masking, API calls and layout remain.
-Independent tests include helper/Flow states and use a test-only host to exercise
-Desktop messages without opening a window; actual native appearance is separate.
-
-
-## November 3 — automatic discovery and optional overrides
-
-First opening Install MCPs invokes discovery without requiring a file selection. Refresh servers repeats it. Default locations are used until the user chooses Use a different file or folder…. That action reveals the custom input and native file/folder picker; choosing a path alone does not read or install anything. Refresh applies the explicit override; Use default locations clears it and reloads defaults. The fixed install footer, selection rules and shared controls remain. Discovery is blocked while a picker, installation or incompatible busy operation is active. Source/fixture checks and native compilation are separate from actual picker/window evidence.
+Historical builds/UI fixtures describe their original source in milestones.
+New manual-Keychain/folder/auth-mode changes require the current integrated
+checks; no native window, Finder, Mac confirmation or real account acceptance is
+established by their source or window-free fixtures. Figma/state reconciliation
+is tracked centrally in docs/UI_STATE_COVERAGE.md.

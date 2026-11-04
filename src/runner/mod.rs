@@ -36,7 +36,6 @@ impl ExecutionPolicy {
 #[derive(Clone)]
 pub enum TransportConfig {
     Stdio{executable:PathBuf,args:Vec<String>,working_directory:Option<PathBuf>,environment:BTreeMap<String,String>},
-    ManagedStdio{executable:PathBuf,args:Vec<String>,working_directory:Option<PathBuf>,environment:BTreeMap<String,String>,bridge:crate::credentials::bridge::Factory},
     Http{endpoint:String,headers:BTreeMap<String,String>},
     Sse{endpoint:String,headers:BTreeMap<String,String>},
 }
@@ -102,7 +101,7 @@ impl RunError {
     pub fn cancelled(sent:bool)->Self{Self{http_status:409,code:"TOOL_CALL_UNAVAILABLE",message:"The owning request ended. A sent action may still be running.",execution:if sent{"unknown"}else{"not_started"}}}
     pub fn unsupported(sent:bool)->Self{Self{http_status:if sent{502}else{409},code:"TOOL_INTERACTION_UNSUPPORTED",message:"This operation needs a protocol feature or owning client context unavailable on this connection.",execution:if sent{"unknown"}else{"not_started"}}}
     pub fn version()->Self{Self{http_status:502,code:"MCP_VERSION_UNSUPPORTED",message:"The upstream requested a different supported protocol setup.",execution:"not_started"}}
-    pub fn provider_auth()->Self{Self{http_status:502,code:"PROVIDER_AUTH_REQUIRED",message:"The upstream rejected its assigned provider access. Complete provider setup in Fetch Settings.",execution:"unknown"}}
+    pub fn provider_auth()->Self{Self{http_status:502,code:"PROVIDER_AUTH_REQUIRED",message:"The upstream rejected its assigned provider access. Use the server's native setup or Fetch Authenticate for the online connection.",execution:"unknown"}}
     pub fn catalog()->Self{Self{http_status:502,code:"TOOLS_UNAVAILABLE",message:"A complete unambiguous upstream catalog could not be collected.",execution:"not_started"}}
     pub fn next_steps(&self,server_id:&str)->Value {
         json!([{"actor":if self.execution=="unknown"{"user"}else{"agent"},"action":if self.execution=="unknown"{"review_tool_outcome"}else{"check_server_status"},"server_id":server_id,"instructions":self.message}])
@@ -123,6 +122,7 @@ struct Server {
     runtime:RwLock<String>,
     runtime_error:RwLock<Option<RunError>>,
     auth_rejected_generation:AtomicU64,
+    auth_revision:RwLock<u64>,
     unresolved_prior:AtomicU64,
 }
 impl Server {
@@ -134,13 +134,14 @@ impl Server {
     fn note_auth_error(&self,generation:u64,error:&RunError){
         if error.code=="PROVIDER_AUTH_REQUIRED"{self.auth_rejected_generation.fetch_max(generation,Ordering::AcqRel);}
     }
-    async fn note_request_auth_error(&self,generation:u64,connection:&Arc<transport::Connection>,error:&RunError){
+    async fn note_request_auth_error(&self,generation:u64,auth_revision:u64,connection:&Arc<transport::Connection>,error:&RunError){
         if error.code!="PROVIDER_AUTH_REQUIRED"{return;}
+        let revision=self.auth_revision.read().await;
         let current=self.connection.read().await;
         // A request may have retained an old connection across a reconnect.
         // Inspect its identity as well as its generation; never await between
         // that check and recording the rejection while holding this read guard.
-        if self.generation.load(Ordering::Acquire)==generation&&current.as_ref().is_some_and(|active|Arc::ptr_eq(active,connection)){
+        if *revision==auth_revision&&self.generation.load(Ordering::Acquire)==generation&&current.as_ref().is_some_and(|active|Arc::ptr_eq(active,connection)){
             self.auth_rejected_generation.fetch_max(generation,Ordering::AcqRel);
         }
     }
@@ -203,8 +204,35 @@ pub struct Runner {
     invocation_sequence:Arc<AtomicU64>,
     invocations:Arc<Mutex<BTreeMap<u64,(String,CancelToken)>>>,
     pub changes:broadcast::Sender<(String,String)>,
+    authentication_preflight:Arc<std::sync::RwLock<Option<AuthenticationPreflight>>>,
 }
+pub type AuthenticationPreflight=Arc<dyn Fn(String)->std::pin::Pin<Box<dyn std::future::Future<Output=Result<(),RunError>>+Send>>+Send+Sync>;
 impl Runner {
+    /// Only the application wires auth; protocol fixtures can use a raw runner.
+    pub fn set_authentication_preflight(&self,callback:AuthenticationPreflight){
+        if let Ok(mut current)=self.authentication_preflight.write(){*current=Some(callback);}
+    }
+    /// A protected MCP setup request proves transport access only. Compare the
+    /// same operation without private headers so a public initialize cannot pass.
+    pub async fn verify_remote_transport(&self,config:&TransportConfig)->Result<(),RunError>{
+        let mut unauthenticated=config.clone();
+        match &mut unauthenticated {
+            TransportConfig::Http{headers,..}|TransportConfig::Sse{headers,..}=>{
+                if headers.is_empty(){return Err(RunError::provider_auth());}
+                headers.clear();
+            },_=>return Err(RunError::invalid()),
+        }
+        async fn check(config:&TransportConfig)->Result<(),RunError>{
+            let connection=transport::Connection::open(config).await?;
+            let _guard=transport::CloseOnDrop::new(connection.clone());
+            let result=connection.setup().await;let _=connection.close().await;result
+        }
+        match tokio::time::timeout(Duration::from_secs(30),check(&unauthenticated)).await {
+            Ok(Err(error)) if error.code=="PROVIDER_AUTH_REQUIRED"=>{},
+            _=>return Err(RunError{http_status:422,code:"AUTHENTICATION_CHECK_UNSUPPORTED",message:"The MCP endpoint did not demonstrate that this read-only request requires a login. Fetch cannot verify account access from public setup alone.",execution:"not_started"}),
+        }
+        tokio::time::timeout(Duration::from_secs(30),check(config)).await.map_err(|_|RunError::not_ready())?
+    }
     pub fn new()->Arc<Self>{Self::construct(None,Aliases::default())}
     /// Call only during explicit application startup, with Fetch's private root.
     pub fn persistent(root:PathBuf)->Result<Arc<Self>,RunError>{
@@ -222,7 +250,7 @@ impl Runner {
         };
         Ok(Self::construct(Some(path),aliases))
     }
-    fn construct(alias_path:Option<PathBuf>,aliases:Aliases)->Arc<Self>{let(changes,_)=broadcast::channel(256);Arc::new(Self{servers:Arc::new(RwLock::new(BTreeMap::new())),deleted:Arc::new(std::sync::Mutex::new(BTreeSet::new())),aliases:Arc::new(Mutex::new(aliases)),alias_path,continuations:Arc::new(Mutex::new(BTreeMap::new())),stopping:Arc::new(AtomicBool::new(false)),shutdown_lock:Arc::new(Mutex::new(())),invocation_sequence:Arc::new(AtomicU64::new(0)),invocations:Arc::new(Mutex::new(BTreeMap::new())),changes})}
+    fn construct(alias_path:Option<PathBuf>,aliases:Aliases)->Arc<Self>{let(changes,_)=broadcast::channel(256);Arc::new(Self{servers:Arc::new(RwLock::new(BTreeMap::new())),deleted:Arc::new(std::sync::Mutex::new(BTreeSet::new())),aliases:Arc::new(Mutex::new(aliases)),alias_path,continuations:Arc::new(Mutex::new(BTreeMap::new())),stopping:Arc::new(AtomicBool::new(false)),shutdown_lock:Arc::new(Mutex::new(())),invocation_sequence:Arc::new(AtomicU64::new(0)),invocations:Arc::new(Mutex::new(BTreeMap::new())),changes,authentication_preflight:Arc::new(std::sync::RwLock::new(None))})}
     fn is_deleted(&self,id:&str)->bool{self.deleted.lock().map(|ids|ids.contains(id)).unwrap_or(true)}
     fn ensure_running(&self)->Result<(),RunError>{if self.stopping.load(Ordering::Acquire){Err(RunError::not_ready())}else{Ok(())}}
     pub async fn configure(&self,route:ServerRoute)->Result<(),RunError>{
@@ -233,7 +261,7 @@ impl Runner {
         self.ensure_running()?;
         if self.is_deleted(&route.server_id){return Err(RunError::missing());}
         if let Some(server)=servers.get(&route.server_id){server.scheduler.update(route.execution.clone());*server.route.write().await=route;}
-        else{servers.insert(route.server_id.clone(),Arc::new(Server{scheduler:Scheduler::new(route.execution.clone()),route:RwLock::new(route),connection:RwLock::new(None),generation:AtomicU64::new(0),lifecycle:Arc::new(Mutex::new(())),removed:AtomicBool::new(false),metadata_reads:AtomicU64::new(0),tools:RwLock::new(vec![]),catalog_observed:AtomicBool::new(false),catalog_observed_at:RwLock::new(None),runtime:RwLock::new("stopped".into()),runtime_error:RwLock::new(None),auth_rejected_generation:AtomicU64::new(0),unresolved_prior:AtomicU64::new(0)}));}
+        else{servers.insert(route.server_id.clone(),Arc::new(Server{scheduler:Scheduler::new(route.execution.clone()),route:RwLock::new(route),connection:RwLock::new(None),generation:AtomicU64::new(0),lifecycle:Arc::new(Mutex::new(())),removed:AtomicBool::new(false),metadata_reads:AtomicU64::new(0),tools:RwLock::new(vec![]),catalog_observed:AtomicBool::new(false),catalog_observed_at:RwLock::new(None),runtime:RwLock::new("stopped".into()),runtime_error:RwLock::new(None),auth_rejected_generation:AtomicU64::new(0),auth_revision:RwLock::new(0),unresolved_prior:AtomicU64::new(0)}));}
         Ok(())
     }
     async fn server(&self,id:&str)->Result<Arc<Server>,RunError>{let server=self.servers.read().await.get(id).cloned().ok_or_else(RunError::missing)?;if server.removed.load(Ordering::Acquire)||self.is_deleted(id){return Err(RunError::missing());}Ok(server)}
@@ -315,8 +343,13 @@ impl Runner {
     pub async fn update_remote_headers(&self,id:&str,headers:BTreeMap<String,String>)->Result<(),RunError>{
         self.ensure_running()?;
         let server=self.server(id).await?;
+        // Only called after the new access has passed the protected check.
+        // Hold this gate through header replacement and retiring rejection evidence.
+        // Replies started before replacement cannot mark the new access rejected.
+        let mut revision=server.auth_revision.write().await;
         if let Some(connection)=server.connection.read().await.as_ref(){connection.update_headers(headers.clone()).await?;}
-        match &mut server.route.write().await.transport{TransportConfig::Http{headers:stored,..}|TransportConfig::Sse{headers:stored,..}=>*stored=headers,_=>return Err(RunError::invalid())}Ok(())
+        match &mut server.route.write().await.transport{TransportConfig::Http{headers:stored,..}|TransportConfig::Sse{headers:stored,..}=>*stored=headers,_=>return Err(RunError::invalid())}
+        *revision=revision.wrapping_add(1);server.auth_rejected_generation.store(0,Ordering::Release);Ok(())
     }
     pub async fn begin_restart(&self,id:&str)->Result<(),RunError>{self.ensure_running()?;self.server(id).await?.scheduler.begin_restart()}
     pub async fn reopen_admission(&self,id:&str){if self.ensure_running().is_err(){return;}if let Ok(server)=self.server(id).await{if self.ensure_running().is_ok(){server.scheduler.reopen();}}}
@@ -332,7 +365,10 @@ impl Runner {
     pub async fn source_revision(&self,id:&str)->Result<String,RunError>{let connection=self.connection(id).await?;let revision=connection.revision.read().await.clone();Ok(revision)}
     pub async fn known_tools(&self,id:&str)->Result<Vec<Box<RawValue>>,RunError>{let server=self.server(id).await?;let tools=server.tools.read().await.iter().filter(|tool|!tool.source_rejected).map(|tool|tool.definition.clone()).collect();Ok(tools)}
     pub async fn native_tool_usable(&self,id:&str,name:&str,view:&str)->Result<bool,RunError>{let server=self.server(id).await?;let usable=server.tools.read().await.iter().any(|tool|tool.name==name&&!tool.source_rejected&&!(view==MODERN&&tool.header_error));Ok(usable)}
-    async fn connection(&self,id:&str)->Result<Arc<transport::Connection>,RunError>{self.ensure_running()?;let server=self.server(id).await?;let connection=server.connection.read().await.clone().ok_or_else(RunError::not_ready)?;if connection.closed.load(Ordering::Acquire){server.scheduler.ready(false);return Err(RunError::not_ready());}Ok(connection)}
+    async fn connection(&self,id:&str)->Result<Arc<transport::Connection>,RunError>{self.ensure_running()?;let server=self.server(id).await?;
+        let remote=matches!(&server.route.read().await.transport,TransportConfig::Http{..}|TransportConfig::Sse{..});
+        if remote {let callback=self.authentication_preflight.read().map_err(|_|RunError::not_ready())?.clone();if let Some(callback)=callback{callback(id.to_owned()).await?;}}
+        let connection=server.connection.read().await.clone().ok_or_else(RunError::not_ready)?;if connection.closed.load(Ordering::Acquire){server.scheduler.ready(false);return Err(RunError::not_ready());}Ok(connection)}
     /// Pure projection of the last successfully completed acquisition. This never
     /// contacts an upstream, changes observation time or persists a feature profile.
     pub async fn cached_catalog(&self,id:&str,view:&str)->Result<Value,RunError>{
@@ -348,7 +384,11 @@ impl Runner {
         if !matches!(view,"raw"|LEGACY|MODERN){return Err(RunError::invalid());}
         let server=self.server(id).await?;let connection=self.connection(id).await?;
         let generation=server.generation.load(Ordering::Acquire);
-        let tools=if connection.capabilities.read().await.get("tools").is_some(){catalog::validate_tools(collect(&connection,"tools/list","tools").await?,connection.modern_http()&&connection.revision.read().await.as_str()==MODERN)?}else{vec![]};
+        let auth_guard=server.auth_revision.read().await;let auth_revision=*auth_guard;
+        let modern_http=connection.modern_http()&&connection.revision.read().await.as_str()==MODERN;
+        let acquired=if connection.capabilities.read().await.get("tools").is_some(){collect(&connection,"tools/list","tools").await.and_then(|definitions|catalog::validate_tools(definitions,modern_http))}else{Ok(vec![])};
+        drop(auth_guard);
+        let tools=match acquired{Ok(tools)=>tools,Err(error)=>{server.note_request_auth_error(generation,auth_revision,&connection,&error).await;return Err(error);}};
         if self.stopping.load(Ordering::Acquire)||server.generation.load(Ordering::Acquire)!=generation||connection.closed.load(Ordering::Acquire){return Err(RunError::catalog());}
         let origin=catalog::origin(id,&tools,view);let mut stored=server.tools.write().await;
         if self.stopping.load(Ordering::Acquire)||server.generation.load(Ordering::Acquire)!=generation||connection.closed.load(Ordering::Acquire){return Err(RunError::catalog());}
@@ -393,6 +433,8 @@ impl Runner {
     }
     async fn invoke_inner(&self,id:&str,method:&str,params:Box<RawValue>,context:InvocationContext)->Result<Box<RawValue>,RunError>{
         self.ensure_running()?;
+        if !context.authorized(){return Err(RunError{http_status:403,code:"FORBIDDEN",message:"This connection no longer permits the operation.",execution:"not_started"});}
+        if context.cancel.is_cancelled(){return Err(RunError::cancelled(false));}
         let server=self.server(id).await?;let connection=self.connection(id).await?;
         let required_capability=match method{"completion/complete"=>Some("completions"),"resources/read"=>Some("resources"),"prompts/get"=>Some("prompts"),_=>None};
         if let Some(capability)=required_capability{if connection.capabilities.read().await.get(capability).is_none(){return Err(RunError::unsupported(false));}}
@@ -431,7 +473,11 @@ impl Runner {
                 let definition=tools.iter().find(|tool|tool.name==name).ok_or_else(||RunError::unsupported(false))?;
                 catalog::mirrored_headers(&definition.definition,&raw::field(&current_params,"arguments").unwrap_or_else(||raw::raw(&json!({}))))?
             }else{BTreeMap::new()};
-            let request=match connection.start(method,current_params,&context,mirrored).await{Ok(request)=>request,Err(error)=>{server.note_request_auth_error(generation,&connection,&error).await;reservation.complete();return Err(error);}};
+            let auth_guard=server.auth_revision.read().await;
+            let auth_revision=*auth_guard;
+            let started=connection.start(method,current_params,&context,mirrored).await;
+            drop(auth_guard);
+            let request=match started{Ok(request)=>request,Err(error)=>{server.note_request_auth_error(generation,auth_revision,&connection,&error).await;reservation.complete();return Err(error);}};
             reservation.mark_forwarded();
             let request_id=request.id.clone();let mut response=request.response;
             let mut guard=ActiveGuard{cancel:context.cancel.clone(),armed:true};
@@ -440,20 +486,20 @@ impl Runner {
                 _=tokio::time::sleep_until(deadline)=>{
                     reservation.mark_uncertain();connection.cancel(&request_id).await;
                     let local=connection.is_local();let server=server.clone();let connection=connection.clone();
-                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}if terminal_response(&result){reservation.complete();}}else if local&&server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire)){/* exit must be confirmed by lifecycle recovery */}});
+                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,auth_revision,&connection,error).await;}if terminal_response(&result){reservation.complete();}}else if local&&server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire)){/* exit must be confirmed by lifecycle recovery */}});
                     guard.armed=false;return Err(RunError::timeout());
                 },
                 _=context.cancel.cancelled()=>{
                     reservation.mark_uncertain();connection.cancel(&request_id).await;
                     let server=server.clone();let connection=connection.clone();
-                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}if terminal_response(&result){reservation.complete();}}});
+                    tokio::spawn(async move{if let Ok(result)=response.await{if let Err(error)=&result{server.note_request_auth_error(generation,auth_revision,&connection,error).await;}if terminal_response(&result){reservation.complete();}}});
                     guard.armed=false;return Err(RunError::cancelled(true));
                 },
             };
             guard.armed=false;
             let result=match result{
                 Ok(result)=>result,
-                Err(error)=>{server.note_request_auth_error(generation,&connection,&error).await;if error.code=="TOOL_RPC_ERROR"||error.code=="MCP_VERSION_UNSUPPORTED"{reservation.complete();}else{reservation.mark_uncertain();}return Err(error);}
+                Err(error)=>{server.note_request_auth_error(generation,auth_revision,&connection,&error).await;if error.code=="TOOL_RPC_ERROR"||error.code=="MCP_VERSION_UNSUPPORTED"{reservation.complete();}else{reservation.mark_uncertain();}return Err(error);}
             };
             if raw::text(&result,"resultType").as_deref()==Some("input_required"){
                 if context.client_revision.is_none(){reservation.mark_uncertain();return Err(RunError::unsupported(true));}
@@ -496,7 +542,8 @@ impl Runner {
         let connection=self.connection(id).await?;let capability=if method.starts_with("resources/"){"resources"}else{"prompts"};
         if connection.capabilities.read().await.get(capability).is_none(){return Ok(vec![]);}
         let server=self.server(id).await?;let generation=server.generation.load(Ordering::Acquire);
-        let result=collect(&connection,method,key).await;if let Err(error)=&result{server.note_request_auth_error(generation,&connection,error).await;}result
+        let auth_guard=server.auth_revision.read().await;let auth_revision=*auth_guard;
+        let result=collect(&connection,method,key).await;drop(auth_guard);if let Err(error)=&result{server.note_request_auth_error(generation,auth_revision,&connection,error).await;}result
     }
     pub async fn revoke_owner(&self,owner:&str){
         for (_, (caller,cancel)) in self.invocations.lock().await.iter(){if caller==owner{cancel.cancel();}}
@@ -548,4 +595,30 @@ async fn collect(connection:&Arc<transport::Connection>,method:&str,key:&str)->R
         }
     }
     Err(RunError::catalog())
+}
+
+#[cfg(test)]
+mod authentication_evidence_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn replacing_proven_headers_retires_rejection_and_ignores_old_replies() {
+        let runner=Runner::new();
+        let transport=TransportConfig::Http{endpoint:"https://example.invalid/mcp".into(),headers:BTreeMap::from([("authorization".into(),"Bearer fixture-old".into())])};
+        runner.configure(ServerRoute{server_id:"fixture".into(),transport:transport.clone(),execution:ExecutionPolicy::default()}).await.unwrap();
+        let server=runner.server("fixture").await.unwrap();
+        // Construct a connection only; no network request or account is used.
+        let connection=transport::Connection::open(&transport).await.unwrap();
+        *server.connection.write().await=Some(connection.clone());
+        server.generation.store(1,Ordering::Release);
+        server.note_request_auth_error(1,0,&connection,&RunError::provider_auth()).await;
+        assert_eq!(runner.snapshot("fixture").await["provider_auth_required"],true);
+        runner.update_remote_headers("fixture",BTreeMap::from([("authorization".into(),"Bearer fixture-new".into())])).await.unwrap();
+        assert_eq!(runner.snapshot("fixture").await["provider_auth_required"],false);
+        server.note_request_auth_error(1,0,&connection,&RunError::provider_auth()).await;
+        assert_eq!(runner.snapshot("fixture").await["provider_auth_required"],false,"an old in-flight reply must not reject the replacement access");
+        server.note_request_auth_error(1,1,&connection,&RunError::provider_auth()).await;
+        assert_eq!(runner.snapshot("fixture").await["provider_auth_required"],true,"a rejection of current access remains actionable");
+        runner.shutdown().await;
+    }
 }

@@ -1,3 +1,15 @@
+## November 3 wrapper refactor — current source changes
+
+Current UI uses one shared masked fixed-key editor in Settings/inline panels,
+with stored-but-unverified result distinct from auth. Open-folder is a shared
+async native action with per-server busy/error/stale-response handling. The raw
+config patch editor is removed; call limits remain. Unknown auth offers explicit
+Authenticate, and nullable expiry/last-verified metadata is displayed without
+triggering checks. Window-free fixtures cover these branches; current native
+window/Finder/Mac confirmation/provider behavior is unobserved. Earlier Figma
+node/state inventory below remains historical and needs reconciliation with this
+source; no updated visual or exhaustive value-state acceptance is claimed.
+
 # Current UI state coverage
 
 November 3 bulk-selection change: the Install toolbar offers Select all with no

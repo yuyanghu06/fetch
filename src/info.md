@@ -1,54 +1,23 @@
-# Shared Rust backend
+# Fetch backend and native interface
 
-## November 3 source-layout clarification
+Current wrapper implementation uses official rmcp3.8.0 auth-only functions for
+online sign-in/renewal; manager/network keeps common destination protection,
+remote_oauth connects its store to direct Keychain, and application wires restricted
+actual self-HTTPS authenticate requests. Native servers/helpers keep account files
+and refresh. Provider bridges/Google interception/custom token rules are removed.
 
-Current folders group reusable backend work by responsibility. HTTP adapters are
-currently spread across `api`, `oauth` and `mcp`, and `api/runtime.rs` combines
-unrelated URL families. The user's required direction is URL-shaped route
-subfolders in `api`, with reusable backend functions allowed in the other
-folders. The reorganization has not been implemented. See
-../docs/architecture/README.md for the recorded boundary.
+credentials now protects only application TLS identity/coding-app authorization;
+provider IDs are rejected without accessing old files/keys. storage keeps internal
+launch records and registration-only removal. runner/mcp preserve raw messages,
+permissions, queues/deadlines/cancellation and native forwarding. API/UI wrap shared
+backend operations; native fixed-key Settings and known-folder actions are separate
+from verified login. Native metadata authoring remains an explicit limitation.
 
-D81 current source includes the application host, real native authority/encrypted
-storage, private installer/manager, shared runner/MCP gateway and API-backed UI.
-browser.rs now centralizes escaped Fetch-owned HTML rendering; native repeated
-rendering/theme lives in ui/components.rs and ui/theme.rs. Generic remote OAuth
-metadata/registration/renewal source is in manager/remote_auth.rs; authentication
-proof and credential-outcome amendments remain pending. Locked native build and
-68 selected fixture tests pass; Clippy completes with warnings. Actual native/
-provider/MCP acceptance remains unproved. The paragraphs below retain earlier
-foundation/source/compile-pass history and are not current missing-module claims.
+Initial141 relevant fixtures and locked native binary build pass; final independent
+review/real confined MCP evidence are tracked in milestones/native-server-storage.
+No actual native window/Finder/Keychain/provider/client or universal compatibility
+claim follows from these fixtures. Personal state and existing services remain.
 
-`lib.rs` exposes the backend used by interfaces. `main.rs` provides the explicit developer command. `development.rs` owns ephemeral HTTPS and developer-state isolation; it is not a production daemon or lasting certificate implementation. `authority.rs` defines the trusted authorization boundary and currently denies all real grants. `api/` wraps backend services; discovery, storage and credentials have separate guides. No managed server process or MCP relay is started by this increment.
-
-The D77 source pass adds native app authorization, installation/management, the shared runner/MCP gateway and an API-backed Iced interface. application.rs wires one process and a private single-instance activation socket. The original development launcher remains fixture-only; the native app command uses lasting identity and Keychain-backed state when the user explicitly launches it. No D77 source has been compiled or tested.
-
-D79 binary compilation succeeds after a gateway syntax/import correction. No executable, app/service or MCP connection was started; runtime behavior is still unverified.
-
-Current development defaults: native debug app resolves the current home and uses
-Library/Application Support/Fetch-Development with port53672; release uses Fetch
-with port53671. application.rs exposes side-effect-free path/port selectors and
-main.rs applies defaults while preserving explicit overrides. Installer, manager,
-credentials and runner retain the selected root. See docs/testing/DEVELOPMENT.md.
-The follow-up locked native binary build succeeded in9.74seconds; no runtime
-check or regression test was executed.
-
-`diagnostics.rs` owns safe first-party HTTP metadata logging. API middleware,
-provider HTTP, native UI requests, direct package downloads and remote MCP
-transports use it without logging secrets, URLs, headers or bodies.
-
-## Window-free authentication fixtures
-
-`ApplicationHost::fixture` is compiled only for unit tests. Tests supply a private
-temporary root and memory-key CredentialStore; the helper constructs UI backend
-objects without a listener, started services, native prompt or Keychain access.
-Production `prepare` and native authority are unchanged. This supports Desktop
-message tests and does not establish real native/provider/MCP compatibility.
-
-D82 Manager now separates generic imported input resolution, trusted verification
-descriptions and generic HTTP checks. The existing native/UI/runner APIs and
-public configuration schema remain; unit fixtures use disposable keys/services.
-
-ApplicationHost shutdown now clears/closes the shared successful-key cache after
-stopping its manager; waiting for native operations runs off the async executor.
-The cache preserves separate application/server keys and is not credential migration.
+Existing debug/release roots/ports are unchanged. HTTP handlers remain in api and
+legacy oauth/mcp registration modules; new open-folder uses URL-shaped subfolders.
+The separately recorded broader route-file reorganization is not part of this pass.

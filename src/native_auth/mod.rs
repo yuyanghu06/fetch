@@ -13,14 +13,17 @@ impl std::fmt::Display for NativeAuthError {
 }
 impl std::error::Error for NativeAuthError {}
 
-pub struct NativeAuthority { sessions:Mutex<BTreeMap<String, Instant>>, prompts:tokio::sync::Mutex<()> }
+pub struct NativeAuthority { #[cfg(test)] fixture_confirmation:bool, sessions:Mutex<BTreeMap<String, Instant>>, prompts:tokio::sync::Mutex<()> }
 pub struct NativeSettingsSession { token:String, authority:Weak<NativeAuthority> }
 impl NativeSettingsSession { pub fn header_value(&self)->&str { &self.token } }
 impl Drop for NativeSettingsSession { fn drop(&mut self) { if let Some(authority)=self.authority.upgrade() { if let Ok(mut sessions)=authority.sessions.lock() { sessions.remove(&self.token); } } } }
 /// This type has no public constructor, serializer or Clone implementation.
 pub struct SettingsCapability { authority:Weak<NativeAuthority>, session:String, server:String, fingerprint:String, expires:Instant, used:AtomicBool }
 impl NativeAuthority {
-    pub fn new()->Arc<Self> { Arc::new(Self { sessions:Mutex::new(BTreeMap::new()), prompts:tokio::sync::Mutex::new(()) }) }
+    pub fn new()->Arc<Self> { Arc::new(Self { #[cfg(test)] fixture_confirmation:false, sessions:Mutex::new(BTreeMap::new()), prompts:tokio::sync::Mutex::new(()) }) }
+    /// No OS dialog is opened by isolated route tests. Absent from production.
+    #[cfg(test)]
+    pub(crate) fn fixture()->Arc<Self> { Arc::new(Self { fixture_confirmation:true, sessions:Mutex::new(BTreeMap::new()), prompts:tokio::sync::Mutex::new(()) }) }
     /// Called only by the in-process native window creation path.
     pub fn open_settings(self:&Arc<Self>)->NativeSettingsSession {
         let token=random_token();
@@ -34,12 +37,14 @@ impl NativeAuthority {
         self.sessions.lock().ok()?.get(token)?;
         Some(Caller::from_native_settings(format!("native:{}", token_digest(token))))
     }
-    /// Mac presence for app approval; it deliberately returns no Settings capability.
+    /// Mac presence for approving an application connection to Fetch.
     pub async fn confirm_presence(&self, reason:&str)->Result<(),NativeAuthError> {
         self.confirm_presence_with_timeout(reason,Duration::from_secs(120)).await
     }
     pub async fn confirm_presence_with_timeout(&self,reason:&str,budget:Duration)->Result<(),NativeAuthError> {
         if budget.is_zero() { return Err(NativeAuthError::Timeout); }
+        #[cfg(test)]
+        if self.fixture_confirmation { return Ok(()); }
         let _prompt=self.prompts.try_lock().map_err(|_|NativeAuthError::Unavailable)?;
         let reason=CString::new(reason).map_err(|_|NativeAuthError::Unavailable)?;
         let seconds=budget.as_secs().saturating_add(u64::from(budget.subsec_nanos()!=0)).min(120) as u32;
@@ -47,7 +52,7 @@ impl NativeAuthority {
     }
     pub async fn confirm_settings(self:&Arc<Self>,session:&NativeSettingsSession,server_id:&str,mutation_fingerprint:&str)->Result<SettingsCapability,NativeAuthError> {
         self.session_valid(session)?;
-        let reason=format!("Save the selected credential changes for {server_id} in Fetch Settings.");
+        let reason=format!("Save the selected manual key changes for {server_id} in macOS Keychain.");
         self.confirm_presence(&reason).await?;
         self.session_valid(session)?;
         Ok(SettingsCapability { authority:Arc::downgrade(self),session:session.token.clone(),server:server_id.to_owned(),fingerprint:mutation_fingerprint.to_owned(),expires:Instant::now()+Duration::from_secs(30),used:AtomicBool::new(false) })
@@ -67,7 +72,7 @@ impl NativeAuthority {
         let [value]=values.as_slice() else { return Err(NativeAuthError::Denied); };
         let token=value.to_str().map_err(|_|NativeAuthError::Denied)?.to_owned();
         if !self.sessions.lock().map_err(|_|NativeAuthError::Unavailable)?.contains_key(&token) { return Err(NativeAuthError::Denied); }
-        self.confirm_presence(&format!("Save the selected credential changes for {server_id} in Fetch Settings.")).await?;
+        self.confirm_presence(&format!("Save the selected manual key changes for {server_id} in macOS Keychain.")).await?;
         if !self.sessions.lock().map_err(|_|NativeAuthError::Unavailable)?.contains_key(&token) { return Err(NativeAuthError::Expired); }
         Ok(SettingsCapability { authority:Arc::downgrade(self),session:token,server:server_id.to_owned(),fingerprint:fingerprint.to_owned(),expires:Instant::now()+Duration::from_secs(30),used:AtomicBool::new(false) })
     }

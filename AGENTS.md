@@ -1,3 +1,12 @@
+> **November 3 current implementation:** User resumed the scoped refactor.
+> Official Rust MCP login/renewal, direct Keychain storage, native-owned credentials,
+> retained manual-key PATCH and shared authenticate-route callers are implemented.
+> Final151 checks, separate real confined Everything check and native build pass;
+> independent Evaluator ACCEPTs this scoped refactor. Native setup/folder metadata authoring and real
+> provider/Finder/Keychain acceptance remain limits. See [the current plan](docs/architecture/native-server-storage.md).
+
+> Earlier November3 planning pauses are preserved in [historical checkpoints](milestones/native-server-storage/historical-agent-checkpoints.md). The user has now resumed this scoped work. Discuss any new per-server code before writing it.
+
 > **Latest instruction — October 29, 2026 (D81):** Finish the selected local MVP,
 > build and test autonomously, then use computer interaction to install a real
 > MCP server in the protected development test environment and verify it from a
