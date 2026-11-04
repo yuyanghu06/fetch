@@ -29,8 +29,9 @@ removed; persistent signer/settings are intentional dev setup. Existing Fetch an
 services preserved. Quit Fetch then run ./scripts/run-development.sh. Old items
 may need final approval; native prompt counts/rebuild lock/denial remain unmeasured.
 No wrapping-key migration, release signing or packaging selected.
-Source/launcher delivered in515c7b1 by concurrent full-tree delivery; final
-verification records follow. [Completion](history/2026-11-03_19-52-53-335817-orchestrator-complete-keychain-development-setup.md).
+Source/launcher delivered in515c7b1; final verified recordsd73865d pushed to
+main. Working tree and whitespace checks pass; no outstanding selected work.
+[Delivery](history/2026-11-03_19-53-42-343030-orchestrator-keychain-workflow-delivery.md). [Completion](history/2026-11-03_19-52-53-335817-orchestrator-complete-keychain-development-setup.md).
 [Evidence](keychain-prompts/evidence.md).
 [Pass](history/2026-11-03_19-51-19-045118-evaluator-cache-and-launcher-source-acceptance.md).
 [Pass](history/2026-11-03_19-51-19-045707-tester-key-cache-launcher-and-pull-regressions.md).
