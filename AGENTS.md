@@ -1,3 +1,15 @@
+# Focus tests on real feature use (November 4, 2026)
+
+The user requires small, focused tests that prove real-world use of the requested feature. Test the actual user action and meaningful result through the relevant product path. Prefer a few realistic feature tests over many narrow assertions about implementation details.
+
+Do not spend time writing speculative edge-case matrices, obscure malformed-input cases, tests that merely repeat the implementation, or elaborate test infrastructure unrelated to the requested behavior. Add coverage for a failure only when it is a realistic part of using the feature, a concrete observed bug, or an explicitly requested requirement. Keep new tests and test runs proportional to the change; do not broaden testing after sufficient checks pass without a concrete reason. This applies to all agents and all new or modified tests in this project.
+
+# Default architecture — thin wrappers (November 4, 2026)
+
+Unless the user explicitly describes otherwise, everything built in this project should be a wrapper around existing code and its outputs. Reuse the underlying server/library’s implementation for startup, authentication, renewal and other behavior. Fetch adds the glue needed to invoke it and present its output; do not silently replace it with custom workflows, guessed commands, reimplemented provider logic or rewritten results. Propose any departure for the user’s input first.
+
+The console is a display wrapper for service output and returned errors. Preserve the actual error code/message/details rather than substituting “protocol error” or fabricated progress/outcome summaries. Credential redaction and already selected access/storage/process boundaries remain. Label genuine Fetch-owned failures separately. Do not infer or automatically execute a separate login command; show instructions actually returned by the server. Existing explicitly approved product rules remain, and this default does not itself authorize a broad rewrite or copying another app’s identity/credentials.
+
 > **November 3 current implementation:** User resumed the scoped refactor.
 > Official Rust MCP login/renewal, direct Keychain storage, native-owned credentials,
 > retained manual-key PATCH and shared authenticate-route callers are implemented.

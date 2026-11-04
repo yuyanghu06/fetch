@@ -1,0 +1,10 @@
+# Complete wrapper authentication
+
+- Local timestamp / acting role / milestone: 2026-11-04T15:09:19.022331-05:00 / orchestrator / wrapper-authentication.
+- Requested scope: Complete removal of custom issuer-feature requirement and other remote-login compatibility restrictions that violate the wrapper design.
+- Starting repository state: Authentication source/tests accepted provisionally;43 checks passed; build retries were affected by separately owned concurrent terminal/logging edits.
+- Work performed / changed files: Inspected final auth source/tests and actual specialist evidence; integrated canonical docs, affected guides, current snapshot/to-do and scoped evidence. Requested removal is complete and independently accepted. Preserve all concurrent console/vendor/source work, personal state and immutable history; no auth source correction was needed after initial removal.
+- Decisions: Official rmcp owns discovery/fallback and callback issuer validation. Retain actual-request network limits, human consent, state/deadline, per-instance credentials, endpoint/saved issuer/client checks and explicit no-silent-deletion. No new API/provider method or migration.
+- Checks and evidence: Independent remote_oauth26/26, api::background_tests6/6, manager::native_storage_tests11/11 PASS; current native cargo build --locked --offline --bin fetch PASS21.68s. Relevant source/docs whitespace checks PASS. Final evaluator ACCEPT. Scoped evidence records failed earlier retries and latest unrelated missing console test file honestly.
+- Resulting state / acceptance: Scoped requested implementation complete. No real Vercel sign-in/native UI/runtime acceptance claimed; no app launch, personal credential/client setting edit, signing, release, commit or push.
+- Remaining work and handoff: User can retry after explicit Quit and signed launcher rebuild/reopen. Separate console owner should finish its test wiring; no auth correction remains. Vercel may have other actual provider requirements; no new mechanism selected here.

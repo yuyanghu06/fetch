@@ -117,12 +117,12 @@ stop another service automatically to clear a port conflict.
 1. Launch development Fetch with its separate root while leaving discovery on the
    normal current home/global Codex configuration. By default this is
    `~/.codex/config.toml`; an existing valid CODEX_HOME changes the source root.
-   Opening Install MCPs automatically discovers those definitions; no path selection is required.
-   To override the defaults, choose **Use a different file or folder…**. Supply an
-   absolute home folder, `.codex` folder or one configuration file, using the native
-   picker or typed path, then press **Refresh servers**. The picker shows hidden
-   files/folders. Cancel preserves the current path. **Use default locations** clears
-   the override and reloads the normal candidates. Supplied paths do not expand `~`
+   Install MCPs starts with an empty list. Choose an absolute folder or configuration
+   file with **Choose file or folder…** to load definitions. For Codex, choose
+   `~/.codex` in the picker. A typed absolute path uses Enter or **Refresh servers**.
+   The picker shows hidden files/folders; Cancel preserves the current selection.
+   Opening the page or refreshing an empty path does not scan global defaults.
+   Supplied paths do not expand `~`
    or `$HOME`. A `.codex` folder uses its `config.toml` and its parent’s usual
    Claude/OpenCode paths; a home folder uses its standard config children.
    Discovery reads only those known files and never installs servers by itself.

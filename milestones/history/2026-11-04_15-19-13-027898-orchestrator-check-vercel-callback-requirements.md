@@ -1,0 +1,10 @@
+# Check Vercel callback requirements
+
+- Local timestamp / acting role / milestone: 2026-11-04T15:19:13.027898-05:00 / Orchestrator / Vercel explanation/research only.
+- Requested scope: Check what Vercel expects as the callback URL.
+- Starting repository state: User's registration request rejected invalid_redirect_uri; Fetch development callback defaults to HTTPS localhost53672/oauth/provider/callback. Existing feature/source changes preserved.
+- Work performed / changed files: Read official Vercel MCP docs/November2 changelog and linked current CIMD draft section4.2. Inspected pinned SDK identity-document option and current Fetch call. Updated canonical research/snapshot/to-do and appended this entry.
+- Decisions: No single Vercel-prescribed callback path found. Published categories are HTTPS, custom scheme, or HTTP loopback. Client identity/registered callback association is also required; no URL scheme/path substitution, hostname, hosting or implementation selected.
+- Checks and evidence: https://vercel.com/docs/agent-resources/vercel-mcp#client-identification-with-cimd states callback categories and requires CIMD or reviewed clients. https://vercel.com/changelog/vercel-mcp-now-supports-client-id-metadata-documents explains unreviewed clients publish own identity JSON at HTTPS URL used as client_id. Linked draft https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document#section-4.2 says document discovery establishes registered callback URLs and normal exact matching applies (loopback port exception). Current Fetch AuthorizationRequest supplies name/redirect, no metadata URL; SDK already exposes with_client_metadata_url. No live provider tests or source changes.
+- Resulting state / acceptance: Can explain allowed callback formats and missing identity-document setup without claiming HTTPS localhost was runtime accepted or that only changing the URL fixes registration.
+- Remaining work and handoff: User chooses client identity setup/public metadata location before implementation/deployment. Preserve shared callback and wrapper/library ownership; no guessed provider-specific behavior.

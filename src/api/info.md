@@ -44,3 +44,21 @@ the matching MCP tool reject former launch/environment/header editing fields.
 GET server authentication projects safe expiry/last-verified metadata without
 performing renewal. Raw MCP values and the common no-store/next_steps boundary stay
 unchanged. New fixture/native acceptance is recorded in the active milestone.
+
+Start/login follow-up: runtime.rs handles /restart interactive:true through the
+same Manager; ordinary restart still uses default false. Pending auth responses
+carry the server-status polling location. /authenticate stays functional for
+existing clients/background renewal and sends Deprecation plus successor Link;
+no removal date exists. MCP restart forwards the same interactive option.
+
+
+November 4 wrapper-authentication: provider_callback accepts unrelated provider query fields such as scope/session_state. It still rejects duplicate state/code/error/iss and preserves body/size limits and pending-attempt ownership. Actual callback issuer/state validation stays with rmcp through Manager; no route or permission changed.
+
+November 4 temporary remote callback: `runtime.rs` exposes one internal shared
+callback helper for both the existing HTTPS route and the attempt-local
+`127.0.0.1` listener. Both paths use the same parser, Manager callback and browser
+result page. The temporary listener supplies its expected SDK state, which must
+match before any pending flow is consumed. This helper adds no application API
+or permission; the temporary router contains only the callback path. Main HTTPS
+origin/certificate behavior is unchanged. Verification evidence is tracked in the
+active client-identity milestone.

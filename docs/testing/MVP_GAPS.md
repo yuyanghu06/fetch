@@ -1,3 +1,12 @@
+November4 Vercelidentityfollow-up: publicJSON islive/direct200; SDKconfigured andtemporaryHTTP127callback implemented.3focusedfixtures/nativebuild/independentreviewpass. ActualVercelbrowserapproval/tooluse/restartacceptance remainsunrun; do notconflatepublicationwithproviderlogin. [Evidence](../../milestones/client-identity/evidence.md).
+
+November3 standard-login follow-up: /restart interactive:true now runs a recorded
+helper or configured local startup, presents host-only consent for selected login
+links, preserves deprecated /authenticate, and remembers last-known status without
+claiming current account proof.171 independent fixture/confinement checks pass;
+actual Google-account/browser/Keychain/native appearance acceptance remains open.
+[Evidence](../../milestones/standard-authenticate/evidence.md).
+
 > **November 3 current wrapper direction:** Google/Slack native token interception
 > and the Fetch encrypted-provider handoff described below are superseded. Servers
 > keep native credentials/refresh; online Fetch-client access uses official rmcp

@@ -32,3 +32,14 @@ are unchanged. Complete remote open-question checkpoint is also archived here.
 
 Independent documentation merge review ACCEPT; source/test/dependency/build diff
 from accepted final source is empty and no runtime rerun is required.
+
+November3 research follow-up: [login-library/client findings](../../docs/architecture/mcp-login-discovery-research.md)
+correct the earlier initial-Google-login explanation. Google can start login on
+ordinary startup, but Fetch discards its link; native_setup is required only by
+the current explicit local Authenticate implementation. Independent core-source
+review ACCEPT. User selection and protected implementation/account tests remain.
+
+The subsequent [standard Authenticate milestone](../standard-authenticate/info.md)
+implements configured-startup fallback, safe login-link consent and last-known
+status; earlier descriptor-only limitations above are historical for explicit
+local login. Actual native folder metadata authoring remains separate.

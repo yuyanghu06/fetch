@@ -1,4 +1,44 @@
+## November 4 — Published Vercel callback requirements checked
+
+[Vercel's current MCP client requirements](https://vercel.com/docs/agent-resources/vercel-mcp#client-identification-with-cimd) allow HTTPS callback URLs, custom application schemes, or HTTP on a loopback address. They prescribe no one universal callback hostname/path. Fetch's HTTPS localhost callback falls within the documented HTTPS category; this is a documentation comparison, not evidence that its registration was accepted.
+
+Vercel also requires an already reviewed client or a public HTTPS client identity JSON document (CIMD). The document lists the client's permitted callbacks; [the linked draft's registration section](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document#section-4.2) explains matching. Fetch currently sends its name/redirect through dynamic registration without that public identity URL. The pinned library already provides with_client_metadata_url, so using the documented identity route need not reimplement OAuth. A public metadata location/identity is an open product setup decision; no domain, hosting, new callback route, live probe or source implementation selected. Changing callback scheme/host/path alone is not an established fix for the observed rejection.
+
+## November 4 — Vercel now rejects the registered return address
+
+After custom gate removal, the user supplies actual HTTP400 invalid_redirect_uri during OAuth client registration: the service says supplied redirect URIs are not approved. Fetch has reached registration; this is a Vercel response, not the removed Fetch issuer check. sdk.rs supplies a Fetch client name and local callback to the library, without a client metadata URL or predefined client identity. Manager builds the callback as <application origin>/oauth/provider/callback; ApplicationHost uses https://localhost:<port>, default53672 in development (53671 release). Logs do not independently establish a running override port.
+
+A return address is where the browser comes back after account approval, carrying a one-use code so Fetch can finish sign-in. Official [Vercel docs](https://vercel.com/docs/agent-resources/vercel-mcp#client-identification-with-cimd) and [November2 changelog](https://vercel.com/changelog/vercel-mcp-now-supports-client-id-metadata-documents) describe previously reviewed clients or an HTTPS-hosted client identity document (CIMD). The latter is a public JSON description of the client, its own identity and permitted return addresses. That setup is missing in Fetch's current request; the log alone does not establish that changing only a callback scheme/host/port would resolve it. No hosting/domain, new route or implementation selected; no source change or live account test performed.
+
 # Research context and practical limits
+
+## November 4 — Startup service log research and selected scope
+
+User explicitly authorizes coding the rejection/service-log feature. Startup capture currently keeps only32lines/16KiB stderr; recorded helpers retain links but not logs; remote auth and protocol errors collapse detail. Selected extension keeps a private memory-only console record across each attempt, with1MiB/4096line limit and explicit truncation. Cover local stderr, setup stdout/stderr, nonprotocol stdout as a protocol violation, returned MCP errors/notifications and unsuccessful HTTP/OAuth replies plus exact failed step. Preserve raw normal forwarding and existing auth behavior; no log files, new route or real-provider execution.
+
+Primary references: [MCP transports](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports), [error structure](https://modelcontextprotocol.io/specification/2025-11-25/basic#error-responses), [service logging](https://modelcontextprotocol.io/specification/2025-11-25/server/utilities/logging). Pinned rmcp3.8 auth source embeds failed response body in RegistrationFailed and logs token_result under global debug tracing; log selected sanitized error details rather than enabling that tracing. VS Code’s MIT maintained [transport logger](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/mcp/common/mcpServerConnection.ts) and [notification handler](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/mcp/common/mcpServerRequestHandler.ts) keep service logs separate from protocol handling. Its optional raw-frame debug logging is outside this scope.
+
+## November 4 — Vercel and Railway login errors after startup repair
+
+User requests explanation only, explicitly no code. Source confirms Vercel’s displayed error combines missing/disallowed auth setup, unsupported proof-key flow and registration failure; it does not identify which failed. Current remote login sets a Fetch client name but does not configure a public client metadata document URL or predefined client ID. Vercel’s November 2 change allows clients using an HTTPS identity metadata document, while previously approved apps remain supported. This is a concrete compatibility gap; the exact failing request remains unobserved. Source also imposes discovery/issuer requirements, so do not claim the displayed error proves client registration alone failed.
+
+Railway’s new protocol error is different from the earlier missing-executable failure. The runner receives a protocol error response but drops its original message. Railway docs say railway mcp reuses railway login credentials; current local Authenticate starts the configured MCP or an explicitly recorded helper, and does not infer railway login. Fetch provides an instance-specific HOME. Missing CLI login there is plausible, not confirmed; no saved token files/account were inspected or run.
+
+Next diagnostic need: identify the actual OAuth failure stage for Vercel and the original Railway protocol error before choosing any fix. No application/source/config/account changes or live provider requests. References: https://vercel.com/docs/agent-resources/vercel-mcp#client-identification-with-cimd and https://docs.railway.com/cli/mcp.
+
+## November 4 — Railway fails before sign-in because its CLI is not found
+
+User-provided startup log matches @railway/mcp-server 0.1.12's missing-executable diagnostic. Its published and installed wrapper spawns `railway mcp`; it prints the deprecation/install message on ENOENT (the executable cannot be found) and exits 1. The installed development package is 0.1.12 and has its private Railway CLI present under the sibling railway-cli installation. Fetch still launches the wrapper, clears inherited process environment, and defaults PATH to the primary executable directory plus /usr/bin:/bin. It does not add the separately prepared Railway CLI bin directory. A global Railway executable exists under /opt/homebrew/bin, also outside that default PATH.
+
+This is an executable lookup failure before account authentication, not evidence of invalid Railway credentials. Recommended repair: expose the already prepared private CLI to the server process. No per-server code/config change, login, MCP execution, personal settings edit or installation was performed. Account login after repairing startup remains untested.
+
+Sources: [Railway MCP instructions](https://docs.railway.com/cli/mcp), [published wrapper metadata/archive](https://registry.npmjs.org/@railway%2fmcp-server/0.1.12); source inspection of src/installation/mod.rs, src/manager/native_state.rs and src/runner/transport.rs.
+
+## November 4 — Google MCP README and actual fresh installation
+
+The requested MCP is @a-bonus/google-docs-mcp, not OpenAI’s built-in plugin. Its [1.11.3 README](https://github.com/a-bonus/google-docs-mcp/blob/v1.11.3/README.md#quick-start) says to create or select a Google Cloud project, enable the APIs, configure consent, create a Desktop app client ID, supply its ID/secret, and then authorize. Remote deployment supplies those app settings on the host instead. This does not establish who originally configured the user’s existing local MCP.
+
+A real fresh npm install of 1.11.3 succeeded in 7.69 seconds in a task-only folder with empty HOME/npm configuration, separate cache and install scripts disabled. No credentials.json was included; installed auth code reads supplied environment values or an external credentials.json. No MCP/server/login was run. Temporary files/cache removed. Existing Google definitions already have app settings; Fetch currently omits those values on import. No need to recreate the project is established, and no import-policy change was implemented.
 
 ## October31 — Google and Slack already provide usable account checks
 
@@ -551,3 +591,56 @@ Its broader Keychain/LaunchServices permissions are not adopted. Test Node runs
 use deny-default OS policy, owned files, system runtime mappings and one private
 Unix socket; file/TCP denial canaries must pass first. This is testing evidence,
 not a production sandbox feature or actual Google-account authentication proof.
+
+
+## November4 — Fresh Google setup has multiple input paths
+
+Online primary-source review confirms the older local workflow used a downloaded
+Google application JSON renamed credentials.json, followed by normal startup and
+a printed browser sign-in link. It did not require typing separate environment
+values. [Older maintainer instructions](https://github.com/a-bonus/google-docs-mcp/blob/83403dcf6e6717a7ce3b6123c1faa56df2eee42c/README.md).
+
+The actual published1.11.3 archive was inspected in memory by the Researcher,
+without install/execution: its loader accepts environment values first, then
+credentials.json; no bundled app credential file/default or install hook creates
+Google credentials. [Published package](https://www.npmjs.com/package/@a-bonus/google-docs-mcp/v/1.11.3),
+[corresponding auth source](https://github.com/a-bonus/google-docs-mcp/blob/v1.11.3/src/auth.ts).
+Current remote hosting puts application setup on the host, so users may only
+see browser sign-in. Profile is optional. [Maintainer README](https://github.com/a-bonus/google-docs-mcp).
+
+Fetch currently requires all assigned imported environment entries before
+starting the package, blocking that alternate discovery path and treating optional
+profile as mandatory. Earlier explanation omitted file/preconfigured/hosted paths.
+No evidence establishes which original installation path this user used. Reusing
+app setup while keeping account sign-in fresh is a recommendation, not approval
+to copy files/values or change input validation. No source/config/auth changes.
+
+
+## November 4 — public metadata URL and local callback clarification
+
+User asks whether a publicly hosted app-registration JSON can still use a localhost callback. Assuming Client ID Metadata Documents: yes, hosting/identity URL and redirect destination are distinct. Official MCP SDK documentation requires HTTPS metadata URL and a document listing allowed redirect_uris. Native OAuth can return through HTTP loopback (127.0.0.1 with a local port); RFC8252 recommends IP literal rather than literal localhost. Provider must support the registration method and accept the registered callback. No concrete JSON/URL was supplied in that message, and no provider success is inferred. This is an explanation, not selection or implementation of a new hosting/callback design.
+
+Sources: [official MCP SDK authorization](https://ruby.sdk.modelcontextprotocol.io/client/authorization/) and [RFC8252 sections7.3/8.3](https://www.rfc-editor.org/rfc/rfc8252.html). Direct MCP2026 specification page was inaccessible during this read.
+
+
+## November 4 — actual installed development GitHub launcher
+
+Inspected only noncredential configuration/package metadata, launcher source, static executable metadata and Fetch startup source. Development server is a local-script import of ~/.config/shared-mcp/bin/github-mcp; no argument/environment assignments, no native_setup, no downloaded package at the recorded installation ID. The8-line launcher explicitly invokes /opt/homebrew/bin/gh auth token --hostname github.com; on success exports GITHUB_PERSONAL_ACCESS_TOKEN and execs ~/.config/shared-mcp/bin/github-mcp-server stdio. On failure it prints its own gh-auth-login instruction and exits1. Global Homebrew gh and both imported files exist/executable. No process/auth/account check run.
+
+Fetch native_state::transport overrides HOME/XDG to this instance and, with this record, builds PATH from executable parent plus /usr/bin,/bin. The parent-environment helper does not restore Homebrew because that explicit PATH wins. Thus the absolute gh call already uses global gh while bare gh availability in the system-shell terminal is a separate lookup issue. gh's documented configuration selection uses GH_CONFIG_DIR if supplied, otherwise XDG_CONFIG_HOME/gh or HOME/.config/gh; none of these facts proves actual login availability or Keychain behavior.
+
+Binary static build metadata identifies2.0.2/eb47a99ddb866ca2b8a162920e6bda9521f33ebb. [Versioned official native-login docs](https://github.com/github/github-mcp-server/blob/v2.0.2/docs/oauth-login.md) describe built-in browser login for github.com, optional supplied client settings and supplied-token precedence. This means gh is an imported wrapper requirement for the current entry, rather than the only upstream login method. No login-method change selected by inspection. [CLI token command](https://cli.github.com/manual/gh_auth_token), [CLI configuration environment](https://cli.github.com/manual/gh_help_environment).
+
+
+## November 4 — Python MCP environments in coding clients
+
+User asks whether each server can use its own environment and required Python, and how coding clients handle this. Official [Codex documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) describes launching a configured local command with arguments/environment/working directory. [Claude Code documentation](https://code.claude.com/docs/en/mcp#option-3-add-a-local-stdio-server) likewise passes the configured launch command and arguments through. For a command such as `uvx blender-mcp`, the Python environment is managed by uv, rather than by a universal Python requirement in the MCP client.
+
+[uv tools](https://docs.astral.sh/uv/concepts/tools/) documents cached temporary environments for uvx and persistent separate environments for uv tool install; an explicit --python requests a version. Tool execution ignores the surrounding project's .python-version/pyproject Python request, so do not promise it automatically inherits a project's version. [uv Python versions](https://docs.astral.sh/uv/concepts/python-versions/) supports downloading multiple versions and version ranges, with downloadable versions frozen per uv release.
+
+Fetch already creates a per-installation venv, but calls uv python install and uv venv with the same global PYTHON_VERSION=3.13.18 (src/installation/mod.rs:202 onward). Therefore adding separate venvs is not the missing change. Proposed direction: retain separate server dependencies, use uv's own environment management, honor explicit server Python requests, and avoid forcing a single exact patch across all servers. Python runtime files can be reused across environments using the same version. Exact selection policy and preparation/start timing remain unselected; research is not implementation approval. Immediate smaller workaround is a supported pin such as the locally listed 3.13.17. No installation, MCP execution, source or personal configuration change performed.
+
+
+### Python pin origin clarification — November 4
+
+D06 selected Fetch-managed runtimes, sharing them only where compatible, and separate per-server dependency environments. It explicitly left exact versions and incompatible runtime handling unselected. The October 28 installer pass (history/2026-10-28_14-19-13-498851-coder-private-installation-source.md) describes exact runtime versions as internal source pins. The universal 3.13.18 requirement is therefore an installer implementation choice, not an MCP requirement or a specifically selected universal-version rule. Keeping predictable private tooling does not require forcing every server onto one Python version. Previously fetched official Codex/Claude Code documentation establishes configured-command launch; uv supplies environment/Python handling for uvx commands. No new decision or code change.

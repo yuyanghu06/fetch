@@ -1,3 +1,7 @@
+## Terminal resource — November 4
+
+terminal.rs implements approved GET/POST /api/v1/servers/{server_id}/terminal. Both require native Settings capability and target permission before parsing or touching a server. POST wraps open/input/resize/close; GET only returns bounded base64 output and actual status/cursors. Ordinary bearer/MCP/background callers cannot operate a terminal. Handler delegates environment and process work to Manager/TerminalService. See docs/architecture/server-terminal.md for the exact contract.
+
 # One server target
 
 delete.rs handles DELETE /api/v1/servers/{server_id}, applying existing management

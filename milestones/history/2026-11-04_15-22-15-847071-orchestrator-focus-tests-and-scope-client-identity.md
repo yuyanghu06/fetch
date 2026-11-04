@@ -1,0 +1,10 @@
+# Focus project tests and prepare public client identity scope
+
+- Local timestamp / acting role / milestone: 2026-11-04T15:22:15.847071-05:00 / Orchestrator / client-identity and project instructions.
+- Requested scope: User approves passing a public identity file to rmcp; separately explicitly requests project AGENTS.md require focused tests of real feature use and reject wasteful speculative edge-case tests. User then asks whether a public domain is needed and what code is needed.
+- Starting repository state: Existing accepted auth-wrapper removals and concurrent terminal/environment work preserved; no public client identity URL configured.
+- Work performed / changed files: Added explicit project-wide focused-test instruction at top of AGENTS.md and dated NOTES.md entry. Searched existing project hosting and read pinned SDK method. Created bounded client-identity milestone and current tracking records. Application source unchanged.
+- Decisions: Respect latest test-scope instruction across all specialists. Existing static HTTPS hosting is sufficient; no new hosted OAuth backend selected. Actual domain/URL is still missing; do not invent, publish or configure a placeholder as production identity. Prefer fixed Fetch-owned URL once selected, rather than introducing unsolicited configuration settings.
+- Checks and evidence: Read-only gh repo view reports public repository and empty homepage; gh api repos/yuyanghu06/fetch/pages returns404. Pinned rmcp3.8 AuthorizationRequest exposes with_client_metadata_url and SDK handles supported-server identity selection. No live sign-in, personal settings/credentials or deployment. AGENTS.md section inspected after writing; no tests required for instruction-only edit.
+- Resulting state / acceptance: Test preference saved. Original client-identity implementation remains active but URL-dependent work awaits the user's hosting choice; useful scope/research preparation complete.
+- Remaining work and handoff: Explain exact static JSON and SDK call in plain English. Public URL/hosting choice required before wiring a real hosted identity; optional unrelated feature handling not selected.

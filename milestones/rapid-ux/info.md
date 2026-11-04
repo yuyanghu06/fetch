@@ -3,7 +3,10 @@
 Goal: implement the user's small UX changes directly, without spawning agents.
 
 Scope so far: toggle Select all / Unselect all on the Install page, and attempt
-all saved MCP connections independently at app startup. Preserve existing shared
+all saved MCP connections independently at app startup. The next scoped UI pass
+starts Install empty, loads definitions after explicit path selection, adds a small
+gray inline folder hint, removes the long description/app tagline/accepted notice,
+and grays the disabled Install button. Preserve existing shared
 controls, server authority, credentials and readiness/error behavior.
 
 Completion requires focused source review and native compilation. Actual window

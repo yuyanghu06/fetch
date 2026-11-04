@@ -1,0 +1,9 @@
+# Codex startup environment verification
+
+Source: actual OpenAI Codex MCP environment helper and three variable lists adapted at commit `75424f87ca2b1c482e0509a5b1ceb7459587f396`. Full Apache-2.0 LICENSE and upstream NOTICE retained at repository root. Independent final Evaluator ACCEPT for the bounded replacement.
+
+Independent Tester ran `cargo test --locked --test program_paths --test environment_paths --test service_startup_logs --test standard_authentication --test isolated_native_mcp`:24/24 pass (2+4+6+10+2). Existing deny-default Sandbox canaries verify denied outside file writes/reads, sibling state and network before synthetic MCP execution. Both normal startup and explicitly recorded native setup receive asserted args/cwd/private HOME/XDG/helper PATH/LANG. No real provider/accounts or personal client settings are used.
+
+Eight new synthetic-parent helper checks also pass in a disposable rustc harness, deleted after use. They check the exact allowed variables, unrelated-secret omission, explicit service settings, certificate path semantics, case matching, all blocked internal names and non-UTF8 conversion without lossy changes. A focused transport test verifies assigned values and protected directories. `cargo build --locked --bin fetch` passes (16.65s, existing warnings only). Full library-test compilation remains blocked by separate concurrent terminal test wiring; no full-library-suite pass is claimed. New transport test source was inspected but its library execution remains a tracked followup. The32 exercised cases are unique (24integration +8pure helper).
+
+No Fetch launch, real browser login, credential migration, personal configuration edits, signing, release, commit or push was performed for this change. Existing Railway failed explicit Restart→Authenticate observation remains separate.

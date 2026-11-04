@@ -1,0 +1,3 @@
+# Native terminal process service
+
+mod.rs wraps portable-pty for local managed MCP terminals. Manager supplies the same environment and working directory as server startup; the account record selects its shell. HTTP handlers enforce native Settings authority before calling Manager. TerminalService owns one session per server, bounded byte output, input, resize and explicit close. Worker threads drain output, observe exit and cleanly stop on close/deletion/Quit. The UI never owns a shell. Raw terminal input/output is memory-only and is not sent to the service-console persistence store. Test launches must be confined to disposable resources; the cfg(test) argument hook exists only for that purpose.

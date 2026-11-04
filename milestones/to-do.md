@@ -1,5 +1,253 @@
 # Fetch current work
 
+## Working-tree delivery
+
+- [x] Inspect current diff and accept independent four-commit split.
+- [x] Complete 44 safe focused checks and locked offline native build.
+- [x] Complete independent staged snapshot review: ACCEPT.
+- [x] Commit dependency, connected application and discovery groups.
+- [ ] Commit remaining documentation, push origin/main and verify the remote head.
+
+## Blender MCP install diagnosis
+
+- [x] Check original decision/installer history: private compatible runtimes were selected; forcing every server to 3.13.18 was an internal implementation choice.
+
+- [x] Compare official Codex/Claude Code/uv behavior; confirm Fetch already creates one venv per Python installation.
+- [ ] Settle per-server Python selection and use of uv-owned environments before replacing the global Python pin; recommendation only.
+
+- [x] Inspect saved development logs, Python preparation source and bundled uv download catalog; identify unsupported Python 3.13.18 pin (available through 3.13.17).
+- [ ] Repair the Python pin and preserve real installation errors when repair is requested; retry actual installation afterward. Original failure text was discarded, so the precise original error remains unobserved.
+
+## Figma Remote unsupported import
+
+- [x] Confirm import/install-screen scope and inspect shared paths.
+- [x] Implement remote-only unsupported row and visible reason; preserve Desktop and saved records.
+- [x] Run focused feature checks:19/19 pass (2new).
+- [x] Complete native build (5.38s).
+- [x] Independent final review: ACCEPT; requested change complete.
+- [ ] Observe refreshed import row after explicit Quit/signed relaunch; native appearance unobserved.
+
+- [x] Diagnose reported Figma registration403 against current primary docs, public metadata and Fetch/rmcp source; independent Researcher concurs on likely app-approval block.
+- [x] Superseded approval/workaround follow-up: user selected marking Figma Remote unsupported in the import/install screen instead. No approval request or alternate connection is part of this change.
+
+- [x] Freshly inspect actual GitHub entry: global Homebrew gh confirmed; imported existing launcher, no private installed package. Account-context/Keychain fix remains unresolved.
+
+- [ ] Keychain account selection: requested command-location matching needs revised scope; normal PATH cannot safely choose HOME for all command/helper launches. Private HOME remains, all withdrawn fixture edits restored. Agree app-level storage/Keychain handling before code.
+
+- [ ] Keychain compatibility: preserve per-instance CLI logins. Normal-HOME proposal withdrawn; source restored. Research supported instance storage/Keychain handling before implementation.
+
+## Normal system HOME / Keychain — pending choice
+
+- [x] Research Apple HOME lookup and gh Keychain/config separation.
+- [ ] Settle normal-HOME/shared-login change; earlier private-HOME rule remains until answered.
+- [x] Conditional plan: fixture audit/disposable test-process HOME strategy ready.
+- [ ] If approved, repair the pre-sandbox real_native_mcp HOME PID write before opt-in execution; no such test is currently selected.
+- [ ] Implement selected scope, independently test/build/evaluate, record real-account limit.
+
+## Selected Codex discovery — complete
+
+- [x] Confirm user correction and inspect the parent-folder expansion.
+- [x] Independent Planner provides bounded plan and acceptance criteria.
+- [x] Independent Tester reproduces original HTTP failure with neighboring fixture configs.
+- [x] Read only selected `.codex/config.toml`; update API/MCP descriptions.
+- [x] Verify 10 focused HTTP discovery fixtures and native build; independent Evaluator ACCEPT.
+- [ ] Observe refreshed discovery in rebuilt native app after explicit Quit/relaunch.
+
+## Scrolled terminal pointer coordinates — complete
+
+- [x] Trace recurring normal-click selection to mismatched press/move coordinates under a scrolled parent.
+- [x] Reproduce with actual outer Scrollable (500px mismatch), apply two-line pointer fix.
+- [x] One new actual scrolled-parent interaction/render regression plus10existing terminal checks PASS11/11; native build6.90s, whitespace and EvaluatorACCEPT.
+- [ ] Observe actual corrected native clicks after explicit Quit/relaunch; headless evidence is not user runtime acceptance.
+
+- [ ] Reported gh auth login “Keychain Not Found”: user-run private verbose log/context capture instructions supplied; await output and establish cause before Keychain/startup changes. No repair selected.
+
+- [x] Research public client identity adoption using primary MCP/provider/SDK sources; record standard direction, concrete support and limits without claiming universal adoption.
+
+## Terminal selection and scrolling — complete
+
+- [x] Clarify screenshot: large gray selection blocks, plus user cannot scroll up.
+- [x] Verify bounded plan against actual Iced/Alacritty event/scroll source.
+- [x] Reproduce both original failures and fix release-outside drag/pixel-wheel history handling in vendored view.rs.
+- [x] Two new focused interaction/render scenarios plus8existing terminal checks PASS10/10; native build8.30s, whitespace and independent EvaluatorACCEPT.
+- [ ] Observe corrected selection/trackpad behavior in rebuilt native window after explicit Quit/relaunch.
+
+## Normal command-search PATH — complete
+
+- [x] Record user-approved shared startup/terminal lookup change.
+- [x] Plan and implement narrow shared builder change; preserve assigned PATH/private folders.
+- [x] Focused realistic confined checks23/23 (1new), native build8.40s and independent EvaluatorACCEPT.
+- [ ] Observe fresh native terminal after explicit Quit/relaunch; actual user gh/login untested.
+
+## GitHub global gh — recorded follow-up
+
+- [x] Record user direction: GitHub install script does not bundle gh, so default to globally installed gh. Installer observation is user-reported.
+- [x] Inspect existing dev GitHub entry: imported launcher already hardcodes global /opt/homebrew/bin/gh; no package-local gh or default-selection change needed for this entry. No auth process run.
+- [x] User approves inherited normal PATH after private server programs; implementation tracked below. Private account/login behavior remains separate.
+
+## Public client identity — complete
+
+- [x] Select and publish https://www.yuyang-hu.org/oauth-client.json on the existing personal site.
+- [x] Configure rmcp with that URL and implement the selected temporary HTTP 127.0.0.1 callback.
+- [x] Verify one new complete feature test, two existing regressions, the native build and independent review.
+- [x] Verify the final production JSON response and preserve the existing homepage, DNS and dirty dev checkout; remove temporary worktree/build files.
+- Real Vercel account sign-in remains a user runtime check after explicitly quitting and reopening Fetch through its signed launcher.
+
+
+- [x] Verify Vercel callback format categories and client identity requirements against official docs; no fixed callback URL is prescribed.
+
+- [x] Identify actual Vercel registration rejection from new user logs and explain local callback/return address.
+- [x] Select andpublish ownpublicmetadataidentity onpersonalcanonicalwwwdomain; SDKconfiguration andIPcallback accepted. Realprovideraccountacceptance remains separate.
+
+## Codex startup environment — scoped replacement complete
+
+- [x] Research pinned official source/license and agree bounded replacement.
+- [x] Plan protected Fetch overrides and independent acceptance checks.
+- [x] Adapt actual builder and variable lists; retain attribution/license/NOTICE.
+- [x] Independently test environment behavior and real confined child; build native binary (32 checks/build pass).
+- [x] Independent evaluation ACCEPT; attribution correction complete; final journal/evidence.
+- [ ] Followup regression: run focused library helper/native-storage/program-path filters once separate terminal test wiring settles. Full library suite is not claimed; current scoped source/build/confined acceptance is complete.
+
+## Wrapper authentication — complete
+
+- [x] Record user authorization and bounded scope for removing extra provider-login restrictions.
+- [x] Complete Planner/Researcher audit: six redundant gates identified; retained application boundaries documented.
+- [x] Remove six extra gates in SDK preparation, saved-login metadata matching and callback extensions.
+- [x] Independently update/run library-owned authentication regressions:43/43 pass.
+- [x] Finish locked native build (PASS21.68s) and independent final evaluation (ACCEPT);43 auth checks pass, source unchanged since that run.
+- Separate console owner retains its missing logging-test-module wiring and eventual combined-tree retest; no auth correction remains. Real Vercel sign-in remains untested.
+
+## Server Console/Terminal — scoped implementation complete
+
+- [x] Research Iced terminal reuse and plan persistent console/history.
+- [x] Record proposed native-only terminal API and saved-log policy for required user review.
+- [x] User explicitly approves exact route/persistence contract.
+- [x] Implement scoped UI/terminal/backend/persistent-log wrappers; dependencies prepared; close/output review corrections integrated.
+- [x] Fix actual close/reap finding and fresh-session terminal-query reply handling in source.
+- [x] Complete regression fixture updates and retest both corrections, including two superseded prefix assertions.
+- [x] Verify blank-pane correction with actual offscreen prompt/cursor/move/clip rendering. Rebuilt native display remains unobserved.
+- [x] Finish independent isolated PTY/persistence/UI/privacy checks (182relevant/19new), native build and EvaluatorACCEPT.
+- [ ] Observe rebuilt native window after explicit Quit/relaunch; real service account login remains unverified.
+- [ ] Retain/follow up observed transient ordinary server-read SERVER_INFO_UNAVAILABLE if it recurs; full rerun/five repeats pass, cause unconfirmed.
+
+- [x] Trace why custom issuer check exists: October29 review imposed this mechanism; November3 refactor preserved it. No code change selected by the explanation request.
+
+- [x] Explain the specific Vercel authentication stop from supplied log/current source: Fetch rejects missing advertised issuer-response support before sign-in; no fix selected.
+
+## Continuous expanded console — complete
+
+- [x] Plan always-present sharedconsole and cumulative current-run startup→authhistory.
+- [x] Implement passive display state, permanent shared rendering and sanitized backend history carryover; authentication/storage behavior preserved.
+- [x] Independently verify unpolled startup through auth, expansion/collapse/window restore, passive controls, limits/privacy/duplicates and manual-save state.
+- [x] Implement and independently verify current-request output distinction; old history cannot hide a fresh request error.
+- [x] Locked native build, whitespace, independent Evaluator ACCEPT and final evidence/documentation.
+- [ ] Separately investigate the observed failed explicit Restart → Authenticate SERVER_BUSY behavior when that authentication work is selected; no fix included here.
+
+- [x] Record Living Brain in NOTES.md as a possible future persistent-memory integration/design reference; claims remain unverified and implementation is not selected.
+
+- [x] Record project-wide wrapper-default architecture in AGENTS.md, decisions, context and notes.
+- [x] Align console source with actual service logs/errors; independent tests pending.
+
+- [x] Run actual isolated no-credential Railway startup: initialize succeeds, tools/list returns -32001notloggedin; confinement/cleanup verified.
+- [x] Compare official Codex launch/auth/refresh source (Apache2.0;12 internal dependencies); narrow reuse feasible, no copy selected.
+- [x] Resume logging Tester after specialist slot frees; final logging verification tracked below.
+
+## Service startup logs — complete
+
+- [x] User authorizes code; research current log loss, SDK error risks and existing implementations.
+- [x] Complete independent bounded plan for shared startup/helpers/OAuth capture.
+- [x] Implement shared capture and actual returned errors across both source areas; actual-only console steering incorporated.
+- [x] Independently verify output completeness/limits/errors/redaction/privacy:184uniquechecks including15new pass; final31UIrecheck passes.
+- [x] Locked native build/whitespace, independent EvaluatorACCEPT and final docs/evidence.
+- [ ] Native app relaunch/real provider sign-in acceptance remains unobserved.
+
+- [x] Explain new Vercel/Railway failures from current source and official docs without changing code.
+- [ ] Identify exact Vercel auth failure stage and original Railway protocol error; current displayed errors cannot establish their exact causes. No fix selected.
+
+## Private program folders — complete
+
+- [x] User selects shared startup fix; independent bounded plan complete.
+- [x] Record executable folders during installation and prefix them in shared startup; preserve legacy installations.
+- [x] Independently test real confined helper launch, isolation, metadata, configured PATH and startup/storage regressions: 60 checks pass.
+- [x] Locked build, independent evaluation ACCEPT and final evidence/docs.
+
+- [x] Diagnose Railway startup: installed wrapper cannot find separately prepared CLI in Fetch’s default process PATH.
+- [x] Replace the diagnosis-stage proposal with the selected general startup fix; existing Railway needs no reinstall.
+- [ ] Real Railway sign-in after user explicitly Quits/reopens Fetch remains untested.
+
+- [x] Fresh-install Google MCP 1.11.3 without scripts/server/login; inspect package, read its own README, and remove temporary install/cache. App settings are externally supplied; existing definitions already have them.
+
+- [x] Add the console’s top-right Copy button; independent locked build passes.
+- [x] Complete final Copy button review and documentation; Evaluator ACCEPT.
+
+- [x] Audit earlier Google research: package archive/source inspection, not an executed fresh-install login test.
+- [x] Explain discovery installation: npm/PyPI installs, scripts in place, remote definitions and post-install Connect.
+- [x] Identify actual Google startup failure: original app credential values are omitted during import; neither package contains credentials.json.
+- [ ] Decide how import should preserve existing application configuration; no credential-copy implementation authorized by this read-only check.
+
+## Startup diagnostics — November4
+
+- [x] Capture sanitized bounded configured-local-startupstderr/naturalexitstatus fornativeconsole only.
+- [x] Resolve provisionalchild Quitrace;181independentchecks passincludingunchangedimmediatePIDassertion.
+- [x] ShowordinaryfailedStart/Connect diagnosticswithoutpriorauthFlow;31targetedUIchecks pass.
+- [x] Final build, review and journal complete; actual Google start must be retried after relaunch.
+
+## Startup passes available inputs — November4
+
+- [x] Remove missing Environment/Header preflight in shared startup resolution.
+- [x] Verify actualchildfallback/self-failure and remoteHTTPacceptance/401withoutmissingheaders;176totalchecksPASS.
+- [x] Regressions/buildPASS; independentEvaluatorACCEPT for input-pass-through. Googlefailurediagnostics trackedseparately.
+
+- [x] Research older/current Google fresh setup: application JSON fallback, hosted setup and optional profile verified; no bundled defaults.
+- [ ] Review how Fetch should preserve supplied app setup and defer required inputs to upstream without copying account login; no implementation approval inferred.
+
+- [x] Verify original Google definition has nonempty entries for all three requested inputs; presence only, no credential validity or migration claim.
+
+## Authentication console — November 4
+
+- [x] Plan replacement of repeated authentication prose with a native console.
+- [x] Implement per-attempt safe progress/error log and in-console host consent;28focused UI checks pass.
+- [x] Focused28/28UI checks, final locked build and whitespacePASS; independent reviewACCEPT; actual limits recorded.
+- [ ] Optional user choice: actual MCP output feed versus existing Fetch progress/errors. No backend feed selected by silence.
+
+- [ ] Protected real Google sign-in/tool use/restart reuse and native browser/Keychain/appearance acceptance remain unrun.
+
+- [x] Fix pending sign-in host control restoration after window reopen; fixture added, execution pending.
+- [x] Implement review corrections: atomic active-work guard, setup-required status consistency and awaited helper Quit cleanup.
+- [x] Fix first-test completion/admission race and stale stopped-server inputs; independent retest pending.
+
+- [x] Record user steering: button uses existing /restart start/connect with interactive:true; old /authenticate deprecated but retained.
+- [x] Verify canonical start-route login and compatibility/deprecation response behavior;171independent checks pass.
+
+## Standard Authenticate — November 3
+
+- [x] User selects server-owned startup/login approach; bounded independent plan complete.
+- [x] Implement Runner interactive startup/private login-link reader source; integration and verification remain below.
+- [x] Manager/UI/API source integrated for configured startup/helper fallback and host consent; runtime checks pending.
+- [x] Preserve explicit helpers, Settings input guidance, last-known/current distinction and remote flows; verified.
+- [x] Verify confined delayed-start peer, consent/UI fixtures, shutdown and regressions:171/171PASS; final32/32recheckPASS.
+- [x] Independent evaluation ACCEPT; findings fixed/retested and native/account limits recorded.
+
+- [x] Clarify managed config still contains initial authentication unknown; live auth outcomes are not persisted, including in inspected pre-refactor80782d9. No new persistence policy selected.
+
+- [x] Confirm retained post-install normal Connect and separate current-run runtime/auth status; local readiness is not account verification and status is not a durable verdict.
+
+- [x] Research reusable login libraries and Claude Code/VS Code/OpenCode/Cline behavior; independent core-source review ACCEPT.
+- [x] Implement selected configured-startup/private-login-link presentation;171checksPASS/EvaluatorACCEPT. Explicit metadata alone is no longer required for initial local startup.
+
+## Folder-first Install UI — November 3
+
+- [x] Remove accepted-install notice; gray disabled Install button.
+- [x] Start Install empty; picker selection starts discovery; typed path uses Enter/Refresh.
+- [x] Add small gray inline title hint; remove long explanation and app tagline.
+- [x] Update existing UI fixtures;22/22 pass, locked native build pass; direct review complete without subagents.
+- [ ] Await user's choice on extending backend discovery to .claude/.opencode folders.
+- [ ] Verify native appearance after explicit Quit/signed relaunch; reconcile Figma specimens later.
+
+- [x] Resolve source gap with configured-startup fallback and host consent; remove inline folder/manual-key fallback. Real Google account acceptance remains below.
+
+- [x] Pull origin/main:80782d9 →135873a, fast-forward3 commits; preserve existing unfinished work.
+
 ## Native server storage — November3 scoped refactor accepted
 
 - [x] User resumes scoped implementation/testing; prior pauses below are historical.

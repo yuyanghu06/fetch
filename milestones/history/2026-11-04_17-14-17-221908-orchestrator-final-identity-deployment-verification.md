@@ -1,0 +1,10 @@
+# Final public identity deployment verification
+
+- Local timestamp / acting role / milestone: 2026-11-04T17:14:17.221908-05:00 / Orchestrator / client-identity.
+- Requested scope: Publish the public Fetch identity on the personal website and use a temporary HTTP callback at 127.0.0.1.
+- Starting repository state: Fetch implementation and focused checks accepted; initial site deployment and public response verified. Final documentation commit was rebuilding on Vercel.
+- Work performed / changed files: Confirmed final production deployment dpl_8nTR5VudGyoWrYtmnyjNs1EKfpWn is READY at site commit 78912294ce068f3d2fce44348809e187af1d1239. Rechecked the direct public JSON response after that deployment. Refreshed the current handoff and evidence in plain English while preserving immutable history. Removed the task-created site worktree/dependency/build copies; source and documentation commits are retained in the shared repository and pushed to main. Original dirty site dev work remains preserved.
+- Decisions: The exact public client identity is https://www.yuyang-hu.org/oauth-client.json; registered callback is http://127.0.0.1/oauth/provider/callback with the standard temporary-port exception. Main Fetch HTTPS API and certificate are unchanged.
+- Checks and evidence: Final direct GET returns HTTP 200/application-json, correct own client_id and selected IP callback. Earlier homepage GET returned HTTP 200 with its existing title. One new complete feature test and two relevant existing regressions pass; locked native build passes in16.53 seconds. Independent evaluator ACCEPT. Scoped whitespace checks pass. No further test expansion was needed.
+- Resulting state / acceptance: Requested implementation and publication complete. Real Vercel account sign-in remains untested; no Fetch launch, signing, personal client change or credential migration occurred.
+- Remaining work and handoff: Explicitly Quit Fetch, reopen with ./scripts/run-development.sh and retry Vercel. Other MVP and native/provider acceptance work remains separate. Later identity-domain changes may require signing in again.

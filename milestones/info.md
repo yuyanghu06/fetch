@@ -1,3 +1,27 @@
+[Working-tree delivery](working-tree-delivery/info.md) records the focused commit split, safe checks and push confirmation.
+
+[Figma Remote unsupported import](figma-remote-unsupported/info.md) tracks the user-selected disabled import row, its reason and shared fresh-install rejection, while preserving Desktop and existing saved instances.
+
+[Selected discovery folder](selected-discovery-scope/info.md) tracks limiting a selected `.codex` folder to its own config.toml.
+
+[Client identity](client-identity/info.md) tracks the public Fetch identity JSON and rmcp configuration; hosting URL is still being selected.
+
+[Permanent expanded console](continuous-server-console/info.md) is complete: passive rendering, retained current-run history and fresh-request error display pass independent checks and build. Real account/native appearance and separate failed-Restart limits remain explicit.
+
+[Wrapper authentication](wrapper-authentication/info.md) tracks removal of extra Fetch provider-login compatibility restrictions in favor of official library behavior.
+
+[Server Console/Terminal](server-console-terminal/info.md) tracks permanent expanded console, system-shell terminal and persistent logs.
+
+[Continuous server console](continuous-server-console/info.md) tracks always-present expandedconsole and startup-to-authhistory.
+
+[Railway/Codex research](railway-codex-research/info.md) covers actual confined Railway startup and public Codex MCP code reuse, separate from ongoing logging implementation.
+
+[Service startup logs](service-startup-logs/info.md) tracks actual returned errors and startup output in the existing private console.
+
+[Private program folders](private-program-paths/info.md) tracks the approved shared startup helper lookup fix and independent checks.
+
+[Google MCP setup check](google-connector-setup/info.md) records fresh disposable installation and README findings; no account/server execution.
+
 # Milestone records
 
 Current scoped native-storage refactor is independently accepted and integrated
@@ -110,3 +134,18 @@ is next; the user explicitly excluded UI work.
 
 [Development Keychain prompts](keychain-prompts/info.md) tracks read-only source/
 identity findings and options; it does not authorize signing or storage migration.
+
+standard-authenticate records the selected generic configured-startup/login-link
+change, retained deprecated auth route, independent verification and real-account
+limits. Its evidence distinguishes first failures, source fixes and final passes.
+
+authentication-console records the narrow November4 replacement of auth prose
+with a native console, focused UI evidence and pending native visual limits.
+
+startup-pass-through records removal of missing-value requirements for all starts.
+startup-diagnostics records native-only actual local startup error/exit evidence,
+the cleanup finding/fix, independent checks and remaining Google-runtime limits.
+
+`codex-startup-environment/` records the bounded adaptation of official Codex process environment code, its protected Fetch overrides and independent acceptance evidence.
+
+normal-system-home/ tracks the user-reported Keychain startup-context fix, shared-login choice, safe fixture plan and eventual verification.

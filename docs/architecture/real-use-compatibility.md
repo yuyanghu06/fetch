@@ -1,5 +1,13 @@
 # Real-use MCP compatibility audit
 
+## November 4 — selected unsupported server
+
+| Server | Fetch import/install status | Reason |
+| --- | --- | --- |
+| Figma Remote — https://mcp.figma.com/mcp | Unsupported, user-selected November 4 | Figma requires approval for connecting apps; Fetch is not currently approved and its registration was rejected. |
+
+This applies to fresh import/install, not existing saved records. Figma Desktop at http://127.0.0.1:3845/mcp is a separate server and retains current behavior; it has not been live-tested here. [Primary-source diagnosis](client-identity-adoption.md#figma-registration-rejection--november-4-2026), [implementation status](../../milestones/figma-remote-unsupported/info.md).
+
 October 27, 2026. D58 makes everyday Claude Code/OpenCode use the acceptance bar. **Inventory and source findings, not a working integration or new feature approval.** Existing capability-exclusion proposal is on hold. No app implementation or personal-client connection test is authorized.
 
 ## What was inspected

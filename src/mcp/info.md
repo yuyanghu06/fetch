@@ -37,3 +37,10 @@ fetch__update_server_config now accepts Fetch execution settings only, preservin
 per-tool permission and merge/remove behavior. Imported raw definitions, arguments
 and results stay in the existing runner/protocol path; the OAuth library does not
 replace that path.
+
+The restart management tool accepts interactive:true for the existing start/login
+API. Its description explains pending host consent and account-proof limits. The
+authenticate tool stays available but is described as deprecated compatibility.
+No provider tool definitions/results are rewritten by this change.
+
+November 4 correction: fetch__discover_servers now describes a selected `.codex` folder as reading only its config.toml, matching the shared service used by HTTP discovery. Parent Claude/OpenCode configurations are excluded for this selection.

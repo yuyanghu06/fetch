@@ -1,5 +1,7 @@
 # Append-only pass history
 
+November 4 working-tree delivery entries distinguish the commit plan, safe feature checks, independent acceptance and actual remote delivery.
+
 October30 generic-auth research/clarification entries record the user's concern,
 standard/SDK comparison and actual hardcoded cases. They approve no new success
 rule and claim no new product/runtime verification.

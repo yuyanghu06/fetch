@@ -2,7 +2,7 @@
 
 Goal: opening Install finds standard Claude Code, Codex and OpenCode configuration files without asking the user to locate each file.
 
-Scope: automatically read known config paths through the existing discovery API; make file/folder overrides explicit and optional. A home folder uses its standard children; a `.codex` folder uses its own config.toml and its parent’s Claude/OpenCode paths. Keep selected-server installation separate.
+Scope: automatically read known config paths through the existing discovery API; make file/folder overrides explicit and optional. A home folder uses its standard children; selecting `.codex` reads only its own config.toml (November 4 correction; the former parent expansion is superseded). Keep selected-server installation separate.
 
 Completion: default and folder/file discovery fixtures, independent UI message checks, native build and independent review pass. Preserve read limits, authorization, grouped source failures, source-disabled choices, secret suppression and read-only discovery.
 

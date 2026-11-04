@@ -1,3 +1,43 @@
+## November 4, 2026 — fix normal clicks after surrounding page scroll
+
+Corrected the second selection issue: movement now uses the same parent-adjusted cursor as a press. Previous tests lacked an actual scrolled parent; the new real Scrollable scenario reproduced a500pxselection jump on tiny movement. After the two-line fix, normal click does not broadly highlight, deliberate shortdrag stays on its intended row and plainclickclears.11focused terminalUI checks1new/native build6.90s and independent ACCEPT. User native reload/observation remains; no app/login/credentials used. See milestones/terminal-pointer-coordinates/evidence.md.
+
+## November 4, 2026 — recurring terminal selection after normal clicks
+
+User reports the large highlight still occurs on clicks. A separate case was missed: after scrolling the surrounding server page, press uses Iced's adjusted cursor position while move uses the raw window position. This can turn a tiny movement into a multi-row selection. Primary source confirms the mismatch; one actual outerScrollable input/render regression is being prepared before the two-line fix. Earlier release-outside and pixel-wheel corrections remain. Do not copy user screenshot login/account/device-code contents into fixtures or notes.
+
+## November 4, 2026 — terminal selection and trackpad fixes complete
+
+Fixed selection continuing when the mouse was released outside Terminal, reversed pixel-wheel direction and small gestures escaping to the outer page. Kept normal intentional selection and current white cursor. Independent tests reproduced both failures before the change;10focused actual widget/render checks2new, native build8.30s and EvaluatorACCEPT. No native app/shell/provider/credentials used; actual rebuilt window needs explicit Quit/relaunch observation. See milestones/terminal-selection-scroll/evidence.md.
+
+## November 4, 2026 — unwanted terminal selection and scrolling
+
+User confirms large gray selection blocks, not the small text cursor, and cannot scroll up inside Terminal. Investigate/fix vendored widget input handling while preserving deliberate selection/cursor style. Current source misses active drag releases outside the pane and has inconsistent pixel/line wheel signs plus fractional events escaping to the outer page. Independent reproduction/checks pending. See milestones/terminal-selection-scroll/.
+
+## November 4, 2026 — normal command search implemented
+
+Fetch now keeps inherited PATH after server-private programs and executable parent, so global commands such as gh can be found by name. Explicit assigned PATH and private HOME/account configuration remain. One actual confined terminal flow proves bare fake-global gh works and a private gh takes priority;23focused checks/native build8.40s and independent review pass. No personal gh/authentication/app run. Quit/relaunch Fetch and open a fresh terminal to load the environment. See milestones/normal-program-path/evidence.md. Earlier missing-Homebrew findings below describe the prior implementation.
+
+## November 4, 2026 — preserve normal PATH so gh works by name
+
+User approves keeping the normal command-search folders after each server's private executable folders. Shared startup/setup/terminal must use inherited PATH rather than replacing it with only the launcher directory and system folders. Explicit configured PATH and private HOME/account folders remain. No shell profiles or real authentication run. Implementation/checks are tracked in milestones/normal-program-path/.
+
+## November 4, 2026 — Existing development GitHub entry already uses global gh
+
+Read-only inspection found the development `github` entry is `local_script`, importing `~/.config/shared-mcp/bin/github-mcp` with no arguments, assigned environment values or recorded native setup. It is not a downloaded npm/Python package: the recorded installation ID has no package folder. The launcher hardcodes `/opt/homebrew/bin/gh auth token --hostname github.com`, exports the result as `GITHUB_PERSONAL_ACCESS_TOKEN`, then execs the sibling `github-mcp-server stdio`. If gh fails, it prints its own `gh auth login` instruction and exits. Both imported files and the global executable exist; no gh/MCP/auth command was executed and no credential was read.
+
+Fetch still supplies the instance's private HOME/XDG configuration paths, so global executable selection does not select the normal terminal's account configuration. Current generated PATH is the launcher directory plus /usr/bin and /bin (no assigned PATH/private helper directories); bare gh in Fetch's terminal therefore does not receive /opt/homebrew/bin from this builder, even though the launcher itself uses an absolute path. Shell startup can independently affect PATH; actual native terminal environment was not inspected.
+
+Static binary build metadata identifies GitHub MCP2.0.2, commit eb47a99ddb866ca2b8a162920e6bda9521f33ebb. Its versioned official docs support direct native browser login without gh/token/client settings for github.com; a supplied token skips that flow. The imported wrapper currently enforces gh first. This is a configuration finding, not a request to change the wrapper, use another account or switch login flows. Sources: docs/architecture/research.md.
+
+## November 4, 2026 — GitHub should use globally installed gh
+
+The user reports that GitHub's install script does not install `gh` inside the managed package. Record the selected behavior: default to the user's globally installed `gh` when GitHub needs that program. This selects the executable, not copying personal credentials or changing the managed server's account folders. Documentation only in this pass; the installer behavior and runtime lookup have not been independently checked or changed. See the matching architecture decision.
+
+## November 4 — Console/Terminal implementation and blank-pane fix
+
+Implemented the approved native-only terminal resource, Console/Terminal pane switch and persistent sanitized service output. User system shell receives the actual MCP environment; service keeps credentials and no login command is guessed. Raw terminal transcript/input is excluded from saved logs. Existing screens persist; a new shell requires explicit Start after exit. Fixed user-reported blank pane by correcting embedded drawing coordinates. Independent182relevant checks19new, actual offscreen render, native build and review pass. Real rebuilt window/account login still needs observation; no app relaunch or personal state edits by agent. One transient ordinary server-read error is retained with unconfirmed cause; rerun/five repeats pass. See milestones/server-console-terminal/evidence.md.
+
 # Project notes
 
 ## October31,2026 — Existing Google/Slack checks can reuse the shared checker
@@ -1500,3 +1540,327 @@ Certificate Assistant setup, public fingerprint configuration and build-only
 signature verification. Agents must give concrete next steps, preserve existing
 state and use the signed launcher. Copying source does not provision another Mac's
 signing identity or decrypt its saved credentials. This is documentation only.
+
+
+## November 3, 2026 — Install UI cleanup
+
+User requests direct work without subagents: gray the disabled Install button
+instead of showing the accepted-install notice; start discovery empty until a
+folder is selected; remove the long discovery paragraph and app-wide tagline;
+add the small gray inline folder hint beside Discover and install. Implemented
+through existing API/UI controls;22 UI checks and locked native build pass.
+Native appearance/Figma remain unverified. Existing backend special folder handling
+recognizes .codex; asked separately about .claude/.opencode recognition. No backend
+extension or app launch inferred. See milestones/rapid-ux/info.md and the snapshot.
+
+
+## November 3, 2026 — Research general MCP login and correct Google explanation
+
+User asked for existing libraries and how coding clients start server-owned login.
+[Primary-source research](docs/architecture/mcp-login-discovery-research.md) compares
+SDK/bridge/manifests and four clients. Google1.11.3 already initiates its own login
+on initial startup when needed; auth forces a fresh login. It logs the link to
+stderr, which Fetch discards. Earlier chat overstated a separate helper command
+as necessary for every initial login. Missing native_setup still blocks Fetch's
+explicit local Authenticate path; supplying it alone would not expose the link.
+No reviewed library discovers arbitrary package login commands. Standard remote
+OAuth and upstream-supplied login URLs are reusable. Recommendations remain for
+review; no source/account/runtime/personal settings changes. Independent core
+source findings ACCEPT, with native saved files distinguished from environment
+credential recommendations. Actual saved Google configuration was not inspected.
+
+
+## November 3, 2026 — Try standardized Authenticate
+
+User approves ordinary local startup as Authenticate fallback, letting existing
+server login run, showing sign-in instructions/links and using recorded helpers
+only when provided. One consistent UI does not imply arbitrary helper inference.
+[Selected contract](docs/architecture/native-server-storage.md#november3-selected-authenticate-follow-up--implementation-underway)
+keeps existing POST/GET/permissions, host consent before browser opening, bounded
+interactive wait, private output and saved last-known/current-status separation.
+Implementation and isolated verification underway; no real Google account claimed.
+
+
+## November 3, 2026 — Use start API; retain deprecated auth API
+
+User explicitly requests the login button call the start API, deprecating rather
+than removing authentication route. Use existing Restart / Connect POST /restart
+with interactive:true and preserve /authenticate compatibility. New /start route
+is unnecessary. Default restart behavior, authority and provider-owned login stay.
+
+
+## November 3, 2026 — Standard Authenticate scoped implementation accepted
+
+Start/connect /restart interactive:true now runs recorded helpers or ordinary
+configured local startup and presents selected sign-in host consent. Old auth
+HTTP/tool retained deprecated. Remember terminal status in managed config while
+keeping current unknown separate from saved last-known; no native token access.
+Independent171checksPASS, final32check guidance retestPASS, native buildPASS and
+EvaluatorACCEPT. Window-reopen consent, unfinished-call protection, helper cleanup,
+Settings-value repair and completion timing findings are fixed. [Evidence](milestones/standard-authenticate/evidence.md).
+No actual Google account/browser/Keychain/native visual/client acceptance; no
+launch/signing/release or personal config/state changes. Explicitly Quit/relaunch
+with signed dev launcher to try. Source/docs remain local, preserving other work.
+
+
+## November 4, 2026 — Replace authentication prose with console
+
+User screenshot shows missing configured values and repeated setup paragraphs;
+user requests that section become just a console displaying a log. Implementing
+a native scrolling monospace panel for existing safe progress/errors, preserving
+host consent inside it. Optional actual-server-output question remains pending;
+no raw-output/API extension or secret-redaction promise inferred. This task does
+not change which configuration values are required.
+
+
+## November 4, 2026 — Authentication console presentation complete
+
+Replaced repeated authentication heading/prose/Hide control with one dark
+scrolling monospace console of existing safe Fetch events. Per-attempt error
+history and in-console host consent remain; polling avoids duplicate lines.
+Independent28UI tests and final locked native build pass; EvaluatorACCEPT.
+[Evidence](milestones/authentication-console/evidence.md). No actual process
+output feed/backend change or native visual/provider run. Optional raw-output
+question was unanswered; no backend extension inferred from silence. Existing
+missing configuration inputs still require their normal Settings action.
+
+
+## November 4, 2026 — Original Google setup entries exist
+
+Read-only presence check of the matching development server and its recorded
+source confirms @a-bonus/google-docs-mcp1.11.3 and nonempty original entries for
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_MCP_PROFILE. Fetch's import
+preserved names/references and discarded values, explaining the current missing
+input message. This is not evidence the package bundled credentials or that
+Google accepts the entries. No values displayed, login/Keychain/config write or
+credential migration performed. Future import behavior remains undecided.
+
+
+## November4 — Why Google setup may have felt simpler
+
+User requested online verification. Older maintainer instructions use one
+credentials.json file, then the Google browser login; current published package
+still accepts it. Hosted service users need only URL/sign-in because host supplies
+app setup. No default Google client credentials are bundled. Fetch currently
+requires all imported env references before the server can try its fallback,
+including optional profile. [Research](docs/architecture/research.md#november4--fresh-google-setup-has-multiple-input-paths).
+User's exact past setup is unverified; no imports, migration, source or live tests
+authorized by this explanation.
+
+
+## November4 — Remove missing-input preflight for all startups
+
+User: “we literally need to just start and report the return we dont need to
+check anything”, then explicitly “remove that check for all startups”. Shared
+resolution now passes present saved Environment/Header values and omits missing
+ones; no required/optional inference before actual start/connect/helper calls.
+Server fallback and actual response decide requirements. Existing outcome mapping
+remains; no new raw-output stream, credential copy or authority bypass selected.
+Independent actual child/HTTP verification underway.
+
+
+## November4 — Actual Google startup failure now needs diagnostics
+
+Removingmissinginputpreflight passes176checks/buildandindependentreview. User
+now reports genericconnectionended onGoogle start. That proves an attempted
+startupfailurebutnotitscause. Implementing transient sanitizedstartupstderr/exit
+status in nativeconsole only, with no serverrequirementscheck or provideraccount
+execution. RealGoogleerror remainsunknownuntilobserved; don'tinventdiagnosis.
+
+
+## November 4 — Startup checks removed; actual startup errors reported
+
+The shared startup path now omits missing environment/header values and attempts
+the configured command/connection. The server owns its requirements. Configured
+local stderr and natural exit status are captured in bounded sanitized memory and
+shown only in the native console. No log data enters ordinary API/MCP responses
+or saved configs. Failed ordinary Start/Connect also opens that console from
+status. A test exposed Quit returning before a provisional child was reaped; the
+fix passes the unchanged assertion. Independent 181 checks and final 31 UI checks,
+build and review pass. [Evidence](milestones/startup-diagnostics/evidence.md).
+Google's original cause remains unknown: its old output was discarded. User must
+retry after explicit Quit/signed relaunch. No real account or native app was run,
+and no credential import/migration or release was performed.
+
+## November 4 — Copy console log
+
+Added the requested small Copy button at the console’s top right. It stays fixed
+while the log scrolls and copies all current log lines with newline separators.
+Independent locked build and review pass; native clipboard/window use unobserved.
+
+## November 4 — Google existing app configuration confirmed
+
+Read-only checks found no credentials.json in either the original cached Google
+package or Fetch’s installed copy (both 1.11.3). The server reads environment
+values first, then credentials.json in its own package root, regardless of the
+launch folder. All three original shared Google definitions contain nonempty
+literal client ID, client secret and profile values. Fetch’s import deliberately
+keeps their names/references and omits values. The package install is present;
+the configured app values did not carry over. No credentials were copied or
+printed, no account validity was tested and no MCP was launched. Preserving app
+configuration during import is a recommendation, not an implemented policy change.
+
+## November 4 — How discovery installation works
+
+Discovery reads definitions; installing selected entries runs private npm/uv
+package installation, keeps local scripts in place, or records remote URLs. The
+managed product path then attempts Connect. Existing saved associations can be
+reused. It does not copy the original npm installation or its separately supplied
+environment/header values. No behavior was changed during this explanation.
+
+## November 4 — Clarify Google research evidence
+
+The earlier fresh-setup research inspected the published package archive and
+source; it did not execute a fresh-install login test. The recorded nonempty
+client values came from original MCP definitions, not the downloaded package.
+No bundled defaults or credential-generating install hook was found.
+
+## November 4 — Google MCP README and actual fresh installation
+
+The requested MCP is @a-bonus/google-docs-mcp, not OpenAI’s built-in plugin. Its [1.11.3 README](https://github.com/a-bonus/google-docs-mcp/blob/v1.11.3/README.md#quick-start) says to create or select a Google Cloud project, enable the APIs, configure consent, create a Desktop app client ID, supply its ID/secret, and then authorize. Remote deployment supplies those app settings on the host instead. This does not establish who originally configured the user’s existing local MCP.
+
+A real fresh npm install of 1.11.3 succeeded in 7.69 seconds in a task-only folder with empty HOME/npm configuration, separate cache and install scripts disabled. No credentials.json was included; installed auth code reads supplied environment values or an external credentials.json. No MCP/server/login was run. Temporary files/cache removed. Existing Google definitions already have app settings; Fetch currently omits those values on import. No need to recreate the project is established, and no import-policy change was implemented.
+
+
+## November 4 — Railway fails before sign-in because its CLI is not found
+
+User-provided startup log matches @railway/mcp-server 0.1.12's missing-executable diagnostic. Its published and installed wrapper spawns `railway mcp`; it prints the deprecation/install message on ENOENT (the executable cannot be found) and exits 1. The installed development package is 0.1.12 and has its private Railway CLI present under the sibling railway-cli installation. Fetch still launches the wrapper, clears inherited process environment, and defaults PATH to the primary executable directory plus /usr/bin:/bin. It does not add the separately prepared Railway CLI bin directory. A global Railway executable exists under /opt/homebrew/bin, also outside that default PATH.
+
+This is an executable lookup failure before account authentication, not evidence of invalid Railway credentials. Recommended repair: expose the already prepared private CLI to the server process. No per-server code/config change, login, MCP execution, personal settings edit or installation was performed. Account login after repairing startup remains untested.
+
+Sources: [Railway MCP instructions](https://docs.railway.com/cli/mcp), [published wrapper metadata/archive](https://registry.npmjs.org/@railway%2fmcp-server/0.1.12); source inspection of src/installation/mod.rs, src/manager/native_state.rs and src/runner/transport.rs.
+
+
+## November 4 — Make installed helper programs available at startup
+
+User approved recording program folders during installation and using them in shared startup. Existing Railway should work after rebuild without reinstall; no global PATH inheritance, login change or credential migration. Independent implementation/testing underway; see milestones/private-program-paths/info.md.
+
+## November 4 — Installed helper lookup fixed
+
+Shared startup now includes private executable folders recorded by installation; legacy rows use known layout without reinstall or record migration. Independent 60 checks (10 new), actual confined helper launches and locked build pass; Evaluator ACCEPT. Existing Railway needs no reinstall. User must explicitly Quit/reopen via ./scripts/run-development.sh to retry; no actual Railway login, app launch, personal setting or credential change was performed. [Evidence](milestones/private-program-paths/evidence.md).
+
+## November 4 — Vercel and Railway login errors after startup repair
+
+User requests explanation only, explicitly no code. Source confirms Vercel’s displayed error combines missing/disallowed auth setup, unsupported proof-key flow and registration failure; it does not identify which failed. Current remote login sets a Fetch client name but does not configure a public client metadata document URL or predefined client ID. Vercel’s November 2 change allows clients using an HTTPS identity metadata document, while previously approved apps remain supported. This is a concrete compatibility gap; the exact failing request remains unobserved. Source also imposes discovery/issuer requirements, so do not claim the displayed error proves client registration alone failed.
+
+Railway’s new protocol error is different from the earlier missing-executable failure. The runner receives a protocol error response but drops its original message. Railway docs say railway mcp reuses railway login credentials; current local Authenticate starts the configured MCP or an explicitly recorded helper, and does not infer railway login. Fetch provides an instance-specific HOME. Missing CLI login there is plausible, not confirmed; no saved token files/account were inspected or run.
+
+Next diagnostic need: identify the actual OAuth failure stage for Vercel and the original Railway protocol error before choosing any fix. No application/source/config/account changes or live provider requests. References: https://vercel.com/docs/agent-resources/vercel-mcp#client-identification-with-cimd and https://docs.railway.com/cli/mcp.
+
+
+## November 4 — Startup service log research and selected scope
+
+User explicitly authorizes coding the rejection/service-log feature. Startup capture currently keeps only32lines/16KiB stderr; recorded helpers retain links but not logs; remote auth and protocol errors collapse detail. Selected extension keeps a private memory-only console record across each attempt, with1MiB/4096line limit and explicit truncation. Cover local stderr, setup stdout/stderr, nonprotocol stdout as a protocol violation, returned MCP errors/notifications and unsuccessful HTTP/OAuth replies plus exact failed step. Preserve raw normal forwarding and existing auth behavior; no log files, new route or real-provider execution.
+
+Primary references: [MCP transports](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports), [error structure](https://modelcontextprotocol.io/specification/2025-11-25/basic#error-responses), [service logging](https://modelcontextprotocol.io/specification/2025-11-25/server/utilities/logging). Pinned rmcp3.8 auth source embeds failed response body in RegistrationFailed and logs token_result under global debug tracing; log selected sanitized error details rather than enabling that tracing. VS Code’s MIT maintained [transport logger](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/mcp/common/mcpServerConnection.ts) and [notification handler](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/mcp/common/mcpServerRequestHandler.ts) keep service logs separate from protocol handling. Its optional raw-frame debug logging is outside this scope.
+
+
+## November 4 — Actual Railway startup and Codex MCP reuse
+
+User asks to test Railway MCP startup directly in isolation and assess reusing Codex’s MCP startup, authentication and renewal code. Do not infer/automatically run separate login commands. Dedicated Researcher assigned; no personal account/config access or source copying selected. Logging implementation continues as authorized.
+
+## November 4 — Thin wrappers are the project-wide default
+
+User explicitly states: “everything we build unless i explicitly describe otherwise should just be a wrapper that just wraps code/outputs.” This applies across Fetch rather than only this console. Reuse underlying implementations and preserve outputs; Fetch supplies necessary invocation, connection and presentation glue. Do not add custom replacement workflows, infer server-specific setup commands or reinterpret/rewrite upstream results without explicit direction. Existing user-selected application permissions, account separation, Keychain ownership, raw forwarding and other explicit product contracts remain. Any broad refactor, code-source/license choice, hosting/client identity or contract change needs its own scope.
+
+The console specifically wraps service startup output/instructions and actual returned errors. Do not substitute the literal “protocol error” or generated authentication progress prose for those outputs. Preserve received error code/message/details, with credential redaction and native-only visibility. Genuine Fetch-owned request/read failures and observed process exit status remain distinguishable from service output. Actual Railway startup research confirms the service itself returns login guidance; no login-command inference is selected.
+
+
+## November 4, 2026 — Living Brain as a possible persistent-memory integration or design reference
+
+Consider [Living Brain](https://livingbrain.com/) as an external memory service to integrate with Fetch, or as a reference for how Fetch could implement persistent memory. The idea is to save knowledge outside any one model so something written through ChatGPT can later be retrieved through Claude, Cursor, Codex or a custom agent using an API, SDK or MCP.
+
+The user-provided description says it turns conversations, documents and notes into small structured records (“memory atoms”) or linked pages, forming a graph of related knowledge. Four scoring policies decide what to keep (worthiness), where to put it (placement), what it connects to (resonance), and when to bring it back into the current task (re-entry). This selective curation is described as mimicking neuroplasticity: useful connections change as new information arrives.
+
+It also reportedly tracks freshness, strain and readiness to flag stale information before reuse. The supplied description reports 92.2% on the LoCoMo benchmark, with fewer tokens and lower cost than providing full conversation histories. These product details and performance claims are recorded from the user’s description and have not been independently verified in this pass. Supplied references: [Living Brain website](https://livingbrain.com/) and [X post](https://x.com/i/status/2117980022250316282).
+
+Status: a potential future integration and implementation direction, not a selected service or approved architecture. When persistent-memory work resumes, compare integrating the service with adopting its useful ideas, including selective saving, linked knowledge, task-relevant retrieval and stale-information checks. This note does not change the current MCP MVP scope or start implementation.
+
+## November 4 — Actual Railway startup and Codex reuse findings
+
+Confined actual shim/direct Railway initialize succeeds; tools/list returns -32001notloggedin with service-supplied instructions. No guessed/automatic login occurred, personal credentials were not used, and experiments were cleaned. Codex uses configured stdio startup plus actual userHOME/PATH; its remote login/refresh wraps RMCP with Codex identity/storage glue. Apache2.0 source reuse is possible, but wholecrate has12internal dependencies and different storage/account rules. [Full report](docs/architecture/railway-codex-startup-research.md). No source copy selected.
+
+## November 4 — Actual-output console completed
+
+Console now wraps actual service logs/instructions/errors, with credential masking and explicit limits, rather than generated authentication prose or protocol-error replacement. Native-only memory capture covers setup/local/remote/OAuth failure details; no successful protocol/token dump or logfiles.184uniquechecks15new, final31UIrecheck/nativebuild/whitespacePASS; independentEvaluatorACCEPT. Project-wide wrapperdefault is saved in AGENTS.md and canonicaldecisions. No nativeapp/realsignin/signing/personalstate/commit/push. [Evidence](milestones/service-startup-logs/evidence.md).
+
+## November4 — Expanded console is permanent and spans startup through auth
+
+User requests theconsolealwayspresent whenever a serverisexpanded and showingeverythingfromstartupthroughauthentication. This selects a passive sharedconsole for allstates, preserving actualalready-sanitizedhistory across start/auth attempts in thecurrentFetchrun. Opening/collapsing a card mustnotstartauth or changebusy/accountstatus. Keep serviceoutput/instructions/errors ratherthan syntheticprogress; retain hostconsent/Copy. Existing1MiB4096line64KiBline limits andexplicitnotices apply to accumulatedserverhistory. No disklog/restart persistence, newAPIroute, credentials migration or auth/issuerbehaviorchange follows. User separatelyreaffirmscredentialstore shouldremainservicehandled; startupcodereuse mustnotimportCodex’s credentialstore.
+
+## November 4 — Startup input reuse and credential ownership
+
+User reaffirms credential storage should remain service-handled. No Codex credential-store import or account-folder policy change is selected. Exact source review finds Codex’s environment assembly is the useful reusable input helper; macOS command resolution is left to the OS. Fetch already passes its configured executable/arguments/folder and Fetch name/version. See the research addendum. Console permanence/history work continues separately.
+
+## November 4 — Separate test observation: failed Restart admission
+
+While testing console history, a fixture that performed an explicit failed Restart followed by Authenticate observed SERVER_BUSY after restart failure. The source was not changed for this authentication behavior. The selected initial app-startup-to-auth history test instead uses Manager::startup, waits for its actual failure result without reading the private log, and then verifies the preserved history through Authenticate. The latter passed. Keep the failed-Restart observation separate for later authentication investigation; it is not a claim that all restart/login paths passed.
+
+## November4 — Console/Terminal buttons and persistent log
+
+User explicitly says implement Console/Terminal pane switching using their system shell; Console log should persist. Terminal should match the MCP’s actual environment/programs/cwd/accountfolder, not Fetch source repo. User asks whether to prefer global copies if available; recommendation is to match the configured MCP environment, with no automatic account fallback selected. The executable’s installation location and credential folder are separate. Credentials remain service-owned. New exact native-only route/retention proposal is ready at docs/architecture/server-terminal.md; no terminal or API code before required review.
+
+
+## November 4 — Remove custom authentication restrictions
+
+User directs removing the custom mandatory issuer-response feature check and other restrictions that conflict with the wrapper design. Let the official MCP library own discovery and sign-in validation. Existing caller permissions, consent, account separation and actual-request network/storage protections remain. See [the decision](docs/architecture/decisions.md#november-4--remove-fetch-imposed-provider-login-restrictions) and [scoped work](milestones/wrapper-authentication/info.md).
+
+## November 4 — Permanent expanded console completed
+
+The console is always present in an expanded server and keeps captured startup-to-auth history during the current Fetch run, including collapse and window reopen. Display and polling do not start authentication. New request failures stay visible beside old logs until the service returns new output. Independent 150 relevant tests, including eight new checks, native build/whitespace and Evaluator ACCEPT. Credential storage, authentication and issuer behavior are unchanged; no Codex code imported. [Evidence](milestones/continuous-server-console/evidence.md). Native appearance and real accounts remain untested; the separate failed-Restart admission observation stays open.
+
+## November 4, 2026 — actual Codex environment code reuse approved
+
+User approved replacing Fetch's environment assembly with the actual small Codex builder, while keeping Fetch's private account folders/helper PATH and service-owned credentials. This does not import authentication or credential storage. [Decision and scope](docs/architecture/railway-codex-startup-research.md#november-4--approved-environment-code-reuse). Implementation and independent verification are in progress.
+
+
+November 4 wrapper-authentication outcome: six extra Fetch gates removed;43 independent fixtures and locked native build pass, final Evaluator ACCEPT for this scope. No actual Vercel sign-in or app launch. [Evidence](milestones/wrapper-authentication/evidence.md). Separate concurrent console test wiring remains with its owner.
+
+November4 completion: actual Codex startup-environment helper is now adapted and wired through common transport. Independent32checks/native build pass; Evaluator ACCEPT. Full library tests remain a tracked followup after unrelated terminal test wiring. No app launch, provider auth or credential migration.
+
+
+## November 4 — Keep feature tests focused and practical
+
+User requires all written tests to be much more focused on real-world feature functionality. Avoid speculative edge-case coverage, implementation-mirroring assertions and unrelated test infrastructure that consume time without proving useful behavior. This is a project-wide instruction, recorded at the top of AGENTS.md and applicable to every specialist.
+
+
+## November 4 — Personal-site identity and127.0.0.1 callback
+
+User selects existing personal Vercel site/domain yuyang-hu.org for Fetch's publicidentity during testing, then a dedicateddomain later. Use canonicalwww URL directly. User explicitly chooses temporaryHTTP127.0.0.1 callback insteadlocalhost; keep mainHTTPS/cert/clients intact. [Decision](docs/architecture/decisions.md#november-4--public-personal-site-identity-and-temporary-ip-callback).
+
+
+November4 completion: personal-siteidentityJSON deployed/direct200 andhomepage200 verified; Fetch SDKconfiguration/temporaryHTTP127callback implemented. One newfullfeaturetest andtwoexistingregressions/nativebuildpass; independentEvaluatorACCEPT. No realVercelsign-in orFetchlaunch. See milestones/client-identity/evidence.md.
+
+
+## November 4 — Public client identity is a broader MCP pattern
+
+Research confirms that public client identity JSON (CIMD) is the recommended direction for remote MCP sign-in, with support documented by Vercel, monday.com and Sumo Logic. Adoption is mixed; Linear still documents dynamic registration. One Fetch file can be reused with supporting services, while each service retains its own account approval and tokens. This is public app registration information, not credentials or independent certification. [Sources and limits](docs/architecture/client-identity-adoption.md). No new code or provider support selected.
+
+## November 4, 2026 — gh auth login Keychain prompt
+
+User supplied macOS “Keychain Not Found” while gh auth login tries to store the GitHub account. Upstream confirms gh uses the system credential store. Fetch's private HOME may be involved if launched inside Fetch; cause is unconfirmed. No Keychain reset, credential inspection, login test or code change performed. [Diagnosis](milestones/history/2026-11-04_17-35-15-506420-orchestrator-gh-keychain-prompt-diagnosis.md).
+
+
+## November 4 — Keep discovery inside the selected Codex folder
+
+User reports that choosing `.codex` still reads neighboring Claude/OpenCode configs and lists their MCPs. They require only the selected `.codex` source. Read only its `config.toml`; do not use its parent for additional sources. They clarified “read,” not “written.” The current API contract and architecture decision record this correction. Implementation is complete: the original HTTP failure was reproduced, final 10 focused discovery tests and native build pass, and independent evaluation ACCEPTs. No app launch or personal config edits; explicitly Quit/relaunch via the signed development launcher to load it.
+
+## November 4, 2026 — normal HOME proposed for Keychain compatibility
+
+User confirms failing gh auth login was inside Fetch terminal and asks for the same normal-system-context principle as program lookup. Apple source confirms Security directly reads HOME. Proposed narrow fix: stop replacing HOME, retain private XDG config/state and package/working folders. User choice about shared Keychain/HOME-based logins is pending. [Scope](milestones/normal-system-home/info.md). No source/Keychain/credential changes.
+
+November4 correction: user means instance-local login as well as locally installed packages. Normal-HOME proposal is withdrawn; brief source change restored before execution. Private HOME remains; Keychain solution is still research-only.
+
+November4 command/home clarification: user requested matching HOME during local/global lookup. Research/source audit finds native PATH does not provide that switch; shared runtimes and absolute helper paths prevent reliable account inference from binary location. No wrapper or new Keychain policy implemented. Private HOME remains; all withdrawn test edits restored.
+
+November4 fresh GitHub check: gh IS global for the current development entry. Its existing imported launcher hardcodes /opt/homebrew/bin/gh, resolving to /opt/homebrew/Cellar/gh/2.89.0/bin/gh. Recorded private package folder is absent, program directories empty, native setup absent. The same launcher execs its existing sibling github-mcp-server. Private HOME is still supplied by Fetch. No executable/auth/token/Keychain command run. [Evidence](milestones/history/2026-11-04_17-54-37-382153-orchestrator-confirm-actual-global-github-cli.md).
+
+
+## November 4, 2026 — Figma registration403 diagnosis
+
+The supplied logs fail at app registration, before browser sign-in. Current source identifies the app as Fetch and supplies a matching temporary HTTP127.0.0.1 callback/listener. Figma staff document an approved client-name list; current metadata does not advertise public identity JSON support. Fetch approval is the likely blocker, while the plain403 does not prove its exact internal reason. [Research and primary sources](docs/architecture/client-identity-adoption.md#figma-registration-rejection--november-4-2026). Recommend the official new-client waitlist or an already supported client; no workaround or source change selected.
+
+
+## November 4, 2026 — Mark Figma Remote unsupported
+
+User explicitly selected the import/install screen, rather than notes only. Mark the official remote endpoint unsupported with its app-approval reason; preserve the local desktop version and installed records. [Scope](milestones/figma-remote-unsupported/info.md). Implementation complete;19focused checks (2new), native build and independent review pass. Native app not relaunched.

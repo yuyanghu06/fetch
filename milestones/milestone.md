@@ -1,5 +1,568 @@
 # Fetch milestone snapshot
 
+Python pin origin confirmed: D06 approved private tooling and sharing compatible runtimes; the universal exact Python version came from an internal installer choice, not an explicit universal-version decision. [Pass](history/2026-11-04_18-09-35-609619-orchestrator-python-pin-origin.md). No source change.
+
+Python MCP follow-up: separate per-installation venvs already exist; the global Python 3.13.18 requirement is the problem. Codex/Claude Code document launching configured commands; uv manages uvx environments and Python requests. Using uv's own environment handling with per-server version requests is proposed only. [Research](../docs/architecture/research.md#november-4--python-mcp-environments-in-coding-clients), [pass](history/2026-11-04_18-08-39-473609-orchestrator-python-mcp-environments-research.md).
+
+## Working-tree delivery — active
+
+User requested focused commits and push. Four main groups: dependencies/licenses, connected application work/tests, discovery fixes, remaining records. Source commits are 2e74cf1, 36e324b and e73e172; documentation commit and remote delivery remain. [Preparation](history/2026-11-04_18-10-40-069651-orchestrator-prepare-scoped-delivery.md). Independent plan accepted; 44 safe focused checks and locked offline native build pass. Independent Evaluator ACCEPTs the staged source. [Review](history/2026-11-04_18-09-43-793838-evaluator-accept-working-tree-delivery.md). [Verification](history/2026-11-04_18-09-11-018033-tester-working-tree-delivery-checks.md). Preserve all prior limitations. [Plan](history/2026-11-04_18-08-12-781105-planner-working-tree-commit-split.md), [scope](working-tree-delivery/info.md).
+
+## Blender MCP install — diagnosis complete
+
+Fetch pins Python 3.13.18, but its bundled uv 0.13.5 lists downloads only through 3.13.17 for this Mac. Development Python runtime has no interpreter. This confirms a blocking preparation defect and strongly explains the failure; original installer error is unavailable because stdout/stderr are discarded and terminal output was inaccessible. No repair, install retry or MCP execution. [Diagnosis](history/2026-11-04_18-06-06-480987-orchestrator-blender-install-diagnosis.md).
+
+## Figma Remote unsupported import — complete
+
+Figma Remote now shows unsupported/unselected with the app-approval reason in the import/install screen. Shared classification rejects fresh file/direct installs; Figma Desktop and saved-record validation/instances remain unchanged. Two new feature tests plus existing scoped tests pass19/19; native locked build passes5.38s, scoped whitespace passes, independent Evaluator ACCEPT. Native appearance unobserved; app was not launched. Next user action: explicitly Quit, signed relaunch and refresh imports. [Scope](figma-remote-unsupported/info.md), [Evaluator](history/2026-11-04_18-07-32-270262-evaluator-accept-figma-unsupported.md), [Completion](history/2026-11-04_18-07-32-270263-orchestrator-complete-figma-unsupported.md).
+
+## Figma remote registration — diagnosis complete
+
+User-reported registration403 strongly matches Figma's approved-client policy. Fetch sends its own name; current Figma metadata makes rmcp fall back to dynamic registration. Callback/listener source matches; exact rejection reason is not returned. No app/code/config/account changes or live registration. Subsequent user choice: mark Figma Remote unsupported in the import/install screen (active scope above). No approval request/workaround selected. [Researcher](history/2026-11-04_18-01-51-215696-researcher-figma-registration-policy.md), [Orchestrator](history/2026-11-04_18-01-51-215697-orchestrator-figma-registration-diagnosis.md), [primary-source findings](../docs/architecture/client-identity-adoption.md#figma-registration-rejection--november-4-2026).
+
+GitHub executable identity freshly verified: current entry uses global Homebrew gh through an imported local script; no Fetch-installed gh/package folder. It still receives private HOME. No auth/Keychain execution or code change. [Inspection](history/2026-11-04_17-54-37-382153-orchestrator-confirm-actual-global-github-cli.md).
+
+## Keychain / command lookup — research complete, behavior unchanged
+
+User requested HOME matching during local/global command lookup. Shell/source audit establishes PATH has no per-exec environment callback; shared runtimes and absolute helper paths prevent reliable account selection by location alone. Thin wrappers would cover only their explicit launches. Private instance HOME remains; no wrapper or Keychain setup implemented. [researcher](history/2026-11-04_17-51-29-280200-researcher-home-by-command-lookup-limits.md), [planner](history/2026-11-04_17-51-29-280201-planner-audit-home-selection-boundaries.md), [tester](history/2026-11-04_17-51-29-280202-tester-restore-withdrawn-home-fixture-edits.md).
+
+## Keychain / instance login clarification — private HOME retained
+
+User requires login for a locally installed CLI to remain with that Fetch instance. Normal-HOME proposal withdrawn; brief source change restored before any runtime test/launch. Packages/helper PATH preserved. Keychain fix remains research-only. [Correction](history/2026-11-04_17-43-46-982773-orchestrator-preserve-instance-logins-restore-private-home.md).
+
+## Scrolled terminal pointer coordinates — complete
+
+Fixed press/move coordinate mismatch through a scrolled page; normal clicks no longer jump selection rows in the reproduced case. One actual outerScrollable click/drag/clear render test failed before and passes after; final11terminalUI checks1new/native build6.90s/whitespace PASS, independent EvaluatorACCEPT. [Evidence](terminal-pointer-coordinates/evidence.md). Previous tests lacked actual parent input; earlier release/trackpad fixes preserved. User native reload/observation remains.
+
+Final passes: [Tester](history/2026-11-04_17-41-23-628273-tester-scrolled-terminal-click-final.md), [Evaluator](history/2026-11-04_17-41-23-628274-evaluator-accept-scrolled-terminal-pointer.md), [Orchestrator](history/2026-11-04_17-41-23-628275-orchestrator-integrate-scrolled-terminal-pointer.md). Earlier active checkpoints below are historical.
+
+## Normal system HOME / Keychain — research complete, choice pending
+
+Conditional plan complete; source untouched. Fixture review found a pre-confinement HOME PID write that must be repaired before any opt-in real fixture run. [Planner pass](history/2026-11-04_17-41-29-250820-planner-normal-system-home-conditional-scope.md).
+
+Apple Security directly reads HOME; Fetch currently changes it. Proposed normal HOME inheritance keeps private XDG/packages/cwd but allows shared service Keychain logins and HOME files. Explicit user choice pending before source changes. Conditional plan checks fixture safety; no auth or Keychain state touched. [Scope](normal-system-home/info.md), [research](history/2026-11-04_17-41-05-958357-researcher-macos-keychain-home.md).
+
+## Selected Codex discovery — complete November 4
+
+Selecting `.codex` must read only its `config.toml`. The current parent expansion incorrectly includes Claude/OpenCode configs. Read-only Planner confirms a bounded shared-reader fix. Independent Tester reproduced the original HTTP failure: selected `.codex` returns three source groups, expected one. [Reproduction](history/2026-11-04_17-41-19-076794-tester-reproduce-selected-codex-discovery.md). Source now passes only the selected `config.toml` to the shared candidate reader; MCP/API descriptions match. Independent verification passes: 10 HTTP discovery tests and native build (7.55s). [Verification](history/2026-11-04_17-42-50-205423-tester-selected-codex-discovery-verification.md). Independent Evaluator ACCEPT, no findings. [Evaluation](history/2026-11-04_17-43-20-236061-evaluator-accept-selected-codex-discovery.md), [completion](history/2026-11-04_17-43-20-236548-orchestrator-complete-selected-codex-discovery.md). No app launch or personal config changes. Next: explicitly Quit Fetch, run `./scripts/run-development.sh`, then refresh discovery. [Source pass](history/2026-11-04_17-42-21-122265-coder-selected-codex-discovery.md). Automatic/home/single-file behavior stays selected. [Plan](history/2026-11-04_17-40-29-854519-planner-selected-codex-discovery.md), [scope](selected-discovery-scope/info.md). Other active work below is preserved.
+
+Real scrolled-parent click bug reproduced (1px move interpreted500px away); two-line movement routing now uses the adjusted Cursor consistently. Independent11focused terminalUI checks/build/review underway. [Reproduction](history/2026-11-04_17-39-37-056474-tester-reproduce-scrolled-pointer-jump.md), [fix](history/2026-11-04_17-39-37-056475-coder-use-translated-terminal-pointer.md).
+
+## Scrolled terminal pointer coordinates — active
+
+User reports large selection on normal clicks. Found press/move coordinate mismatch when outer page is scrolled; prior release/trackpad fixes remain. Planner confirms Iced translates child cursor but raw move event stays unchanged. One actual outerScrollable interaction regression is preparing before two-line source fix. [Scope](terminal-pointer-coordinates/info.md), [report](history/2026-11-04_17-37-47-573720-orchestrator-recurring-terminal-click-selection.md), [plan](history/2026-11-04_17-37-47-573721-planner-scrolled-terminal-pointer.md).
+
+gh debug capture instructions prepared: same terminal context, private log, ordinary verbose output and read-only Keychain path metadata. Await user log; cause remains unconfirmed. [Pass](history/2026-11-04_17-36-49-255671-orchestrator-gh-auth-debug-capture-guidance.md).
+
+gh auth login screenshot diagnosis: macOS cannot locate a usable Keychain for credential saving; private Fetch HOME is an unconfirmed hypothesis. No repair or Keychain changes. [Read-only pass](history/2026-11-04_17-35-15-506420-orchestrator-gh-keychain-prompt-diagnosis.md).
+
+Public identity adoption research is complete: CIMD is the recommended remote MCP registration direction, with confirmed provider support and uneven adoption. The same Fetch file can serve multiple supporting services; each still has separate account consent and tokens. [Research](../docs/architecture/client-identity-adoption.md). Passes: [researcher](history/2026-11-04_17-27-31-163759-researcher-research-cimd-adoption.md), [orchestrator](history/2026-11-04_17-27-31-163760-orchestrator-record-client-identity-adoption-research.md). No code or settings changed.
+
+## Terminal selection and scrolling — complete
+
+Selection drag now ends on release outside the pane. Trackpad direction matches mouse wheel; fractional gestures stay inside Terminal and can reveal older output. Intentional selection/current cursor unchanged. Original2failures reproduced; final10focused widget/render tests (2new), native build8.30s and whitespace PASS; independent Evaluator ACCEPT. [Evidence](terminal-selection-scroll/evidence.md). User rebuilt native window still needs explicit Quit/relaunch observation. No shell/provider/credentials used.
+
+Final passes: [assertion cleanup](history/2026-11-04_17-27-17-961032-coder-align-terminal-wheel-expectations.md), [Tester](history/2026-11-04_17-27-17-961033-tester-terminal-selection-scroll-final.md), [Evaluator](history/2026-11-04_17-27-17-961034-evaluator-accept-terminal-selection-scroll.md), [Orchestrator](history/2026-11-04_17-27-17-961035-orchestrator-integrate-terminal-selection-scroll.md). Earlier partial checkpoints below are historical.
+
+Terminal input fix saved after original failures reproduced: release outside ends selection drag, pixel scrolling uses correct sign and stays in pane even below one line. Independent10terminalUI tests/native build/review underway. [Source](history/2026-11-04_17-25-22-061363-coder-terminal-selection-scroll-fix.md).
+
+Terminal input failures independently reproduced on original widget: outside-release reentry extends selection and fractional trackpad wheel escapes pane. Two new realistic widget/render tests fail as expected; Coder now applying narrow fix. [Reproduction](history/2026-11-04_17-24-37-162870-tester-reproduce-terminal-input-bugs.md).
+
+Terminal input plan verified: release outside must end drag; pixel-wheel sign is reversed and fractional gestures escape to outer page. Two realistic widget/render tests are reproducing original failures before source edits. [Plan](history/2026-11-04_17-23-14-983141-planner-terminal-selection-scroll.md).
+
+## Terminal selection and scrolling — active
+
+User confirms unwanted gray selection and cannot scroll up. Proven source issue ignores an active drag release outside pane; pixel-wheel direction/fractional capture under review. Preserve normal selection/current cursor style; reuse widget/Alacritty. Plan/source/test specialists assigned exclusive files. [Scope](terminal-selection-scroll/info.md), [pass](history/2026-11-04_17-22-04-649460-orchestrator-terminal-selection-scroll-scope.md).
+
+## Normal command-search PATH — complete
+
+Shared startup/setup/Terminal now retains inherited command folders after private programs and executable parent. Explicit PATH/private account folders unchanged.23 focused checks including1actual confined bare-gh/private-priority test, native build8.40s and whitespace PASS; independent Evaluator ACCEPT. [Evidence](normal-program-path/evidence.md). No personal gh/login/native app execution. Next: explicitly Quit Fetch, ./scripts/run-development.sh, open fresh Terminal. Inherits the PATH available to Fetch; no shell-profile loading.
+
+Final passes: [Tester](history/2026-11-04_17-14-41-049864-tester-normal-program-path-verification.md), [Evaluator](history/2026-11-04_17-14-41-049865-evaluator-accept-normal-program-path.md), [Orchestrator](history/2026-11-04_17-14-41-049866-orchestrator-integrate-normal-program-path.md). Earlier active checkpoints for this feature below are historical; unrelated active work stays current.
+
+Final website deployment is READY at commit7891229; its public identity file again returns direct HTTP200/JSON with the correct IP callback. Task-created site worktree/build copies were removed; original dev changes are preserved. Fetch source, focused tests, build and independent review are complete. [Final verification](history/2026-11-04_17-14-17-221908-orchestrator-final-identity-deployment-verification.md).
+
+## Public client identity and IP callback — complete November 4
+
+The [public identity file](https://www.yuyang-hu.org/oauth-client.json) is deployed and verified: direct HTTP 200, JSON and the expected content. The homepage also returns HTTP 200. Fetch passes this URL to rmcp and receives new interactive sign-in through http://127.0.0.1:<temporary-port>/oauth/provider/callback. Its main HTTPS API and certificate are unchanged.
+
+One new full feature test, two existing regressions and the native build pass. The independent evaluator reports ACCEPT. No real Vercel account sign-in or Fetch launch was performed. [Evidence](client-identity/evidence.md). Next user action: explicitly Quit Fetch, run ./scripts/run-development.sh and retry Vercel. Earlier pending checkpoints below are historical.
+
+Finalpasses: [evaluator](history/2026-11-04_17-12-37-774578-evaluator-accept-static-identity-candidate.md), [coder](history/2026-11-04_17-12-37-774579-coder-implement-temporary-ip-callback.md), [tester](history/2026-11-04_17-12-37-774580-tester-verify-public-identity-loopback-flow.md), [evaluator](history/2026-11-04_17-12-37-774581-evaluator-accept-public-identity-and-ip-callback.md), [orchestrator](history/2026-11-04_17-12-37-774582-orchestrator-integrate-published-identity-and-ip-callback.md). Earlierhosting/listenerpendingnotesbelowarehistorical.
+
+Normal PATH source implemented; independent confined terminal/helper checks and review underway. [Plan](history/2026-11-04_17-11-43-880643-plan-inherited-program-path.md), [source](history/2026-11-04_17-11-43-880644-code-inherited-program-path.md). No feature test/build acceptance yet. Other active work preserved.
+
+## Normal command-search PATH — active
+
+User approves inherited normal command folders after private server programs, fixing bare gh lookup in startup and Terminal. Preserve explicit PATH/private account folders; no shell profiles or personal auth. Read-only planning underway; source/tests next. [Scope](normal-program-path/info.md), [approval](history/2026-11-04_17-10-05-626636-orchestrator-approve-inherited-command-path.md).
+
+## Public client identity and IP callback — implementing
+
+User selects personal site yuyang-hu.org, using canonicalwww identity URL to avoid its existing redirect. StaticJSON prepared in isolated production/main worktree; defaultsitebuildPASS18pages. User explicitly selects temporaryHTTP127callback; mainHTTPS/cert remains unchanged. SDKmetadataURL wiring saved; dedicated callback receiver and one realistic integrationtest underway. Site review/publication next. Passes: [planner](history/2026-11-04_17-06-10-724166-planner-plan-personal-site-client-identity.md), [coder](history/2026-11-04_17-06-10-724167-coder-configure-library-client-metadata-url.md), [coder](history/2026-11-04_17-06-10-724168-coder-prepare-personal-site-static-identity.md), [researcher](history/2026-11-04_17-06-10-724169-researcher-research-ip-loopback-callback.md), [planner](history/2026-11-04_17-06-10-724170-planner-plan-temporary-http-callback.md).
+
+Latest read-only GitHub inspection: existing dev local-script launcher already calls global gh by absolute path and passes its returned token to GitHub MCP2.0.2. No downloaded package at recorded ID. Terminal PATH omits Homebrew; private account configuration remains separate. No auth executed or behavior changed. [Inspection](history/2026-11-04_17-04-23-846865-orchestrator-inspect-installed-github-cli-launcher.md).
+
+Latest documentation-only direction: GitHub should default to globally installed gh because its install script does not bundle it (user report). Saved in NOTES.md/architecture decisions; no source/runtime change. [Note pass](history/2026-11-04_15-32-08-073540-orchestrator-note-global-github-cli.md). Existing feature acceptance and other active work below remain unchanged.
+
+Latest read-only clarification: public app-registration metadata can list a local native callback if the provider accepts it; no hosting/authentication change selected. [Research pass](history/2026-11-04_15-28-29-615396-researcher-public-metadata-local-callback.md). Console/Terminal accepted state below remains current.
+
+## Server Console/Terminal and saved logs — complete scoped implementation
+
+Expanded rows share Console/Terminal; local terminals use the account system shell and exact MCP environment, retained through pane/window changes. Sanitized Console history survives restarts under approved newest-output limits; terminal input/transcript excluded. User-reported blank-pane drawing is corrected using widget-local cache/translation/clipping.
+
+Independent182 relevant checks (19new), actual offscreen prompt/cursor/scroll/clip render, owned shell/foreground cleanup, locked native build16.25s and whitespace PASS. Evaluator ACCEPT. [Evidence](server-console-terminal/evidence.md). Actual rebuilt native window/account login remain unobserved; explicitly Quit then ./scripts/run-development.sh. One initial ordinary server-read failure did not recur in full rerun/five repeats; cause unconfirmed and preserved in evidence.
+
+Final passes: [Tester](history/2026-11-04_15-28-11-920855-tester-console-terminal-final-verification.md), [Evaluator](history/2026-11-04_15-28-11-920856-evaluator-accept-console-terminal.md), [Orchestrator](history/2026-11-04_15-28-11-920857-orchestrator-integrate-console-terminal.md). Earlier partial checkpoints below are historical.
+
+## Server Console/Terminal — blank-pane correction
+
+User screenshot establishes native blank-pane failure. Source now follows Iced Canvas local geometry, draw-time translation and clipping for embedded/scrolled terminals. Independent offscreen render check, final core tests/build/review underway. [Correction pass](history/2026-11-04_15-24-11-939731-coder-fix-embedded-terminal-drawing.md). Earlier unobserved-appearance statements are historical; rebuilt native appearance remains unobserved.
+
+Public-client-identity bounded plan ready: static identity JSON plus existing rmcp with_client_metadata_url option; keep local callbacks and library-owned negotiation. Actual hosting URL unselected. Latest AGENTS.md test rule narrows new coverage to realistic feature flow. [Planner pass](history/2026-11-04_15-22-44-343477-planner-public-client-identity-wiring.md).
+
+## Client identity — scope/hosting discussion
+
+User approves configuring rmcp with Fetch identity JSON and asks hosting/code details. Existing repo has no homepage; Pages lookup404. Public HTTPS URL remains unselected. Static file and one SDK option are the bounded implementation; no hosted login backend. Latest user test preference is now saved at top of AGENTS.md: small realistic feature tests, no speculative matrices. [Scope](client-identity/info.md), [pass](history/2026-11-04_15-22-15-847071-orchestrator-focus-tests-and-scope-client-identity.md).
+
+Both terminal findings are corrected in source and await final independent retest/build: [startup replies](history/2026-11-04_15-20-59-717647-coder-fix-fresh-terminal-queries.md), [close/reap](history/2026-11-04_15-20-59-717648-coder-fix-terminal-close-reap.md). No new API/schema or provider-login flow.
+
+Checked Vercel callback requirements: HTTPS, custom scheme, or HTTP loopback; no fixed universal callback path. Current Fetch HTTPS callback matches a documented category, while Fetch still lacks the public identity-document setup for unreviewed clients. No auth/source/hosting change selected. [Pass](history/2026-11-04_15-19-13-027898-orchestrator-check-vercel-callback-requirements.md), [research](../docs/architecture/research.md).
+
+## Server Console/Terminal — review corrections active
+
+Saved-log reload/privacy/limits, native route authority, UI state and confined shell environment/resize/exit checks pass. Two material terminal findings are being fixed: close must recognize an already exited shell after HUP, and fresh sessions must answer startup terminal questions instead of treating them as replay. Two old prefix-only assertions need the approved newest-output expectation. Final tests/build/evaluation remain. [Review pass](history/2026-11-04_15-18-18-541564-evaluator-terminal-initial-findings.md).
+
+Vercel user retry now reaches registration and receives provider HTTP400 invalid_redirect_uri. Default development return address is https://localhost:53672/oauth/provider/callback; actual port override unobserved. Explained browser-return purpose and checked official identity requirements; no new auth configuration/hosting selected. [Pass](history/2026-11-04_15-12-27-725543-orchestrator-vercel-redirect-rejection.md), [research](../docs/architecture/research.md).
+
+Terminal backend/UI source handoff: [pass](history/2026-11-04_15-11-31-729995-coder-terminal-backend-and-ui-integration.md). Source review corrected blocked-input close and final-output ordering; independent test/review underway.
+
+## Server Console/Terminal — source integration and tests
+
+Persistent console source is ready for independent checks. Backend and UI are finishing close/output handling; the independent Tester owns new PTY/persistence/UI fixtures. No current feature test/build acceptance yet. [Source handoff](history/2026-11-04_15-09-55-228986-coder-persistent-console-history.md). Exact user-approved contract: [Console/Terminal](../docs/architecture/server-terminal.md).
+
+## Wrapper authentication — complete November 4
+
+Removed six extra Fetch provider-login gates. Official rmcp owns discovery/fallback and callback validation; saved-login endpoint/issuer/client identity, consent and actual-request access rules remain.43 independent auth/storage/authority checks PASS; current-tree locked native build PASS21.68s; final Evaluator ACCEPT. [Evidence](wrapper-authentication/evidence.md). No real Vercel sign-in or app launch. Newest unrelated console-test wiring prevents another library-test repeat, outside scoped acceptance. Final passes: [tester](history/2026-11-04_15-09-19-022329-tester-wrapper-auth-native-build-pass.md), [evaluator](history/2026-11-04_15-09-19-022330-evaluator-accept-wrapper-authentication.md), [orchestrator](history/2026-11-04_15-09-19-022331-orchestrator-complete-wrapper-authentication.md). Next user action for actual login: explicitly Quit Fetch, then ./scripts/run-development.sh and retry; no auth correction remains. Earlier pending/build-failure checkpoints below are historical.
+
+## Codex startup environment — complete November 4
+
+Fetch now adapts the actual pinned Codex MCP environment builder and its variable lists. Fetch's private HOME/XDG folders and existing helper PATH are explicit overrides; executable/args/cwd, assigned inputs, omission of missing inputs, cleared child environment and service-owned credentials remain. Full upstream Apache license/NOTICE and modified-source attribution are retained. No Codex authentication/store code or new dependency/API/schema is imported.
+
+Independent24integration checks plus8pure helper checks pass; native build passes; Evaluator ACCEPT. Both ordinary startup and recorded setup received asserted args/cwd/private folders/helper PATH/LANG in real confined children. Full library tests are blocked by unrelated in-progress terminal test wiring, so no full-suite claim is made. [Scope](codex-startup-environment/info.md), [evidence](codex-startup-environment/evidence.md).
+
+Followup: run focused library filters once concurrent terminal test files are complete. No app/provider sign-in, personal configuration edits, signing/release, commit or push occurred. Existing failed explicit Restart→Authenticate observation remains separate.
+
+Final passes: [tester](history/2026-11-04_15-11-39-990275-tester-codex-environment-build-and-fixtures.md), [evaluator](history/2026-11-04_15-11-39-990276-evaluator-accept-codex-environment-replacement.md), [orchestrator](history/2026-11-04_15-11-39-990277-orchestrator-complete-codex-environment-replacement.md).
+
+## Wrapper authentication — source implemented, final build pending
+
+Removed six extra Fetch compatibility gates; rmcp owns discovery and callback validation.43 independent auth/storage/authority checks PASS; Evaluator finds no auth changes needed, but REQUEST CHANGES for final build verification. Build retry passed log_store integration then failed in concurrent iced_term notifier code (E0596); final auth retest also awaits newly declared logging test file. Preserve other owners’ work. [Evidence](wrapper-authentication/evidence.md). Next: once terminal integration settles, locked native build + three fixture filters, then final evaluation. Passes: [tester](history/2026-11-04_15-07-07-764799-tester-wrapper-auth-build-retry-terminal-blocker.md), [orchestrator](history/2026-11-04_15-07-07-764800-orchestrator-integrate-wrapper-auth-removal.md).
+
+Wrapper-auth evaluator finds source/tests acceptable and requests final native build only. Concurrent log_store module is now saved/wired; Tester retrying build. [Review](history/2026-11-04_15-05-51-025226-evaluator-wrapper-auth-await-native-build.md).
+
+Wrapper-authentication independent regressions PASS43/43 (remoteOAuth26, background6, native-storage11). Final native build is waiting on separate concurrent log_store integration: E0433 in runner startup diagnostics references a module not saved yet. No auth source finding. [Pass](history/2026-11-04_15-04-56-319997-tester-wrapper-auth-regressions-and-build-dependency.md).
+
+Latest pass: [approved contract and dependency preparation](history/2026-11-04_15-04-30-247160-orchestrator-approve-terminal-routes-and-dependencies.md); source implementation active, no tests/build acceptance yet.
+
+Wrapper-auth initial independent tests:24/25passed; one fixture wrongly expected storage before callback and is corrected. Retest briefly hit concurrent terminal dependency/lock mismatch; updated lock now visible, locked/offline retry underway. No production finding so far. [Pass](history/2026-11-04_15-02-42-621425-tester-wrapper-auth-initial-verification.md).
+
+Wrapper-authentication source removal is implemented: four extra preparation gates, unknown callback-field rejection and full-document metadata reuse rejection are removed. SDK callback validation remains. Independent fixtures/build/review underway. Passes: [planner](history/2026-11-04_15-00-09-483482-planner-plan-library-owned-authentication.md), [researcher](history/2026-11-04_15-00-09-483483-researcher-audit-wrapper-authentication-restrictions.md), [coder](history/2026-11-04_15-00-09-483484-coder-remove-pre-login-and-callback-gates.md), [coder](history/2026-11-04_15-00-09-483485-coder-remove-full-metadata-reuse-gate.md).
+
+## Permanent expanded console — complete November 4
+
+Every expanded server shows the shared console, including empty and not-required states. Read-only display updates do not authenticate or mark it busy. Sanitized output remains from startup through Authenticate/manual save, collapse and window reopen within the current Fetch run. Fresh attempt IDs/redaction state, accurate exit facts, stale-handle freezing and existing limits remain.
+
+The review correction preserves a fresh local request failure beside old history until new service output arrives. Authentication, issuer checks, account folders and credential stores are unchanged. No Codex code imported.
+
+Independent **150 relevant tests**, including **eight new tests**, native build and whitespace pass. Evaluator **ACCEPT**. [Evidence](continuous-server-console/evidence.md). Native appearance and real account acceptance remain untested; the separately observed failed explicit Restart → Authenticate SERVER_BUSY behavior remains open.
+
+Next: explicitly Quit Fetch, run ./scripts/run-development.sh and expand a server. No app launch, personal settings, signing/release, commit or push action was performed.
+
+Final passes: [tester](history/2026-11-04_14-59-13-496977-tester-continuous-console-final-verification.md), [evaluator](history/2026-11-04_14-59-13-496978-evaluator-accept-continuous-expanded-console.md), [orchestrator](history/2026-11-04_14-59-13-496979-orchestrator-complete-continuous-expanded-console.md).
+
+Earlier dated checkpoints below preserve partial results; this section is current for console continuity.
+
+## Wrapper authentication — active November 4
+
+User authorizes removal of Fetch-imposed login compatibility restrictions. Official MCP library owns discovery/callback validation; existing request-time network checks, consent and credential boundaries stay. Planner/audit underway; implementation/tests next. [Scope](wrapper-authentication/info.md), [pass](history/2026-11-04_14-57-55-339924-orchestrator-select-wrapper-authentication.md).
+
+## Expanded Console/Terminal and saved logs — active
+
+User approved feature/system shell and exact new GET/POST route/persistent-retention contract. Three exclusive source writers are implementing UI/vendor renderer, backendPTY/API and saved Console logs; dependencies resolved. [Proposal](../docs/architecture/server-terminal.md), [scope](server-console-terminal/info.md), [pass](history/2026-11-04_14-56-54-791135-planner-console-terminal-persistence-proposal.md). Earlier always-console memory-only plan superseded by this expanded user request. Existing independently implemented continuous-console changes are preserved/reused.
+
+Continuous-console final checks pass the library and startup/history targets. One old authentication test still expected logs to be erased; it is being updated to the new retained-history contract while preserving privacy/fresh-attempt checks. [Test pass](history/2026-11-04_14-56-09-979466-tester-update-superseded-history-expectation.md).
+
+Custom issuer-check origin traced to the October29 security review and retained during the November3 SDK refactor. This is an explanation, not a new authentication-policy decision or fix. [Pass](history/2026-11-04_14-55-42-214895-orchestrator-trace-custom-issuer-check.md).
+
+The current-request error correction is implemented and under final independent retest. Actual unpolled app-startup-to-auth history passed. [Correction pass](history/2026-11-04_14-55-24-348500-coder-preserve-new-errors-with-history.md).
+
+Vercel authentication log explained: discovery succeeds, then Fetch stops because the service does not advertise its required authorization-response issuer check. No policy/code change or live sign-in. [Pass](history/2026-11-04_14-53-40-702140-orchestrator-vercel-authentication-log-explanation.md).
+
+Continuous-console review found a real display regression: old service history can hide a new local request error. Source owner is fixing the current-request output distinction; tests are extended before acceptance. Initial UI checks pass, remaining checks/build continue. Passes: [tester](history/2026-11-04_14-52-54-031825-tester-initial-continuous-console-checks.md), [evaluator](history/2026-11-04_14-52-54-031826-evaluator-request-current-error-history-fix.md).
+
+Continuous-console source is implemented. Expanded rows always use the shared console, and backend snapshots retain sanitized history across startup/auth attempts. Independent checks are compiling; no pass claimed yet. [Coding pass](history/2026-11-04_14-50-41-924188-coder-continuous-expanded-console.md).
+
+Read-only startup reuse refinement: Codex’s environment builder is the useful startup-input piece; its macOS command resolver is a no-op. Fetch already supplies its name/version and configured launch arguments. Credential storage is unchanged. [Research addendum](../docs/architecture/railway-codex-startup-research.md#november-4-follow-up--exact-reusable-startup-input-pieces), [pass](history/2026-11-04_14-48-54-032872-orchestrator-clarify-codex-startup-input-reuse.md). Console implementation continues.
+
+## Continuous expanded console — active November4
+
+User requests consolealwaysvisible in expandedserver and startup→authhistory. Credentialstore remainsserviceowned. Independentplan selects passivedisplay and boundedalready-sanitizedhistorycarryover without newauthbehavior/storage. [Scope](continuous-server-console/info.md), [plan](history/2026-11-04_14-47-15-845406-planner-continuous-expanded-console.md). Source/independenttestsunderway. Earlierloggingacceptance below remains valid for prior scope.
+
+## Service startup logs and wrapper architecture — complete November 4
+
+Fetch’s default is to wrap existing code and outputs unless the user explicitly says otherwise. Recorded in AGENTS.md and canonical decisions/context/notes. Console displays actual startup service logs/instructions/errors and observed process exit facts; invented authentication progress and protocol-error substitution are removed.
+
+Shared private per-attempt capture covers ordinary startup, recorded setup, MCP/HTTP rejected replies and OAuth failure stages. Retain the beginning with1MiB4096line64KiBline limits/explicit notices; sanitize before retention. Native-only memory projection, no disklog or successful protocol/tool/token dumps. Existing auth/credential/public API/raw forwarding behavior remains. [Evidence](service-startup-logs/evidence.md).
+
+Independent184uniquechecks including15new PASS; final31UIrecheckPASS; lockednativebuild9.33swall and whitespacePASS. EvaluatorACCEPT; no unresolved materialfindings. No nativeapp/account/signing/release/personalstate/commit/push actions. Next: explicitlyQuit, run ./scripts/run-development.sh and retry desired server.
+
+Actual confined Railway startup initializes, then tools/list returns-32001notloggedin with service-owned instructions; no guessed logincommand executed, packages/processes cleaned. [Railway/Codex report](../docs/architecture/railway-codex-startup-research.md). Codex source Apache2.0, same RMCPfamily plus identity/storage/environment glue; wholecrate brings12internaldependencies. No codecopy/new authdesign selected.
+
+Final passes: [tester](history/2026-11-04_14-41-14-671262-tester-service-startup-logs-final-checks.md), [evaluator](history/2026-11-04_14-41-14-671263-evaluator-accept-service-startup-logs.md), [orchestrator](history/2026-11-04_14-41-14-671264-orchestrator-complete-service-startup-logs.md).
+
+Earlier checkpoints below are historical; completed logging scope above supersedes their pending-log statements.
+
+## Follow-up login failures — explanation only
+
+Vercel client identity compatibility is missing in current setup; its generic error groups multiple possible failures. Railway now reports a protocol rejection; existing CLI login in Fetch’s private HOME is a possible prerequisite, not a confirmed cause. Original messages are not exposed. No source changes or live sign-in tests. [Read-only pass](history/2026-11-04_14-14-44-908353-orchestrator-explain-vercel-railway-login-errors.md). Startup lookup acceptance below remains scoped to program discovery.
+
+## Private helper programs at startup — complete November 4
+
+Managed MCPs can now find helper programs installed for their own instance. New installations record relative executable folders privately; older rows use the installer’s known layout in memory, so the current Railway package needs no reinstall. Shared ordinary startup and recorded setup prepend those folders, preserving configured/default PATH after them. No recursive scan, global inheritance, public API or login/credential changes.
+
+Independent 60 checks (10 new) and locked native build pass; Evaluator ACCEPT. Actual confined child tests prove bare-name helper execution for ordinary legacy startup and recorded setup, with a negative lookup in another installation and private metadata projection. One test synchronization issue was fixed; no product finding remained. [Evidence and commands](private-program-paths/evidence.md).
+
+Next: explicitly Quit Fetch, run ./scripts/run-development.sh and retry Railway Authenticate. No app launch, actual account login, personal-state edits, signing or release ran in this pass. The startup lookup fix is complete; Railway account acceptance remains untested.
+
+Final passes: [tester](history/2026-11-04_13-30-26-108163-tester-verify-private-program-folders.md), [evaluator](history/2026-11-04_13-30-26-108164-evaluator-accept-private-program-folders.md), [orchestrator](history/2026-11-04_13-30-26-108165-orchestrator-complete-private-program-folders.md).
+
+## November 4 — Railway fails before sign-in because its CLI is not found
+
+User-provided startup log matches @railway/mcp-server 0.1.12's missing-executable diagnostic. Its published and installed wrapper spawns `railway mcp`; it prints the deprecation/install message on ENOENT (the executable cannot be found) and exits 1. The installed development package is 0.1.12 and has its private Railway CLI present under the sibling railway-cli installation. Fetch still launches the wrapper, clears inherited process environment, and defaults PATH to the primary executable directory plus /usr/bin:/bin. It does not add the separately prepared Railway CLI bin directory. A global Railway executable exists under /opt/homebrew/bin, also outside that default PATH.
+
+This is an executable lookup failure before account authentication, not evidence of invalid Railway credentials. Recommended repair: expose the already prepared private CLI to the server process. No per-server code/config change, login, MCP execution, personal settings edit or installation was performed. Account login after repairing startup remains untested.
+
+Sources: [Railway MCP instructions](https://docs.railway.com/cli/mcp), [published wrapper metadata/archive](https://registry.npmjs.org/@railway%2fmcp-server/0.1.12); source inspection of src/installation/mod.rs, src/manager/native_state.rs and src/runner/transport.rs.
+
+Latest pass: [Railway diagnosis](history/2026-11-04_12-59-56-434568-orchestrator-railway-cli-not-on-startup-path.md).
+
+## November 4 — Google MCP README and actual fresh installation
+
+The requested MCP is @a-bonus/google-docs-mcp, not OpenAI’s built-in plugin. Its [1.11.3 README](https://github.com/a-bonus/google-docs-mcp/blob/v1.11.3/README.md#quick-start) says to create or select a Google Cloud project, enable the APIs, configure consent, create a Desktop app client ID, supply its ID/secret, and then authorize. Remote deployment supplies those app settings on the host instead. This does not establish who originally configured the user’s existing local MCP.
+
+A real fresh npm install of 1.11.3 succeeded in 7.69 seconds in a task-only folder with empty HOME/npm configuration, separate cache and install scripts disabled. No credentials.json was included; installed auth code reads supplied environment values or an external credentials.json. No MCP/server/login was run. Temporary files/cache removed. Existing Google definitions already have app settings; Fetch currently omits those values on import. No need to recreate the project is established, and no import-policy change was implemented.
+
+Passes: [58-16-392527-researcher-google-mcp-developer-setup.md](history/2026-11-04_12-58-16-392527-researcher-google-mcp-developer-setup.md), [58-16-392528-orchestrator-fresh-google-install-and-readme.md](history/2026-11-04_12-58-16-392528-orchestrator-fresh-google-install-and-readme.md).
+
+## Google research evidence clarification — November 4
+
+Earlier research inspected the published package archive; it did not run a
+fresh-install authentication test. Found client values belonged to existing
+MCP definitions, not bundled defaults. [Read-only evidence audit](history/2026-11-04_12-30-24-946373-orchestrator-clarify-google-research-evidence.md).
+
+## Discovery install explanation — November 4
+
+Source review confirms selected npm/PyPI packages are freshly installed using
+package managers; scripts remain in place; remote definitions need no package.
+Existing saved associations may be reused. Connect follows preparation. This
+does not carry over omitted environment/header values. No code changes or
+execution. [Latest read-only pass](history/2026-11-04_12-26-37-011573-orchestrator-explain-discovery-install.md).
+
+## Google startup cause — confirmed November 4
+
+Neither original nor managed Google package has credentials.json; both are
+version 1.11.3. Original definitions supply literal nonempty app credentials in
+environment values, which Fetch’s import deliberately omits. auth.js reads its
+own package root, so working directory is not the file-lookup cause. No values
+were printed/copied or account validity tested. Preserving app configuration
+during import is recommended; no policy/code change made.
+
+Latest pass: [read-only investigation](history/2026-11-04_12-25-29-917436-orchestrator-google-existing-app-config.md).
+
+## Console Copy button — complete November 4
+
+Add a small fixed Copy button at the top right of the existing console. It copies
+the displayed log lines in order through the existing clipboard action. No API
+or logging changes. Implementation is present; whitespace and independent locked build pass (9.80s).
+Evaluator ACCEPT. No native window or clipboard execution was performed.
+
+Final passes: [evaluator](history/2026-11-04_12-22-41-742031-evaluator-console-copy.md), [orchestrator](history/2026-11-04_12-22-41-742032-orchestrator-console-copy.md).
+
+Build evidence: [tester](history/2026-11-04_12-22-22-071046-tester-console-copy.md).
+
+Latest implementation: [coder](history/2026-11-04_12-21-50-031614-coder-console-copy.md).
+
+Plan: [planner](history/2026-11-04_12-21-13-502846-planner-console-copy.md).
+
+## Startup behavior and error reporting — complete November 4
+
+Missing configured environment/header values no longer block any startup path.
+Fetch supplies values that exist, omits missing ones, and attempts the configured
+command or remote connection. The server decides its own requirements.
+
+Configured local startup errors now reach the native console as a bounded,
+sanitized stderr tail with natural exit code/signal. Only native Settings reads
+receive it; ordinary API/MCP responses and saved records do not. New attempts
+clear old evidence. Ordinary failed Start/Connect also shows the console without
+an extra authentication request. Pending children are reaped before Quit returns.
+
+Independent 181 checks pass; the final small display extension passes 31 targeted
+UI checks. Final locked build passes in 8.58s; whitespace passes; Evaluator ACCEPT.
+[Evidence and limits](startup-diagnostics/evidence.md).
+The reported Google failure's actual cause is still unknown because the old build
+discarded its output. Next: explicitly Quit, run ./scripts/run-development.sh and
+retry Google to see its own startup message. No real account/browser/native app,
+signing/release or personal-state changes were performed. Recorded helper logs
+and remote response bodies are outside this startup report. Changes remain local.
+
+Final passes: [evaluator](history/2026-11-04_12-09-23-374073-evaluator-accept-startup-diagnostics.md), [orchestrator](history/2026-11-04_12-09-23-374074-orchestrator-complete-startup-diagnostics.md).
+
+## Local startup diagnostics verified — final integration
+
+Configured localstartupstderr andnaturalexitstatus now enter a bounded sanitized
+private buffer; onlynativeSettings GET adds it toconsole. Nothing entersordinary
+Manager/MCP/diskrecords.181independent checks pass after fixing awaitedQuitof
+provisionalchild; unchanged immediatePIDassertion nowpasses.
+RootaddedordinaryfailedStart/Connect consolerehydration so noAuthenticateclickis
+required;31targetedUIchecks pass, finalbuild/reviewpending. ActualGooglecause
+remainsunknownfromdiscardedoldrun; no realaccount/nativeprocessreproduction.
+
+Passes: [coder](history/2026-11-04_12-07-13-468390-coder-local-startup-diagnostics.md), [orchestrator](history/2026-11-04_12-07-13-468391-orchestrator-native-startup-console-projection.md), [tester](history/2026-11-04_12-07-13-468392-tester-startup-diagnostic-cleanup-finding.md), [coder](history/2026-11-04_12-07-13-468393-coder-await-provisional-startup-child.md), [tester](history/2026-11-04_12-07-13-468394-tester-startup-diagnostics-final-checks.md).
+
+## Startup input pass-through accepted; actual failure reporting next
+
+Allstartup paths now omit absent configured env/header values and pass present
+values unchanged.176independent checks and lockedbinarybuild0.49sPASS; Evaluator
+ACCEPT. User's newGoogle screenshot shows actualconnectionended after launch,
+with a generic Fetcherror. No claimofGooglelogin success; nextscopedpass captures
+sanitized startupstderr/exitstatus for nativeconsole only.
+
+Passes: [tester](history/2026-11-04_11-33-00-376432-tester-startup-pass-through-verification.md), [evaluator](history/2026-11-04_11-33-00-376433-evaluator-accept-startup-pass-through.md).
+
+## Startup passes available inputs — November4
+
+User explicitly removes missing-input checks for all startups. Shared resolver
+passes present assigned environment/header values and omits absent ones, letting
+the server's command/HTTP response decide requirements. Synthetic input-required
+branch removed. Source ready; independent actual child/HTTP tests and build pending.
+No input-value import, credential migration or raw-output feed selected.
+[Milestone](startup-pass-through/info.md).
+
+Passes: [planner](history/2026-11-04_11-23-56-027417-planner-remove-startup-input-preflight.md), [coder](history/2026-11-04_11-23-56-027418-coder-omit-missing-startup-bindings.md).
+
+## Google setup workflow clarification — November4
+
+Older instructions used credentials.json then a printed browser login link;
+current published1.11.3 still accepts a file instead of separate env settings.
+No bundled defaults/install hook creates Google app credentials. Hosted setup can
+keep that work on the host. Which workflow this user originally used is unknown.
+Fetch's all-imported-inputs preflight currently blocks native fallback and wrongly
+requires optional profile. No new source/import policy selected by research.
+[Primary findings](../docs/architecture/research.md#november4--fresh-google-setup-has-multiple-input-paths).
+
+Passes: [researcher](history/2026-11-04_00-28-17-556807-researcher-google-fresh-install-workflows.md), [orchestrator](history/2026-11-04_00-28-17-556808-orchestrator-explain-google-setup-difference.md).
+
+## Google configuration values — November 4 metadata check
+
+Matching development Google package1.11.3 has the three configured input names.
+Its recorded original definition has nonempty entries for all three; import
+discarded values while preserving references. Presence only was inspected and
+reported, not credential validity. No values printed, provider call, Keychain
+access or config writes. [Pass](history/2026-11-04_00-23-52-401657-orchestrator-google-input-presence.md).
+Next: user decides whether/how original setup values should be imported; no
+change or migration inferred from this explanation.
+
+## Authentication console — complete November 4
+
+User's screenshot section now renders one dark200px scrolling monospace console
+with per-attempt safe progress/error history. Unchanged polls are deduplicated;
+title/repeated paragraphs/Hide are removed. Host consent remains inside; server
+controls, Settings, APIs and login behavior stay unchanged.
+
+Independent28/28UI checksPASS, final locked native buildPASS3.06s, whitespacePASS
+and EvaluatorACCEPT. [Evidence](authentication-console/evidence.md).
+No raw MCP output feed was selected or implemented; optional question unanswered.
+No native visual/Figma/browser/provider/account acceptance or launch performed.
+Next: explicitly Quit Fetch and run ./scripts/run-development.sh to see it.
+Changes remain local with unrelated prior source/docs preserved.
+
+Final passes: [evaluator](history/2026-11-04_00-19-42-164968-evaluator-accept-authentication-console.md), [orchestrator](history/2026-11-04_00-19-42-164969-orchestrator-complete-authentication-console.md).
+
+## Authentication console source and UI checks
+
+One shared200px dark scrolling monospace console now records existing safe Fetch
+progress/errors. Title/repeated paragraphs/Hide removed; host consent remains
+inside. Independent UI28/28checksPASS including three new history/dedup/privacy
+cases. API/backend unchanged; no raw-process-output feed or native visual proof.
+Root build/final review pending.
+
+Passes: [coder](history/2026-11-04_00-18-11-293926-coder-authentication-console-source.md), [tester](history/2026-11-04_00-18-11-293927-tester-authentication-console-ui-checks.md).
+
+## Authentication console — November 4
+
+User requests replacing repeated authentication detail text with one console.
+Immediate UI scope records existing safe progress/errors with a scrolling
+monospace panel; host consent remains inside. No API/login prerequisite changes.
+Optional raw-server-output choice remains pending; no such feed is claimed.
+Independent Planner complete, exclusive UI Coder/Tester active.
+[Milestone](authentication-console/info.md). [Plan](history/2026-11-04_00-14-58-757432-planner-authentication-console.md).
+Next: implement, focused checks/build and independent review.
+
+## Standard Authenticate — scoped implementation complete
+
+The button uses /restart interactive:true. Local login runs an explicitly recorded
+helper or the existing configured server command, waits for server-owned login,
+and presents host-only browser consent. /authenticate stays functional/deprecated.
+Terminal status is remembered separately from fresh current proof; no raw logs,
+transient URLs or provider tokens are stored/exposed. Pending consent survives
+window reopen, idle-work guard is atomic, Settings repairs refresh process values
+and Quit waits for owned helper cleanup. Existing remote auth/post-install behavior
+is preserved.
+
+Independent171/171checks PASS; final guidance recheck32/32 PASS; final locked
+binary build PASS0.30s; Evaluator ACCEPT. All material findings resolved.
+[Evidence and limits](standard-authenticate/evidence.md). [Milestone](standard-authenticate/info.md).
+No real Google-account/browser/Keychain/native appearance/client acceptance or
+launch/signing/release performed. Native URL elicitation remains unadvertised.
+Next: explicitly Quit Fetch and use ./scripts/run-development.sh to try the new
+flow; protected real-account/tool/restart-reuse verification remains separate.
+Unrelated unfinished work below is preserved; changes are local/uncommitted.
+
+Final passes: [tester](history/2026-11-03_23-52-16-646996-tester-standard-authenticate-final-checks.md), [evaluator](history/2026-11-03_23-52-16-646997-evaluator-accept-standard-authenticate.md), [orchestrator](history/2026-11-03_23-52-16-646998-orchestrator-complete-standard-authenticate.md).
+
+## First authentication checks and fixes
+
+Locked native binary build PASS15.41s. First independent lib run95/96 PASS
+(stale error-code assertion corrected); first confined scenarios5/7 PASS
+(real completion/admission race fixed; fixture canary must exist before probing).
+Registered stopped-route inputs are also refreshed after idle fencing. Helper
+and descendant cleanup passed. Final eight-scenario/lib/regression retest is
+underway; no final acceptance or real-account proof yet.
+
+Passes: [coder](history/2026-11-03_23-47-25-206126-coder-atomic-login-admission.md), [tester](history/2026-11-03_23-47-25-206127-tester-initial-authentication-findings.md), [coder](history/2026-11-03_23-47-25-206128-coder-authentication-review-and-test-fixes.md).
+
+## Manager login source integrated — verification pending
+
+Local startup/helper flow, host-only consent, ten-minute bound, terminal saved
+status/current distinction, named Settings inputs and awaited helper tasks are
+implemented in source. /restart interactive:true is canonical; old auth remains
+compatible. Root fixed reopening pending consent. Runner atomic admission follow-up
+is the last compile dependency before combined checks. [Manager pass](history/2026-11-03_23-44-37-831222-coder-local-authentication-manager.md).
+
+## Authentication review corrections — in progress
+
+Independent Evaluator requests changes for reopened-window host consent, actual
+active-work guard, missing-input status consistency and helper Quit ownership.
+Root fixed consent restoration with a source fixture; Coders/Tester address
+backend fixes/evidence. No build/test pass yet. [Review](history/2026-11-03_23-42-17-557862-evaluator-request-auth-flow-corrections.md).
+
+## Interactive transport source ready — November 3
+
+Runner supports configured local startup with attempt-scoped login URL observer
+and600second initialize/discover wait; normal/remote stay30seconds. Raw logs stay
+private and bounded reader emits only recognized HTTPS browser links. Five parser
+tests written, unrun; source whitespace check passes. Manager/UI/API integration
+and independent verification remain active. [Coder pass](history/2026-11-03_23-11-48-941919-coder-local-login-transport.md).
+
+## Start route owns login — November 3 steering
+
+User selects existing /restart start/connect for explicit Authenticate via
+interactive:true. Old /authenticate is deprecated but retained; no /start duplicate
+or removal timeline. Implementation/independent tests in progress.
+[Steering pass](history/2026-11-03_23-09-17-803619-orchestrator-select-start-route-auth-compatibility.md).
+
+## Standard Authenticate — implementation started November 3
+
+User selected ordinary server startup with existing provider login and visible
+sign-in instructions. Independent Planner identified missing startup fallback,
+discarded URL output and two30second readiness deadlines. Exclusive Runner and
+Manager Coders plus independent confined Tester are active; root owns UI/docs.
+Existing POST/GET remain; safe sign_in host/opened state and saved last-known
+status are additive, never provider tokens or current success from startup alone.
+Native URL elicitation is not advertised without its missing reply contract.
+[Milestone](standard-authenticate/info.md). [Plan](history/2026-11-03_22-16-25-312598-planner-standard-authenticate.md).
+Next: source integration, meaningful isolated checks, independent review/fixes.
+
+## Saved authentication field clarification — November 3
+
+Installer still writes authentication.status unknown in config.json. Live login
+outcomes are in Manager memory and overlaid by GET; they are not written back as
+updated auth verdicts. Storage projection resets saved auth to unknown. Inspection
+of pre-refactor80782d9 also finds live auth status separate from record saves; do
+not claim the latest refactor newly removed durable login-outcome persistence.
+Old per-credential stored/missing fields are a distinct historical record.
+[Pass](history/2026-11-03_22-08-24-422012-orchestrator-clarify-saved-auth-status.md). No source/runtime changes.
+
+## Post-install startup/status confirmation — November 3
+
+Read current Installer prepare_group and Manager install/connect_installed,
+connection_failed/connection_succeeded and servers projection. Product installation
+still awaits normal Connect after preparation; login/start failure preserves the
+installation. Runtime and authentication status are separate. Local readiness
+sets auth unknown; recognized auth errors set required. Current status lives in
+memory, not a durable authentication verdict; saved definitions/grants are separate.
+No runtime operation or source change. [Pass](history/2026-11-03_22-06-55-657313-orchestrator-confirm-post-install-start-status.md).
+
+## MCP login libraries and client research — November 3
+
+User requested online general solutions and coding-client comparisons. No reviewed
+library discovers arbitrary native login commands from installed source. Official
+remote OAuth and server-supplied URL elicitation are reusable, with upstream support.
+Google1.11.3 can start its own login during ordinary startup; its auth command is
+for forced sign-in. Source logs a browser link; Fetch discards it on both ordinary
+startup and recorded setup. This corrects the earlier overbroad claim that initial
+Google login necessarily needs a separate recorded helper. Missing native_setup
+still explains the explicit Authenticate action's source limitation. Saved instance
+configuration and actual runtime failure cause were not inspected.
+
+[Research and recommendation](../docs/architecture/mcp-login-discovery-research.md).
+Two read-only Researcher passes and independent core-source Evaluator ACCEPT;
+no application changes, runtime tests, installs or account operations. Next: user
+reviews how setup interaction is presented and when a separate command is needed.
+Existing product/UI tasks remain open; no new API/source behavior selected.
+
+Passes: [researcher](history/2026-11-03_22-01-56-117384-researcher-native-login-libraries.md), [researcher](history/2026-11-03_22-01-56-117385-researcher-harness-login-and-google-startup.md), [evaluator](history/2026-11-03_22-01-56-117386-evaluator-accept-core-login-research.md), [orchestrator](history/2026-11-03_22-01-56-117387-orchestrator-integrate-login-research-correction.md).
+
+## Folder-first Install UI — November 3, 2026
+
+Active UI milestone: rapid-ux. Install opens empty and discovers only after an
+explicit file/folder selection or typed-path Enter/Refresh. The title now includes
+the requested small gray hint. Removed the long discovery explanation, app-wide
+tagline and accepted-install notice. Install is gray and disabled while submitting
+or monitoring; progress/errors and existing retry rules remain. Backend routes,
+source reading, credentials and installation rules are unchanged.
+
+Direct UI checks22/22 PASS; locked native binary build PASS11.56s; diff whitespace
+check PASS. The same agent implemented/tested/reviewed this pass at the user's
+request; no independent review or native visual/Figma acceptance is claimed.
+No app launch or signed launcher run. Optional .claude/.opencode folder recognition
+awaits the user's answer; existing special folder recognition is .codex only.
+Next: user's folder decision and visual check after explicit Quit/signed relaunch.
+[UI pass](history/2026-11-03_21-51-06-855728-orchestrator-folder-first-install-ui.md). Unrelated product work below remains open.
+
+## Google authentication report — November 3
+
+User screenshots show folder-unavailable and generic key controls instead of
+Google login. Read-only source tracing confirms Authenticate requires explicit
+native_setup metadata for local servers; normal imports do not supply it. The
+UI offers folder/key controls without establishing that either can start the
+server login. The prior Google helper adapter was removed by3008546. This is
+an unfinished native-login integration, not evidence of Google rejecting login.
+No live server record, credentials, provider process or account was inspected.
+No source changes or runtime checks performed; concurrent UI edits preserved.
+Next: review how supported native setup command/folder records reach imported
+instances before implementation, as required by the current contract.
+[Diagnosis](history/2026-11-03_21-49-55-213550-orchestrator-google-auth-gap-diagnosis.md).
+
+## Repository sync — November 3, 2026
+
+Pulled origin/main with `git pull --ff-only origin main`: clean main advanced
+from80782d9 to135873a (3 commits), without conflicts. No application launch,
+build, tests or MCP connections ran in this pass. Existing product status and
+unfinished work below remain unchanged. Only the required local journal was
+updated after pulling; no commit or push requested.
+[Sync pass](history/2026-11-03_21-42-33-474236-orchestrator-pull-main.md).
+
 ## November3 — scoped wrapper refactor accepted
 
 User resumed; native provider credentials belong to unmodified server/helpers.

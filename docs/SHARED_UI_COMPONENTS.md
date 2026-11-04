@@ -1,3 +1,11 @@
+## November 4 unsupported import reasons
+
+Import rows reuse the existing checkbox and components::message to show each server's supplied error.message. Unsupported rows remain disabled through the shared installable check. Figma Remote adds data/reason to this existing pattern; no new component styling or Figma edit is selected.
+
+## November 4 Console/Terminal source
+
+components::output_controls shares Console and Terminal buttons for every expanded server; caller supplies actions and local/remote availability. components::terminal_pane provides the shared terminal surface. server_terminal.rs supplies the retained iced_term model/API state; authentication_view supplies the existing persistent Console. This extends current source, without claiming Figma/native visual reconciliation.
+
 ## November 3 wrapper refactor — current source
 
 The shared credential editor now handles only manually entered fixed keys saved
@@ -115,3 +123,27 @@ so a request for one server leaves another server's Authenticate/key-save contro
 available. Same-server actions and stale replies remain guarded. The source
 state combinations and14 passing UI fixtures are recorded in UI_STATE_COVERAGE.md;
 they do not add Figma frames or establish actual native visual acceptance.
+
+November 3 Install cleanup: the Install footer still uses the shared Button with
+its existing enabled behavior. Its theme style uses gray for disabled status and
+the ordinary primary style when enabled. The small gray title hint also uses a
+shared theme function. The app-wide tagline is removed. Figma reconciliation is
+pending; the existing button family remains the reference for other controls.
+
+November3 Authenticate follow-up: the inline authentication panel no longer embeds
+the manual credential editor or unconditional folder action. It uses the shared
+Button for Open sign-in at HOST after the backend supplies a pending host. Manual
+values remain in Settings through the same credential_editor. Existing prose
+about inline editor usage above describes the previous source. Figma specimens
+need reconciliation; no visual acceptance is claimed by this source pass.
+
+## Authentication console — November 4
+
+The shared console is always present in an expanded server row, even before authentication or when no output exists. It refreshes through ordinary status reads and never starts authentication merely by being displayed. Captured service history spans startup through later authentication within the same Fetch run, including collapse/window reopen. The existing memory limit applies to that cumulative history; no log files are added. A new request failure stays visible alongside old logs until the service supplies new output for that request.
+
+One shared Console uses compact monospace text, dark background and internal scrolling. It wraps actual startup service logs/instructions/errors and observed process exit status from the native-only memory capture. Synthetic Fetch authentication phase/host-progress prose is removed. Genuine local request/read errors are fallback only until actual service output arrives; old fallback lines are then removed. In-console host consent, row controls and shared Settings credential editor remain. Credential values are redacted before retention; successful protocol/tool/token bodies are excluded. Capture retains the beginning up to1MiB/4096lines,64KiB perline, with explicit notices. No logfile or native/Figma appearance proof.
+
+November 4 Copy follow-up: Console includes a small fixed top-right Copy button,
+using the shared button and console-action style. The caller supplies an action
+that copies all displayed log lines in order, separated by newlines. The header
+stays visible while the console body scrolls.

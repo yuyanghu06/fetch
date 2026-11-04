@@ -1,3 +1,33 @@
+November 4: client-identity-adoption.md records the Figma registration403 diagnosis using staff statements, current public metadata and pinned rmcp/source inspection. Likely Fetch approval restriction; no callback mismatch found in source, no live registration or code change.
+
+November 4 discovery correction: the current API contract and decisions require selected `.codex` reads to stay at its own config.toml; the old parent expansion is superseded.
+
+client-identity-adoption.md records primary-source research on public identity JSON adoption, separating SDK support, provider support and account approval.
+
+November4 publicclientidentity/IPcallback isimplemented andpublished; client-identity evidence records3focusedchecks/nativebuild/independentacceptance andactualpublic200. Noactualaccountloginclaimed.
+
+November 4 wrapper-authentication removes custom provider-login gates in favor of pinned rmcp behavior. Existing library/request-time checks remain; implementation/evidence tracked under milestones/wrapper-authentication/.
+
+server-terminal.md is the user-approved contract for Console/Terminal/system shell and saved logs, including native-only routes, process ownership and persistent retention. Scoped source/checks/build/review are accepted; rebuilt native appearance and accounts remain unobserved.
+
+Service startup/error logging is complete: native-only memory capture wraps actual output/errors, synthetic progress is removed, and wrapper-default architecture is durable in AGENTS/decisions. Evidence: milestones/service-startup-logs/evidence.md. ActualRailway/Codexresearch recorded separately; no codecopy selected.
+
+railway-codex-startup-research.md records actual confined Railway startup/rejection and pinned Codex launch/auth/refresh source, license and dependencies. It selects no code-copy or new auth design.
+
+November 4 startup log research in research.md records the user-authorized output/error capture extension; existing auth and public API rules stay unchanged.
+
+November 4 follow-up in research.md separates confirmed Vercel client identity configuration gaps from unconfirmed live failure stages and a possible Railway private-HOME login prerequisite. Explanation only; no source changes.
+
+The November 4 private-program search amendment is selected in native-server-storage.md. No public API or login-method change. Implementation evidence is tracked under milestones/private-program-paths/.
+
+November 4 Railway startup lookup failure is documented in research.md; private CLI exists but startup PATH excludes it. No code/login change.
+
+November 4: research.md records actual fresh Google MCP installation and its README. App settings are external; existing config supplies them. No server/login or import-policy change.
+
+Current login research is [mcp-login-discovery-research.md](mcp-login-discovery-research.md).
+It records library/client evidence, Google's existing startup login and Fetch's
+discarded setup output. It proposes no new approved API or source behavior.
+
 Official Rust auth-only library is now selected. native-server-storage.md lists
 exact Fetch-owned work, delegated work, affected source areas and remaining
 contract choices. Further source/dependency/build/test work remains paused.
@@ -86,3 +116,11 @@ and independent acceptance pass. Actual Google account login remains untested.
 
 keychain-prompts.md records the November3 development prompt investigation and
 unselected ways to reduce repeated access without silently changing storage.
+
+November4 research.md distinguishes older Google application-JSON setup from
+environment values and hosted sign-in. These explain supported paths, not proof
+of the user's original installation or approval to import existing credentials.
+
+The November 4 Codex environment reuse decision is recorded in decisions.md and railway-codex-startup-research.md. It replaces environment assembly only and preserves Fetch account/helper folders and service credential ownership.
+
+native-server-storage.md records the proposed normal HOME inheritance change and shared-login consequence; current per-server HOME behavior remains until user choice.

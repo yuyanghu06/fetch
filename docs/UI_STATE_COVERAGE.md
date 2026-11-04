@@ -1,3 +1,30 @@
+## November 4 — Figma Remote unsupported import
+
+Implemented source change: the official Figma Remote row uses the existing unsupported/disabled selection state and shows its existing row error.message below the checkbox. Figma Desktop and already-installed metadata retain their current behavior. Independent19focused import/install checks (2new), native build and review pass; no Figma specimen update or native screenshot is claimed. Track milestones/figma-remote-unsupported/info.md.
+
+## November4 clicks through a scrolled page
+
+One actual Iced Scrollable+TerminalView event/render scenario covers page scroll before normal click/tiny movement, deliberate shortdrag staying on its clicked row, and plainclick clearing selection. It failed before the pointer-source correction and passes after, alongside10existing terminal cases. Prior direct-widget tests did not cover this parent-input transform. No cursor appearance/Figma specimen-count change; actual rebuilt user native window remains unobserved. See milestones/terminal-pointer-coordinates/evidence.md.
+
+## November4 terminal selection and wheel interaction
+
+Two actual-widget/headless-render scenarios cover deliberate selection, outside release/re-entry without further gray expansion, fractional trackpad capture, older-output visibility, retained scroll on empty output polling and return toward latest output. Both failed on original code; final10focused terminalUI checks2new/native build and independent review pass. Rebuilt native user interaction remains unobserved. No cursor-style or Figma specimen-count change. See milestones/terminal-selection-scroll/.
+
+## November 4 Console/Terminal source states
+
+Expanded servers share Console/Terminal controls. Source branches cover empty/retained Console; URL-only Terminal disabled with reason; local first open; live screen; input/read/close failure; missing older output notice; exited/closed screen with explicit Start terminal; blocked input with available Close; switching/collapse/window reopen; stale responses and per-server independence. Window-free UI, confined backend and actual offscreen prompt/cursor/scroll/clip checks pass under the server-console-terminal milestone. Figma count and native visual acceptance are unchanged.
+
+## November 3 — folder-first Install cleanup
+
+Install now opens with an empty list and visible path/picker controls. Choosing a
+path loads discovery immediately; typing one uses Enter/Refresh. Empty Refresh
+is disabled. The title has the requested small gray inline folder hint. The long
+auto-discovery paragraph, app-wide tagline and accepted-install notice are removed.
+Install selected servers uses gray disabled styling while submitting/monitoring;
+progress and failures remain visible. The prior automatic-discovery/default-toggle
+specimens are superseded. Existing Figma counts are historical; no Figma update
+or native screenshot is claimed by this source pass.
+
 ## November 3 wrapper refactor — current source changes
 
 Current UI uses one shared masked fixed-key editor in Settings/inline panels,
@@ -375,3 +402,27 @@ Actual native/authentication visual acceptance remains unrun.
 ## November 3 Install discovery changes
 
 The current source starts default discovery on first opening Install MCPs. Default mode hides the path input behind Use a different file or folder…. Explicit mode reveals an absolute file/folder input, Choose file or folder… and Use default locations. Refresh servers replaces Discover servers; an empty in-flight read says Looking for server definitions…. The native picker permits one file or directory and keeps hidden files visible. Existing list scrolling, selection and install footer remain. The 153 Figma specimens predate these text/control changes; no new Figma frames or native screenshots are claimed. Independent Desktop message fixtures and backend fixtures cover behavior; native appearance, picker interaction and updated Figma specimens remain pending.
+
+## November3 standardized Authenticate source follow-up
+
+Cover pending without a link; pending with unopened sign-in host and explicit
+Open button; request-in-flight disabling that button; opened host waiting for
+completion; completed unknown account access; missing Settings inputs; failed
+start; remembered last-known result distinguished from current unknown. Inline
+folder/manual-key fallback is removed; Settings still uses shared credential_editor.
+Both sign-in controls use /restart interactive:true; legacy /authenticate is kept
+deprecated. Source fixtures are being verified; native screenshots/Figma remain
+pending and no all-server/account-success claim is made.
+
+## November4 authentication console source states
+
+Continuous-console follow-up: cover always-present expanded consoles for ready, stopped, failed and not-required states, including empty/no-flow rendering. Check passive reads/GET polling do not start authentication or mark rows busy; Authenticate/manual save preserve history; collapse/re-expand/window restore rehydrate it; repeated/cumulative snapshots and carried exit facts do not duplicate; old history cannot hide a fresh local request error. Actual initial-startup-to-auth history is checked with a confined fixture. Independent 150 relevant tests (eight new), locked build and review pass; see milestones/continuous-server-console/evidence.md. Native appearance remains unobserved.
+
+Cover an empty new attempt until actual output; pending host-consent controls without invented log entries; captured stderr/helperstdout/MCPinstructions and returned errors; actual process exit/signal; local request/read fallback removed when service output arrives (including a fallback already cleared by a successful poll); unchanged polls/repeated output/generations; independent instances; Copy. Sign-in/manual Settings authority and state remain unchanged.
+
+Logging source uses one native-only per-attempt capture with explicit output limits/redaction. Actual confined fixtures and library/UI checks are recorded under milestones/service-startup-logs/evidence.md when finalized. These are not native screenshots/Figma or live-provider acceptance. Earlier28/31console results apply to older progress/tail behavior.
+
+Console Copy follow-up: a fixed top-right Copy button copies the current server
+log lines with newline separators, including lines outside the visible scroll
+area. The host-consent control stays in the scroll body. Native clipboard/window
+behavior is not observed by source/build checks.

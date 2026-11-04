@@ -1,0 +1,10 @@
+# Integrate published identity and ip callback
+
+- Local timestamp / acting role / milestone: 2026-11-04T17:12:37.774582-05:00 / orchestrator, serialized by Orchestrator / client-identity.
+- Requested scope: DeployFetchpublicidentity onpersonalwebsite and configure rmcp; user explicitlyselects temporaryHTTP127callback insteadlocalhost.
+- Starting repository state: ExistingdirtyFetchsource/docs andsite dev work preserved. Isolatedsiteworktree basedactualproductionaf22b2c; selectedcanonicalwwwmetadataURL.
+- Work performed / changed files: Published siteJSON/docs from isolatedproductionmain branch, exactpublicGET200/application-json/no redirect/selfidmatch, existinghomepage200. Sourcecommit6c99ed7 publicREADY; finaldocumentationcommit7891229 pushed. Inspected source/tests/guides and serialized milestones. Originaldirtysite dev checkout preserved.
+- Decisions: SDKownsclientselection/state/issuer/PKCE/tokenhandling. FetchownsminimalHTTPcallbackreceiver andpendingattemptcleanup. No fullHTTPproductrouter, TLSidentity/trustmigration, guessedlogincommand or newprovideradapter. User'sfocusedtestingpriority observed.
+- Checks and evidence: Requested publicidentity and callback implementation complete; finaldocsdeploy verification/cleanup recorded next as needed. Fetch app notlaunched; user explicitQuit/signedreopen needed forrealretry. Productioninitialdeploymentdpl_DAaZAMoRvu9ZgAHc37R4xkbjGut1READY; sitebuild18staticpagesPASS. Testcommands/evidence in milestones/client-identity/evidence.md. No realaccount/browser/nativeKeychain/clientsetting changes or Fetchlaunch/signing/release.
+- Resulting state / acceptance: Scopedsource/sitechangeaccepted; user realVercelsign-in remains separate acceptance. No universalprovidercompatibility claimed.
+- Remaining work and handoff: ExplicitlyQuitFetch and reopenthrough ./scripts/run-development.sh before actualretry. Personal-siteURL canmove laterwithcorrespondingclientidentityconfiguration; newauthorization maybeneeded. Preserve separateMVP/native/providerwork.

@@ -1,0 +1,42 @@
+# Railway startup and Codex MCP reuse
+
+Research/actual experiment completed November 4, 2026. No application code copied by this research.
+
+## Actual Railway startup
+
+Tested unmodified npm shim @railway/mcp-server0.1.12 and CLI5.71.0 with Node selected from Fetch’s24.22.1 runtime directory. First experiment freshly downloaded the pinned shim archive from npm and extracted index.js/package.json; no npm hooks ran. Both experiments copied only public CLI/Node executables into task roots, no account/config/token files. CLI package metadata and actual serverInfo.version both reported5.71.0. No separate Node version execution or public binary checksum verification was performed.
+
+First experiment: both wrapper and direct railway mcp received MCP initialize (2025-11-25, empty capabilities, disposable client) and returned success, tools capability and instructions explaining no login. Second experiment: direct railway mcp received initialize, notifications/initialized, then tools/list with empty params. tools/list returned JSON-RPC -32001, with the same not-logged-in instruction. No browser or automatic login appeared. This reproduces the missing-login case, not the user’s actual credential state. Fetch’s former generic error hid a returned service reason; startup itself used the standard request sequence.
+
+Each experiment used a fresh HOME/XDG directory, no credentials and a deny-default macOS sandbox. Outside reads/writes, sibling-state read and outbound-network canaries all returned EPERM; owned writes succeeded. Account rejection occurred with network denied and explicitly reported missing login, so it is not a guessed network-denial diagnosis. No .railway/config.json existed. Only disposable update/lock state was written. Every owned process group was terminated/reaped; experiment and canary directories were removed with assertions. No personal settings/services/credentials changed.
+
+Recommendation: show the server’s returned initialization instructions and precise error; do not infer or execute a separate login command. [Railway MCP docs](https://docs.railway.com/cli/mcp).
+
+## Codex startup, authentication and renewal
+
+Source pinned to [75424f87ca2b1c482e0509a5b1ceb7459587f396](https://github.com/openai/codex/tree/75424f87ca2b1c482e0509a5b1ceb7459587f396), November4, active/unarchived. [Apache2.0 license](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/LICENSE), [NOTICE](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/NOTICE). Official docs fetched first: [MCP configuration](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+- [Local launcher](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/stdio_server_launcher.rs#L450) runs configured executable/args/environment/cwd and performs MCP startup. [Default environment](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/utils.rs#L162) inherits real HOME/PATH. This may expose an existing terminal login; copying it wholesale would change Fetch’s selected instance separation. No native-provider login inference was found.
+- [codex mcp login](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/cli/src/mcp_cmd.rs#L561) supports Streamable HTTP, explicitly not stdio in that command path. It would not automatically log into this local Railway definition.
+- [Remote registration](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/oauth_client_registration.rs#L111) uses RMCP and supplies Codex’s own client name/hosted identity document. Fetch already uses this library family; it needs its own identity, not Codex’s URL.
+- [Refresh runtime](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/oauth/runtime.rs) and [transaction](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/oauth/refresh_transaction.rs) add expiry checks, lock/reread, rotated-token reuse protection and saving around RMCP. Compare these against Fetch’s existing SDK/store guards before replacing code.
+- [Storage](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/oauth.rs#L600) automatic mode can fall back to CODEX_HOME file storage; Fetch’s direct-Keychain selection forbids that fallback.
+- The [client crate](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/Cargo.toml) has12 internal Codex workspace dependencies and a [pinned RMCP git revision](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/Cargo.toml#L473), declared3.5.1; Fetch uses3.8.0. Whole-crate reuse is a larger integration, not a small standalone dependency swap. Narrow source adaptation/reuse is practical, with license/NOTICE obligations and explicit scope. No particular upstream issue fix was adopted.
+
+Recommendation only: reuse the existing RMCP foundation, compare missing Codex compatibility/refresh glue, and preserve Fetch’s explicit account/storage contracts. No source-copy, new hosted identity, runtime migration or authentication redesign is selected by this research.
+
+## November 4 follow-up — Exact reusable startup-input pieces
+
+The main relevant Codex helper is `create_env_for_mcp_server` in utils.rs. It starts from selected system variables (including HOME and PATH), adds variable names explicitly requested by the MCP config, applies configured values as overrides, handles configured certificate paths, and excludes Codex-specific non-inheritable identity variables. Fetch can reuse or adapt this assembly without importing Codex’s credential store. Choosing whether to inherit real HOME or retain Fetch’s current instance-specific HOME remains a separate behavior choice; this follow-up does not change it.
+
+`LocalStdioServerLauncher::launch_server` receives the configured program, arguments, environment, requested environment variable names and working directory. It assembles those settings, chooses the supplied/fallback working directory and starts the process with the resulting arguments and environment. Fetch already passes its configured executable/arguments/folder and sets per-instance account folders and helper search paths. Its initialize request already identifies the client as Fetch with its application version.
+
+Correction to the earlier short explanation: Codex’s `program_resolver::resolve` is not a special search algorithm on macOS. The Unix implementation returns the program unchanged and leaves lookup to the process launcher/OS. Its explicit executable-extension lookup is for Windows, which is outside the current macOS MVP. The environment assembly is therefore the more useful comparison here. No Codex code was imported.
+
+Pinned sources: [environment builder](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/utils.rs#L16), [launcher](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/stdio_server_launcher.rs#L450), [program resolver](https://github.com/openai/codex/blob/75424f87ca2b1c482e0509a5b1ceb7459587f396/codex-rs/rmcp-client/src/program_resolver.rs#L17).
+
+## November 4 — approved environment code reuse
+
+The user approved replacing Fetch's existing environment assembly with Codex's small builder and variable lists at the pinned commit above. Fetch keeps its private account HOME/XDG directories and existing helper-program PATH calculation as explicit overrides, plus its command, arguments, working directory and initialize identity. Service-owned credential files remain service-owned. This imports no Codex authentication or credential-store code and adds no public settings or runtime dependency. Source implementation and independent checks are in progress; see [the milestone](../../milestones/codex-startup-environment/info.md).
+
+November4 completion: actual environment builder adaptation is implemented; independent32exercised checks and native build pass; Evaluator ACCEPT. Private account/helper paths and service-owned credentials remain. Full library suite awaits unrelated concurrent terminal test wiring. [Evidence](../../milestones/codex-startup-environment/evidence.md).

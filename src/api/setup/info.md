@@ -6,3 +6,5 @@ The discovery GET validates one optional absolute path, then calls the read-only
 
 
 November 3: the optional absolute config_path accepts either one file or a base folder (home or `.codex`). No query remains the normal default scan. Authorization still precedes filesystem access. Directory selection returns actual config file paths for later selected-server installation; it does not install all discovered entries.
+
+November 4 correction: choosing a `.codex` folder reads only its own config.toml through the shared discovery service. It no longer reads neighboring Claude/OpenCode configurations. Omitted-path automatic scans, explicit home roots and single-file reads retain their behavior.

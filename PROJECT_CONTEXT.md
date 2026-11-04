@@ -1,4 +1,82 @@
+November 4 user selection: Figma Remote must show unsupported with its app-approval reason in Fetch’s import/install screen; Figma Desktop and saved entries stay unchanged. Shared-classifier/UI change complete:19focused checks2new/native build5.38s/independentACCEPT. Native app not relaunched. See milestones/figma-remote-unsupported/info.md.
+
+November 4 Figma diagnosis: dynamic registration returns 403 before browser sign-in. Source sends client_name Fetch; Figma staff document approved-name checks, and current metadata does not advertise public identity JSON support. Approval blocking is likely; callback rejection is unproven. Research only, no source/account changes. See docs/architecture/client-identity-adoption.md.
+
+November4 recurring terminal-click selection fix: use adjusted pointer consistently inside a scrolled parent. One actual Scrollable event/render regression reproduces before and passes after;11terminalUI checks1new/native build6.90s/independent ACCEPT. Prior release/trackpad fixes preserved. Native reload observation pending; milestones/terminal-pointer-coordinates/evidence.md.
+
+November 4 selected-folder correction: choosing `.codex` must read only its own `config.toml`, excluding neighboring Claude/OpenCode configs. Fix complete: 10 focused HTTP tests and native build pass; independent Evaluator ACCEPT. Omitted-path/home/single-file behavior stays unchanged. Native app not relaunched. See milestones/selected-discovery-scope/info.md.
+
+November4 terminal selection/scroll fix complete: outside release ends drag; trackpad direction/fractional capture corrected. Original2failures reproduced;10focused actual-widget/render tests2new/native build8.30s and independent ACCEPT. Deliberate selection/current cursor unchanged. Native reload observation pending; see milestones/terminal-selection-scroll/evidence.md.
+
+November4 normal command-search fix complete: shared startup/setup/Terminal preserves inherited PATH after private programs and executable parent. Explicit PATH/private account folders unchanged.23focused checks1new/native build8.40s and EvaluatorACCEPT. Requires explicit Quit/relaunch/fresh terminal; personal gh/login untested. See milestones/normal-program-path/evidence.md.
+
+November 4: the public Fetch identity file is deployed at https://www.yuyang-hu.org/oauth-client.json and verified directly. Fetch uses rmcp with a temporary HTTP 127.0.0.1 callback; its main HTTPS API and certificate are unchanged. One new feature test, two existing regressions and the native build pass; independent review accepts the change. Real Vercel account sign-in remains untested. See milestones/client-identity/evidence.md.
+
+November4: publicidentity https://www.yuyang-hu.org/oauth-client.json deployed/direct200 verified. Fetchuses rmcpmetadataURL andtemporaryHTTP127.0.0.1 callback forremoteinteractive login; mainHTTPS/certunchanged. Onefeaturetest+twoexistingregressions3/3/nativebuildPASS, finalEvaluatorACCEPT. RealVercelaccountlogin untested. See milestones/client-identity/evidence.md.
+
+November4 GitHub inspection: existing dev entry imports a shared local launcher that already calls /opt/homebrew/bin/gh, gets its token and starts GitHub MCP2.0.2. No downloaded GitHub package/gh exists under its recorded package ID. Private account paths and terminal PATH remain separate concerns; no code/authentication run or change. See NOTES.md/research.md.
+
+November4 GitHub note: user reports its install script does not bundle gh; default to the globally installed gh executable when needed. Recorded selection only, not implemented/verified here; existing account/credential boundaries remain. See NOTES.md and architecture decisions.
+
+November4 Console/Terminal scoped feature complete: account system shell in exact MCP environment, retained pane/screen and persistent sanitized service logs. Blank embedded terminal drawing corrected; actual offscreen prompt/cursor/scroll/clip test passes.182 relevant checks19new, nativebuild and EvaluatorACCEPT. Rebuilt native appearance/real accounts unobserved; Quit then ./scripts/run-development.sh. See milestones/server-console-terminal/evidence.md.
+
+November 4: six extra Fetch provider-login gates are removed; official MCP library owns discovery/callback validation.43 independent auth checks and final locked native build pass; Evaluator ACCEPTs this scoped removal. Existing network, consent and account/storage boundaries remain. No real Vercel sign-in claimed; separate console test wiring is outside this acceptance. See milestones/wrapper-authentication/evidence.md.
+
+November4: user requests expanded Console/Terminal pane switch with system shell in the exact MCP environment and persistent console log. Feature and exact new terminal API/retention contract explicitly approved; implementation active under docs/architecture/server-terminal.md. Credential storage remains service-owned; no global-login copying/fallback selected.
+
+November 4: expanded consoles are always present and keep current-run startup-to-auth history through collapse/window reopen. Fresh local request errors remain visible beside old logs until new output arrives. Independent 150 relevant tests, eight new checks, native build/whitespace and Evaluator ACCEPT. Authentication and credential storage are unchanged. See milestones/continuous-server-console/evidence.md.
+
+November 4 service logs complete: actual startup output/instructions/MCPHTTPerrors/OAuthfailure stages now feed native-only console; synthetic progress/protocolerror replacement removed.184uniquechecks15new, final31UIrecheck/nativebuild/whitespacePASS; EvaluatorACCEPT. Thin-wrapper default saved in AGENTS/decisions/notes. Actual confinedRailway initializes then tools/list returns-32001notloggedin; Codexreuse report recorded, no copy selected. See milestones/service-startup-logs/evidence.md.
+
+November 4 architecture default: build thin wrappers around existing code and outputs unless the user explicitly specifies otherwise. Console displays actual service logs/instructions/errors, no replacement protocol-error/progress summaries. This is recorded in AGENTS.md and docs/architecture/decisions.md.
+
+Earlier November4 logging authorization is now completed by the scope above; no new authflow or actual-account login was selected.
+
+November 4: private program folders in shared startup are implemented and accepted. Independent 60 checks (10 new), confined ordinary/helper execution and locked build pass. Existing Railway needs no reinstall; real login/relaunch untested. See milestones/private-program-paths/evidence.md.
+
+Earlier November 4 Railway diagnosis found @railway/mcp-server 0.1.12 could not find its separately installed CLI. The shared startup repair above now addresses that lookup failure; real account login remains untested. See docs/architecture/research.md.
+
+November 4 Google MCP check: actual fresh 1.11.3 npm install contains no app credentials. Its own README requires supplied app settings before login; existing definitions already provide them. No new project requirement is established. Temporary install cleaned; no MCP/login run. See docs/architecture/research.md.
+
 # Fetch — current project context
+
+November 4: missing environment/header values no longer block startup. Configured
+local startup stderr and natural exit status now appear in the native console,
+sanitized before retention and excluded from ordinary API/MCP/disk records.
+Independent 181 checks, final 31 UI checks, locked build and review pass.
+[Evidence](milestones/startup-diagnostics/evidence.md). The old Google error still
+has no recoverable cause; retry after explicit Quit/signed relaunch to capture it.
+
+November4 authentication details now use a single scrolling monospace console
+for safe Fetch progress/errors, retaining host consent inside.28UI checks/final
+locked build pass and independent EvaluatorACCEPT. No API/login/raw-output-feed
+change or native visual/runtime acceptance. [Evidence](milestones/authentication-console/evidence.md).
+
+November3 standardized Authenticate implemented: native button calls existing
+/restart interactive:true; recorded helper or configured local startup, safe host
+consent, saved last-known/current distinction, atomic idle guard and awaited Quit
+cleanup. /authenticate is deprecated but retained.171independent checks pass,
+final targeted32pass/build pass and Evaluator ACCEPT. [Evidence](milestones/standard-authenticate/evidence.md).
+No real Google/native/client acceptance or launch; use signed launcher after Quit.
+
+November3: user selects standardized Authenticate startup/link behavior. Existing
+local command is fallback when no separate setup command is recorded; interactive
+wait and human link consent are being implemented. Last-known status is separate
+from current account proof. [Selected scope](milestones/standard-authenticate/info.md).
+Earlier research waits below are superseded for this bounded implementation.
+
+November3 research correction: Google1.11.3 can start its own login during normal
+startup; Fetch discards the printed sign-in link. Missing native_setup blocks the
+current explicit Authenticate action, but is not a universal initial-login
+requirement. [Library/client research](docs/architecture/mcp-login-discovery-research.md)
+is independently reviewed for core findings; recommendations await user selection,
+and no live Google configuration/account was checked.
+
+November3 UI cleanup: Install now opens empty and loads definitions after an
+explicit path selection. The compact title hint replaces the long explanation;
+the app tagline/accepted notice are removed and disabled Install is gray.22 UI
+checks and native build pass; native/Figma appearance remains unobserved. Existing
+backend folder rules remain; .claude/.opencode extension awaits user input.
 
 November3: server-owned native login/files and official rmcp online login/renewal
 are implemented in the scoped refactor. Both user and background requests use the
@@ -200,3 +278,16 @@ The curated short roster remains Everything, Filesystem, Time, Tavily and Linear
 Repository: this checkout (location may differ by Mac), branch `main`, origin `https://github.com/yuyanghu06/fetch.git`. Scoped feature commits are pushed as source is integrated. Use NOTES.md for dated general notes, docs/architecture for decisions and milestones/history for immutable actual pass evidence.
 
 D79 compiler fixes and resolved Cargo.lock are committed/pushed as70e0f78; local HEAD and origin/main agreed. The compile-only milestone is complete. No tests, app/service launch or MCP connections have run.
+
+November 4: the console now has a fixed top-right Copy button that uses the existing
+clipboard action for all current-server log lines. Locked build and review pass;
+native clipboard use has not been observed.
+
+November 4 actual Google startup cause identified: original shared definitions
+supply nonempty client ID/secret values, while import omits those values. Neither
+original cached nor managed package has credentials.json. No values copied;
+preserving application setup during import remains a proposed follow-up.
+
+November 4: user approved adapting actual Codex MCP environment-building code. Preserve Fetch's private HOME/XDG/helper PATH overrides and service-owned credentials; no new public fields/dependencies or auth/store import. [Current scoped milestone](milestones/codex-startup-environment/info.md).
+
+November4 Codex environment replacement complete: actual pinned helper/variable lists adapted with Fetch protected HOME/XDG/helper PATH overrides. Independent32checks/native build and Evaluator ACCEPT; full library regression awaits concurrent terminal test wiring. Service credential ownership and auth behavior unchanged. See milestones/codex-startup-environment/evidence.md.

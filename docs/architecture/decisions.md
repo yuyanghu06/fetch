@@ -844,7 +844,7 @@ provider facts and precise unsupported outcomes remain explicit.
 
 The user requested a base-folder install flow without requiring users to locate each Claude/Codex config unless they explicitly choose to. Fetch keeps discovery and selected-server installation separate. Opening Install runs the existing read-only discovery API automatically; no path uses existing home/CODEX_HOME defaults. Optional config_path also accepts a home folder or `.codex` folder, resolving only known paths as described in the API contract. Explicit files retain single-file behavior. No recursive scan of sessions, authentication files, plugins or caches is selected. Source credentials are discarded and files are never modified.
 
-The user clarified the base folder they meant is `.codex` itself. This case reads its `config.toml` directly; the folder's parent supplies the already-selected usual Claude/OpenCode locations. No user file choice is required for ordinary default discovery.
+The user clarified the base folder they meant is `.codex` itself. This case reads its `config.toml` directly; the folder's parent supplies the already-selected usual Claude/OpenCode locations. No user file choice is required for ordinary default discovery. **Superseded in part by the November 4 selected-folder correction below: selecting `.codex` no longer reads parent or neighboring configurations.**
 
 ## November 3 — Direct installation POST inputs, backend only
 
@@ -1005,3 +1005,73 @@ settings. Existing data and permissions remain; old items may need final approva
 for the new identity. Cache creation readback/failure/delete/close rules preserve
 existing storage/Settings verification. Actual native prompt count is unmeasured.
 See [the scoped design/evidence](keychain-prompts.md).
+
+## November 4 — Thin wrappers are the project-wide default
+
+User explicitly states: “everything we build unless i explicitly describe otherwise should just be a wrapper that just wraps code/outputs.” This applies across Fetch rather than only this console. Reuse underlying implementations and preserve outputs; Fetch supplies necessary invocation, connection and presentation glue. Do not add custom replacement workflows, infer server-specific setup commands or reinterpret/rewrite upstream results without explicit direction. Existing user-selected application permissions, account separation, Keychain ownership, raw forwarding and other explicit product contracts remain. Any broad refactor, code-source/license choice, hosting/client identity or contract change needs its own scope.
+
+The console specifically wraps service startup output/instructions and actual returned errors. Do not substitute the literal “protocol error” or generated authentication progress prose for those outputs. Preserve received error code/message/details, with credential redaction and native-only visibility. Genuine Fetch-owned request/read failures and observed process exit status remain distinguishable from service output. Actual Railway startup research confirms the service itself returns login guidance; no login-command inference is selected.
+
+## November4 — Expanded console is permanent and spans startup through auth
+
+User requests theconsolealwayspresent whenever a serverisexpanded and showingeverythingfromstartupthroughauthentication. This selects a passive sharedconsole for allstates, preserving actualalready-sanitizedhistory across start/auth attempts in thecurrentFetchrun. Opening/collapsing a card mustnotstartauth or changebusy/accountstatus. Keep serviceoutput/instructions/errors ratherthan syntheticprogress; retain hostconsent/Copy. Existing1MiB4096line64KiBline limits andexplicitnotices apply to accumulatedserverhistory. No disklog/restart persistence, newAPIroute, credentials migration or auth/issuerbehaviorchange follows. User separatelyreaffirmscredentialstore shouldremainservicehandled; startupcodereuse mustnotimportCodex’s credentialstore.
+
+
+## November 4 — Remove Fetch-imposed provider-login restrictions
+
+User explicitly rejects the custom mandatory issuer-response feature check under the wrapper design and instructs: “get rid of it and any other restrictions that violate this.” The official MCP library owns provider discovery and sign-in validation. Remove Fetch's additional discovered-only metadata requirement, mandatory issuer presence, mandatory advertised authorization-response issuer support, and eager rejection of unused metadata endpoints where actual network/browser requests already enforce destination rules. Preserve forwarding the optional callback issuer to the library; do not bypass its own validation or force unsupported feature flags.
+
+Existing Fetch caller permissions, human browser consent, per-instance account/storage separation, actual-request HTTPS/destination checks, deadlines and credential redaction remain. No new route, provider-specific flow, personal-client change, credential migration or live-account test follows. This decision supersedes the older custom issuer-support limitation recorded in native-server-storage.md; implementation and evidence are tracked in milestones/wrapper-authentication/.
+
+
+The November 4 independent audit also identifies two redundant restrictions covered by the user's removal request: rejecting unrelated callback fields (for example scope/session_state), and requiring the entire saved metadata document to equal current metadata. Both are removed. Keep duplicate routing-critical field rejection and endpoint/saved issuer/client binding; preserve credential format/state and explicit no-silent-deletion. These changes add no public field, route or login method.
+
+## November4 — System-shell terminal and persistent Console approved
+
+User explicitly approves the concrete docs/architecture/server-terminal.md contract: native-only GET/POST /api/v1/servers/{id}/terminal, action-specific open/input/resize/close, local-MCP system shell in exact MCP environment/cwd/private account folder, no guessed login commands or automatic global-account fallback. Console/Terminal switching does not stop the shell; FetchQuit/server removal/explicitclose clean owned processes. URL-only remote servers have Console but no local terminal.
+
+Console history persists in one checked private console-log.json beside each server record, sanitized before persistence, newest1MiB/4096lines/64KiBline with explicit older-output notice. No keystroke/raw terminal recording or credential migration. Reuse iced_term/Alacritty with an external-transport seam and backend portable-pty, preserving source licenses. The service continues to own credential files/login/renewal; Fetch’s existing explicitly selected own client grants and manual-key rules are unchanged. Earlier memory-only/prefix-capture policy is superseded for this scoped log feature.
+
+### November 4, 2026 — reuse actual Codex process environment code
+
+User approved the bounded replacement after clarifying that Fetch already passes startup settings. Adapt Codex's pinned MCP environment builder and its variable lists; keep Fetch's private HOME/XDG and calculated helper PATH as explicit overrides. Keep command/arguments/working directory, Fetch initialize name/version, missing-assignment omission, cleared child environment and service-owned credentials. No Codex OAuth/store import, new route/schema/dependency or inferred service login command. [Source and scope](railway-codex-startup-research.md#november-4--approved-environment-code-reuse).
+
+
+## November 4 — GitHub defaults to the global gh executable
+
+User reports that GitHub's install script does not bundle/install `gh` in the managed package and explicitly selects the globally installed `gh` as the default executable when needed. Record this as the intended program lookup behavior, not an independently verified installer finding or completed implementation. This does not select credential copying, reuse of a different account folder, or a change to service-owned credential handling. User requested a note only; no source, installation, shell profile, personal MCP configuration or runtime state changed.
+
+
+### November 4 follow-up — global gh already selected by imported launcher
+
+Read-only development-state inspection confirms the existing GitHub local-script launcher already hardcodes /opt/homebrew/bin/gh. No global-gh selection code is needed for that exact launcher. The separate terminal PATH and private account-configuration issues are recorded in research.md/NOTES.md; no new PATH/account/login change selected. GitHub2.0.2's own documented browser login is an alternative finding, not an approved replacement for this imported configuration.
+
+
+## November 4 — Public personal-site identity and temporary IP callback
+
+User authorizes deploying Fetch identity on their existing personal Vercel site/domain yuyang-hu.org for testing, with later move to a dedicated domain. Use its existing canonical URL https://www.yuyang-hu.org/oauth-client.json directly (apex redirects308). The JSON describes Fetch's own publicclientidentity; no credentials. Configure the official rmcp request using with_client_metadata_url, with no customproviderselection.
+
+User explicitly requires127.0.0.1 insteadlocalhost for callbacks and selects “Use temporary HTTP callback (recommended)” after the localhostcertificate/Hostconstraint is explained. Bind127.0.0.1:0 only for pendinginteractive remoteOAuth, existingpath /oauth/provider/callback. SDK receives actualHTTPIPportURL. Publish portless http://127.0.0.1/oauth/provider/callback registration under the native-loopback portexception. Only GETcallback on this temporary listener; noHTTP productAPI/MCPsurface. Reuse existing code/state/error/optionaliss parsing and rmcpvalidation; bind receiver to its pendingSDKstate/serverattempt. Existing10min deadline, callback/failure/Quit cleanup, per-instance grantstorage and consent remain. MainHTTPSAPI/savedcertificate/clients and retained oldHTTPScallback are unchanged; notrust/cert/credentialmigration.
+
+This supersedes earlier localHTTPSprovider-callback construction and two-fixedlocalhostcallbacks for the newremote flow. Sitepublication must start from currentproduction/main, preservingdirtydev work; noDNS/sitehomepagechange. URLchanges later may require new sign-in because client identity changes. No liveaccountauth success is implied by staticpublication or fixtures.
+
+
+## November 4 — preserve normal command-search PATH
+
+User approves keeping the normal command-search folders with server-private program folders first, so gh works by name. Use inherited PATH from Fetch's process as the default, through the existing shared environment/transport builder. Retain explicit assigned PATH precedence, executable-parent lookup and existing /usr/bin,/bin fallback when no inherited path exists. This changes command discovery for ordinary startup, recorded setup and the terminal together. Private HOME/XDG/account folders and service-owned credentials remain unchanged; no login shell/profile execution, global credential copying or provider-specific code is selected. Earlier system-only default descriptions are superseded for this change.
+
+Implementation follow-up: inherited command-search PATH source and23focused checks (1real confined terminal flow)/native build pass; independent Evaluator ACCEPT. Current evidence: milestones/normal-program-path/evidence.md. This does not establish actual personal GitHub authentication or reload an already open shell.
+
+
+## November 4 — Selected Codex folder reads only Codex
+
+The user reports that choosing `.codex` also lists MCP servers from neighboring `.claude.json` and OpenCode configurations, and explicitly requires discovery to stay in the selected `.codex` folder. Read only `<selected .codex>/config.toml`. Do not use its parent as another discovery root. This supersedes the November 3 parent-folder expansion.
+
+Omitted-path automatic discovery, explicit home-folder discovery and single-file reads keep their existing behavior. The HTTP route and MCP tool use the same discovery service. Discovery remains read-only: no source writes, installation, process startup or authentication. Existing bounded reads, missing-file omission, grouped source failures and installed associations remain.
+
+November4 instance-login clarification: preserve per-instance CLI login state, including locally installed Railway CLI. Private installation and credential storage are separate. Normal-HOME proposal is withdrawn and its brief source edit restored; no alternative Keychain mechanism approved.
+
+
+## November 4 — Figma Remote unsupported in import/install
+
+User explicitly selects marking Figma Remote unsupported in Fetch’s import/install screen. The official HTTPS mcp.figma.com/mcp endpoint is blocked for fresh import/install through the existing unsupported classification because Figma requires approved connecting apps and currently rejects Fetch registration. Show that reason with the disabled row. Keep Figma Desktop’s loopback endpoint and existing installed instances unchanged. Use the shared classifier for file/direct inputs; do not alter saved URL validity or introduce new API routes/schema. This is a narrow selected product restriction; the plain403 alone still does not disclose Figma’s exact internal rejection rule.

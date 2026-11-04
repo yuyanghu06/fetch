@@ -1,4 +1,16 @@
+November4: publicclientidentity andHTTP127callback selected/implemented/deployed/independentlyaccepted. FixedpublicURL https://www.yuyang-hu.org/oauth-client.json; nohostingchoice remainsopen. ActualVercelaccountsign-in isstillruntimeacceptance, not provenbyfixtures. See milestones/client-identity/evidence.md.
+
+November 4: custom issuer-feature and other redundant pre-login gates are selected for removal under the wrapper design. Library validation and existing application boundaries remain. See milestones/wrapper-authentication/info.md; no new API or provider-specific flow selected.
+
 # Current decisions and remaining work
+
+November 4: user explicitly authorizes service-startup and rejected-response console logging, superseding the earlier explanation-only pause for this scoped feature. Existing native-only memory behavior remains, with fuller attempt output and explicit truncation; no new auth method/provider tests. See native-server-storage.md and milestones/service-startup-logs/.
+
+November 4: user approved installer-recorded private executable folders in the shared startup environment, including existing installations through an in-memory known-layout fallback. This is program discovery, not a new login method. [Current scope](native-server-storage.md#november-4-selected-private-program-search-folders).
+
+November4 startup decision supersedes earlier required-input guidance: Fetch
+starts/connects with present saved environment/header values and omits missing
+ones for all startup paths. No mandatory-input inference. [Current amendment](native-server-storage.md#november4-selected-startup-behavior).
 
 November3,2026. User's “you're good to start” resumes the scoped refactor/testing.
 The [current contract](native-server-storage.md) supersedes the old encrypted-provider
@@ -22,7 +34,28 @@ is historical and does not pause this work or reopen settled choices.
 - Preserve old files/keys/packages/credentials, personal clients, HTTPS, callback
   checks, Fetch's own /oauth/token, permissions and unchanged raw MCP payloads.
 
+## November3 selected startup/login work
+
+Later user steering selects existing /restart start/connect route for the button,
+with interactive:true; /authenticate stays as deprecated compatibility. No new
+/start route. See current wrapper amendment.
+
+
+User says “lets try that then”: implement recorded helper or ordinary server
+startup, visible safe login interaction, last-known/current distinction and
+truthful unsupported guidance. [Exact selected follow-up](native-server-storage.md#november3-selected-authenticate-follow-up--implementation-underway).
+Source/test work is complete for the scoped startup/link change; prior research-only
+waits are superseded.171 independent checks pass and Evaluator ACCEPTs this scope. Native URL elicitation reply/ownership remains unselected; do not
+claim universal arbitrary-server authentication.
+
 ## Remaining decisions and acceptance
+
+November3 research follow-up: [existing clients and login libraries](mcp-login-discovery-research.md)
+find no reviewed universal native-helper discovery mechanism. Google already
+starts login on normal startup when needed; Fetch discards its printed link.
+Review how users receive server-owned setup interactions as well as any separately
+required command records. A command record alone is not a complete Google fix.
+These are findings/recommendations, not approved source or API changes.
 
 1. **Native command/path authoring:** the internal recorded-command runner exists,
    but ordinary imports have no approved way to supply exact setup commands and

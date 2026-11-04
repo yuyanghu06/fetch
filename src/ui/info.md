@@ -1,3 +1,27 @@
+November 4 unsupported import rows: install_view displays each server error.message using the shared Message component below its existing disabled checkbox. Figma Remote returns unsupported/unselected; no new layout/component or automatic server action.
+
+## Mouse input in a scrolled server page — November4
+
+TerminalView uses the parent-adjusted Cursor for both button presses and movement. Iced Scrollable leaves the original mouse event in window coordinates while translating its child cursor; mixing them can select several rows on a tiny click movement. A two-line vendored routing fix keeps both consistent, without changing intentional selection or cursor style. Actual outer-Scrollable input/render regression reproduces before and passes after;11focused terminalUI checks/native build/review pass. See milestones/terminal-pointer-coordinates/evidence.md; native user observation remains separate.
+
+## Terminal selection and trackpad handling — November4
+
+The vendored terminal view ends selection drag after a left release outside the pane and accepts wheel gestures only over its visible area. Pixel wheel direction matches line wheel and sub-line movements stay captured, so the surrounding page does not consume a terminal trackpad gesture. Intentional selection and current text cursor style remain. Focused actual-widget/render verification passes10checks2new plus native build and independent review; see milestones/terminal-selection-scroll/evidence.md. Rebuilt native observation remains separate.
+
+## Console and Terminal — November 4
+
+server_terminal.rs retains each server's selected pane, existing iced_term parser/screen, session ID and byte cursor. It calls only native terminal APIs; the backend owns shell/environment/processes. Shared output_controls and terminal_pane live in components.rs. Console/Terminal switching and collapse preserve screens; exited screens require explicit Start terminal to replace. URL-only remote servers show a disabled Terminal button and reason. Writes stay ordered, Close bypasses blocked input, stale window/session responses are ignored, and output polling continues while Console is selected. Raw terminal bytes are not persistent console log entries. Native visual acceptance remains separate.
+
+Continuous-console verification: 150 relevant checks, including eight new cases, native build and independent review pass. New request errors are distinguished from old output. Native window appearance and actual accounts were not tested.
+
+## Permanent expanded console — November 4
+
+Every expanded server renders the shared console, including idle and not-required states with no prior authentication request. Ordinary status reads create passive display state and refresh expanded consoles. Displaying a console does not authenticate or mark a server busy. Authenticate/manual saves reuse its history; cumulative backend snapshots replace the displayed service portion to avoid duplication. Log updates do not overwrite a manual-storage verdict. A new request records which output was already present, so old logs cannot hide its new local failure; the fallback is removed only after genuinely new service output. No synthetic progress or credential-store changes.
+
+## November 4 console wraps service output
+
+The shared console renders captured service logs/instructions/errors and observed process exit status. It no longer invents authentication phase or host-progress log entries. Generic localAPIerror fallback is removed when service output arrives; genuine Fetch request/read failures remain visible. Sign-in state/consent controls, scrolling and Copy remain. Credential values never become console input.
+
 # Native Fetch interface
 
 The native UI calls the same HTTPS APIs as other clients. It has no server process,
@@ -40,9 +64,13 @@ Iced light appearance. The shared server_header includes registration removal;
 confirmed removal clears only UI caches and explains that files and credentials
 were preserved. Server/tool details expand independently.
 
-Opening Install discovers normal global definitions automatically. Optional file
-or folder selection uses file_picker.rs and the native AppKit picker, including
-hidden locations. Selecting a path alone does not install anything. Existing
+Install starts with an empty list and an always-visible path input and picker.
+Choosing a file/folder starts discovery through the existing API; a typed path
+uses Enter or Refresh servers. Blank paths never request global discovery. The
+native AppKit picker includes hidden locations. Selecting a path does not install
+anything. The title has a small gray folder hint; the old explanatory paragraph
+and app-wide tagline are removed. During installation the footer button is gray
+and disabled, and no installation-accepted notice is shown. Existing
 source/name associations show checked disabled installed rows; these do not enter
 manual/bulk selection or install payloads. Progress updates rows, while failed
 siblings remain retryable. The discovery list scrolls inside a bounded area; the
@@ -55,3 +83,34 @@ New manual-Keychain/folder/auth-mode changes require the current integrated
 checks; no native window, Finder, Mac confirmation or real account acceptance is
 established by their source or window-free fixtures. Figma/state reconciliation
 is tracked centrally in docs/UI_STATE_COVERAGE.md.
+
+## Standardized sign-in panel
+
+Authenticate and its pending Open sign-in at HOST control call the existing
+/restart start/connect API with interactive:true. The second control remains
+available for an offered unopened host while other same-server changes stay
+blocked. It uses the backend-held pending link, never a path/URL supplied by the
+UI. authentication.rs tracks safe host/opened state through existing polling and
+clears it when the attempt ends. No generic folder/key form is rendered inside
+this panel; assigned manual values remain in native Settings using the shared
+credential editor. Last-known status is labeled separately from current proof.
+Concurrent folder-first Install work is preserved. Native visual checks pending.
+
+## Authentication console presentation
+
+The inline auth view now targets a single scrolling monospace console. Flow owns
+per-attempt safe progress/error history; rendering remains in shared UI components
+and colors/sizes in theme. The existing host-consent action stays inside the
+console. Do not turn instructions into workflow or expose input values/raw URLs.
+A separate raw process-output feature needs an explicit privacy/delivery decision;
+this presentation work changes no application route or server startup behavior.
+
+The console also appends native-only sanitized startup stderr and natural exit
+status from authentication.startup. It deduplicates repeated/rolling tails by
+process generation. A failed ordinary Start/Connect creates a console from status
+without issuing an authentication request. Known values and full HTTP(S) URLs are
+filtered before retention upstream, rather than only hidden by the widget.
+
+The shared console keeps a small Copy button fixed at its top right. The caller
+passes the current log joined with newlines to the existing clipboard action;
+scrolling log content and host consent remain below the fixed header.

@@ -1,4 +1,22 @@
+## November 4 — Figma Remote import eligibility
+
+The user selected the official HTTPS mcp.figma.com/mcp endpoint as unsupported for fresh import/install (including the already admitted trailing slash). Existing discovery responses use status unsupported, selected_by_default false and error.message explaining Figma's app-approval restriction. The native install screen renders that row reason and disables selection. Shared capture rejects unsupported source/direct submissions using existing failure behavior; no route, fields or permissions are added. The local desktop endpoint and already saved runtime records remain unchanged. Implementation is tracked in milestones/figma-remote-unsupported/.
+
+## November 4 approved native terminal resource
+
+November4 approved IP callback: remoteinteractiveOAuth uses temporary GET http://127.0.0.1:<randomport>/oauth/provider/callback with existing callbackinputs/HTML/state ownership and10minexpiry. This is a callback-only protocol listener, not a new productHTTPAPI; mainHTTPS/certificate and oldcompatibilityroute remain. Fullcurrentamendment in native-server-storage.md.
+
+[server-terminal.md](server-terminal.md) defines the approved GET/POST /api/v1/servers/{server_id}/terminal contract. POST wraps open/input/resize/close; GET reads bounded byte output/status without spawning. Native Settings capability and target permission are required for every request; no bearer/MCP/background terminal access or terminal management tool is added. The same approved document defines saved sanitized console retention, reusing the existing native-only server startup projection. Scoped implementation has182 relevant passing checks, native build and independent acceptance; actual rebuilt native appearance/account login remain unobserved.
+
 # Fetch API contracts
+
+November 4 provider-callback compatibility amendment: existing GET /oauth/provider/callback tolerates unrelated provider query fields and rejects duplicate state/code/error/iss. The MCP library owns discovery/fallback and callback validation, with existing Fetch attempt, consent and storage boundaries. No route/input format is added. See native-server-storage.md and milestones/wrapper-authentication/info.md.
+
+November3 current start/login amendment: POST /api/v1/servers/{id}/restart accepts
+optional interactive:false (default), or true for explicit server-owned login.
+The native Authenticate button uses that start route. /authenticate remains
+functional but deprecated, with a successor header pointing to /restart; no
+removal date selected. [Complete current amendment](native-server-storage.md#november3-route-steering--start-owns-explicit-login).
 
 ## November3 — current wrapper changes
 
@@ -55,7 +73,7 @@ GET /api/v1/setup/discovery?config_path=/Users/example/.codex/config.toml
 ### Input and behavior
 
 - `config_path` is optional and identifies a configuration file or base folder on the Mac running Fetch.
-- When supplied as a file, inspect only that file. A home folder uses standard config paths inside it; a `.codex` folder uses `config.toml` inside it and the usual Claude/OpenCode paths in its parent.
+- When supplied as a file, inspect only that file. A home folder uses standard config paths inside it; a `.codex` folder reads only `config.toml` inside that folder (November 4 correction).
 - When omitted, inspect the current user's normal global Claude Code, Codex, and OpenCode configurations.
 - Read/parse configuration; do not install or start servers, modify the source configuration, or copy credentials as part of this operation.
 - Discover package identity/version requests and launch information for local scripts, plus credential-variable names where they can be identified without exposing values.
@@ -131,7 +149,7 @@ GET /api/v1/setup/discovery?config_path=/absolute/file
 
 #### Approved input, callers and default candidates
 
-Allow Fetch Settings and authenticated setup/management clients with server-management permission. Authorize before exposing any file existence/content metadata. No request body is used; reject a non-empty body without echoing it. Accept at most one non-empty/non-whitespace absolute `config_path`; reject relative paths, NUL, repeated parameters and unknown query parameters with `400 INVALID_REQUEST`. No shell, tilde or environment expansion for supplied paths. November 3 amendment: explicit inputs select one local regular file or a base folder. A folder named `.codex` supplies `config.toml` and its parent supplies `.claude.json` and `.config/opencode/opencode.json` / `opencode.jsonc`; another folder is treated as a home root with the standard paths below. Explicit folder selection ignores inherited CODEX_HOME. Missing candidate files are omitted, failed candidates remain grouped beside healthy sources. Directly supplied symlinks are rejected. No glob, URL or recursive scan is accepted. A missing explicit path returns CONFIG_NOT_FOUND; an unreadable path returns CONFIG_UNREADABLE.
+Allow Fetch Settings and authenticated setup/management clients with server-management permission. Authorize before exposing any file existence/content metadata. No request body is used; reject a non-empty body without echoing it. Accept at most one non-empty/non-whitespace absolute `config_path`; reject relative paths, NUL, repeated parameters and unknown query parameters with `400 INVALID_REQUEST`. No shell, tilde or environment expansion for supplied paths. November 3 amendment: explicit inputs select one local regular file or a base folder. November 4 correction: a folder named `.codex` supplies only its own `config.toml`; do not inspect its parent or neighboring Claude/OpenCode configurations. Another folder is treated as a home root with the standard paths below. Explicit folder selection ignores inherited CODEX_HOME. Missing candidate files are omitted, failed candidates remain grouped beside healthy sources. Directly supplied symlinks are rejected. No glob, URL or recursive scan is accepted. A missing explicit path returns CONFIG_NOT_FOUND; an unreadable path returns CONFIG_UNREADABLE.
 
 Without a path, inspect the following candidates in this order, resolving built-in `~` from the current user's home directory:
 

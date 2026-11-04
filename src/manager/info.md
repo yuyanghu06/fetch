@@ -1,3 +1,15 @@
+## Native terminal environment — November 4
+
+terminal_action reuses the normal transport builder for assigned settings, private HOME/XDG, helper PATH and saved working directory, then delegates shell/process IO to TerminalService. Reopening a live session reuses it. No login command is inferred. Deletion closes the owned terminal before unregistering; Quit awaits cleanup before Runner shutdown. Native Settings route authority is separate from ordinary management permission.
+
+## November 4 service-output console
+
+Local setup captures both streams and natural exit in the shared Runner attempt log. Remote auth uses that same private handle for discovery/guard/registration/reuse/callback/verification failures. No inferred commands or provider-specific flow. Only native Settings reads the log; persisted/public errors remain safe existing categories. Synthetic progress prose is removed; show actual service replies/instructions and genuine local failures.
+
+## November 4 shared program lookup
+
+Native transport prefixes the installer-recorded private executable folders to each server’s PATH, the list searched when it runs another program by name. Explicit configured PATH remains after those folders. Otherwise the executable parent is followed by Fetch’s inherited PATH, preserving normal command folders such as Homebrew; /usr/bin,/bin are the fallback only when inherited PATH is absent. Ordinary startup, recorded setup and the native Terminal share this construction. Existing records use installer-known layout without migration/reinstall; no login behavior changes.
+
 # Managed servers
 
 The manager owns installation progress, saved-instance lookup, explicit Connect /
@@ -71,3 +83,46 @@ Unit/integration fixtures use disposable records, fake Keychain/network/verifica
 connections and confined child processes. These are separate from real native
 Finder, Keychain, browser/provider and client acceptance. See the current milestone
 for actual test results and remaining native compatibility limits.
+
+## Standard start/login implementation
+
+local_auth.rs owns explicit local login attempts. Existing restart accepts
+interactive:true and shares this behavior with deprecated Authenticate. It runs
+an explicitly recorded helper or the configured MCP command; no provider-specific
+login command is inferred. Attempts use atomic idle admission, private bounded
+URL observation, host-only GET state and explicit second-request browser consent.
+Local JoinHandles are awaited on Quit so helper process groups finish cleanup.
+Terminal authentication status/error is saved to managed config and returned as
+last_known; current unknown on a new process is never promoted from saved success.
+Missing assigned environment values report names and native Settings guidance.
+The provider SDK flow and manual-key authority stay in their existing modules.
+
+## Temporary remote sign-in callback
+
+`remote_callback.rs` binds `127.0.0.1` on an available port only when an explicit
+remote sign-in needs a new browser session. The bound address is passed to rmcp
+before it creates the authorization URL. This small listener serves only the
+existing `/oauth/provider/callback` path and reuses the API callback parser and
+result page. It checks this listener's expected SDK state before Manager consumes
+the flow; rmcp still owns sign-in state, issuer, proof-key and token validation.
+
+Each ProviderFlow owns a close signal. A callback starts graceful shutdown so its
+result page can finish; browser failure, expiry or Quit also closes the listener.
+The listener task owns the existing ten-minute expiry wait, which is cancelled
+when the callback starts. Manager tracks and awaits these tasks on Quit. Saved
+login reuse and background renewal do not open a listener. Fetch's main HTTPS
+API, local identity and certificates are unchanged. Source is implemented;
+focused fixture and native verification results are tracked separately.
+
+November4 sharedinputs no longer inferrequirements: absent assigned environment
+and header values are omitted for allstartup paths; present values pass unchanged.
+Earlier missinginputname/Settingspreflight description is superseded. Native-only
+startupfailurediagnostics are now a separate in-memory reporting integration;
+provider/MCP/status records never receive rawdiagnostics.
+
+Only native Settings servers_for reads may add authentication.startup from
+Runner's sanitized private buffer. Never add it to servers(), saved config, MCP
+responses or next_steps. This reports an actual spawn, rather than imposing input
+requirements. Native UI consumes lines/status without executing instructions.
+
+November 4: process_environment.rs adapts the pinned Apache-2.0 Codex MCP environment builder. It inherits the upstream allowed host variables/certificate paths, applies assigned settings plus Fetch's protected HOME/XDG/helper PATH, then removes upstream internal token variables. Native setup and normal startup use the same transport. No provider credential file is opened. Source attribution and the full upstream license/NOTICE are in the repository root. Independent verification is recorded under milestones/codex-startup-environment/.

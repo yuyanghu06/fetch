@@ -1,3 +1,5 @@
+November 4 Figma Remote: classify marks the official HTTPS normal443 mcp.figma.com/mcp endpoint unsupported with its client-approval reason. Fresh file/direct captures share this decision; recognized explicit-transport bridges also use it. URL safety/saved-record validation stays unchanged, as do Desktop loopback and existing saved instances.
+
 # Read-only server discovery
 
 The existing HTTP and MCP discovery surfaces use scan_with_installed to add installed/installed_server_id metadata from saved records. It matches the exact source file path and source name that installation reuse already uses, keeping different accounts and sources separate. Installed rows are excluded from new selections even when the source is now disabled or unsupported. The source-only scan remains available independently. Saved-record read failures fail the installed-aware read safely instead of claiming every row is new.
@@ -31,7 +33,7 @@ profile and unknown endpoints remains. No connection was made to inspect it.
 
 ## November 3 — optional base folders
 
-No supplied path keeps the existing global scan, including a valid inherited CODEX_HOME. Optional config_path now accepts a home folder, a `.codex` folder or a single file. Home folders supply their standard children; `.codex` supplies its config.toml and its parent supplies the usual Claude/OpenCode paths. Explicit folders ignore inherited CODEX_HOME. Only known filenames are read; there is no recursive scan. Missing candidate files are skipped and failed candidates are shown beside healthy groups. Directly supplied symlinks are rejected, including directory links with trailing separators. Existing finite reads, no-follow file opens and secret suppression remain.
+No supplied path keeps the existing global scan, including a valid inherited CODEX_HOME. Optional config_path now accepts a home folder, a `.codex` folder or a single file. Home folders supply their standard children. November 4 correction: a selected `.codex` folder supplies only its own config.toml; its parent and neighboring Claude/OpenCode configurations are not inspected. The same bounded candidate reader handles both paths. Explicit folders ignore inherited CODEX_HOME. Only known filenames are read; there is no recursive scan. Missing candidate files are skipped and failed candidates are shown beside healthy groups. Directly supplied symlinks are rejected, including directory links with trailing separators. Existing finite reads, no-follow file opens and secret suppression remain.
 
 Direct POST inputs and source-file imports now share capture_definition: the
 same literal classifier and secret-free config builder creates both captures.

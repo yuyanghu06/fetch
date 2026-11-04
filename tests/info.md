@@ -1,3 +1,33 @@
+## Figma Remote unsupported import — November 4
+
+Two focused fixtures in import_compatibility.rs/direct_install.rs cover remote URL/recognized bridge rejection, its reason and unselected status; Desktop/other imports remain capturable, source bytes unchanged, direct fresh install creates no saved server/package. Existing plus new tests pass19/19; no provider, MCP process or credentials are used. Native build passes5.38s and independent review ACCEPTs; evidence under milestones/figma-remote-unsupported/.
+
+## Selected Codex discovery — November 4
+
+Existing HTTP fixtures in backend.rs now require one Codex source when `.codex` is selected despite neighboring Claude/OpenCode configs. Home/default discovery keeps its existing expectations. Installed metadata is checked on the sole selected Codex source; home partial-failure coverage remains. The selected-folder test reproduced the original bug before the source fix (three groups instead of one). Final focused verification passes 10/10 HTTP discovery tests and the native build; see milestones/selected-discovery-scope/info.md.
+
+## Scrolled-parent terminal pointer — November4
+
+ui/server_terminal_tests.rs now drives clicks through an actual scrolled Iced page. It reproduces raw-window versus adjusted-cursor selection jumps, checks small normal movement, intentional bounded drag and click-to-clear through rendered pixels.11terminalUI checks1new/native build pass; prior direct-widget tests lacked this parent transform. No native app or credentials. See milestones/terminal-pointer-coordinates/evidence.md.
+
+## Terminal selection/trackpad interaction — November4
+
+Two actual-widget/headless scenarios in ui/server_terminal_tests.rs reproduce release-outside stuck selection and fractional trackpad capture failure before the fix. Final10terminalUI checks prove bounded selection pixels after re-entry, older-output visibility/up-down scrolling, empty-poll stability and existing rendering/session behavior. No native app, shell or credentials used. See milestones/terminal-selection-scroll/evidence.md.
+
+## Normal command-search folders — November4
+
+The focused native_storage fixture uses a disposable child PATH and a real confined PTY fed by the shared transport builder. Bare fake-global gh resolves by name, then a private gh wins. No real gh or personal credentials run. Existing program_paths startup/setup fixtures expect the inherited default suffix and retain private-first checks.23focused checks and native build pass; see milestones/normal-program-path/evidence.md.
+
+## Console/Terminal verification — November 4
+
+New focused checks live in src/terminal/tests.rs (real deny-default confined PTY and native-only route requests), src/runner/log_store_tests.rs (private sanitized disk persistence/reload/bounds/unsafe-file handling), and src/ui/server_terminal_tests.rs (retained pane/model state, ordered/stale input, explicit close, fresh versus reused terminal queries). Existing service-log assertions follow the approved newest-output retention policy. Actual commands/outcomes and native appearance limits belong in milestones/server-console-terminal/evidence.md once final checks finish.
+
+Continuous-console tests cover passive expanded state, preserved startup-to-auth history, collapse/window restore, manual-save state and new request errors beside old output. Manager checks cover bounded sanitized carryover and exit facts. The actual confined fixture uses initial Manager::startup before Authenticate without reading logs first. The older standard-auth clearing assertion now requires retained history once. See milestones/continuous-server-console/evidence.md for 150 passing relevant tests and the separate failed-Restart observation.
+
+service_startup_logs.rs and native_state/service_log_peer.py cover actual confined output/errors/instructions/exit and disposableHTTP replies. Manager/SDK service_log_tests modules cover privacy/lifecycle/redaction/OAuth details; updatedUI tests require actual-output console and fallback cleanup. Final184uniquechecks15new,31UIrecheck/nativebuild pass; see milestones/service-startup-logs/evidence.md. No live account/window proof.
+
+program_paths.rs verifies actual bare-name helper execution through ordinary startup and recorded setup in the existing deny-default sandbox. It checks legacy records without rewrites, other-installation negative lookup, paths with spaces and private metadata projection. No Railway package/account execution. See milestones/private-program-paths/evidence.md for the final independent results.
+
 # Backend verification
 
 These tests use temporary data, fixture configuration files and test-only authority objects. HTTPS tests open an IPv4 loopback listener on an available port and trust its public certificate only inside that test's HTTP client.
@@ -167,3 +197,11 @@ Frozen-source relevant suite151PASS/0fail/1ignored; explicit original Everything
 confinement check separately1PASS. Final build passes; independent Evaluator ACCEPT.
 Exact commands/counts/corrections/cleanup/limits are in
 [milestone evidence](../milestones/native-server-storage/evidence.md).
+
+standard_authentication.rs tests the actual start-route request, retained auth
+deprecation, local startup/helper link privacy, pre-initialize waits beyond30s,
+last-known/current separation, missing inputs, active-call preservation and owned
+helper Quit. It uses verified deny-default peers in native_state/login_peer.py.
+Results are recorded separately in the standard-authenticate milestone.
+
+November4 Codex startup-environment checks add eight synthetic-parent helper tests and one focused transport test; program_paths.rs now also asserts actual argv/cwd/HOME/XDG/PATH/LANG in confined normal/setup children. Scoped results:24integration +8standalone pure cases and native build pass, independent Evaluator ACCEPT. Full library execution awaits separate terminal test wiring. See milestones/codex-startup-environment/evidence.md.

@@ -1,3 +1,7 @@
+## November 4 private program folders
+
+program_paths.rs owns the installer’s known executable folders: npm node_modules/.bin, Python venv/bin and the already prepared Railway helper’s railway-cli/node_modules/.bin. New records save these relative paths privately as _installation.program_directories; legacy rows resolve the same layout in memory. Only existing folders contained by the instance’s package enter startup. Nothing searches recursively or borrows another instance’s folders. Independent 60 checks including 10 new and locked native build pass; Evaluator ACCEPT. Real account authentication is untested.
+
 ## November 3 current wrapper records
 
 Preparation now writes required installation/launch records without obsolete
@@ -40,8 +44,7 @@ fixture coverage exercises this without package downloads or connections.
 Official @railway/mcp-server imports also prepare pinned @railway/cli5.71.0 in
 a separate railway-cli dependency folder under their private installation. This
 provides the executable required by the MCP shim without using personal PATH or
-modifying the shim's installed dependency tree during repair. Existing installs
-repair it only on explicit Connect, never GET or automatic startup. Native binary
+modifying the shim's installed dependency tree during repair. Shared startup now adds the existing private CLI folder for new and older installations; startup/status do not install missing programs. Native binary
 existence/permissions/path containment and pinned package metadata gate readiness;
 no CLI --version is run. npm's official postinstall fetches its binary over HTTPS;
 it does not provide an independent archive checksum. No package install executed

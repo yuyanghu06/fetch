@@ -1,3 +1,5 @@
+November 4: saved installation records may include private relative program_directories. The record validator rejects invalid folder entries; public projections continue removing all _installation metadata. Startup resolves and checks containment through the installer’s program_paths module.
+
 # Private Fetch server records
 
 ServerRepository reads/writes owner-only local configuration records with checked

@@ -1,3 +1,7 @@
+## Native terminal and saved console — November 4
+
+terminal/ owns backend PTY sessions and account-shell/process cleanup. API route handlers and Manager provide native-only authority and the exact MCP launch environment; ui/server_terminal.rs wraps those APIs and the existing iced_term parser/renderer. runner/log_store.rs persists sanitized service output separately from terminal bytes. New terminal unit tests use confined disposable shells; UI fixtures do not open native windows. Current acceptance is tracked in milestones/server-console-terminal/.
+
 # Fetch backend and native interface
 
 Current wrapper implementation uses official rmcp3.8.0 auth-only functions for

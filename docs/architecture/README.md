@@ -1,9 +1,28 @@
+[Figma registration findings](client-identity-adoption.md#figma-registration-rejection--november-4-2026) explain the reported 403, approved-client policy and why the public Fetch identity file does not bypass it. Research only; callback rejection remains unproven.
+
+[Public client identity adoption research](client-identity-adoption.md) explains current CIMD support across hosted services, the older registration fallback and what the shared Fetch file does. Research only; no new implementation selected.
+
+Publicidentity/IPcallback scopecomplete: canonicalwwwJSONdirect200, rmcpmetadataURL, temporaryHTTP127callback,3focusedchecks/nativebuild/reviewPASS. RealVercelaccountacceptance untested. See milestones/client-identity/evidence.md.
+
+November 4: six redundant Fetch pre-login/saved-login/callback compatibility gates are removed. Official rmcp owns discovery/callback validation;43 independent checks and native build pass, Evaluator ACCEPT. Real Vercel sign-in remains untested. See the latest decisions and milestones/wrapper-authentication/evidence.md.
+
 # Fetch architecture records
+
+November 4 selected-folder correction: choosing `.codex` must read only its own `config.toml`; parent Claude/OpenCode discovery is superseded. See the current discovery API contract and latest decision. Implementation is tracked in [selected discovery scope](../../milestones/selected-discovery-scope/info.md).
+
+[Approved Server Console/Terminal contract](server-terminal.md) records the system-shell pane, native-only GET/POST resource and persistent sanitized logs. Scoped implementation/checks/build/review are accepted; see milestones/server-console-terminal/evidence.md for actual outcomes and native limits.
+
+Fetch’s default is a thin wrapper around existing code and outputs, unless the user explicitly specifies otherwise. See the November 4 decision in decisions.md and the top of AGENTS.md. Preserve actual upstream behavior/errors; do not invent server-specific workflows.
 
 Read [current project context](../../PROJECT_CONTEXT.md), [notes](../../NOTES.md),
 [decisions](decisions.md) and [current open work](open-questions.md) before changes.
 
 The current scoped change is [server-owned configuration and shared login](native-server-storage.md).
+November4 [actual Railway/Codex research](railway-codex-startup-research.md) records confined startup/rejection evidence and Codex source reuse limits.
+November3 follow-up [login research](mcp-login-discovery-research.md) compares
+libraries and coding clients, and corrects the Google startup explanation:
+Google can begin its own login on startup. The [implemented start/login follow-up](../../milestones/standard-authenticate/info.md)
+now presents its selected link through host consent instead of discarding it.
 Local MCPs own native credentials; official rmcp owns standard online OAuth.
 Fetch keeps manual-key PATCH, shared Keychain saving, process/connection control,
 permissions and unchanged raw MCP forwarding. Existing provider files/keys remain
