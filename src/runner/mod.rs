@@ -3,6 +3,11 @@ pub mod raw;
 pub mod catalog;
 mod scheduler;
 mod transport;
+pub(crate) mod local_setup;
+pub(crate) mod startup_diagnostics;
+mod log_store;
+#[cfg(test)]
+mod log_store_tests;
 
 use scheduler::{Reservation,Scheduler};
 use catalog::{Aliases,Tool};
@@ -95,7 +100,7 @@ impl RunError {
     pub fn busy()->Self{Self{http_status:409,code:"SERVER_BUSY",message:"The server is restarting or its waiting queue is full.",execution:"not_started"}}
     pub fn not_ready()->Self{Self{http_status:503,code:"SERVER_NOT_READY",message:"The MCP server is not ready. Inspect its saved status before choosing a remedy.",execution:"not_started"}}
     pub fn unavailable()->Self{Self{http_status:502,code:"TOOL_CALL_UNAVAILABLE",message:"The upstream connection ended without a usable terminal result. Review whether the action happened before retrying.",execution:"unknown"}}
-    pub fn rpc()->Self{Self{http_status:502,code:"TOOL_RPC_ERROR",message:"The upstream returned a protocol error. Review the action before retrying.",execution:"unknown"}}
+    pub fn rpc()->Self{Self{http_status:502,code:"TOOL_RPC_ERROR",message:"The MCP server returned an error.",execution:"unknown"}}
     pub fn timeout()->Self{Self{http_status:504,code:"TOOL_CALL_TIMEOUT",message:"The execution deadline ended. The action may still be running; review its outcome before retrying.",execution:"unknown"}}
     pub fn queue_timeout()->Self{Self{http_status:504,code:"TOOL_CALL_TIMEOUT",message:"The queue waiting deadline ended before the call was sent.",execution:"not_started"}}
     pub fn cancelled(sent:bool)->Self{Self{http_status:409,code:"TOOL_CALL_UNAVAILABLE",message:"The owning request ended. A sent action may still be running.",execution:if sent{"unknown"}else{"not_started"}}}
@@ -174,6 +179,7 @@ impl IdleDeletion {
     }
     pub(crate) async fn finish(self){
         self.runner.servers.write().await.remove(&self.id);
+        if let Some(capture)=self.runner.startup_logs.write().await.remove(&self.id){capture.freeze();}
         self.runner.continuations.lock().await.retain(|_,flow|flow.server_id!=self.id);
         if let Some(server)=&self.server{server.tools.write().await.clear();}
         for method in ["notifications/tools/list_changed","notifications/resources/list_changed","notifications/prompts/list_changed"]{
@@ -205,6 +211,9 @@ pub struct Runner {
     invocations:Arc<Mutex<BTreeMap<u64,(String,CancelToken)>>>,
     pub changes:broadcast::Sender<(String,String)>,
     authentication_preflight:Arc<std::sync::RwLock<Option<AuthenticationPreflight>>>,
+    startup_logs:Arc<RwLock<BTreeMap<String,Arc<startup_diagnostics::StartupDiagnostics>>>>,
+    startup_sequence:Arc<AtomicU64>,
+    console_store:Option<Arc<log_store::LogStore>>,
 }
 pub type AuthenticationPreflight=Arc<dyn Fn(String)->std::pin::Pin<Box<dyn std::future::Future<Output=Result<(),RunError>>+Send>>+Send+Sync>;
 impl Runner {
@@ -215,23 +224,34 @@ impl Runner {
     /// A protected MCP setup request proves transport access only. Compare the
     /// same operation without private headers so a public initialize cannot pass.
     pub async fn verify_remote_transport(&self,config:&TransportConfig)->Result<(),RunError>{
+        self.verify_remote_transport_capture(config,None).await
+    }
+    pub(crate) async fn verify_remote_transport_with_diagnostics(&self,config:&TransportConfig,diagnostics:Arc<startup_diagnostics::StartupDiagnostics>)->Result<(),RunError>{
+        self.verify_remote_transport_capture(config,Some(diagnostics)).await
+    }
+    async fn verify_remote_transport_capture(&self,config:&TransportConfig,diagnostics:Option<Arc<startup_diagnostics::StartupDiagnostics>>)->Result<(),RunError>{
         let mut unauthenticated=config.clone();
         match &mut unauthenticated {
             TransportConfig::Http{headers,..}|TransportConfig::Sse{headers,..}=>{
                 if headers.is_empty(){return Err(RunError::provider_auth());}
+                if let Some(capture)=&diagnostics{
+                    let mut secrets:Vec<_>=headers.values().cloned().collect();
+                    secrets.extend(headers.values().filter_map(|value|value.strip_prefix("Bearer ").map(str::to_owned)));
+                    capture.add_redactions(secrets);
+                }
                 headers.clear();
             },_=>return Err(RunError::invalid()),
         }
-        async fn check(config:&TransportConfig)->Result<(),RunError>{
-            let connection=transport::Connection::open(config).await?;
+        async fn check(config:&TransportConfig,diagnostics:Option<Arc<startup_diagnostics::StartupDiagnostics>>)->Result<(),RunError>{
+            let connection=transport::Connection::open_with_borrowed_startup(config,diagnostics).await?;
             let _guard=transport::CloseOnDrop::new(connection.clone());
             let result=connection.setup().await;let _=connection.close().await;result
         }
-        match tokio::time::timeout(Duration::from_secs(30),check(&unauthenticated)).await {
+        match tokio::time::timeout(Duration::from_secs(30),check(&unauthenticated,diagnostics.clone())).await {
             Ok(Err(error)) if error.code=="PROVIDER_AUTH_REQUIRED"=>{},
             _=>return Err(RunError{http_status:422,code:"AUTHENTICATION_CHECK_UNSUPPORTED",message:"The MCP endpoint did not demonstrate that this read-only request requires a login. Fetch cannot verify account access from public setup alone.",execution:"not_started"}),
         }
-        tokio::time::timeout(Duration::from_secs(30),check(config)).await.map_err(|_|RunError::not_ready())?
+        tokio::time::timeout(Duration::from_secs(30),check(config,diagnostics)).await.map_err(|_|RunError::not_ready())?
     }
     pub fn new()->Arc<Self>{Self::construct(None,Aliases::default())}
     /// Call only during explicit application startup, with Fetch's private root.
@@ -250,7 +270,7 @@ impl Runner {
         };
         Ok(Self::construct(Some(path),aliases))
     }
-    fn construct(alias_path:Option<PathBuf>,aliases:Aliases)->Arc<Self>{let(changes,_)=broadcast::channel(256);Arc::new(Self{servers:Arc::new(RwLock::new(BTreeMap::new())),deleted:Arc::new(std::sync::Mutex::new(BTreeSet::new())),aliases:Arc::new(Mutex::new(aliases)),alias_path,continuations:Arc::new(Mutex::new(BTreeMap::new())),stopping:Arc::new(AtomicBool::new(false)),shutdown_lock:Arc::new(Mutex::new(())),invocation_sequence:Arc::new(AtomicU64::new(0)),invocations:Arc::new(Mutex::new(BTreeMap::new())),changes,authentication_preflight:Arc::new(std::sync::RwLock::new(None))})}
+    fn construct(alias_path:Option<PathBuf>,aliases:Aliases)->Arc<Self>{let(changes,_)=broadcast::channel(256);let console_store=alias_path.as_ref().and_then(|path|path.parent()).map(|root|log_store::LogStore::new(root.to_owned()));Arc::new(Self{servers:Arc::new(RwLock::new(BTreeMap::new())),deleted:Arc::new(std::sync::Mutex::new(BTreeSet::new())),aliases:Arc::new(Mutex::new(aliases)),alias_path,continuations:Arc::new(Mutex::new(BTreeMap::new())),stopping:Arc::new(AtomicBool::new(false)),shutdown_lock:Arc::new(Mutex::new(())),invocation_sequence:Arc::new(AtomicU64::new(0)),invocations:Arc::new(Mutex::new(BTreeMap::new())),changes,authentication_preflight:Arc::new(std::sync::RwLock::new(None)),startup_logs:Arc::new(RwLock::new(BTreeMap::new())),startup_sequence:Arc::new(AtomicU64::new(0)),console_store})}
     fn is_deleted(&self,id:&str)->bool{self.deleted.lock().map(|ids|ids.contains(id)).unwrap_or(true)}
     fn ensure_running(&self)->Result<(),RunError>{if self.stopping.load(Ordering::Acquire){Err(RunError::not_ready())}else{Ok(())}}
     pub async fn configure(&self,route:ServerRoute)->Result<(),RunError>{
@@ -280,6 +300,14 @@ impl Runner {
         Ok(IdleDeletion{runner:self.clone(),id:id.to_owned(),server,_lifecycle:lifecycle,admission,retired:retry})
     }
     pub async fn connect(&self,id:&str)->Result<(),RunError>{
+        self.connect_with_login_urls(id,None).await
+    }
+    /// Explicit native login can wait while the server owns browser sign-in.
+    /// The caller bounds the whole attempt and owns presentation of received URLs.
+    pub async fn connect_for_authentication(&self,id:&str,urls:mpsc::Sender<String>)->Result<(),RunError>{
+        self.connect_with_login_urls(id,Some(urls)).await
+    }
+    async fn connect_with_login_urls(&self,id:&str,urls:Option<mpsc::Sender<String>>)->Result<(),RunError>{
         self.ensure_running()?;
         let server=self.server(id).await?;let _lock=server.lifecycle.lock().await;
         self.ensure_running()?;
@@ -291,9 +319,17 @@ impl Runner {
         *server.runtime_error.write().await=None;
         *server.runtime.write().await="starting".into();
         let route=server.route.read().await.clone();
-        let connection=match transport::Connection::open(&route.transport).await{Ok(c)=>c,Err(error)=>{server.start_failed(generation,&error).await;return Err(error);}};
+        let interactive=urls.is_some()&&matches!(&route.transport,TransportConfig::Stdio{..});
+        let diagnostics=self.begin_startup_diagnostics(id,&route.transport).await;
+        let opening=transport::Connection::open_with_startup(&route.transport,if interactive{urls}else{None},Some(diagnostics.clone()));
+        let connection=match opening.await{Ok(c)=>c,Err(error)=>{if diagnostics.snapshot()["lines"].as_array().is_none_or(Vec::is_empty){diagnostics.text("startup",error.message);}diagnostics.freeze();server.start_failed(generation,&error).await;return Err(error);}};
         let mut preparing=transport::CloseOnDrop::new(connection.clone());
-        if let Err(error)=connection.setup().await{let _=connection.close().await;server.start_failed(generation,&error).await;return Err(error);}
+        // Keep provisional local children reachable by disconnect/Quit while
+        // initialize waits for the person's browser login. They remain unusable
+        // until runtime readiness is published below.
+        if connection.is_local(){*server.connection.write().await=Some(connection.clone());}
+        let setup=if interactive{connection.setup_for_authentication().await}else{connection.setup().await};
+        if let Err(error)=setup{let _=connection.close().await;server.start_failed(generation,&error).await;return Err(error);}
         let capabilities=connection.capabilities.read().await.clone();
         let modern_http=connection.modern_http()&&connection.revision.read().await.as_str()==MODERN;
         let tools=if capabilities.get("tools").is_some(){
@@ -305,6 +341,7 @@ impl Runner {
         *server.tools.write().await=tools;
         *server.catalog_observed_at.write().await=Some(chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis,true));
         server.catalog_observed.store(true,Ordering::Release);
+        connection.freeze_startup_diagnostics();
         *server.connection.write().await=Some(connection.clone());
         *server.runtime.write().await="ready".into();server.scheduler.ready(true);
         let mut events=connection.changes.subscribe();let changes=self.changes.clone();let id=id.to_owned();
@@ -352,8 +389,54 @@ impl Runner {
         *revision=revision.wrapping_add(1);server.auth_rejected_generation.store(0,Ordering::Release);Ok(())
     }
     pub async fn begin_restart(&self,id:&str)->Result<(),RunError>{self.ensure_running()?;self.server(id).await?.scheduler.begin_restart()}
+    pub async fn begin_authentication(&self,id:&str)->Result<(),RunError>{
+        self.ensure_running()?;
+        let server=self.server(id).await?;let _lifecycle=server.lifecycle.lock().await;
+        self.ensure_running()?;
+        if server.removed.load(Ordering::Acquire){return Err(RunError::missing());}
+        server.scheduler.begin_authentication()?;
+        if let Some(previous)=self.startup_logs.read().await.get(id){previous.freeze();}
+        Ok(())
+    }
     pub async fn reopen_admission(&self,id:&str){if self.ensure_running().is_err(){return;}if let Ok(server)=self.server(id).await{if self.ensure_running().is_ok(){server.scheduler.reopen();}}}
     pub async fn drain(&self,id:&str,budget:Duration)->bool{match self.server(id).await{Ok(server)=>server.scheduler.drain(budget).await,Err(_)=>true}}
+    /// Native UI startup evidence is deliberately separate from the shared
+    /// runtime snapshot used by MCP tools and other callers.
+    pub async fn startup_diagnostics(&self,id:&str)->Option<Value>{
+        Some(self.startup_diagnostics_handle(id).await?.snapshot())
+    }
+    /// A capture exists before connection setup, so helpers and OAuth share the
+    /// same native-only projection without writing their output into records.
+    pub(crate) async fn begin_startup_diagnostics(&self,id:&str,config:&TransportConfig)->Arc<startup_diagnostics::StartupDiagnostics>{
+        let _=self.startup_diagnostics_handle(id).await;
+        let mut captures=self.startup_logs.write().await;
+        let generation=self.startup_sequence.fetch_add(1,Ordering::AcqRel)+1;
+        let diagnostics=startup_diagnostics::StartupDiagnostics::new(generation,config).expect("all transport configurations support diagnostics");
+        if self.stopping.load(Ordering::Acquire)||self.is_deleted(id){diagnostics.freeze();return diagnostics;}
+        if let Some(previous)=captures.insert(id.to_owned(),diagnostics.clone()){diagnostics.inherit_history(&previous);}
+        if let Some(store)=&self.console_store{diagnostics.attach_store(store,id);}
+        diagnostics
+    }
+    pub(crate) async fn startup_diagnostics_handle(&self,id:&str)->Option<Arc<startup_diagnostics::StartupDiagnostics>>{
+        if self.is_deleted(id){return None;}
+        if let Some(capture)=self.startup_logs.read().await.get(id).cloned(){return Some(capture);}
+        let store=self.console_store.as_ref()?;
+        let saved=store.load(id).await;
+        let generation=self.startup_sequence.fetch_add(1,Ordering::AcqRel)+1;
+        let capture=match saved{
+            Ok(None)=>return None,
+            Ok(Some(value))=>startup_diagnostics::StartupDiagnostics::restore(generation,&value),
+            Err(())=>Err(()),
+        }.unwrap_or_else(|()|{
+            let capture=startup_diagnostics::StartupDiagnostics::restore(generation,&json!({"schemaVersion":1,"lines":[],"exit_code":null,"signal":null})).expect("empty saved log");
+            capture.persistence_failed("Saved console history could not be read. Existing files were preserved.");capture
+        });
+        let mut captures=self.startup_logs.write().await;
+        if self.is_deleted(id)||self.stopping.load(Ordering::Acquire){return None;}
+        Some(captures.entry(id.to_owned()).or_insert(capture).clone())
+    }
+    /// Flush already sanitized console history without persisting terminal IO.
+    pub(crate) async fn flush_startup_logs(&self){if let Some(store)=&self.console_store{store.flush().await;}}
     pub async fn snapshot(&self,id:&str)->Value{
         match self.server(id).await{Ok(server)=>{
             let closed=server.connection.read().await.as_ref().is_some_and(|c|c.closed.load(Ordering::Acquire));
@@ -366,6 +449,7 @@ impl Runner {
     pub async fn known_tools(&self,id:&str)->Result<Vec<Box<RawValue>>,RunError>{let server=self.server(id).await?;let tools=server.tools.read().await.iter().filter(|tool|!tool.source_rejected).map(|tool|tool.definition.clone()).collect();Ok(tools)}
     pub async fn native_tool_usable(&self,id:&str,name:&str,view:&str)->Result<bool,RunError>{let server=self.server(id).await?;let usable=server.tools.read().await.iter().any(|tool|tool.name==name&&!tool.source_rejected&&!(view==MODERN&&tool.header_error));Ok(usable)}
     async fn connection(&self,id:&str)->Result<Arc<transport::Connection>,RunError>{self.ensure_running()?;let server=self.server(id).await?;
+        if server.runtime.read().await.as_str()!="ready"{return Err(RunError::not_ready());}
         let remote=matches!(&server.route.read().await.transport,TransportConfig::Http{..}|TransportConfig::Sse{..});
         if remote {let callback=self.authentication_preflight.read().map_err(|_|RunError::not_ready())?.clone();if let Some(callback)=callback{callback(id.to_owned()).await?;}}
         let connection=server.connection.read().await.clone().ok_or_else(RunError::not_ready)?;if connection.closed.load(Ordering::Acquire){server.scheduler.ready(false);return Err(RunError::not_ready());}Ok(connection)}
@@ -573,6 +657,9 @@ impl Runner {
             *server.connection.write().await=None;*server.runtime.write().await="stopped".into();
         }
         self.continuations.lock().await.clear();
+        for capture in self.startup_logs.write().await.values(){capture.freeze();}
+        if let Some(store)=&self.console_store{store.shutdown().await;}
+        self.startup_logs.write().await.clear();
     }
 }
 struct ActiveGuard{cancel:CancelToken,armed:bool}

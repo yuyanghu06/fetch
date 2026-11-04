@@ -46,6 +46,9 @@ pub struct Connection {
     close: CancelToken,
     legacy_post_endpoint: RwLock<Option<String>>,
     background: Mutex<Vec<tokio::task::JoinHandle<()>>>,
+    stderr_task: Mutex<Option<tokio::task::JoinHandle<()>>>,
+    startup_diagnostics: Option<Arc<super::startup_diagnostics::StartupDiagnostics>>,
+    owns_startup_diagnostics: bool,
 }
 pub struct RpcRequest {
     pub id: String,
@@ -54,6 +57,20 @@ pub struct RpcRequest {
 
 impl Connection {
     pub async fn open(config: &TransportConfig) -> Result<Arc<Self>, RunError> {
+        Self::open_with_login_urls(config, None).await
+    }
+
+    pub(crate) async fn open_with_login_urls(config: &TransportConfig, urls: Option<mpsc::Sender<String>>) -> Result<Arc<Self>, RunError> {
+        Self::open_with_startup(config, urls, None).await
+    }
+
+    pub(super) async fn open_with_startup(config: &TransportConfig, urls: Option<mpsc::Sender<String>>, diagnostics: Option<Arc<super::startup_diagnostics::StartupDiagnostics>>) -> Result<Arc<Self>, RunError> {
+        Self::open_with_diagnostic_ownership(config, urls, diagnostics, true).await
+    }
+    pub(super) async fn open_with_borrowed_startup(config: &TransportConfig, diagnostics: Option<Arc<super::startup_diagnostics::StartupDiagnostics>>) -> Result<Arc<Self>, RunError> {
+        Self::open_with_diagnostic_ownership(config, None, diagnostics, false).await
+    }
+    async fn open_with_diagnostic_ownership(config: &TransportConfig, urls: Option<mpsc::Sender<String>>, diagnostics: Option<Arc<super::startup_diagnostics::StartupDiagnostics>>, owns_startup_diagnostics: bool) -> Result<Arc<Self>, RunError> {
         let (changes, _) = broadcast::channel(128);
         match config {
             TransportConfig::Stdio { executable, args, working_directory, environment } => {
@@ -66,7 +83,10 @@ impl Connection {
                 // A dedicated process group permits owned descendant cleanup on Quit.
                 #[cfg(unix)]
                 { command.process_group(0); }
-                let mut child = command.spawn().map_err(|_| RunError::not_ready())?;
+                let mut child = command.spawn().map_err(|error| {
+                    if let Some(diagnostics) = &diagnostics { diagnostics.line(&format!("Server process could not start: {error}")); diagnostics.freeze(); }
+                    RunError::not_ready()
+                })?;
                 let mut input = child.stdin.take().ok_or_else(RunError::not_ready)?;
                 let output = child.stdout.take().ok_or_else(RunError::not_ready)?;
                 let error = child.stderr.take();
@@ -76,6 +96,7 @@ impl Connection {
                     session: RwLock::new(None), revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})),
                     child: Mutex::new(Some(child)), child_exit_confirmed:AtomicBool::new(false), closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
+                    stderr_task: Mutex::new(None), startup_diagnostics: diagnostics.clone(), owns_startup_diagnostics,
                 });
                 let mut opening=CloseOnDrop::new(connection.clone());
                 let c = connection.clone();
@@ -97,12 +118,12 @@ impl Connection {
                     }
                     c.fail_closed().await;
                 });
-                let mut tasks = vec![writer_task, reader_task];
-                if let Some(mut error) = error {
-                    // Consume private stderr without retaining provider output in memory/logs.
-                    tasks.push(tokio::spawn(async move { let mut buffer = [0u8; 4096]; while matches!(error.read(&mut buffer).await, Ok(n) if n > 0) {} }));
+                *connection.background.lock().await = vec![writer_task, reader_task];
+                if let Some(error) = error {
+                    *connection.stderr_task.lock().await = Some(tokio::spawn(
+                        super::local_setup::forward_startup_output(error, urls, diagnostics)
+                    ));
                 }
-                *connection.background.lock().await = tasks;
                 opening.disarm();
                 Ok(connection)
             }
@@ -117,6 +138,7 @@ impl Connection {
                     revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})), child: Mutex::new(None), child_exit_confirmed:AtomicBool::new(false),
                     closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
+                    stderr_task: Mutex::new(None), startup_diagnostics: diagnostics.clone(), owns_startup_diagnostics,
                 });
                 let mut opening=CloseOnDrop::new(connection.clone());
                 if matches!(config, TransportConfig::Sse { .. }) { connection.start_legacy_sse().await?; }
@@ -127,10 +149,18 @@ impl Connection {
     }
 
     pub async fn setup(self: &Arc<Self>) -> Result<(), RunError> {
+        self.setup_with_timeout(Duration::from_secs(30)).await
+    }
+
+    pub(crate) async fn setup_for_authentication(self: &Arc<Self>) -> Result<(), RunError> {
+        self.setup_with_timeout(Duration::from_secs(600)).await
+    }
+
+    async fn setup_with_timeout(self: &Arc<Self>, timeout: Duration) -> Result<(), RunError> {
         // An initialize request is read-only setup. It is never a tool invocation.
         let params = raw::raw(&json!({"protocolVersion":LEGACY,"capabilities":{},"clientInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}}));
         let request = self.start("initialize", params, &InvocationContext::terminal("fetch-internal".into()), BTreeMap::new()).await?;
-        let result = tokio::time::timeout(Duration::from_secs(30), request.response).await
+        let result = tokio::time::timeout(timeout, request.response).await
             .map_err(|_| RunError::not_ready())?.map_err(|_| RunError::not_ready())?;
         match result {
             Ok(result) => {
@@ -146,7 +176,7 @@ impl Connection {
                 if matches!(&self.wire, Wire::Remote { sse: true, .. }) { return Err(error); }
                 *self.revision.write().await = MODERN.into();
                 let request = self.start("server/discover", raw::raw(&json!({})), &InvocationContext::terminal("fetch-internal".into()), BTreeMap::new()).await?;
-                let result = tokio::time::timeout(Duration::from_secs(30), request.response).await.map_err(|_| RunError::not_ready())?
+                let result = tokio::time::timeout(timeout, request.response).await.map_err(|_| RunError::not_ready())?
                     .map_err(|_| RunError::not_ready())??;
                 if raw::text(&result,"resultType").as_deref() != Some("complete") { return Err(RunError::not_ready()); }
                 let supported=raw::field(&result,"supportedVersions").and_then(|v|serde_json::from_str::<Vec<String>>(v.get()).ok()).unwrap_or_default();
@@ -241,6 +271,10 @@ impl Connection {
             // Inspect only a bounded protocol error code; never expose a response diagnostic.
             let bytes = tokio::select!{bytes=bounded_response(response)=>bytes?,_=request_cancel.cancelled()=>return Err(RunError::unavailable())};
             let protocol_error=serde_json::from_slice::<Value>(&bytes).ok().filter(|value|value["jsonrpc"]=="2.0"&&parent.is_some_and(|id|value["id"].as_str()==Some(id)));
+            if let Some(capture)=&self.startup_diagnostics {
+                capture.text("http",&format!("{} returned HTTP {status}.",method.unwrap_or("MCP request")));
+                if let Ok(value)=serde_json::from_slice::<Value>(&bytes){capture.value("http rejection",&value);}else{capture.text("http rejection",&String::from_utf8_lossy(&bytes));}
+            }
             let error_code = protocol_error.as_ref().and_then(|v|v["error"]["code"].as_i64());
             return Err(if matches!(error_code,Some(-32601 | -32022)) && method == Some("initialize") {
                 RunError::version()
@@ -257,9 +291,9 @@ impl Connection {
     }
 
     async fn receive(self: &Arc<Self>, bytes: &[u8], parent: Option<&str>) -> Result<(), RunError> {
-        let original = raw::parse(bytes).map_err(|_| RunError::unavailable())?;
-        let message: Message = serde_json::from_slice(bytes).map_err(|_| RunError::unavailable())?;
-        if message.jsonrpc.as_deref() != Some("2.0") { return Err(RunError::unavailable()); }
+        let original = raw::parse(bytes).map_err(|_| {self.invalid_startup_message(bytes);RunError::unavailable()})?;
+        let message: Message = serde_json::from_slice(bytes).map_err(|_| {self.invalid_startup_message(bytes);RunError::unavailable()})?;
+        if message.jsonrpc.as_deref() != Some("2.0") {self.invalid_startup_message(bytes);return Err(RunError::unavailable());}
         if let Some(method) = message.method {
             if let Some(request_id) = message.id {
                 let params = message.params.unwrap_or_else(|| raw::raw(&json!({})));
@@ -279,6 +313,10 @@ impl Connection {
                         }
                     }
                 }
+            } else if method == "notifications/message" {
+                if let (Some(capture),Some(params))=(&self.startup_diagnostics,message.params){
+                    if let Ok(value)=serde_json::from_str::<Value>(params.get()){capture.value("mcp log",&value);}
+                }
             } else if matches!(method.as_str(), "notifications/tools/list_changed"|"notifications/resources/list_changed"|"notifications/prompts/list_changed") {
                 let _ = self.changes.send(method);
             }
@@ -288,8 +326,19 @@ impl Connection {
         if let Some(parent) = parent { if parent != id { return Err(RunError::unavailable()); } }
         let Some(pending) = self.pending.lock().await.remove(&id) else { return Ok(()); };
         let result = match (message.result,message.error) {
-            (Some(result),None) if result.get().starts_with('{') => Ok(result),
+            (Some(result),None) if result.get().starts_with('{') => {
+                if matches!(pending.method.as_str(),"initialize"|"server/discover") {
+                    if let (Some(capture),Some(instructions))=(&self.startup_diagnostics,raw::text(&result,"instructions")){
+                        capture.text("server instructions",&instructions);
+                    }
+                }
+                Ok(result)
+            },
             (None,Some(error)) => {
+                if let Some(capture)=&self.startup_diagnostics {
+                    capture.text("mcp error",&format!("{} was rejected.",pending.method));
+                    if let Ok(value)=serde_json::from_str::<Value>(error.get()){capture.value("mcp error",&value);}
+                }
                 let code = raw::field(&error,"code").and_then(|v|v.get().parse::<i64>().ok());
                 Err(if pending.method=="initialize"&&matches!(code,Some(-32601 | -32022)) { RunError::version() } else { RunError::rpc() })
             }
@@ -327,7 +376,10 @@ impl Connection {
     async fn start_legacy_sse(self: &Arc<Self>) -> Result<(), RunError> {
         let Wire::Remote { client, endpoint, headers, .. } = &self.wire else { return Err(RunError::not_ready()); };
         let response = crate::diagnostics::send(crate::diagnostics::UpstreamOperation::McpHttp,client.get(endpoint).headers(headers.read().await.clone()).header("accept","text/event-stream")).await.map_err(|_| RunError::not_ready())?;
-        if !response.status().is_success() { return Err(RunError::not_ready()); }
+        if !response.status().is_success() {
+            self.record_http_rejection("SSE connection",response).await;
+            return Err(RunError::not_ready());
+        }
         let c = self.clone();
         let task = tokio::spawn(async move { if c.consume_sse(response,None,true).await.is_err() { c.fail_closed().await; } });
         self.background.lock().await.push(task);
@@ -338,6 +390,15 @@ impl Connection {
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
     }
+    async fn record_http_rejection(&self,operation:&str,response:Response) {
+        if let Some(capture)=&self.startup_diagnostics {
+            capture.text("http",&format!("{operation} returned HTTP {}.",response.status().as_u16()));
+            match bounded_response(response).await{
+                Ok(bytes)=>if let Ok(value)=serde_json::from_slice::<Value>(&bytes){capture.value("http rejection",&value);}else{capture.text("http rejection",&String::from_utf8_lossy(&bytes));},
+                Err(_)=>capture.text("http rejection","The error response could not be read within the response limit."),
+            }
+        }
+    }
     async fn start_legacy_get(self: &Arc<Self>) {
         let Wire::Remote { client, endpoint, headers, sse:false } = &self.wire else { return; };
         let Some(session) = self.session.read().await.clone() else { return; };
@@ -345,6 +406,7 @@ impl Connection {
         let task=tokio::spawn(async move {
             if let Ok(response)=crate::diagnostics::send(crate::diagnostics::UpstreamOperation::McpHttp,client.get(endpoint).headers(headers).header("accept","text/event-stream").header("mcp-session-id",session).header("mcp-protocol-version",LEGACY)).await {
                 if response.status().is_success() { let _=c.consume_sse(response,None,false).await; }
+                else {c.record_http_rejection("MCP event stream",response).await;}
             }
         });
         self.background.lock().await.push(task);
@@ -388,18 +450,59 @@ impl Connection {
     }
     pub async fn close(self:&Arc<Self>)->bool {
         self.close.cancel(); self.closed.store(true,Ordering::Release);
+        // A failed child may close stdout just before its fatal stderr line and
+        // exit status are observed. Drain the separate pipe before terminating
+        // anything; descendants retaining it cannot make cleanup wait forever.
+        self.drain_startup_stderr().await;
         let confirmed=if let Some(mut child)=self.child.lock().await.take() {
-            #[cfg(unix)]
-            if let Some(id)=child.id() { unsafe { libc::kill(-(id as i32),libc::SIGTERM); } }
-            match tokio::time::timeout(Duration::from_secs(5),child.wait()).await {
-                Ok(Ok(_))=>true,
-                _=>{ let _=child.start_kill(); matches!(tokio::time::timeout(Duration::from_secs(5),child.wait()).await,Ok(Ok(_))) }
+            let owned_group=child.id();
+            let mut natural=child.try_wait().ok().flatten();
+            if natural.is_none()&&self.startup_diagnostics.as_ref().is_some_and(|diagnostics|!diagnostics.is_frozen()) {
+                // stdout EOF and process exit can be observed a few ticks apart.
+                // Give the child a short chance to report its own status first.
+                if let Ok(Ok(status))=tokio::time::timeout(Duration::from_millis(100),child.wait()).await{natural=Some(status);}
             }
-        } else { false };
-        if confirmed{self.child_exit_confirmed.store(true,Ordering::Release);}
+            let confirmed=if let Some(status)=natural {
+                if let Some(diagnostics)=&self.startup_diagnostics { diagnostics.natural_exit(status); }
+                // A naturally exited parent can still have owned descendants.
+                #[cfg(unix)]
+                if let Some(id)=owned_group { unsafe { libc::kill(-(id as i32),libc::SIGTERM); } }
+                true
+            } else {
+                #[cfg(unix)]
+                if let Some(id)=owned_group { unsafe { libc::kill(-(id as i32),libc::SIGTERM); } }
+                // A Fetch-initiated termination is not a natural startup exit.
+                match tokio::time::timeout(Duration::from_secs(5),child.wait()).await {
+                    Ok(Ok(_))=>true,
+                    _=>{ let _=child.start_kill(); matches!(tokio::time::timeout(Duration::from_secs(5),child.wait()).await,Ok(Ok(_))) }
+                }
+            };
+            // Another close may be waiting on this same Child mutex. Publish
+            // confirmation before releasing it so both callers await the reap.
+            if confirmed{self.child_exit_confirmed.store(true,Ordering::Release);}
+            confirmed
+        } else { self.child_exit_confirmed.load(Ordering::Acquire) };
+        self.drain_startup_stderr().await;
+        self.freeze_startup_diagnostics();
+        if let Some(task)=self.stderr_task.lock().await.take(){task.abort();}
         for task in self.background.lock().await.drain(..) { task.abort(); }
         self.fail_closed().await;
         confirmed
+    }
+    async fn drain_startup_stderr(&self) {
+        if self.startup_diagnostics.as_ref().is_none_or(|diagnostics|diagnostics.is_frozen()){return;}
+        let Some(mut task)=self.stderr_task.lock().await.take()else{return;};
+        if tokio::time::timeout(Duration::from_millis(150),&mut task).await.is_err(){
+            *self.stderr_task.lock().await=Some(task);
+        }
+    }
+    pub(super) fn freeze_startup_diagnostics(&self) {
+        if self.owns_startup_diagnostics {if let Some(diagnostics)=&self.startup_diagnostics{diagnostics.freeze();}}
+    }
+    fn invalid_startup_message(&self,bytes:&[u8]) {
+        if let Some(capture)=&self.startup_diagnostics {
+            capture.text(if self.is_local(){"stdout (invalid MCP message)"}else{"invalid MCP reply"},&String::from_utf8_lossy(bytes));
+        }
     }
     /// Delete only an idle context. Retain its Child until exit is confirmed so
     /// a bounded failed close remains retryable without guessing that it stopped.
@@ -423,6 +526,9 @@ impl Connection {
             if !confirmed{return false;}
             self.child_exit_confirmed.store(true,Ordering::Release);stored.take();
         }
+        self.drain_startup_stderr().await;
+        self.freeze_startup_diagnostics();
+        if let Some(task)=self.stderr_task.lock().await.take(){task.abort();}
         for task in self.background.lock().await.drain(..){task.abort();}
         self.fail_closed().await;true
     }

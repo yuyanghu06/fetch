@@ -194,12 +194,89 @@ async fn refresh_rejection_and_transient_failures_preserve_existing_state_and_do
     }
 }
 
+/// All requests stay inside this fake client, including legacy discovery probes.
+struct MetadataHttp {inner:ScriptHttp, document:Option<Value>}
+impl rmcp::transport::auth::OAuthHttpClient for MetadataHttp {
+    fn execute(&self,operation:rmcp::transport::auth::OAuthHttpRequest)->rmcp::transport::auth::OAuthHttpClientFuture<'_>{Box::pin(async move{
+        let path=operation.request.uri().path();
+        let discovery=path.contains("oauth-authorization-server")||path.contains("openid-configuration");
+        if discovery || (self.document.is_none() && path!="/register" && path!="/token") {
+            self.inner.requests.lock().unwrap().push((operation.request.uri().to_string(),String::new()));
+            let(status,value)=if discovery {self.document.as_ref().map(|value|(200,value.clone())).unwrap_or((404,json!({"error":"fixture-not-found"})))}else{(404,json!({"error":"fixture-not-found"}))};
+            return Ok(oauth2::http::Response::builder().status(status).header("content-type","application/json").body(value.to_string().into_bytes()).unwrap());
+        }
+        self.inner.execute(operation).await
+    })}
+}
+fn callback_state(session:&rmcp::transport::auth::AuthorizationSession)->String {
+    url::Url::parse(session.get_authorization_url()).unwrap().query_pairs().find(|(name,_)|name=="state").unwrap().1.into_owned()
+}
+
 #[tokio::test]
-async fn missing_advertised_issuer_callback_support_is_unsupported_without_storage_or_token_request() {
+async fn unadvertised_issuer_support_completes_sdk_login_without_callback_issuer() {
+    for advertised in [Some(false),None] {
+        let temporary=tempfile::tempdir().unwrap();let grants=Arc::new(GrantStore::memory(temporary.path().into()));
+        let mut document=serde_json::to_value(metadata()).unwrap();
+        if let Some(value)=advertised{document["authorization_response_iss_parameter_supported"]=json!(value);}else{document.as_object_mut().unwrap().remove("authorization_response_iss_parameter_supported");}
+        let http=Arc::new(MetadataHttp{inner:ScriptHttp::new(200),document:Some(document)});
+        let prepared=sdk::Prepared::with_http(grants.clone(),"server","https://mcp.fixture.example/mcp",http.clone()).await.unwrap();
+        let store=prepared.store.clone();let session=prepared.begin("https://localhost:53672/oauth/provider/callback").await.unwrap();
+        assert!(session.get_authorization_url().starts_with("https://issuer.fixture.example/authorize?"));
+        assert!(store.snapshot().await.unwrap().is_none(),"no grant is saved before the callback");
+        session.handle_callback_with_issuer("code-fixture",&callback_state(&session),None).await.unwrap();
+        assert_eq!(sdk::token(&store.snapshot().await.unwrap().unwrap()).as_deref(),Some("renewed-access-fixture"));
+        assert_eq!(http.inner.requests.lock().unwrap().iter().filter(|(uri,_)|uri.ends_with("/token")).count(),1);
+    }
+}
+
+#[tokio::test]
+async fn sdk_legacy_endpoint_fallback_can_finish_without_issuer_metadata() {
     let temporary=tempfile::tempdir().unwrap();let grants=Arc::new(GrantStore::memory(temporary.path().into()));
-    let http=Arc::new(ScriptHttp{requests:Mutex::new(vec![]),token_status:200,iss_supported:false});
-    assert!(sdk::Prepared::with_http(grants.clone(),"server","https://mcp.fixture.example/mcp",http.clone()).await.is_err());
-    assert!(grants.read_json("server").await.unwrap().is_none());
+    let http=Arc::new(MetadataHttp{inner:ScriptHttp::new(200),document:None});
+    let prepared=sdk::Prepared::with_http(grants,"server","https://mcp.fixture.example/mcp",http.clone()).await.unwrap();
+    assert!(prepared.store.metadata.issuer.is_none());
+    let store=prepared.store.clone();let session=prepared.begin("https://localhost:53672/oauth/provider/callback").await.unwrap();
+    assert!(session.get_authorization_url().starts_with("https://mcp.fixture.example/authorize?"));
+    session.handle_callback_with_issuer("legacy-code-fixture",&callback_state(&session),None).await.unwrap();
+    let saved=store.snapshot().await.unwrap().unwrap();assert!(saved.issuer.is_none());assert_eq!(sdk::token(&saved).as_deref(),Some("renewed-access-fixture"));
+    assert!(http.inner.requests.lock().unwrap().iter().any(|(uri,_)|uri=="https://mcp.fixture.example/register"));
+}
+
+#[tokio::test]
+async fn unused_registration_endpoint_does_not_block_saved_login_reuse() {
+    use rmcp::transport::auth::CredentialStore;
+    let temporary=tempfile::tempdir().unwrap();let grants=Arc::new(GrantStore::memory(temporary.path().into()));
+    let mut document=serde_json::to_value(metadata()).unwrap();document["registration_endpoint"]=json!("http://127.0.0.1/unused-register");
+    let http=Arc::new(MetadataHttp{inner:ScriptHttp::new(200),document:Some(document)});
+    let mut prepared=sdk::Prepared::with_http(grants,"server","https://mcp.fixture.example/mcp",http.clone()).await.unwrap();
+    prepared.store.save(credentials("saved-access-fixture","saved-refresh-fixture")).await.unwrap();
+    assert_eq!(prepared.reuse().await.unwrap(),"saved-access-fixture");
+    assert!(!http.inner.requests.lock().unwrap().iter().any(|(uri,_)|uri.contains("unused-register")));
+}
+
+#[tokio::test]
+async fn harmless_metadata_changes_reuse_saved_login_but_changed_issuer_does_not() {
+    use rmcp::transport::auth::CredentialStore;
+    let temporary=tempfile::tempdir().unwrap();let grants=Arc::new(GrantStore::memory(temporary.path().into()));
+    let original=sdk::Store::new(grants.clone(),"server".into(),"https://mcp.fixture.example/mcp".into(),metadata());
+    original.save(credentials("saved-access-fixture","saved-refresh-fixture")).await.unwrap();
+    let before=grants.read_json("server").await.unwrap().unwrap();
+    let mut document=serde_json::to_value(metadata()).unwrap();document["service_documentation"]=json!("https://issuer.fixture.example/updated-docs");document["scopes_supported"]=json!(["new_optional_scope"]);
+    let http=Arc::new(MetadataHttp{inner:ScriptHttp::new(200),document:Some(document)});
+    let mut prepared=sdk::Prepared::with_http(grants.clone(),"server","https://mcp.fixture.example/mcp",http).await.unwrap();
+    assert_eq!(prepared.reuse().await.unwrap(),"saved-access-fixture");
+    assert_eq!(grants.read_json("server").await.unwrap().unwrap(),before,"read-only reuse must not rewrite the account");
+    let mut changed=metadata();changed.issuer=Some("https://different-issuer.fixture.example/".into());
+    let other=sdk::Store::new(grants.clone(),"server".into(),"https://mcp.fixture.example/mcp".into(),changed);
+    assert!(other.load().await.is_err());assert_eq!(grants.read_json("server").await.unwrap().unwrap(),before);
+}
+
+#[tokio::test]
+async fn sdk_still_requires_callback_issuer_when_service_advertises_support() {
+    let temporary=tempfile::tempdir().unwrap();let grants=Arc::new(GrantStore::memory(temporary.path().into()));let http=Arc::new(ScriptHttp::new(200));
+    let prepared=sdk::Prepared::with_http(grants,"server","https://mcp.fixture.example/mcp",http.clone()).await.unwrap();
+    let session=prepared.begin("https://localhost:53672/oauth/provider/callback").await.unwrap();
+    assert!(matches!(session.handle_callback_with_issuer("code-fixture",&callback_state(&session),None).await,Err(rmcp::transport::auth::AuthError::AuthorizationServerMissingIssuer{..})));
     assert!(!http.requests.lock().unwrap().iter().any(|(uri,_)|uri.ends_with("/token")));
 }
 
@@ -355,4 +432,40 @@ async fn official_sdk_retains_prior_refresh_token_when_a_successful_renewal_omit
     assert_eq!(prepared.reuse().await.unwrap(),"renewed-access-fixture");
     let saved=prepared.store.snapshot().await.unwrap().unwrap();
     assert_eq!(saved.token_response.unwrap().refresh_token().unwrap().secret(),"still-valid-refresh");
+}
+
+
+#[tokio::test]
+async fn callback_route_ignores_provider_extensions_but_rejects_duplicate_routing_fields() {
+    use crate::{api::{AppState,router},authority::PendingNativeAuthority,discovery::DiscoveryService,installation::Installer,manager::Manager,runner::Runner,storage::ServerRepository};
+    use axum::{body::Body,http::{Request,StatusCode,header}};
+    use http_body_util::BodyExt;
+    use tower::ServiceExt;
+    let temporary=tempfile::tempdir().unwrap();let root=temporary.path().join("state");
+    let repository=ServerRepository::new(root.clone());let grants=Arc::new(GrantStore::memory(root.clone()));
+    let discovery=DiscoveryService::new(temporary.path().join("empty-home"),None);
+    let manager=Manager::with_grant_store(repository.clone(),grants,Runner::new(),Installer::new(root,discovery.clone()));
+    let mut state=AppState::new("https://localhost:53672".into(),repository,discovery,Arc::new(PendingNativeAuthority)).unwrap();state.manager=Some(manager.clone());let app=router(Arc::new(state));
+    // An unknown attempt gives Manager's HTML failure page. Parser rejections are JSON.
+    let base="state=unknown-fixture&code=code-fixture&iss=https%3A%2F%2Fissuer.fixture.example%2F&error=access_denied";
+    for extra in ["scope=openid%20profile&session_state=provider-session-fixture","provider_extension=one&provider_extension=two"] {
+        let response=app.clone().oneshot(Request::builder().uri(format!("/oauth/provider/callback?{base}&{extra}")).header(header::HOST,"localhost:53672").body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(response.status(),StatusCode::BAD_REQUEST);assert!(response.headers()[header::CONTENT_TYPE].to_str().unwrap().starts_with("text/html"));
+        let body=response.into_body().collect().await.unwrap().to_bytes();assert!(String::from_utf8_lossy(&body).contains("Provider setup did not finish successfully"));
+    }
+    for duplicate in ["state=second","code=second","iss=second","error=second"] {
+        let response=app.clone().oneshot(Request::builder().uri(format!("/oauth/provider/callback?{base}&{duplicate}")).header(header::HOST,"localhost:53672").body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(response.status(),StatusCode::BAD_REQUEST);assert!(response.headers()[header::CONTENT_TYPE].to_str().unwrap().starts_with("application/json"));
+        let body=response.into_body().collect().await.unwrap().to_bytes();assert_eq!(serde_json::from_slice::<Value>(&body).unwrap()["error"]["code"],"INVALID_REQUEST");
+    }
+    manager.shutdown().await;
+}
+
+
+#[test]
+fn removed_metadata_preflight_does_not_allow_private_or_plain_http_destinations() {
+    for endpoint in ["http://127.0.0.1/unused-register","https://127.0.0.1/unused-register"] {
+        assert!(crate::manager::network::checked_url(endpoint).is_err());
+    }
+    assert!(crate::manager::network::checked_url("https://issuer.fixture.example/token").is_ok());
 }

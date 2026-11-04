@@ -29,6 +29,10 @@ impl Manager {
             else{ManagementError::new(503,"SERVER_DELETE_UNAVAILABLE","Fetch cannot safely close this server right now.")}
         })?;
         deletion.stop().await.map_err(|_|ManagementError::new(503,"SERVER_STOP_FAILED","The idle upstream could not be confirmed closed within five seconds. Saved server data was preserved; review its state before retrying deletion."))?;
+        let terminals=self.terminals.clone();let terminal_id=id.to_owned();
+        tokio::task::spawn_blocking(move||terminals.remove(&terminal_id)).await
+            .map_err(|_|ManagementError::new(503,"SERVER_STOP_FAILED","The terminal cleanup worker did not complete. Saved server data was preserved."))?
+            .map_err(|error|{let mut result=ManagementError::new(503,"SERVER_STOP_FAILED","The terminal could not be closed. Saved server data was preserved.");result.extra=json!({"terminal_error":{"code":error.code,"message":error.message}});result})?;
         let repository=self.repository.clone();let server_id=id.to_owned();
         // Remove Fetch's registration only. Native files, packages, legacy keys
         // and grants are deliberately preserved even after successful removal.

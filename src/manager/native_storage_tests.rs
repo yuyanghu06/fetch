@@ -1,5 +1,10 @@
 use super::*;
 use tempfile::TempDir;
+fn inherited_default_path(executable_parent:&str)->String {
+    let mut paths=vec![std::path::PathBuf::from(executable_parent)];
+    paths.extend(std::env::var_os("PATH").map(|path|std::env::split_paths(&path).collect::<Vec<_>>()).unwrap_or_else(||vec!["/usr/bin".into(),"/bin".into()]));
+    std::env::join_paths(paths).unwrap().into_string().unwrap()
+}
 fn local(id:&str)->Value{json!({"server_id":id,"name":"native fixture","config":{"kind":"local_script","executable":"/usr/bin/true","args":[],"working_directory":null,"environment":[]}})}
 #[test]
 fn unmodified_instances_have_distinct_home_and_xdg_paths(){
@@ -19,9 +24,79 @@ fn fixed_keys_only_reach_their_assigned_environment_names(){
     assert_eq!(environment["EXAMPLE_KEY"],"fixture");assert!(!environment.values().any(|value|value=="private"));
 }
 #[test]
-fn missing_fixed_key_is_explicit_and_does_not_fall_back_to_process_environment(){
-    let root=TempDir::new().unwrap();let mut record=local("missing");record["config"]["environment"]=json!([{"name":"PATH","credential_ref":"missing"}]);
-    assert_eq!(native_state::transport(root.path(),&record,&json!({"manual":{}})).err().unwrap().code,"SERVER_AUTH_REQUIRED");
+fn absent_environment_references_are_omitted_for_server_owned_setup(){
+    let root=TempDir::new().unwrap();let mut record=local("missing");
+    record["config"]["environment"]=json!([
+        {"name":"EXAMPLE_CLIENT_SECRET","credential_ref":"missing-client"},
+        {"name":"EXAMPLE_PROFILE","credential_ref":"optional-profile"},
+        {"name":"ASSIGNED_KEY","credential_ref":"present"}
+    ]);
+    let TransportConfig::Stdio{environment,..}=native_state::transport(root.path(),&record,&json!({"manual":{"present":"fixture-key","unassigned":"private"}})).unwrap()else{panic!("stdio")};
+    assert!(!environment.contains_key("EXAMPLE_CLIENT_SECRET"));
+    assert!(!environment.contains_key("EXAMPLE_PROFILE"));
+    assert_eq!(environment["ASSIGNED_KEY"],"fixture-key");
+    assert!(!environment.values().any(|value|value=="private"));
+    assert!(environment["HOME"].starts_with(root.path().to_str().unwrap()));
+}
+#[test]
+fn assigned_language_and_service_secrets_survive_while_internal_tokens_are_removed(){
+    let root=TempDir::new().unwrap();let mut record=local("assigned-environment");
+    record["config"]["environment"]=json!([
+        {"name":"LANG","credential_ref":"language"},
+        {"name":"EXAMPLE_TOKEN","credential_ref":"token"},
+        {"name":"EXAMPLE_SECRET","credential_ref":"secret"},
+        {"name":"node_repl_auth_token","credential_ref":"blocked"}
+    ]);
+    let TransportConfig::Stdio{environment,..}=native_state::transport(root.path(),&record,&json!({"manual":{"language":"fixture-language","token":"assigned-token","secret":"assigned-secret","blocked":"blocked-internal-token"}})).unwrap()else{panic!("stdio")};
+    assert_eq!(environment["LANG"],"fixture-language");
+    assert_eq!(environment["EXAMPLE_TOKEN"],"assigned-token");
+    assert_eq!(environment["EXAMPLE_SECRET"],"assigned-secret");
+    assert!(!environment.keys().any(|name|name.eq_ignore_ascii_case("NODE_REPL_AUTH_TOKEN")));
+    assert!(environment["HOME"].starts_with(root.path().to_str().unwrap()));
+    assert_eq!(environment["XDG_CONFIG_HOME"],format!("{}/.config",environment["HOME"]));
+    assert_eq!(environment["XDG_STATE_HOME"],format!("{}/.local/state",environment["HOME"]));
+    assert_eq!(environment["PATH"],inherited_default_path("/usr/bin"));
+}
+#[test]
+fn managed_program_folders_prefix_configured_path_without_changing_launch_or_home(){
+    let root=TempDir::new().unwrap();let mut record=local("program-paths");
+    let installation=format!("package-{}","a".repeat(32));
+    let bin=root.path().join("packages/servers").join(&installation).join("node_modules/.bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    record["config"]["kind"]=json!("npm");record["config"]["package"]=json!({"name":"fixture"});
+    record["config"]["environment"]=json!([{"name":"PATH","credential_ref":"program-path"}]);
+    record["_installation"]=json!({"installation_id":installation,"program_directories":["node_modules/.bin"]});
+    let TransportConfig::Stdio{executable,args,environment,..}=native_state::transport(root.path(),&record,&json!({"manual":{"program-path":"/fixture custom/bin:/usr/bin"}})).unwrap()else{panic!("stdio")};
+    let paths:Vec<_>=std::env::split_paths(&environment["PATH"]).collect();
+    assert_eq!(paths,vec![std::fs::canonicalize(bin).unwrap(),std::path::PathBuf::from("/fixture custom/bin"),std::path::PathBuf::from("/usr/bin")]);
+    assert_eq!(executable,std::path::PathBuf::from("/usr/bin/true"));assert!(args.is_empty());
+    assert!(environment["HOME"].starts_with(root.path().to_str().unwrap()));
+}
+#[test]
+fn legacy_railway_transport_finds_its_cli_and_plain_scripts_keep_their_default_path(){
+    let root=TempDir::new().unwrap();let plain=local("plain");
+    let TransportConfig::Stdio{environment:before,..}=native_state::transport(root.path(),&plain,&json!({"manual":{}})).unwrap()else{panic!("stdio")};
+    assert_eq!(before["PATH"],inherited_default_path("/usr/bin"));
+    let mut record=local("legacy-railway");let installation=format!("package-{}","b".repeat(32));
+    let bin=root.path().join("packages/servers").join(&installation).join("railway-cli/node_modules/.bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    record["config"]["kind"]=json!("npm");record["config"]["package"]=json!({"name":"@railway/mcp-server"});
+    record["_installation"]=json!({"installation_id":installation});
+    let TransportConfig::Stdio{environment,..}=native_state::transport(root.path(),&record,&json!({"manual":{}})).unwrap()else{panic!("stdio")};
+    assert_eq!(std::env::split_paths(&environment["PATH"]).next().unwrap(),std::fs::canonicalize(bin).unwrap());
+    assert!(environment["PATH"].ends_with(&before["PATH"]));
+}
+#[test]
+fn absent_header_references_are_omitted_and_available_values_are_unchanged(){
+    let config=json!({"kind":"remote","environment":[],"connection":{"headers":[
+        {"name":"X-Optional","credential_ref":"not-stored"},
+        {"name":"Authorization","credential_ref":"assigned"}
+    ]}});
+    let resolved=bindings::InputBindings::from_config(&config).unwrap()
+        .resolve_source(bindings::Source::Header,&json!({"manual":{"assigned":"Bearer fixture-exact","unassigned":"private"}}),&[]).unwrap();
+    assert!(!resolved.contains_key("X-Optional"));
+    assert_eq!(resolved.len(),1);
+    assert_eq!(resolved["Authorization"],"Bearer fixture-exact");
 }
 #[test]
 fn public_timestamps_are_utc_strings_or_null(){assert_eq!(timestamp(Some(0)),json!("1970-01-01T00:00:00Z"));assert_eq!(timestamp(None),Value::Null);}
@@ -98,4 +173,51 @@ async fn reconnect_renews_through_actual_route_after_drain_and_uses_new_headers(
     tokio::time::timeout(Duration::from_secs(6),async{loop{let status=manager.servers(vec!["remote".into()],Some(restart_id.into())).await.unwrap();match status["servers"][0]["restart"]["status"].as_str(){Some("succeeded")=>break,Some("failed")=>panic!("restart failed: {}",status["servers"][0]["restart"]),_=>tokio::time::sleep(Duration::from_millis(10)).await}}}).await.unwrap();
     assert_eq!(mcp.initializations.lock().unwrap().as_slice(),["Bearer old-fixture","Bearer new-fixture"]);assert_eq!(http.tokens.load(Ordering::SeqCst),1);
     manager.shutdown().await;handle.graceful_shutdown(Some(Duration::from_secs(1)));tokio::time::timeout(Duration::from_secs(3),api).await.unwrap().unwrap();upstream.abort();let _=upstream.await;
+}
+
+
+#[cfg(target_os="macos")]
+#[test]
+fn inherited_commands_work_in_server_terminal_and_private_programs_win(){
+    use base64::Engine;
+    use std::{io::Write,os::unix::fs::PermissionsExt,process::Command,time::{Duration,Instant}};
+    const CHILD_ROOT:&str="FETCH_PROGRAM_PATH_FIXTURE_ROOT";
+    let Some(root)=std::env::var_os(CHILD_ROOT) else{
+        // Give only this disposable child a fake host PATH; never mutate the
+        // environment shared by parallel tests or invoke the real gh binary.
+        let directory=tempfile::Builder::new().prefix("fetch-program-path-").tempdir_in("/private/tmp").unwrap();
+        let root=std::fs::canonicalize(directory.path()).unwrap();let global=root.join("global/bin");std::fs::create_dir_all(&global).unwrap();
+        let output=Command::new(std::env::current_exe().unwrap()).args(["--exact","manager::native_storage_tests::inherited_commands_work_in_server_terminal_and_private_programs_win","--nocapture"])
+            .env_clear().env(CHILD_ROOT,&root).env("PATH",std::env::join_paths([global,std::path::PathBuf::from("/usr/bin"),std::path::PathBuf::from("/bin")]).unwrap()).output().unwrap();
+        assert!(output.status.success(),"disposable terminal fixture failed: {} {}",String::from_utf8_lossy(&output.stdout),String::from_utf8_lossy(&output.stderr));
+        return;
+    };
+    let root=std::path::PathBuf::from(root);let global=root.join("global/bin");let installation=format!("package-{}","d".repeat(32));let private=root.join("packages/servers").join(&installation).join("node_modules/.bin");std::fs::create_dir_all(&private).unwrap();
+    let write_gh=|path:&std::path::Path,label:&str|{let mut file=std::fs::File::create(path).unwrap();writeln!(file,"#!/bin/sh\nprintf '%s\\n' '{label}'").unwrap();std::fs::set_permissions(path,std::fs::Permissions::from_mode(0o700)).unwrap();};
+    write_gh(&global.join("gh"),"global-gh-fixture");
+    let mut record=local("terminal-path");record["config"]["kind"]=json!("npm");record["config"]["package"]=json!({"name":"fixture"});record["_installation"]=json!({"installation_id":installation,"program_directories":["node_modules/.bin"]});
+    let TransportConfig::Stdio{environment,working_directory:Some(cwd),..}=native_state::transport(&root,&record,&json!({"manual":{}})).unwrap()else{panic!("local transport")};
+    assert!(environment["HOME"].starts_with(root.join("servers").to_str().unwrap()));assert_eq!(environment["XDG_CONFIG_HOME"],format!("{}/.config",environment["HOME"]));
+    let paths:Vec<_>=std::env::split_paths(&environment["PATH"]).collect();assert_eq!(paths[0],std::fs::canonicalize(&private).unwrap());assert!(paths.contains(&global));
+    let profile=format!(r#"(version 1)(deny default)
+(allow file-read-metadata)
+(allow file-read* (literal "/") (subpath "/System") (subpath "/usr/lib") (subpath "/bin") (subpath "/usr/bin") (subpath "/dev") (subpath {root}))
+(allow file-map-executable (subpath "/System") (subpath "/usr/lib") (subpath "/bin") (subpath "/usr/bin") (subpath {root}))
+(allow file-write* (subpath {root}) (subpath "/dev"))(allow file-ioctl (subpath "/dev"))
+(allow process-exec (subpath "/bin") (subpath "/usr/bin") (subpath {root}))
+(allow process-fork)(allow signal (target children))(allow sysctl-read)
+"#,root=serde_json::to_string(root.to_str().unwrap()).unwrap());
+    let service=crate::terminal::TerminalService::new();let (opened,_)=service.open("fixture",crate::terminal::Launch{shell:"/usr/bin/sandbox-exec".into(),working_directory:cwd,environment,args:vec!["-p".into(),profile,"/bin/sh".into()]},80,24).unwrap();let session=opened["session_id"].as_str().unwrap().to_owned();
+    let result=std::panic::catch_unwind(std::panic::AssertUnwindSafe(||{
+        let run=|command:&str,marker:&str|{
+            service.apply("fixture",crate::terminal::Action::Input{session_id:session.clone(),data:command.as_bytes().to_vec()}).unwrap();
+            let deadline=Instant::now()+Duration::from_secs(5);let mut cursor=0;let mut output=String::new();loop{
+                let value=service.read("fixture",&session,cursor).unwrap();cursor=value["next_cursor"].as_u64().unwrap();let bytes=base64::engine::general_purpose::STANDARD.decode(value["data"].as_str().unwrap()).unwrap();output.push_str(&String::from_utf8_lossy(&bytes));
+                if output.contains(marker){break;}assert!(Instant::now()<deadline,"terminal command did not run: {output}");std::thread::sleep(Duration::from_millis(10));
+            }
+        };
+        run("stty -echo; gh\n","global-gh-fixture\r\n");
+        write_gh(&private.join("gh"),"private-gh-fixture");run("hash -r; gh\n","private-gh-fixture\r\n");
+    }));
+    service.shutdown().unwrap();if let Err(error)=result{std::panic::resume_unwind(error);}
 }

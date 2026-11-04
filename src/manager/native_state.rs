@@ -4,7 +4,7 @@ use crate::{installation::private_directory,runner::TransportConfig};
 use serde_json::{Value,json};
 use sha2::{Digest,Sha256};
 use std::{path::{Path,PathBuf},sync::Arc,time::Duration};
-use tokio::io::AsyncReadExt;
+
 
 #[derive(Clone)]
 pub(super) struct Setup {executable:PathBuf,args:Vec<String>,working_directory:PathBuf,state_directory:PathBuf}
@@ -22,14 +22,27 @@ pub(super) fn transport(root:&Path,record:&Value,manual:&Value)->Result<Transpor
     let mut environment=bindings::InputBindings::from_record(record)?.resolve_source(bindings::Source::Environment,manual,&["HOME","XDG_CONFIG_HOME","XDG_STATE_HOME"])?;
     let home=home(root,id);private_directory(&home).map_err(|_|invalid_config())?;
     for directory in [home.join(".config"),home.join(".local/state")]{private_directory(&directory).map_err(|_|invalid_config())?;}
-    environment.insert("HOME".into(),home.to_string_lossy().into_owned());environment.insert("XDG_CONFIG_HOME".into(),home.join(".config").to_string_lossy().into_owned());environment.insert("XDG_STATE_HOME".into(),home.join(".local/state").to_string_lossy().into_owned());
-    environment.entry("PATH".into()).or_insert_with(||executable.parent().map(|path|format!("{}:/usr/bin:/bin",path.display())).unwrap_or_else(||"/usr/bin:/bin".into()));environment.entry("LANG".into()).or_insert_with(||"en_US.UTF-8".into());
+    environment.insert("HOME".into(),home.to_str().ok_or_else(invalid_config)?.to_owned());environment.insert("XDG_CONFIG_HOME".into(),home.join(".config").to_str().ok_or_else(invalid_config)?.to_owned());environment.insert("XDG_STATE_HOME".into(),home.join(".local/state").to_str().ok_or_else(invalid_config)?.to_owned());
+    let assigned_path=environment.contains_key("PATH");
+    let mut environment=super::process_environment::environment(environment).map_err(|_|invalid_config())?;
+    let mut program_paths=crate::installation::program_paths::resolve(root,record).map_err(|_|invalid_config())?;
+    if !assigned_path {
+        if let Some(directory)=executable.parent(){program_paths.push(directory.to_owned());}
+    }
+    if let Some(path)=environment.get("PATH") {
+        program_paths.extend(std::env::split_paths(path));
+    }else{
+        program_paths.extend([PathBuf::from("/usr/bin"),PathBuf::from("/bin")]);
+    }
+    let path=std::env::join_paths(program_paths).map_err(|_|invalid_config())?.into_string().map_err(|_|invalid_config())?;
+    environment.insert("PATH".into(),path);
+    environment.entry("LANG".into()).or_insert_with(||"en_US.UTF-8".into());
     if environment.iter().any(|(name,value)|name.contains(['=','\0'])||value.contains('\0')){return Err(invalid_config());}
     let working_directory=config["working_directory"].as_str().map(PathBuf::from).unwrap_or(home);
     if !working_directory.is_absolute(){return Err(invalid_config());}
     Ok(TransportConfig::Stdio{executable,args:string_array(&config["args"] )?,working_directory:Some(working_directory),environment})
 }
-pub(super) async fn run_setup(root:&Path,record:&Value,setup:&Setup,manual:&Value,stop:Arc<tokio::sync::Notify>)->Result<(),ManagementError>{
+pub(super) async fn run_setup(root:&Path,record:&Value,setup:&Setup,manual:&Value,stop:Arc<tokio::sync::Notify>,urls:tokio::sync::mpsc::Sender<String>,diagnostics:Option<Arc<crate::runner::startup_diagnostics::StartupDiagnostics>>)->Result<(),ManagementError>{
     let quit=stop.notified();tokio::pin!(quit);quit.as_mut().enable();
     let root=root.to_owned();let record=record.clone();let manual=manual.clone();
     let transport=tokio::task::spawn_blocking(move||transport(&root,&record,&manual)).await.map_err(|_|unsupported())??;
@@ -38,17 +51,23 @@ pub(super) async fn run_setup(root:&Path,record:&Value,setup:&Setup,manual:&Valu
     let mut command=tokio::process::Command::new(&setup.executable);
     command.args(&setup.args).env_clear().envs(environment).current_dir(&setup.working_directory).stdin(std::process::Stdio::null()).stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::piped()).kill_on_drop(true);
     #[cfg(unix)]command.process_group(0);
-    let mut child=command.spawn().map_err(|_|setup_failed())?;
+    if let Some(capture)=&diagnostics{
+        capture.add_redactions(setup.args.iter().flat_map(|argument|std::iter::once(argument.clone()).chain(argument.split_once('=').map(|(_,value)|value.to_owned()))));
+    }
+    let mut child=command.spawn().map_err(|error|{if let Some(capture)=&diagnostics{capture.text("setup",&format!("Setup process could not start: {error}"));}setup_failed()})?;
     let owned_group=child.id();
     let stdout=child.stdout.take();let stderr=child.stderr.take();
-    let drain=|stream:Option<tokio::process::ChildStdout>|tokio::spawn(async move{if let Some(mut stream)=stream{let mut buffer=[0;4096];while matches!(stream.read(&mut buffer).await,Ok(size)if size>0){}}});
-    let output=drain(stdout);let error=tokio::spawn(async move{if let Some(mut stream)=stderr{let mut buffer=[0;4096];while matches!(stream.read(&mut buffer).await,Ok(size)if size>0){}}});
-    let result=tokio::select!{value=child.wait()=>value.map_err(|_|setup_failed()).and_then(|status|if status.success(){Ok(())}else{Err(setup_failed())}),_=tokio::time::sleep(Duration::from_secs(600))=>Err(ManagementError::new(409,"AUTHENTICATION_TIMEOUT","The recorded native setup command exceeded ten minutes.")),_= &mut quit=>Err(setup_failed())};
+    let output_urls=urls.clone();let output_capture=diagnostics.clone();let error_capture=diagnostics.clone();
+    let mut output=tokio::spawn(async move{if let Some(stream)=stdout{crate::runner::local_setup::forward_service_output(stream,Some(output_urls),output_capture,"stdout").await;}});
+    let mut error=tokio::spawn(async move{if let Some(stream)=stderr{crate::runner::local_setup::forward_service_output(stream,Some(urls),error_capture,"stderr").await;}});
+    let result=tokio::select!{value=child.wait()=>value.map_err(|error|{if let Some(capture)=&diagnostics{capture.text("setup",&format!("Waiting for the setup process failed: {error}"));}setup_failed()}).and_then(|status|{if let Some(capture)=&diagnostics{capture.natural_exit(status);}if status.success(){Ok(())}else{Err(setup_failed())}}),_=tokio::time::sleep(Duration::from_secs(600))=>Err(ManagementError::new(409,"AUTHENTICATION_TIMEOUT","The recorded native setup command exceeded ten minutes.")),_= &mut quit=>Err(setup_failed())};
     // The helper owns this process group. Reap its remaining descendants on
     // completion as well as failure so callback/helper processes do not linger.
     #[cfg(unix)] if let Some(group)=owned_group{unsafe{libc::kill(-(group as i32),libc::SIGTERM);}}
     if result.is_err(){let _=child.start_kill();let _=tokio::time::timeout(Duration::from_secs(5),child.wait()).await;}
-    output.abort();error.abort();result
+    // Read the final buffered output before freezing this attempt's capture.
+    for task in [&mut output,&mut error]{if tokio::time::timeout(Duration::from_secs(1),&mut *task).await.is_err(){task.abort();let _=task.await;}}
+    result
 }
 fn setup_failed()->ManagementError{ManagementError::new(409,"NATIVE_SETUP_FAILED","The recorded native setup command did not finish successfully. Fetch did not read or copy its credentials.")}
 impl Manager {
@@ -78,4 +97,34 @@ fn folder_unavailable()->ManagementError{ManagementError::new(409,"SERVER_FOLDER
 fn canonical_location(path:&Path)->Result<PathBuf,ManagementError>{
     if !path.is_absolute(){return Err(folder_unavailable());}
     let mut existing=path;let mut missing=Vec::new();loop{match std::fs::canonicalize(existing){Ok(mut canonical)=>{for component in missing.iter().rev(){canonical.push(component);}return Ok(canonical);},Err(error)if error.kind()==std::io::ErrorKind::NotFound=>{let name=existing.file_name().ok_or_else(folder_unavailable)?;missing.push(name.to_owned());existing=existing.parent().ok_or_else(folder_unavailable)?;},Err(_)=>return Err(folder_unavailable())}}
+}
+
+// The shell receives the very same assigned settings and private account paths
+// as a command-based MCP. It never reads provider-owned credential files.
+impl Manager {
+    pub async fn terminal_action(&self,id:&str,action:crate::terminal::Action)->Result<(Value,bool),crate::terminal::TerminalError>{
+        use crate::terminal::{Action,Launch,TerminalError};
+        let gate=self.lock(id).await;let _guard=gate.lock().await;
+        let record=self.record(id)?;
+        if self.stopping.load(std::sync::atomic::Ordering::SeqCst){return Err(TerminalError::new(503,"TERMINAL_UNAVAILABLE","Fetch is shutting down."));}
+        if record["config"]["kind"]=="remote" {return Err(TerminalError::new(422,"TERMINAL_NOT_LOCAL","This server uses a remote URL and has no local terminal environment."));}
+        let terminals=self.terminals.clone();let server=id.to_owned();
+        if let Action::Open{columns,rows}=action {
+            if let Some(value)=terminals.existing(id){return Ok((value,false));}
+            let manual=self.manual_for_record(&record).await?;let root=self.repository.root().to_owned();
+            tokio::task::spawn_blocking(move||{
+                let TransportConfig::Stdio{working_directory:Some(working_directory),environment,..}=transport(&root,&record,&manual)? else{return Err(TerminalError::new(422,"TERMINAL_NOT_LOCAL","This server has no local terminal environment."))};
+                terminals.open(&server,Launch::system(working_directory,environment)?,columns,rows)
+            }).await.map_err(|_|TerminalError::new(503,"TERMINAL_START_FAILED","The terminal worker stopped before completing the request."))?
+        }else{
+            // Input may block on the PTY. It must not prevent a separate close
+            // or server-removal request from terminating that same shell.
+            drop(_guard);
+            tokio::task::spawn_blocking(move||terminals.apply(&server,action).map(|value|(value,false))).await.map_err(|_|TerminalError::new(409,"TERMINAL_UNAVAILABLE","The terminal worker stopped before completing the request."))?
+        }
+    }
+    pub async fn terminal_output(&self,id:&str,session:&str,after:u64)->Result<Value,crate::terminal::TerminalError>{
+        self.record(id)?;
+        self.terminals.read(id,session,after)
+    }
 }

@@ -10,6 +10,13 @@ pub struct NativeClient {
     origin: String,
     session: Arc<NativeSettingsSession>,
 }
+/// Local HTTP status metadata, kept outside the API JSON body.
+#[derive(Clone)]
+pub(super) struct TerminalOpened {
+    pub(super) created: bool,
+    pub(super) value: Value,
+}
+
 impl NativeClient {
     pub fn new(origin: String, certificate: &str, session: Arc<NativeSettingsSession>) -> Result<Self, String> {
         let certificate = reqwest::Certificate::from_pem(certificate.as_bytes()).map_err(|_| "Fetch's local certificate could not be read.")?;
@@ -19,6 +26,9 @@ impl NativeClient {
         Ok(Self { client, origin, session })
     }
     pub async fn request(&self, method: Method, path: &str, body: Option<Value>) -> Result<Value, String> {
+        self.request_with_status(method, path, body).await.map(|(_, value)| value)
+    }
+    async fn request_with_status(&self, method: Method, path: &str, body: Option<Value>) -> Result<(reqwest::StatusCode, Value), String> {
         if !path.starts_with("/api/v1/") || path.contains('#') { return Err("This operation is unavailable.".into()); }
         let mut request = self.client.request(method, format!("{}{}", self.origin, path))
             .header("X-Fetch-Settings-Capability", self.session.header_value());
@@ -38,10 +48,24 @@ impl NativeClient {
             if status == reqwest::StatusCode::CONFLICT && (
                 (value["error"]["code"] == "INSTALLATION_IN_PROGRESS" && value["installation_id"].is_string()) ||
                 (value["error"]["code"] == "RESTART_IN_PROGRESS" && value["restart_id"].is_string())
-            ) { return Ok(value); }
+            ) { return Ok((status, value)); }
             return Err(value["error"]["message"].as_str().unwrap_or("Fetch could not complete the operation.").to_owned());
         }
-        Ok(value)
+        Ok((status, value))
+    }
+    pub(super) async fn terminal_open(&self, id: &str) -> Result<TerminalOpened, String> {
+        let (status, value) = self.request_with_status(Method::POST,
+            &format!("/api/v1/servers/{}/terminal", component(id)),
+            Some(json!({"action":"open","columns":80,"rows":24}))).await?;
+        Ok(TerminalOpened { created: status == reqwest::StatusCode::CREATED, value })
+    }
+    pub async fn terminal_action(&self, id: &str, body: Value) -> Result<Value, String> {
+        self.request(Method::POST, &format!("/api/v1/servers/{}/terminal", component(id)), Some(body)).await
+    }
+    pub async fn terminal_output(&self, id: &str, session: &str, after: u64) -> Result<Value, String> {
+        let query = url::form_urlencoded::Serializer::new(String::new())
+            .append_pair("session_id", session).append_pair("after", &after.to_string()).finish();
+        self.request(Method::GET, &format!("/api/v1/servers/{}/terminal?{query}", component(id)), None).await
     }
     pub async fn open_server_folder(&self, id: &str) -> Result<Value, String> {
         self.request(Method::POST, &format!("/api/v1/servers/{}/open-folder", component(id)), None).await

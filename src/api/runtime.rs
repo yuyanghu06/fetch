@@ -39,6 +39,14 @@ pub async fn config(State(state):State<Arc<AppState>>,Path(id):Path<String>,requ
     match manager.config(&id,input,&caller).await{Ok(v)=>Json(v).into_response(),Err(e)=>management_error(e)}
 }
 pub async fn authenticate(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
+    let successor=format!("</api/v1/servers/{}/restart>; rel=\"successor-version\"",crate::json::path_component(&id));
+    let mut response=authenticate_compatibility(state,id,request).await;
+    response.headers_mut().insert("deprecation",axum::http::HeaderValue::from_static("@1793664000"));
+    if let Ok(value)=axum::http::HeaderValue::from_str(&successor){response.headers_mut().append(axum::http::header::LINK,value);}
+    response
+}
+// Kept for existing clients and the restricted background renewal sender.
+async fn authenticate_compatibility(state:Arc<AppState>,id:String,request:Request)->Response{
     let background=request.headers().contains_key("x-fetch-background-auth");
     let manager=if background{
         let tokens:Vec<_>=request.headers().get_all("x-fetch-background-auth").iter().collect();
@@ -67,7 +75,11 @@ fn authentication_mode(input:&Value)->Result<bool,Response>{
 pub async fn restart(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
     let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};
-    match manager.restart(&id,input).await{Ok(v)=>{let location=v["restart_id"].as_str().map(|attempt|format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).append_pair("restart_id",attempt).finish()));accepted(v,location)},Err(e)=>management_error(e)}
+    match manager.restart(&id,input).await{Ok(v)=>{
+        let mut query=url::form_urlencoded::Serializer::new(String::new());query.append_pair("id",&id);
+        if let Some(attempt)=v["restart_id"].as_str(){query.append_pair("restart_id",attempt);}
+        if matches!(v["status"].as_str(),Some("restarting"|"authenticating")){accepted(v,Some(format!("/api/v1/servers?{}",query.finish())))}else{Json(v).into_response()}
+    },Err(e)=>management_error(e)}
 }
 pub async fn credentials(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let Some(native)=&state.native else{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Open Fetch's native Settings window to save manual keys in macOS Keychain.",None);};
@@ -80,10 +92,13 @@ pub async fn credentials(State(state):State<Arc<AppState>>,Path(id):Path<String>
     match manager.save_credentials(&id,input,native,&cap).await{Ok(v)=>Json(v).into_response(),Err(e)=>management_error(e)}
 }
 pub async fn provider_callback(State(state):State<Arc<AppState>>,request:Request)->Response{
+    complete_provider_callback(manager(&state),request,None).await
+}
+pub(crate) async fn complete_provider_callback(manager:Result<Arc<Manager>,Response>,request:Request,expected_state:Option<&str>)->Response{
     let query=match parse_query(request.uri().query().unwrap_or("")){Ok(v)=>v,Err(_)=>return invalid()};
     if empty_body(request).await.is_err(){return invalid();}
-    let(mut flow,mut code,mut error,mut issuer)=(None,None,None,None);for(key,value)in query{match key.as_str(){"state" if flow.is_none()=>flow=Some(value),"code" if code.is_none()=>code=Some(value),"error" if error.is_none()=>error=Some(value),"iss" if issuer.is_none()=>issuer=Some(value),"error_description"=>{},_=>return invalid()}}
-    let Some(flow)=flow else{return invalid();};let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};
+    let(mut flow,mut code,mut error,mut issuer)=(None,None,None,None);for(key,value)in query{match key.as_str(){"state" if flow.is_none()=>flow=Some(value),"code" if code.is_none()=>code=Some(value),"error" if error.is_none()=>error=Some(value),"iss" if issuer.is_none()=>issuer=Some(value),"state"|"code"|"error"|"iss"=>return invalid(),_=>{}}}
+    let Some(flow)=flow else{return invalid();};if expected_state.is_some_and(|expected|expected!=flow){return invalid();}let manager=match manager{Ok(v)=>v,Err(r)=>return r};
     let (status,message)=match manager.provider_callback(&flow,code.as_deref(),error.as_deref(),issuer.as_deref()).await{Ok(())=>(StatusCode::OK,"Provider setup finished. Return to Fetch to review the server's authentication and restart state."),Err(_)=>(StatusCode::BAD_REQUEST,"Provider setup did not finish successfully. Return to Fetch to review the server state before retrying.")};
     let mut response=(status,Html(crate::browser::message_page("Fetch provider setup", message))).into_response();response.headers_mut().insert(header::CONTENT_SECURITY_POLICY,HeaderValue::from_static("default-src 'none'; frame-ancestors 'none'; base-uri 'none'"));response
 }
@@ -149,7 +164,7 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
                 "fetch__discover_servers"=>&["config_path"], "fetch__install_servers"=>&["servers"],
                 "fetch__get_installation"=>&["installation_id"], "fetch__get_servers"=>&["id","restart_id"],
                 "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id","interactive"],
-                "fetch__restart_server"=>&["server_id","force_restart"],
+                "fetch__restart_server"=>&["server_id","force_restart","interactive"],
                 "fetch__delete_server"=>&["server_id"],
                 "fetch__update_server_config"=>&["server_id","execution"],
                 _=>return Err(RunError::invalid()),
@@ -167,7 +182,7 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
                 "fetch__get_installation"=>project(self.manager.installation(input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
                 "fetch__get_servers"=>{if input.get("restart_id").is_some()&&input["id"].as_array().is_none_or(|ids|ids.len()!=1){return Err(RunError::invalid());}let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
                 "fetch__authenticate_server"=>{let interactive=input.get("interactive").map(|value|value.as_bool().ok_or_else(RunError::invalid)).transpose()?.unwrap_or(true);project(self.manager.authenticate_mode(id,interactive).await)},
-                "fetch__restart_server"=>{let mut patch=json!({});if let Some(force)=input.get("force_restart"){patch["force_restart"]=force.clone();}project(self.manager.restart(id,patch).await)},
+                "fetch__restart_server"=>{let mut patch=json!({});for key in ["force_restart","interactive"]{if let Some(value)=input.get(key){patch[key]=value.clone();}}project(self.manager.restart(id,patch).await)},
                 "fetch__delete_server"=>project(self.manager.delete_server(id,&caller).await),
                 "fetch__update_server_config"=>{let id=id.to_owned();let mut patch=input;patch.as_object_mut().ok_or_else(RunError::invalid)?.remove("server_id");project(self.manager.config(&id,patch,&caller).await)},
                 _=>Err(RunError::invalid())

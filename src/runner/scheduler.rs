@@ -133,6 +133,18 @@ impl Scheduler {
         self.changed.notify_waiters();
         Ok(())
     }
+    /// Native login may start a helper or replace a failed process, but cannot
+    /// interrupt admitted work. Check idleness and fence new admission under
+    /// the same lock used by admit, including unresolved reservations.
+    pub fn begin_authentication(&self) -> Result<(), RunError> {
+        let mut state = self.state.lock().expect("scheduler lock");
+        if state.restarting || state.deleting || !state.active.is_empty() || !state.waiting.is_empty() {
+            return Err(RunError::busy());
+        }
+        state.restarting = true;
+        self.changed.notify_waiters();
+        Ok(())
+    }
     pub fn reopen(&self) {
         let mut state = self.state.lock().expect("scheduler lock");
         state.restarting = false;
@@ -186,5 +198,38 @@ impl Drop for Reservation {
     fn drop(&mut self) {
         if self.forwarded.load(std::sync::atomic::Ordering::Acquire) { self.scheduler.uncertain(self.id); }
         else { self.scheduler.complete(self.id); }
+    }
+}
+
+#[cfg(test)]
+mod authentication_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn authentication_preserves_busy_work_and_fences_only_an_idle_scheduler() {
+        let scheduler = Scheduler::new(ExecutionPolicy::default());
+        scheduler.ready(true);
+        let active = scheduler.admit(1, CancelToken::new()).await.unwrap();
+        assert_eq!(scheduler.begin_authentication().unwrap_err().code, "SERVER_BUSY");
+
+        let queued_scheduler = scheduler.clone();
+        let queued = tokio::spawn(async move { queued_scheduler.admit(1, CancelToken::new()).await });
+        tokio::time::timeout(Duration::from_secs(1), async {
+            while scheduler.snapshot()["queued_calls"] != 1 { tokio::task::yield_now().await; }
+        }).await.unwrap();
+        assert_eq!(scheduler.begin_authentication().unwrap_err().code, "SERVER_BUSY");
+        assert_eq!(scheduler.snapshot()["queued_calls"], 1, "refusing login does not flush existing queued work");
+        active.complete();
+        let next = queued.await.unwrap().unwrap();
+        next.mark_uncertain();
+        drop(next);
+        assert_eq!(scheduler.snapshot()["uncertain_calls"], 1);
+        assert_eq!(scheduler.begin_authentication().unwrap_err().code, "SERVER_BUSY");
+
+        assert_eq!(scheduler.confirmed_reset(), 1);
+        scheduler.begin_authentication().unwrap();
+        assert_eq!(scheduler.admit(1, CancelToken::new()).await.err().unwrap().code, "SERVER_BUSY");
+        scheduler.reopen();
+        scheduler.admit(1, CancelToken::new()).await.unwrap().complete();
     }
 }

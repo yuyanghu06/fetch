@@ -44,6 +44,8 @@ async fn process_owned_background_token_cannot_open_interactive_login_or_gain_ot
     let fixture=Fixture::new();let token=fixture.manager.background_token();
     for input in [json!({}),json!({"interactive":true})] {
         let response=fixture.app.clone().oneshot(fixture.request("/api/v1/servers/missing/authenticate","POST",input,&token)).await.unwrap();
+        assert_eq!(response.headers()["deprecation"],"@1793664000");
+        assert_eq!(response.headers()["link"],"</api/v1/servers/missing/restart>; rel=\"successor-version\"");
         assert_eq!(response.status(),StatusCode::FORBIDDEN);assert_eq!(body(response).await["error"]["code"],"FORBIDDEN");
     }
     for (method,path,input) in [

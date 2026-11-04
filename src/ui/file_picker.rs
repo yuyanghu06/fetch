@@ -1,4 +1,4 @@
-//! The native picker only returns a path. Reading it still requires Discover.
+//! The native picker returns a path; the UI then discovers through the shared API.
 
 #[cfg(target_os="macos")]
 use std::{ffi::{CStr,c_char,c_void},future::Future};

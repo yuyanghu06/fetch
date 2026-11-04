@@ -1,5 +1,5 @@
 //! Imported input names are data, independent of the service that consumes them.
-use super::{ManagementError, auth_required, invalid_config};
+use super::{ManagementError, invalid_config};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
@@ -52,12 +52,15 @@ impl InputBindings {
 
     /// Resolve only this connector's assigned values, without recognizing a provider.
     pub fn resolve_source(&self, source: Source, document: &Value, skip: &[&str]) -> Result<BTreeMap<String, String>, ManagementError> {
-        self.entries.iter().filter(|entry| entry.source == source && !skip.iter().any(|name| match source {
+        let relevant:Vec<_>=self.entries.iter().filter(|entry| entry.source == source && !skip.iter().any(|name| match source {
             Source::Environment => entry.name == *name,
             Source::Header => entry.name.eq_ignore_ascii_case(name),
-        })).map(|entry| {
-            let value = document["manual"][&entry.reference].as_str().ok_or_else(auth_required)?;
-            Ok((entry.name.clone(), value.to_owned()))
+        })).collect();
+        relevant.into_iter().filter_map(|entry|match document["manual"][&entry.reference].as_str(){
+            Some(value)=>Some(Ok((entry.name.clone(),value.to_owned()))),
+            // The server decides which inputs it needs. Pass only values
+            // actually saved for this instance; do not invent prerequisites.
+            None=>None,
         }).collect()
     }
 }

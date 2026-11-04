@@ -63,6 +63,30 @@ pub(super) fn error_message<'a, M: Clone + 'a>(
     widget::container(message(content)).padding(theme::MESSAGE_PADDING)
 }
 
+pub(super) fn console_line<'a>(content: impl widget::text::IntoFragment<'a>) -> Text<'a> {
+    text(content).font(iced::Font::MONOSPACE).size(theme::CONSOLE_TEXT_SIZE)
+}
+
+pub(super) fn console<'a, M: Clone + 'a>(content: impl Into<Element<'a,M>>, copy: M) -> Container<'a,M> {
+    let header = row![
+        widget::Space::new().width(iced::Fill),
+        button(text("Copy").size(theme::SMALL_TEXT)).style(theme::console_action).on_press(copy),
+    ];
+    widget::container(column![header, widget::scrollable(content).height(iced::Fill).anchor_bottom()])
+        .padding(theme::MESSAGE_PADDING).width(iced::Fill).height(theme::CONSOLE_HEIGHT)
+        .style(theme::console)
+}
+
+/// Shared server output pane controls. Both panes keep their own state.
+pub(super) fn output_controls<'a, M: Clone + 'a>(console: M, terminal: Option<M>) -> Row<'a, M> {
+    row![button("Console").on_press(console), button("Terminal").on_press_maybe(terminal)]
+        .spacing(theme::CONTROL_GAP)
+}
+
+pub(super) fn terminal_pane<'a, M: Clone + 'a>(content: impl Into<Element<'a, M>>) -> Container<'a, M> {
+    widget::container(content).width(iced::Fill).height(theme::CONSOLE_HEIGHT).style(theme::console)
+}
+
 pub(super) fn server_card<'a, M: Clone + 'a>(
     content: impl Into<Element<'a, M>>,
 ) -> Container<'a, M> {

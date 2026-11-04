@@ -9,6 +9,18 @@ pub(super) const SPACING: f32 = theme::CONTROL_GAP;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Phase { Starting, Saving, Stored, Pending, Required, Unknown, NeedsVerification, Authenticated, NotRequired, Failed }
 
+#[derive(Clone, PartialEq, Eq)]
+pub(super) struct SignIn {
+    pub host: String,
+    pub opened: bool,
+}
+
+struct OutputBaseline {
+    generation: Option<u64>,
+    lines: usize,
+    exit: Option<(Option<i64>, Option<i64>)>,
+}
+
 pub(super) struct Flow {
     pub phase: Phase,
     pub guidance: Vec<String>,
@@ -18,10 +30,48 @@ pub(super) struct Flow {
     pub entry: String,
     pub secret: String,
     pub storage_result: bool,
+    pub sign_in: Option<SignIn>,
+    pub log: Vec<String>,
+    logged_error: Option<String>,
+    logged_read_error: Option<String>,
+    startup_generation: Option<u64>,
+    startup_lines: Vec<String>,
+    startup_exit: Option<(Option<i64>,Option<i64>)>,
+    request_output_baseline: Option<OutputBaseline>,
 }
 impl Flow {
     pub fn starting() -> Self {
-        Self { phase: Phase::Starting, guidance: vec![], error: None, read_error: None, reconcile: false, entry:String::new(), secret:String::new(), storage_result:false }
+        let mut flow=Self { phase: Phase::Starting, guidance: vec![], error: None, read_error: None, reconcile: false, entry:String::new(), secret:String::new(), storage_result:false, sign_in:None,
+            log:vec![],logged_error:None,logged_read_error:None,
+            startup_generation:None,startup_lines:vec![],startup_exit:None,request_output_baseline:None };
+        flow.record_state();
+        flow
+    }
+    /// Displaying a server is a read, not an authentication request.
+    pub fn passive(authentication: &Value) -> Self {
+        let mut flow = Self::starting();
+        flow.phase = Phase::Unknown;
+        flow.observe(authentication);
+        flow
+    }
+    pub fn begin_authentication(&mut self) {
+        self.request_output_baseline=Some(OutputBaseline {
+            generation:self.startup_generation,
+            lines:self.startup_lines.len(),
+            exit:self.startup_exit,
+        });
+        self.secret.zeroize();
+        self.entry.clear();
+        self.phase = Phase::Starting;
+        self.guidance.clear();
+        self.error = None;
+        self.read_error = None;
+        self.reconcile = false;
+        self.storage_result = false;
+        self.sign_in = None;
+        self.logged_error = None;
+        self.logged_read_error = None;
+        self.log.retain(|line| !line.starts_with("[error] "));
     }
     pub fn active(&self) -> bool { matches!(self.phase, Phase::Starting | Phase::Saving | Phase::Pending) }
     pub fn title(&self) -> &'static str {
@@ -29,9 +79,9 @@ impl Flow {
             Phase::Starting => "Starting authentication…",
             Phase::Saving => "Confirm on your Mac to save the manual key…",
             Phase::Stored => "Manual key changes saved in macOS Keychain. Account access has not been verified.",
-            Phase::Pending => "Complete sign-in in your browser. Waiting for the provider…",
-            Phase::Required => "Complete setup using the server’s own files and authentication process",
-            Phase::Unknown => "Automatic authentication is unavailable for this server",
+            Phase::Pending => "Starting the server or waiting for sign-in…",
+            Phase::Required => "Server setup is needed",
+            Phase::Unknown => "Account sign-in has not been verified",
             Phase::NeedsVerification => "Authentication needs to be checked again. Choose Authenticate.",
             Phase::Authenticated => "Authentication verified",
             Phase::NotRequired => "This server does not require authentication",
@@ -41,6 +91,7 @@ impl Flow {
     pub fn result(&mut self, value: &Value) {
         self.error = None;
         self.read_error = None;
+        self.sign_in = Self::read_sign_in(value);
         // Text is displayed to the person only. It never chooses a UI action.
         self.guidance = value["next_steps"].as_array().into_iter().flatten()
             .filter(|step| step["actor"] == "user")
@@ -54,19 +105,52 @@ impl Flow {
             _ => { self.error = Some("Fetch returned an unrecognized authentication result. Refresh server status before trying again.".into()); Phase::Failed }
         };
         self.reconcile = self.phase == Phase::Pending;
+        self.record_state();
     }
     pub fn stored(&mut self,value:&Value) {
-        self.secret.zeroize();self.storage_result=true;self.reconcile=false;self.read_error=None;
+        self.secret.zeroize();self.storage_result=true;self.reconcile=false;self.read_error=None;self.sign_in=None;
         if value["status"]=="stored"&&value["verified"]==false{
             self.phase=Phase::Stored;self.error=None;
         }else{
             self.phase=Phase::Failed;self.error=Some("Fetch did not confirm storing the manual key. Refresh its status before retrying.".into());
         }
+        self.record_state();
+    }
+
+    fn record_startup(&mut self, authentication:&Value) {
+        let startup=&authentication["startup"];
+        let Some(generation)=startup["generation"].as_u64() else{return};
+        self.startup_generation=Some(generation);
+        self.startup_lines=startup["lines"].as_array().into_iter().flatten()
+            .filter_map(|line|line.as_str().map(str::to_owned)).collect();
+        // The backend owns the bounded, cumulative history across attempts.
+        // Rebuild from its snapshot so a new capture ID never repeats a prefix.
+        self.log=self.startup_lines.iter().map(|line|format!("[server] {line}")).collect();
+        let exit=(startup["exit_code"].as_i64(),startup["signal"].as_i64());
+        self.startup_exit=if exit.0.is_some()||exit.1.is_some(){Some(exit)}else{None};
+        if self.startup_exit.is_some(){
+            if let Some(code)=exit.0{self.log.push(format!("[server] Process exited with status {code}."));}
+            else if let Some(signal)=exit.1{self.log.push(format!("[server] Process ended with signal {signal}."));}
+        }
+        self.logged_error=None;self.logged_read_error=None;
+        self.record_state();
+    }
+
+    fn has_current_service_output(&self) -> bool {
+        let Some(baseline)=&self.request_output_baseline else {
+            return !self.startup_lines.is_empty() || self.startup_exit.is_some();
+        };
+        let new_capture=self.startup_generation!=baseline.generation;
+        let carried_exit=usize::from(new_capture && baseline.exit.is_some());
+        self.startup_lines.len()>baseline.lines+carried_exit
+            || self.startup_exit.is_some() && (new_capture || self.startup_exit!=baseline.exit)
     }
     pub fn observe(&mut self, authentication: &Value) {
+        self.record_startup(authentication);
         // Storage results describe this edit only; an older login cannot approve it.
         if self.storage_result||matches!(self.phase, Phase::Starting|Phase::Saving) { return; }
         self.read_error = None;
+        self.sign_in = Self::read_sign_in(authentication);
         let phase = match authentication["status"].as_str() {
             Some("authenticating") => Phase::Pending,
             Some("authenticated") => Phase::Authenticated,
@@ -77,14 +161,40 @@ impl Flow {
             _ => return,
         };
         // A later server read can invalidate previously settled evidence.
-        if !self.reconcile && self.phase == phase { return; }
         self.phase = phase;
         self.reconcile = phase == Phase::Pending;
         if phase != Phase::Pending {
             self.guidance.clear();
-            self.error = authentication["error"]["message"].as_str().map(str::to_owned)
-                .or_else(|| matches!(phase, Phase::Required | Phase::Unknown | Phase::NeedsVerification).then(|| self.error.clone()).flatten());
+            if self.request_output_baseline.is_none() || self.has_current_service_output() || self.error.is_none() {
+                self.error = authentication["error"]["message"].as_str().map(str::to_owned)
+                    .or_else(|| matches!(phase, Phase::Required | Phase::Unknown | Phase::NeedsVerification).then(|| self.error.clone()).flatten());
+            }
         }
+        self.record_state();
+    }
+
+    /// The console displays captured service output. Only Fetch's own request
+    /// failures are a fallback when the service has supplied no output.
+    pub(super) fn record_state(&mut self) {
+        let service_output = self.has_current_service_output();
+        if service_output {
+            self.log.retain(|line| !line.starts_with("[error] "));
+        }
+        if self.logged_error != self.error {
+            if !service_output { if let Some(error)=&self.error {self.log.push(format!("[error] {error}"));} }
+            self.logged_error=self.error.clone();
+        }
+        if self.logged_read_error != self.read_error {
+            if !service_output { if let Some(error)=&self.read_error {self.log.push(format!("[error] {error}"));} }
+            self.logged_read_error=self.read_error.clone();
+        }
+    }
+
+    fn read_sign_in(value: &Value) -> Option<SignIn> {
+        if value["status"] != "authenticating" { return None; }
+        let host = value["sign_in"]["host"].as_str()?;
+        if host.is_empty() || host.chars().any(char::is_control) { return None; }
+        Some(SignIn { host:host.to_owned(), opened:value["sign_in"]["opened"].as_bool()? })
     }
 }
 

@@ -245,12 +245,15 @@ fn valid_record(id: &str, v: &Value) -> bool {
             || !e["tool_timeouts_ms"].as_object().is_some_and(|o| o.len()<=4096 && o.iter().all(|(k,v)| !k.is_empty() && v.as_u64().is_some_and(|n| n > 0 && n <= 86_400_000))) { return false; }
     }
     if let Some(i) = v.get("_installation") {
-        let mut base=i.clone();if let Some(object)=base.as_object_mut(){object.remove("native_setup");}
+        let mut base=i.clone();if let Some(object)=base.as_object_mut(){object.remove("native_setup");object.remove("program_directories");}
         let source=keys(&base, &["source_path", "source_name", "installation_id", "protected_args"]) && nonempty(&i["source_path"]);
         let direct=keys(&base, &["direct_identity", "source_name", "installation_id", "protected_args"])
             && i["direct_identity"].as_str().is_some_and(|identity|identity.len()==64 && identity.bytes().all(|byte|byte.is_ascii_digit()||(b'a'..=b'f').contains(&byte)));
         if !(source||direct) || !nonempty(&i["source_name"]) || !nonempty(&i["installation_id"])
             || !i["protected_args"].as_u64().is_some() { return false; }
+        if let Some(paths)=i.get("program_directories") {
+            if !crate::installation::program_paths::valid_directories(paths) { return false; }
+        }
         if let Some(native)=i.get("native_setup") {
             if !keys(native,&["executable","args","working_directory","state_directory"])
                 || !["executable","working_directory","state_directory"].iter().all(|key|native[*key].as_str().is_some_and(|v|!v.contains(['\0','\r','\n'])&&Path::new(v).is_absolute()))

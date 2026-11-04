@@ -1,7 +1,10 @@
 //! Owned, pinned preparation. Constructing this service never downloads or executes anything.
 mod direct;
+pub(crate) mod program_paths;
 #[cfg(test)]
 mod direct_tests;
+#[cfg(test)]
+mod program_paths_tests;
 use crate::{discovery::{CapturedDefinition, DiscoveryService}, storage::ServerRepository};
 use rand::{RngCore, rngs::OsRng};
 use serde_json::{Value, json};
@@ -137,6 +140,7 @@ impl Installer {
         if self.stopping.load(Ordering::SeqCst){let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
         let protected_args=if kind=="npm" {1} else if kind=="local_script" {config["args"].as_array().map_or(0,Vec::len)} else {0};
         let mut association=json!({"source_name":selection.name,"installation_id":installation,"protected_args":protected_args});
+        association["program_directories"]=json!(program_paths::relative_directories(&config));
         match &selection.input{
             SelectionInput::Source(path)=>association["source_path"]=json!(path),
             SelectionInput::Direct(definition)=>association["direct_identity"]=json!(definition.as_ref().map_err(|_|())?.identity),
