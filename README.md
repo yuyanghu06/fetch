@@ -1,3 +1,5 @@
+For Python MCP installation on another Mac, follow [the setup guide](docs/testing/PYTHON_MCP_SETUP.md). Fetch installs its own uv and compatible Python for supported package servers; each installation keeps separate dependencies and account files.
+
 # Fetch
 
 Fetch is a local macOS app that lets coding apps share installed MCP servers through one Fetch connection. Source includes native UI, local HTTPS, app authorization, protected credentials, installation, server management and MCP sharing. Required operational gaps remain; this is not a complete working MVP. See [the current gap list](docs/testing/MVP_GAPS.md).

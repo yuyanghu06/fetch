@@ -1,3 +1,13 @@
+## Python MCP installation — November 4
+
+`python_installation.rs` submits imported Blender and Time definitions through
+the actual Installer preparation path. A fake uv runs inside the existing
+deny-default macOS sandbox after owned-file/outside-file/sibling/network canaries
+pass. It checks normal uv environment installation without a forced Python,
+explicit Python and package-version preservation, server arguments, resolved
+metadata/executables/helper folders and separate private installation homes.
+It never starts either MCP or reads personal accounts/configurations.
+
 ## Figma Remote unsupported import — November 4
 
 Two focused fixtures in import_compatibility.rs/direct_install.rs cover remote URL/recognized bridge rejection, its reason and unselected status; Desktop/other imports remain capturable, source bytes unchanged, direct fresh install creates no saved server/package. Existing plus new tests pass19/19; no provider, MCP process or credentials are used. Native build passes5.38s and independent review ACCEPTs; evidence under milestones/figma-remote-unsupported/.

@@ -17,6 +17,19 @@ pub(crate) fn relative_directories(config: &Value) -> Vec<String> {
     }
 }
 
+/// uv owns the new tool layout. Record the actual environment's bin so its
+/// dependency commands remain available, followed by uv's exported commands.
+/// Existing records without this metadata continue to use the old venv layout.
+pub(crate) fn python_directories(package: &Path, config: &Value) -> Result<Vec<String>, ()> {
+    let executable=Path::new(config["executable"].as_str().ok_or(())?);
+    let owned=fs::canonicalize(package).map_err(|_|())?;
+    let bin=executable.parent().ok_or(())?.strip_prefix(&owned).map_err(|_|())?;
+    let relative=bin.to_str().ok_or(())?.to_owned();
+    let paths=serde_json::json!([relative,"bin"]);
+    if !valid_directories(&paths){return Err(());}
+    Ok(vec![relative,"bin".into()])
+}
+
 pub(crate) fn valid_directories(value: &Value) -> bool {
     value.as_array().is_some_and(|paths| paths.iter().all(|value| {
         value.as_str().is_some_and(|path| {

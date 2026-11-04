@@ -1,3 +1,7 @@
+## November 4 — optional Python version in uvx imports
+
+One backend-only Python launch parser is shared by classification and capture. It preserves supported `uvx --python VERSION package` / `--python=VERSION` requests, package pins, existing Time `--from` syntax and supported server arguments. The request is forwarded to uv preparation without adding public saved-config fields or copying interpreter paths/credentials. Ordinary uvx imports carry no Fetch-imposed Python version. Other launch-option and server-argument boundaries are unchanged.
+
 November 4 Figma Remote: classify marks the official HTTPS normal443 mcp.figma.com/mcp endpoint unsupported with its client-approval reason. Fresh file/direct captures share this decision; recognized explicit-transport bridges also use it. URL safety/saved-record validation stays unchanged, as do Desktop loopback and existing saved instances.
 
 # Read-only server discovery

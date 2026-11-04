@@ -140,7 +140,9 @@ impl Installer {
         if self.stopping.load(Ordering::SeqCst){let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
         let protected_args=if kind=="npm" {1} else if kind=="local_script" {config["args"].as_array().map_or(0,Vec::len)} else {0};
         let mut association=json!({"source_name":selection.name,"installation_id":installation,"protected_args":protected_args});
-        association["program_directories"]=json!(program_paths::relative_directories(&config));
+        association["program_directories"]=json!(if kind=="pypi" {
+            program_paths::python_directories(&self.root.join("packages/servers").join(&installation),&config)?
+        }else{program_paths::relative_directories(&config)});
         match &selection.input{
             SelectionInput::Source(path)=>association["source_path"]=json!(path),
             SelectionInput::Direct(definition)=>association["direct_identity"]=json!(definition.as_ref().map_err(|_|())?.identity),
@@ -201,24 +203,26 @@ impl Installer {
     }
     async fn prepare_python(&self,id:&str,capture:&CapturedDefinition)->Result<Value,()> {
         let uv=self.uv_runtime().await?; let directory=self.package_directory(id)?;
-        let name=capture.row["package"].as_str().ok_or(())?;
-        let requested=capture.row["version_spec"].as_str();
-        let mut metadata_url=url::Url::parse("https://pypi.org/pypi/").map_err(|_|())?;
-        metadata_url.path_segments_mut().map_err(|_|())?.pop_if_empty().extend([name,"json"]);
-        let metadata:Value=serde_json::from_slice(&self.download(metadata_url.as_str(),4*1024*1024).await?).map_err(|_|())?;
-        let version=match requested {Some(v) if v!="latest"=>v.to_owned(),_=>metadata["info"]["version"].as_str().ok_or(())?.to_owned()};
+        let launch=capture.python.as_ref().ok_or(())?;
+        let name=launch.package.as_str();
+        let tools=directory.join("tools");private_directory(&tools)?;
+        let bin=directory.join("bin");private_directory(&bin)?;
         let python_root=self.root.join("packages/runtimes/python");private_directory(&python_root)?;
         let mut install=self.command(&uv.join("uv"),&directory)?;
-        install.args(["python","install",PYTHON_VERSION]); install.env("UV_PYTHON_INSTALL_DIR",&python_root).env("UV_PYTHON_INSTALL_BIN","0");
+        install.args(["tool","install","--managed-python"]);
+        if let Some(python)=&launch.python {install.args(["--python",python]);}
+        let requirement=match launch.version.as_deref(){Some(version) if version!="latest"=>format!("{name}=={version}"),_=>name.to_owned()};
+        install.arg("--").arg(requirement)
+            .env("UV_TOOL_DIR",&tools).env("UV_TOOL_BIN_DIR",&bin)
+            .env("UV_PYTHON_INSTALL_DIR",&python_root).env("UV_PYTHON_INSTALL_BIN","0");
         self.execute(install).await?;
-        let mut venv=self.command(&uv.join("uv"),&directory)?;venv.args(["venv","--managed-python","--python",PYTHON_VERSION]).arg(directory.join("venv")).env("UV_PYTHON_INSTALL_DIR",&python_root);
-        self.execute(venv).await?;
-        let python=directory.join("venv/bin/python");
-        let mut pip=self.command(&uv.join("uv"),&directory)?;pip.args(["pip","install","--python"]).arg(&python).arg(format!("{name}=={version}"));self.execute(pip).await?;
-        let bin=directory.join("venv/bin");
-        let candidates=[name.to_owned(),name.replace('_',"-")];
+        let candidates=[launch.executable.clone(),launch.executable.replace('_',"-")];
         let executable=candidates.iter().map(|n|bin.join(n)).find(|p|p.is_file()).ok_or(())?;
-        let installed=installed_python_version(&directory,name)?;
+        let executable=fs::canonicalize(executable).map_err(|_|())?;
+        let environment=fs::canonicalize(tools.join(normalized_python_name(name))).map_err(|_|())?;
+        let owned=fs::canonicalize(&directory).map_err(|_|())?;
+        if !environment.starts_with(&owned) || !executable.starts_with(environment.join("bin")) || !executable.is_file(){return Err(());}
+        let installed=installed_python_version(&environment,name)?;
         let mut config=capture.config.clone();config["package"]=json!({"name":name,"requested_version":capture.row["version_spec"],"installed_version":installed});config["executable"]=json!(executable);config["args"]=json!(capture.package_arguments);Ok(config)
     }
     async fn prepare_script(&self,capture:&CapturedDefinition)->Result<Value,()> {
@@ -298,9 +302,10 @@ pub fn private_directory(path:&Path)->Result<(),()> {match fs::symlink_metadata(
 fn write_private(path:&Path,bytes:&[u8])->Result<(),()> {let mut f=fs::OpenOptions::new().write(true).create_new(true).mode(0o600).custom_flags(libc::O_NOFOLLOW).open(path).map_err(|_|())?;f.write_all(bytes).map_err(|_|())?;f.sync_all().map_err(|_|())}
 fn read_json(path:&Path,limit:usize)->Result<Value,()> {use std::io::Read;let mut bytes=vec![];fs::File::open(path).map_err(|_|())?.take(limit as u64+1).read_to_end(&mut bytes).map_err(|_|())?;if bytes.len()>limit{return Err(());}serde_json::from_slice(&bytes).map_err(|_|())}
 fn monitor_installation(id:&str)->Value {json!({"actor":"agent","action":"check_installation_status","instructions":format!("After one second, GET /api/v1/setup/installations/{id}. Continue only after overall success.")})}
-fn installed_python_version(directory:&Path,requested:&str)->Result<String,()>{
-    let canonical=|name:&str|name.to_ascii_lowercase().replace(['_','.'],"-");
-    let libraries=fs::read_dir(directory.join("venv/lib")).map_err(|_|())?;
+fn normalized_python_name(name:&str)->String{name.split(['-','_','.']).filter(|part|!part.is_empty()).collect::<Vec<_>>().join("-").to_ascii_lowercase()}
+fn installed_python_version(environment:&Path,requested:&str)->Result<String,()>{
+    let canonical=normalized_python_name;
+    let libraries=fs::read_dir(environment.join("lib")).map_err(|_|())?;
     for library in libraries.filter_map(Result::ok){let site=library.path().join("site-packages");let Ok(entries)=fs::read_dir(site)else{continue};for entry in entries.filter_map(Result::ok){if !entry.file_name().to_string_lossy().ends_with(".dist-info"){continue;}let path=entry.path().join("METADATA");let Ok(metadata)=read_text(&path,2*1024*1024)else{continue};let name=metadata.lines().find_map(|line|line.strip_prefix("Name: "));let version=metadata.lines().find_map(|line|line.strip_prefix("Version: "));if name.is_some_and(|n|canonical(n)==canonical(requested)){return version.filter(|v|!v.is_empty()&&v.len()<256&&v.chars().all(|c|c.is_ascii_alphanumeric()||".+_-!".contains(c))).map(str::to_owned).ok_or(());}}}
     Err(())
 }

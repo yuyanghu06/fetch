@@ -56,6 +56,15 @@ pub struct CapturedDefinition {
     pub row: Value,
     pub config: Value,
     pub package_arguments: Vec<String>,
+    pub(crate) python: Option<PythonLaunch>,
+}
+#[derive(Clone)]
+pub(crate) struct PythonLaunch {
+    pub package: String,
+    pub version: Option<String>,
+    pub python: Option<String>,
+    pub executable: String,
+    pub arguments: Vec<String>,
 }
 impl DiscoveryService {
     pub fn new(home: PathBuf, codex_home: Option<PathBuf>) -> Self {
@@ -163,10 +172,11 @@ pub(crate) fn capture_definition(name: &str, definition: &Value, harness: &str) 
         definition["command"].as_array().map(|a| a.iter().skip(1).filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default()
     } else { definition["args"].as_array().map(|a| a.iter().filter_map(Value::as_str).map(str::to_owned).collect()).unwrap_or_default() };
     let executable = if harness == "opencode" { definition["command"][0].as_str() } else { definition["command"].as_str() }.unwrap_or("");
+    let python = if row["type"] == "pypi" { Some(python_launch(&args).ok_or_else(||error("UNSUPPORTED_CONFIG_FILE"))?) } else { None };
     let package_arguments = if row["type"] == "npm" {
         if args.first().is_some_and(|a| a == "-y" || a == "--yes") { args.remove(0); }
         args.iter().skip(1).cloned().collect()
-    } else if row["type"] == "pypi" { args.iter().skip(if args.first().is_some_and(|arg|arg=="--from"){3}else{1}).cloned().collect() } else { Vec::new() };
+    } else if let Some(python) = &python { python.arguments.clone() } else { Vec::new() };
     let headers: Vec<Value> = row["connection"]["header_names"].as_array().map(|a| a.iter().map(|v| json!({"name":v,"credential_ref":v})).collect()).unwrap_or_default();
     let default_timeout_ms=source_default_timeout_ms(harness,definition).map_err(|_|error("UNSUPPORTED_CONFIG_FILE"))?;
     let mut config = json!({"kind":row["type"],"package":null,"executable":executable,"args":args,"working_directory":row["working_directory"],"environment":environment,"execution":{"max_concurrent_calls":1,"default_timeout_ms":default_timeout_ms,"tool_timeouts_ms":{}},"tool_features":{"status":"unknown","tools":[]}});
@@ -182,7 +192,7 @@ pub(crate) fn capture_definition(name: &str, definition: &Value, harness: &str) 
         // Neither its source header arguments nor its environment values are saved.
         config["executable"]=Value::Null;config["args"]=json!([]);config["working_directory"]=Value::Null;config["environment"]=json!([]);config["connection"]=json!({"url":endpoint.as_str(),"transport":row["connection"]["transport"],"headers":headers});
     }
-    Ok(CapturedDefinition { row, config, package_arguments })
+    Ok(CapturedDefinition { row, config, package_arguments, python })
 }
 fn discovery_steps(groups: &[Value]) -> Vec<Value> {
         let selectable = groups.iter().any(|g| {
@@ -632,13 +642,13 @@ fn classify(name: &str, definition: &Value, harness: &str) -> Value {
             row["package"] = json!(package);
             row["version_spec"] = json!(version);
         } else if command == "uvx" {
-            let Some((package, version, package_args)) = python_launch(&args) else {
+            let Some(launch) = python_launch(&args) else {
                 return blocked(row, false);
             };
-            if !supported_package_arguments(package,package_args) { return blocked(row, false); }
+            if !supported_package_arguments(&launch.package,&launch.arguments) { return blocked(row, false); }
             row["type"] = json!("pypi");
-            row["package"] = json!(package);
-            row["version_spec"] = json!(version);
+            row["package"] = json!(launch.package);
+            row["version_spec"] = json!(launch.version);
         } else if matches!(command.as_str(), "node" | "python" | "python3")
             || (Path::new(&command).is_absolute()
                 && matches!(
@@ -746,15 +756,27 @@ fn supported_package_arguments(package:&str,args:&[String])->bool {
         _=>false,
     }
 }
-fn python_launch(args:&[String])->Option<(&str,Option<&str>,&[String])> {
-    if args.first()?.as_str()=="--from" {
-        let (package,version)=python_package(args.get(1)?)?;
-        if package!="mcp-server-time" || args.get(2)?.as_str()!=package {return None;}
-        Some((package,version,&args[3..]))
-    }else{
-        let (package,version)=python_package(&args[0])?;
-        Some((package,version,&args[1..]))
+fn python_launch(args:&[String])->Option<PythonLaunch> {
+    let mut index=0;let mut python=None;let mut from=None;
+    while let Some(arg)=args.get(index) {
+        if arg=="--python" || arg.starts_with("--python=") {
+            if python.is_some(){return None;}
+            let request=if arg=="--python" {index+=1;args.get(index)?.as_str()} else {arg.strip_prefix("--python=")?};
+            // Version/implementation requests only; do not import an interpreter path.
+            if request.is_empty() || !request.chars().all(|c|c.is_ascii_alphanumeric()||"._+-<>=,!@".contains(c)){return None;}
+            python=Some(request.to_owned());index+=1;
+        } else if arg=="--from" {
+            if from.is_some(){return None;}
+            from=Some(python_package(args.get(index+1)?)?);index+=2;
+        } else {break;}
     }
+    let command=args.get(index)?;
+    let (package,version,executable)=if let Some((package,version))=from {
+        if package!="mcp-server-time" || command!=package {return None;}
+        (package,version,command.as_str())
+    } else {let (package,version)=python_package(command)?;(package,version,package)};
+    Some(PythonLaunch{package:package.to_owned(),version:version.map(str::to_owned),python,
+        executable:executable.to_owned(),arguments:args[index+1..].to_vec()})
 }
 /// Seed Fetch's own wait duration from a documented explicit source setting.
 /// These client settings are not observations of a server's intrinsic limit.

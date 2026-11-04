@@ -1,3 +1,5 @@
+[Python package environments](../../milestones/python-server-environments/info.md) tracks the selected uv-owned private environment/Python preparation change. New package installs will stop forcing a single Python patch; existing server records remain unchanged.
+
 [Figma registration findings](client-identity-adoption.md#figma-registration-rejection--november-4-2026) explain the reported 403, approved-client policy and why the public Fetch identity file does not bypass it. Research only; callback rejection remains unproven.
 
 [Public client identity adoption research](client-identity-adoption.md) explains current CIMD support across hosted services, the older registration fallback and what the shared Fetch file does. Research only; no new implementation selected.

@@ -1,3 +1,7 @@
+## Python package MCP setup on another Mac — November 4, 2026
+
+Read [the Python MCP setup guide](docs/testing/PYTHON_MCP_SETUP.md) when setting up or troubleshooting packaged Python servers on another Mac. New uvx package installations delegate persistent environments and compatible Python selection to uv, using Fetch-private tool/runtime/account locations. Honor explicit supported --python requests; do not restore a universal Python patch requirement for package installs. Existing saved installations and standalone local-script provisioning remain unchanged. Follow the existing per-Mac signing checklist; no copying credentials, environments or signing keys as an automatic setup step. Fixture/build acceptance does not establish real Blender connection acceptance.
+
 # Focus tests on real feature use (November 4, 2026)
 
 The user requires small, focused tests that prove real-world use of the requested feature. Test the actual user action and meaningful result through the relevant product path. Prefer a few realistic feature tests over many narrow assertions about implementation details.

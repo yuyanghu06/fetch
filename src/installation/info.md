@@ -1,3 +1,7 @@
+## November 4 — uv owns Python package preparation
+
+New packaged uvx servers are installed with `uv tool install --managed-python`, forwarding an explicit imported Python request and otherwise letting uv choose compatible Python. Each installation owns `tools/` environments and exported `bin/` commands; downloaded interpreters stay in Fetch's private shared runtime folder. Fetch reads installed METADATA for the actual version and saves the validated installed executable. `program_paths.rs` records the actual environment bin plus exported bin so helpers remain discoverable; old records keep their `venv/bin` fallback. Existing saved installations are reused without migration. The older fixed Python provisioning below still applies to standalone local-script imports only; it is superseded for packaged uvx installs. No login or MCP process starts during standalone preparation.
+
 ## November 4 private program folders
 
 program_paths.rs owns the installer’s known executable folders: npm node_modules/.bin, Python venv/bin and the already prepared Railway helper’s railway-cli/node_modules/.bin. New records save these relative paths privately as _installation.program_directories; legacy rows resolve the same layout in memory. Only existing folders contained by the instance’s package enter startup. Nothing searches recursively or borrows another instance’s folders. Independent 60 checks including 10 new and locked native build pass; Evaluator ACCEPT. Real account authentication is untested.
