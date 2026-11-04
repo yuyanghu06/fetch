@@ -7,7 +7,7 @@
 - [x] Initial141 relevant fixture checks and locked native binary build pass.
 - [x] Real confined unmodified Everything2026.8.31 package check and task-root/process cleanup.
 - [x] Fix independent review findings; final151 checks/build pass and Evaluator ACCEPT.
-- [ ] Integrate scoped changes and report native metadata/provider/Finder/Keychain/client limitations.
+- [x] Integrate scoped changes as3008546; report native metadata/provider/Finder/Keychain/client limits.
 - [ ] Future separate contract: public authoring/import of recorded native setup/folder metadata; no schema invented here.
 
 - [x] Record user normal-practice condition: saved expiry/before-use/shared-library renewal; native hidden expiry stays unknown and GET stays read-only.

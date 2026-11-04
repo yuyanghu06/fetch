@@ -1,3 +1,13 @@
+# Milestone records
+
+Current scoped native-storage refactor is independently accepted and integrated
+as3008546. Final151 checks, separate real confined Everything check and native
+build pass. See [snapshot](milestone.md), [to-do](to-do.md) and
+[scoped evidence](native-server-storage/evidence.md). Ordinary native metadata entry
+and actual OS/provider/client acceptance remain separate. History is append-only.
+
+## Earlier folder guide
+
 [Native server storage](native-server-storage/info.md) is implemented with initial
 fixture/build acceptance; final independent review and real confined MCP check are
 underway. Known native metadata/OS/provider limits remain explicit.

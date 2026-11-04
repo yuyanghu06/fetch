@@ -22,3 +22,6 @@ clients remain untested. Servers ignoring per-instance locations may share machi
 credentials and are not promised independent accounts. Existing Railway CLI
 preparation is retained; no new per-server auth code added. Preserve old keys/data,
 packages, personal configs and services. No migration or release is authorized.
+
+Integrated source/documentation commit:3008546. Delivery journal is linked from
+the rolling milestone snapshot. No application source changed after final checks.

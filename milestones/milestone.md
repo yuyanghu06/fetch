@@ -12,10 +12,10 @@ native binary build PASS. Independent Evaluator ACCEPT.
 [Pass](history/2026-11-03_21-10-00-310480-tester-final-native-storage-checks.md) [Pass](history/2026-11-03_21-10-00-310481-evaluator-native-storage-accepted.md)
 [Current contracts](../docs/architecture/native-server-storage.md).
 [Complete evidence and remaining limits](native-server-storage/evidence.md).
+[Integration pass](history/2026-11-03_21-10-43-020636-orchestrator-integrate-native-storage.md).
 Ordinary native command/path authoring and real OS/provider/client acceptance
-remain open product work; this is not full-MVP completion. Next: integrate scoped
-changes, then separately review native metadata entry before new public fields or
-per-server handling. Existing personal configs/credentials/state remain untouched.
+remain open product work; this is not full-MVP completion. Integrated as3008546. Next: separately review native metadata entry before new
+public fields or per-server handling. Existing personal configs/credentials/state remain untouched.
 
 ## November 3 — normal-practice condition recorded
 
