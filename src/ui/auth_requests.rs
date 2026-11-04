@@ -29,6 +29,8 @@ impl Requests {
     pub fn revision(&self) -> u64 { self.revision }
     pub fn latest_sequence(&self) -> u64 { self.sequence }
 
+    pub fn invalidate_reads(&mut self) { self.revision += 1; }
+
     pub fn clear(&mut self) {
         self.active.clear();
         self.revision += 1;

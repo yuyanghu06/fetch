@@ -1,5 +1,9 @@
 # Server preparation
 
+Deletion holds an idle installation guard through cleanup, rejecting active preparation and excluding new source-reuse/autoconnect submissions. Removing the saved association makes a fresh discovery selectable; original definitions, scripts and shared runtimes are preserved.
+
+D83 managed installation adds an awaited per-submission connection hook after preparation. Manager supplies a weak reference and invokes the existing named Restart / Connect operation. Successful connections remain running; auth/start failures do not undo package preparation or stop later rows. Existing ready imports remain untouched. The standalone submit helper remains preparation-only. Installation progress stays pending through the managed connection attempt; GET servers owns runtime/authentication outcomes. This source has not been built or run in this pass.
+
 `mod.rs` captures selected source entries without retaining credential values. It keeps one installation group, prepares entries sequentially, reuses saved successful imports and retains progress for the current run. Packages and runtimes belong under Fetch's private Application Support root; durable server records remain separate.
 
 Source includes pinned Node 24.22.1, uv 0.13.5 and Python 3.13.18 provisioning, HTTPS download limits, published SHA-256 comparison, private preparation homes/caches and isolated npm/Python environments. No runtime setup or package command was executed during implementation. Fresh-install behavior and all failure/cleanup paths await user-controlled testing.
@@ -30,3 +34,12 @@ existence/permissions/path containment and pinned package metadata gate readines
 no CLI --version is run. npm's official postinstall fetches its binary over HTTPS;
 it does not provide an independent archive checksum. No package install executed
 in this source pass. First-party download HTTP now uses safe diagnostics.
+
+Direct POST bodies also accept server_name plus command or url. direct.rs checks
+literal command syntax before shlex splitting, builds an ordinary shared capture
+and computes a digest of the name/normalized original definition. Existing
+private npm/Python/script/remote preparers and managed Connect hooks handle it.
+Repeated direct identity reuses saved settings/credentials even after edits;
+source-path/name reuse remains separate. Direct progress uses config_path:null
+and never echoes command/URL text. Inputs carry no credential values; no shell
+or documentation interpreter is used. No UI is added for these new inputs.

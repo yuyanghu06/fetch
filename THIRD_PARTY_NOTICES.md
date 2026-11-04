@@ -12,6 +12,7 @@ Direct dependencies are declared in Cargo.toml. Important sources include:
 | Rustls / PEM reader | https://github.com/rustls | MIT OR Apache-2.0 OR ISC, depending on component |
 | RustCrypto AES-GCM / SHA-2 | https://github.com/RustCrypto | MIT OR Apache-2.0 |
 | Serde / serde_json | https://github.com/serde-rs | MIT OR Apache-2.0 |
+| shlex2.0.1 | https://github.com/comex/rust-shlex | MIT OR Apache-2.0 |
 | rcgen | https://github.com/rustls/rcgen | MIT OR Apache-2.0 |
 | ring (TLS/signature dependency) | https://github.com/briansmith/ring | ISC and upstream notices |
 

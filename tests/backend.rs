@@ -697,3 +697,23 @@ fn discovery_default_uses_injected_codex_home_while_folder_override_is_self_cont
     assert_eq!(explicit["configs"][1]["path"], home.join(".codex/config.toml").to_str().unwrap());
     assert_eq!(explicit["configs"][1]["servers"][0]["name"], "codex");
 }
+
+#[tokio::test]
+async fn discovery_folder_preserves_already_installed_source_associations() {
+    let (directory, state, app) = fixture();
+    let home = directory.path().join("chosen-home");
+    write_discovery_home(&home);
+    let source = home.join(".codex/config.toml");
+    let mut installed = record("existing-codex");
+    installed["_installation"] = json!({"source_path":source,"source_name":"codex","installation_id":"fixture-installation","protected_args":0});
+    state.repository.save("existing-codex", &installed).unwrap();
+    let response = app.oneshot(request(&discovery_uri(&home.join(".codex")))).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = value(response).await;
+    let codex = &body["configs"][1]["servers"][0];
+    assert_eq!(codex["installed"], true);
+    assert_eq!(codex["installed_server_id"], "existing-codex");
+    assert_eq!(codex["selected_by_default"], false);
+    assert_eq!(body["configs"][0]["servers"][0]["installed"], false);
+    assert!(body["next_steps"].as_array().unwrap().iter().any(|step| step["action"] == "check_server_status"));
+}

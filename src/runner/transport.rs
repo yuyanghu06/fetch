@@ -40,6 +40,7 @@ pub struct Connection {
     pub revision: RwLock<String>,
     pub capabilities: RwLock<Value>,
     child: Mutex<Option<Child>>,
+    child_exit_confirmed: AtomicBool,
     pub closed: AtomicBool,
     pub changes: broadcast::Sender<String>,
     close: CancelToken,
@@ -73,7 +74,7 @@ impl Connection {
                 let connection = Arc::new(Self {
                     wire: Wire::Stdio(writer), sequence: AtomicU64::new(0), pending: Mutex::new(HashMap::new()),
                     session: RwLock::new(None), revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})),
-                    child: Mutex::new(Some(child)), closed: AtomicBool::new(false), changes, close: CancelToken::new(),
+                    child: Mutex::new(Some(child)), child_exit_confirmed:AtomicBool::new(false), closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
                 });
                 let mut opening=CloseOnDrop::new(connection.clone());
@@ -113,7 +114,7 @@ impl Connection {
                 let connection = Arc::new(Self {
                     wire: Wire::Remote { client, endpoint: endpoint.clone(), headers: RwLock::new(headers), sse: matches!(config, TransportConfig::Sse { .. }) },
                     sequence: AtomicU64::new(0), pending: Mutex::new(HashMap::new()), session: RwLock::new(None),
-                    revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})), child: Mutex::new(None),
+                    revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})), child: Mutex::new(None), child_exit_confirmed:AtomicBool::new(false),
                     closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
                 });
@@ -391,9 +392,35 @@ impl Connection {
                 _=>{ let _=child.start_kill(); matches!(tokio::time::timeout(Duration::from_secs(5),child.wait()).await,Ok(Ok(_))) }
             }
         } else { false };
+        if confirmed{self.child_exit_confirmed.store(true,Ordering::Release);}
         for task in self.background.lock().await.drain(..) { task.abort(); }
         self.fail_closed().await;
         confirmed
+    }
+    /// Delete only an idle context. Retain its Child until exit is confirmed so
+    /// a bounded failed close remains retryable without guessing that it stopped.
+    pub(super) async fn close_for_delete(self:&Arc<Self>)->bool{
+        self.close.cancel();self.closed.store(true,Ordering::Release);
+        if self.is_local()&&!self.child_exit_confirmed.load(Ordering::Acquire){
+            let mut stored=self.child.lock().await;
+            let Some(child)=stored.as_mut()else{return false;};
+            let mut confirmed=matches!(child.try_wait(),Ok(Some(_)));
+            if !confirmed{
+                #[cfg(unix)]
+                if let Some(id)=child.id(){unsafe{libc::kill(-(id as i32),libc::SIGTERM);}}
+                confirmed=matches!(tokio::time::timeout(Duration::from_secs(4),child.wait()).await,Ok(Ok(_)));
+                if !confirmed{
+                    #[cfg(unix)]
+                    if let Some(id)=child.id(){unsafe{libc::kill(-(id as i32),libc::SIGKILL);}}
+                    let _=child.start_kill();
+                    confirmed=matches!(tokio::time::timeout(Duration::from_secs(1),child.wait()).await,Ok(Ok(_)));
+                }
+            }
+            if !confirmed{return false;}
+            self.child_exit_confirmed.store(true,Ordering::Release);stored.take();
+        }
+        for task in self.background.lock().await.drain(..){task.abort();}
+        self.fail_closed().await;true
     }
     async fn fail_closed(&self) {
         self.closed.store(true,Ordering::Release);
@@ -406,6 +433,7 @@ impl Connection {
         *headers.write().await=private_headers(&values)?;Ok(())
     }
     pub async fn confirmed_child_exit(&self)->bool{
+        if self.child_exit_confirmed.load(Ordering::Acquire){return true;}
         if let Some(child)=self.child.lock().await.as_mut(){matches!(child.try_wait(),Ok(Some(_)))}else{false}
     }
 }

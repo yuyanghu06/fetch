@@ -2,10 +2,239 @@
 
 ## November 3 — automatic config discovery
 
+Delivery found newer main commits; both sets of changes are merged with conflicts resolved. Integrated independent checks pass: 64 relevant cases, including 12 new, plus final native build. [Merged test evidence](history/2026-11-03_19-30-58-261856-tester-integrated-folder-discovery.md). Independent Evaluator ACCEPTs the merged result. [Final review](history/2026-11-03_19-31-19-393149-evaluator-integrated-discovery-acceptance.md). Normal commit/push follows. [Integration report](history/2026-11-03_19-29-25-940238-coder-integrate-newer-main.md).
+
 Active focused milestone: [automatic config discovery](automatic-config-discovery/info.md).
-Opening Install will read known global config files automatically. Explicit home/.codex folder or single-file selection remains optional; installation still requires selecting servers and pressing Install. Independent fixture checks pass: 47 relevant cases, including 10 new; native binary builds. [Test evidence](history/2026-11-03_19-26-54-226235-tester-automatic-discovery-fixtures.md). Independent Evaluator ACCEPTs the scoped source/fixture change. [Evaluation and integration](history/2026-11-03_19-27-27-851163-evaluator-automatic-discovery-acceptance.md). Actual native picker/window interaction and refreshed Figma specimens remain pending. [Implementation report](history/2026-11-03_19-25-58-185229-coder-folder-discovery-and-ui.md). Existing Google/Slack and protected runtime work below remains unfinished.
+Opening Install will read known global config files automatically. Explicit home/.codex folder or single-file selection remains optional; installation still requires selecting servers and pressing Install. Independent fixture checks pass: 47 relevant cases, including 10 new; native binary builds. [Test evidence](history/2026-11-03_19-26-54-226235-tester-automatic-discovery-fixtures.md). Independent Evaluator ACCEPTs the scoped source/fixture change. [Evaluation and integration](history/2026-11-03_19-27-27-851163-evaluator-automatic-discovery-acceptance.md). Actual native picker/window interaction and refreshed Figma specimens remain pending. [Implementation report](history/2026-11-03_19-25-58-185229-coder-folder-discovery-and-ui.md). The latest provider scope decisions and protected runtime work below remain unchanged.
 
 [Planner report](history/2026-11-03_19-25-18-599038-planner-automatic-config-discovery.md).
+
+## November 3 — direct installation body accepted
+
+User approved command/url alternatives in the existing POST body after the full
+proposal and explicitly excluded UI. Independent Researcher selected already
+locked shlex2.0.1 plus restricted syntax checks; Planner completed the bounded
+plan. Coder source is integrated: shared capture/preparation, parsed command/URL
+inputs, saved direct-identity digest and matching MCP schema. Root inspected the
+diff; independent Tester/Evaluator ACCEPT.142 unique checks pass and the locked
+native binary builds (0.35s), with no new warnings. No real package install/
+provider/connection acceptance is claimed; hooks use disposable simulations.
+Source/evidence delivered as53adad6; live remote/local refs matched.
+[Delivery pass](history/2026-11-03_18-15-17-581559-orchestrator-deliver-direct-install-body.md). Preserve
+concurrent UI/startup edits, source imports and Google deferral.
+[Contract proposal pass](history/2026-11-03_17-56-44-860492-orchestrator-propose-command-install-input.md).
+[Researcher pass](history/2026-11-03_18-04-47-964906-researcher-command-parser-selection.md).
+[Planner pass](history/2026-11-03_18-04-47-965249-planner-direct-install-body-plan.md).
+[Implementation pass](history/2026-11-03_18-08-05-870550-coder-direct-install-body.md).
+[Verification evidence](direct-install-inputs/evidence.md).
+[Tester pass](history/2026-11-03_18-10-43-880763-tester-direct-install-fixtures.md).
+[Orchestrator pass](history/2026-11-03_18-10-43-880970-orchestrator-direct-install-native-build.md).
+[Evaluator pass](history/2026-11-03_18-10-43-881085-evaluator-accept-direct-install-body.md).
+[Scope](direct-install-inputs/info.md). [Pass](history/2026-11-03_17-40-38-021507-orchestrator-scope-direct-install-inputs.md).
+
+
+## November 3 — shared authentication router accepted
+
+The user clarified selection uses imported command, arguments and environment
+requirements, not README interpretation. Remote defaults to web OAuth; shared
+handlers cover API credentials and supported CLI/local helpers. A selected-flow
+failure is returned to the user without a fallback login method. Existing public
+contracts, account isolation, encrypted readback/proof and responsiveness remain.
+Independent Planner completed the bounded common OAuth/dispatcher plan. Coder
+implemented private configuration dispatch and common registration/URL/token
+requests; Orchestrator inspected the diff. Independent Tester/Evaluator ACCEPT,
+99 unique fixture checks pass and locked native binary compilation succeeds
+(0.74s). Initial stale alias fixture failure was corrected in test setup only;
+no production alias behavior changed. No live provider/helper/native/client
+acceptance is claimed. Installed
+Google1.11.3 has no storage hook; the user explicitly keeps its encrypted bridge
+and integration pending while the common router is completed. Multiple instances
+of the same MCP must retain separate methods/credentials/accounts. The existing
+same-source installation reuse remains unchanged. User requests a behavior
+walkthrough after routing completion. Source/evidence delivered as4f18905;
+live remote and local commit matched. Pre-existing documentation edits remain
+uncommitted. [Delivery pass](history/2026-11-03_16-55-36-339850-orchestrator-deliver-shared-router.md).
+[Verification evidence](shared-mcp-authentication/evidence.md).
+[Tester pass](history/2026-11-03_16-54-04-913350-tester-shared-router-fixtures.md).
+[Orchestrator pass](history/2026-11-03_16-54-04-913622-orchestrator-shared-router-native-build.md).
+[Evaluator pass](history/2026-11-03_16-54-04-913739-evaluator-accept-shared-router.md).
+[Implementation pass](history/2026-11-03_16-49-58-499042-coder-shared-authentication-router.md).
+[Research and user scope decisions](history/2026-11-03_16-48-24-958601-researcher-google-helper-and-router-scope.md).
+[Planner pass](history/2026-11-03_16-46-28-931238-planner-shared-authentication-dispatch.md).
+
+
+
+## November 3 — server-header × ready for user testing
+
+Delete API/tool delivered as64cff43. The user-requested shared × now sits beside
+every server disclosure and invokes that DELETE operation. Confirmed removal
+clears relevant cached state; busy/pending and uncertain-response handling avoid
+duplicate deletion. Independent source ACCEPT; native binary build passes and
+14 existing UI-handler regression checks pass. No actual app/window/deletion or
+personal-state operation ran. [Evidence](history/2026-11-03_16-20-25-000001-orchestrator-delete-button-build-and-ui-checks.md).
+
+Shared authentication remains the next implementation: user emphasized a common
+standard harness/MCP web-auth rewrite for all servers, with no Google-specific
+route or login engine. Completed upstream/helper research is not live auth proof.
+
+## November 3 — delete server, then shared authentication
+
+Active milestone: [delete-server](delete-server/info.md). User delegates clean
+implementation using existing conventions. DELETE /api/v1/servers/{server_id}
+will use shared per-server management authority, reject busy work, stop the idle
+connection and remove only Fetch-owned state/private packages. HTTP/MCP share
+the backend; source files, scripts, runtimes and unrelated accounts remain.
+Plan accepted; HTTP/MCP adapters are implemented and inspected; backend cleanup/
+lifecycle is implemented; cancellation-owned gates and shutdown handling corrected.
+Tester and Evaluator final source ACCEPT, no material findings. Scoped Git
+delivery is next. No build/runtime or actual deletion ran.
+[Plan evidence](history/2026-11-03_15-11-28-000001-planner-delete-server-contract-and-authentication-queue.md).
+[Backend source](history/2026-11-03_15-27-24-000001-coder-safe-server-deletion-backend.md).
+[Initial source review](history/2026-11-03_15-27-24-000002-tester-delete-cancellation-finding.md).
+[Adapter source evidence](history/2026-11-03_15-16-40-000001-coder-delete-http-and-mcp-adapters.md).
+
+User explicitly queued the shared asynchronous MCP authentication implementation
+after deletion delivery. Preserve that full request: pinned upstream reuse,
+standard HTTP OAuth including existing application registrations, URL-mode
+elicitation/server-owned callbacks, local login helpers with Google first,
+independent encrypted account storage/renewal, shared async ownership/cancel/
+expiry/UI responsiveness, Railway/Linear compatibility, actual verification and
+attribution. Read current AGENTS/November3 notes/authentication-engine first.
+No authentication implementation starts before deletion is delivered.
+
+- [Guard/shutdown correction and Tester acceptance](history/2026-11-03_15-32-49-000001-coder-delete-owned-worker-and-tester-acceptance.md)
+- [Final deletion source acceptance](history/2026-11-03_15-32-49-000002-evaluator-delete-source-acceptance.md)
+
+## November 3 — installation should leave usable servers running
+
+Active focused milestone: [install-connect](install-connect/info.md). User selects
+installation's final stage invoking existing Restart / Connect, retaining usable
+connections and reporting authentication.status not_required for credential-free
+success without a known login requirement. Keep GET servers status; unknown alone
+must not prompt login. Missing/rejected access requires setup; unrelated start
+errors remain runtime errors. No automatic login or tool calls. Source implemented;
+independent Tester's identity/generation finding is corrected and re-reviewed
+ACCEPT. Final Evaluator's late-response gap is also fixed: provider rejection
+after timeout/cancel updates status without changing the call's original outcome.
+Tester and Evaluator final source ACCEPT; no material findings remain. Source is
+committed/pushed as fcf6c34. No builds, tests
+or runtime/provider/MCP actions ran for this change.
+
+- [Implementation](history/2026-11-03_14-55-20-000001-coder-install-connect-source.md)
+- [Independent source finding](history/2026-11-03_14-55-20-000002-tester-install-connect-generation-finding.md)
+
+The installed-discovery fix was rebased onto newer upstream source, independently
+re-reviewed ACCEPT and pushed as9eddd00. Its build/native/Figma evidence remains
+pending. [Delivery and new plan](history/2026-11-03_14-45-40-000001-orchestrator-discovery-delivery-and-install-connect-plan.md).
+
+## November 3 — source layout explained and requirement recorded
+
+Current pass: read-only source inspection plus documentation. The user clarified
+that `src/api` should hold HTTP route handlers grouped by URL path, while other
+folders may contain reusable backend functions. Current implementation differs:
+route handlers are combined in `api/runtime.rs` and some HTTP endpoints live in
+`oauth`/`mcp`. No application source was reorganized; no builds/tests/runtime
+operations ran. Next layout action is a bounded source refactor preserving
+existing routes and shared backend behavior, when requested. Existing MVP and
+installed-discovery work remains unfinished as recorded below.
+[Pass evidence](history/2026-11-03_14-45-09-644674-orchestrator-source-layout-clarification.md).
+
+## November 3 — newer GitHub work discovered during delivery
+
+- [Late-response correction and Tester acceptance](history/2026-11-03_15-01-26-000001-coder-late-auth-errors-and-tester-recheck.md)
+- [Final D83 source acceptance](history/2026-11-03_15-01-26-000002-evaluator-install-connect-source-acceptance.md)
+- [Actual source delivery](history/2026-11-03_15-02-49-000001-orchestrator-deliver-install-connect-source.md)
+
+- [Identity correction](history/2026-11-03_14-57-40-000001-coder-bind-auth-rejections-to-connection.md)
+- [Corrected source acceptance](history/2026-11-03_14-57-40-000002-tester-install-connect-source-acceptance.md)
+- [Final review late-response finding](history/2026-11-03_14-59-42-000001-evaluator-late-authentication-rejection-finding.md)
+
+Pushing the installed-discovery fix was rejected because GitHub had twelve newer
+commits through a7a6e0d. Fetching revealed D81/D82 work absent from the initial
+local checkout: shared UI/theme, documented remote/bridge import support,
+issuer-bound generic OAuth, checked credential groups, shared verification data,
+parallel authentication and further encrypted-document/token handling. Incoming
+records include substantially newer fixture evidence (including110 combined
+checks for D82); those records supersede the pre-fetch local readiness summary.
+Real native/provider/client acceptance is still not established by those fixtures.
+
+The feature is being rebased onto that work, preserving its auth request tracking
+and shared components. The new installed checkbox now lives in components.rs
+with styling/opacity in theme.rs. Initial immutable review records describe the
+older checkout and earlier implementation; this snapshot corrects their current
+applicability. No tests/build/apps/provider/MCP/personal-state actions were run
+for this integration. Newly discovered D81 is recorded without treating this
+small source fix as an instruction to resume the entire runtime acceptance task.
+
+## November 3 — already-installed discovery rows
+
+Active focused milestone: [installed discovery](installed-discovery/info.md).
+The user requested checked, gray discovery rows for definitions already imported
+into this Fetch instance. Backend matching will reuse exact saved source path/name;
+UI default/manual/bulk selection and submission will exclude those rows. Distinct
+accounts/configuration sources remain separate and backend installation reuse is
+preserved. HTTP and MCP discovery must agree. Successful progress will update
+displayed rows without rereading source files. Source is implemented in discovery,
+the HTTP/MCP adapters and UI. A common eligibility rule excludes installed rows
+from defaults, toggles, Select all, count and submitted payload; successful progress
+updates rows and preserves failed-new-row retries. Checked disabled rows use a
+shared style to dim label text as well as the box. Independent Tester and
+Evaluator source/documentation reviews ACCEPT with no material findings. No new
+build/runtime result exists; source-only commit/push integration is next.
+
+The user's separate Vercel/Miro/HF questions were answered from recorded source
+limits; they do not expand this fix into provider or importer support work.
+No build/test/formatter/linter/validation, app/provider/MCP, personal state or
+release action ran or is newly authorized.
+[Plan evidence](history/2026-11-03_14-27-45-000001-planner-already-installed-discovery.md).
+[Implementation evidence](history/2026-11-03_14-31-55-000001-coder-installed-discovery-state.md).
+[Independent source review](history/2026-11-03_14-35-00-000001-tester-installed-discovery-source-review.md).
+[Final source acceptance](history/2026-11-03_14-34-53-000001-evaluator-installed-discovery-acceptance.md).
+
+## Historical November 3 pre-fetch local-checkout review
+
+This review inspected local 1276516 before fetching newer GitHub commits.
+Its provider/import/UI/test conclusions are superseded by the incoming October
+29–31 records below; it does not describe the integrated repository.
+
+Active goal: finish the selected MCP MVP so Codex, OpenCode and Claude Code can
+each use one Fetch connection for the user's imported servers. Read-only source
+inspection confirms the shared gateway, client authorization, transports and
+management machinery exist; the four backend gaps in
+[MVP_GAPS.md](../docs/testing/MVP_GAPS.md) still prevent claiming general everyday
+inventory coverage. Remaining shared UI extraction is a separate required item.
+
+Known provider setup is limited to Tavily/GitHub verification and Linear/Railway
+browser integrations. Importing definitions deliberately does not copy their
+credentials. General remote OAuth, broader safe launcher/URL imports and correct
+credential batch/removal outcomes remain unfinished. Unknown authentication
+does not by itself prove a no-auth server cannot connect. Railway local children
+still need explicit Restart after background token refresh.
+
+Historical verification remains 37 passing earlier-foundation tests plus later
+successful native binary compilation/source reviews; no new runtime evidence
+was produced. The native/provider/client acceptance roster remains unrun and its
+isolation unprovisioned. No build, test, app/provider/MCP connection, personal-state
+change, packaging or release occurred. Starting checkout was clean main at
+1276516, matching its local origin/main tracking reference; no remote query made.
+
+- [Connector source-review evidence](history/2026-11-03_14-21-37-000001-researcher-connector-readiness-review.md)
+- [Plan, pages and testing-evidence review](history/2026-11-03_14-21-37-000002-planner-plan-pages-and-test-evidence.md)
+- [Independent summary acceptance and integration](history/2026-11-03_14-21-37-000003-evaluator-status-summary-acceptance.md)
+
+All four native pages exist: Servers, Install MCPs, Connect apps and Settings,
+plus browser approval/callback pages. Connect apps provides setup/certificate
+guidance rather than configuring clients automatically. The 153 Figma specimens
+are design/source references, not runtime-tested pages. The original seven
+discussion areas now map to the consolidated build plan: source spans all core
+areas, authentication/import remain incomplete and testing/delivery acceptance
+is outstanding. Independent Evaluator ACCEPT covers this factual summary only.
+Shared role/workflow files referenced under ~/.codex were unavailable; explicitly
+scoped read-only specialists supplied independent review without running checks.
+
+Next: complete a per-server import/authentication coverage record from the
+existing inventory, finish its selected missing flows, then obtain authorized
+isolated end-to-end evidence before switching everyday clients.
 
 ## October31 — existing Google/Slack checks confirmed
 

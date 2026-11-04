@@ -54,3 +54,15 @@ October31 research confirms reusable Slack auth.test and Google Drive account
 checks. The endpoints are known; connecting encrypted saved access and Google
 fixed request options is distinct from login storage/renewal work. No source
 implementation or real-world result is claimed by this research.
+
+
+November3 authentication routing: authentication-engine.md records shared
+selection from imported launch/environment requirements, default remote web
+OAuth, preserved named compatibility and per-instance ownership. Google1.11.3
+integration is pending by user choice; research.md records exact inspected helper
+and upstream references. No public contract or duplication route is introduced.
+
+
+The November3 direct command/URL installation amendment at the end of
+api-contract.md is approved for backend implementation only. The user explicitly
+excluded UI work; the direct-install milestone tracks source and verification.

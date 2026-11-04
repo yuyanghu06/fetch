@@ -5,8 +5,8 @@ use axum::{Json,body::to_bytes,extract::{Path,Request,State},http::{HeaderValue,
 use serde_json::{Value,json,value::RawValue};
 use std::sync::Arc;
 
-fn manager(state:&AppState)->Result<Arc<Manager>,Response>{state.manager.clone().ok_or_else(||application_error(StatusCode::SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE","Start Fetch's native application to use this operation.",None))}
-fn management_error(error:ManagementError)->Response{crate::diagnostics::application_failure(error.code);(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
+pub(super) fn manager(state:&AppState)->Result<Arc<Manager>,Response>{state.manager.clone().ok_or_else(||application_error(StatusCode::SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE","Start Fetch's native application to use this operation.",None))}
+pub(super) fn management_error(error:ManagementError)->Response{crate::diagnostics::application_failure(error.code);(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
 fn accepted(body:Value,location:Option<String>)->Response{let mut response=(StatusCode::ACCEPTED,Json(body)).into_response();if let Some(location)=location{if let Ok(value)=HeaderValue::from_str(&location){response.headers_mut().insert(header::LOCATION,value);}}response}
 fn no_query(request:&Request)->bool{request.uri().query().is_none()}
 async fn body(request:Request)->Result<Value,Response>{ read_body(request,false).await }
@@ -21,7 +21,7 @@ async fn read_body(request:Request,allow_empty:bool)->Result<Value,Response>{
     serde_json::from_str(raw.get()).map_err(|_|invalid())
 }
 fn invalid()->Response{application_error(StatusCode::BAD_REQUEST,"INVALID_REQUEST","Use the documented request fields and one JSON object.",None)}
-fn target(caller:&Caller,scope:&str,id:&str,item:Option<&str>)->Result<(),Response>{if id.is_empty()||id.contains('\0'){return Err(invalid());}if !caller.permits(scope,id,item){return Err(application_error(StatusCode::NOT_FOUND,"SERVER_NOT_FOUND","The selected server was not found.",None));}Ok(())}
+pub(super) fn target(caller:&Caller,scope:&str,id:&str,item:Option<&str>)->Result<(),Response>{if id.is_empty()||id.contains('\0'){return Err(invalid());}if !caller.permits(scope,id,item){return Err(application_error(StatusCode::NOT_FOUND,"SERVER_NOT_FOUND","The selected server was not found.",None));}Ok(())}
 
 pub async fn install(State(state):State<Arc<AppState>>,request:Request)->Response{
     if let Err(reply)=authorize_scope(&state,request.headers(),"fetch:manage",None){return *reply;}
@@ -129,6 +129,7 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
                 "fetch__get_installation"=>&["installation_id"], "fetch__get_servers"=>&["id","restart_id"],
                 "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id"],
                 "fetch__restart_server"=>&["server_id","force_restart"],
+                "fetch__delete_server"=>&["server_id"],
                 "fetch__update_server_config"=>&["server_id","args","working_directory","environment","connection","execution"],
                 _=>return Err(RunError::invalid()),
             };
@@ -136,16 +137,17 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
             let project=|result:Result<Value,ManagementError>|Ok(result.unwrap_or_else(|error|error.body()));
             if name=="fetch__list_tools"{let ids=strings(&input,"server_id")?;let view=match input.get("view"){None=>view,Some(value)=>value.as_str().ok_or_else(RunError::invalid)?};return project(list_tools(&self.manager,&caller,ids,view).await);}
             if !caller.can_manage(){return Err(RunError{http_status:403,code:"FORBIDDEN",message:"Server-management permission is required.",execution:"not_started"});}
-            let needs_server=matches!(name,"fetch__authenticate_server"|"fetch__restart_server"|"fetch__update_server_config");
+            let needs_server=matches!(name,"fetch__authenticate_server"|"fetch__restart_server"|"fetch__update_server_config"|"fetch__delete_server");
             let id=if needs_server{input["server_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?}else{""};
             if !id.is_empty()&&!caller.permits("fetch:manage",id,None){return Err(RunError::missing());}
             match name{
-                "fetch__discover_servers"=>{let path=input.get("config_path").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')&&std::path::Path::new(s).is_absolute()).map(std::path::PathBuf::from).ok_or_else(RunError::invalid)).transpose()?;let discovery=self.discovery.clone();tokio::task::spawn_blocking(move||discovery.scan(path.as_deref())).await.map_err(|_|RunError::catalog())?.map_err(|e|RunError{http_status:e.http_status,code:e.code,message:e.message,execution:"not_started"})},
+                "fetch__discover_servers"=>{let path=input.get("config_path").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')&&std::path::Path::new(s).is_absolute()).map(std::path::PathBuf::from).ok_or_else(RunError::invalid)).transpose()?;let discovery=self.discovery.clone();let repository=self.manager.repository.clone();tokio::task::spawn_blocking(move||discovery.scan_with_installed(path.as_deref(),&repository)).await.map_err(|_|RunError::catalog())?.map_err(|e|RunError{http_status:e.http_status,code:e.code,message:e.message,execution:"not_started"})},
                 "fetch__install_servers"=>project(self.manager.install(input).await),
                 "fetch__get_installation"=>project(self.manager.installation(input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
                 "fetch__get_servers"=>{if input.get("restart_id").is_some()&&input["id"].as_array().is_none_or(|ids|ids.len()!=1){return Err(RunError::invalid());}let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
                 "fetch__authenticate_server"=>project(self.manager.authenticate(id).await),
                 "fetch__restart_server"=>{let mut patch=json!({});if let Some(force)=input.get("force_restart"){patch["force_restart"]=force.clone();}project(self.manager.restart(id,patch).await)},
+                "fetch__delete_server"=>project(self.manager.delete_server(id,&caller).await),
                 "fetch__update_server_config"=>{let id=id.to_owned();let mut patch=input;patch.as_object_mut().ok_or_else(RunError::invalid)?.remove("server_id");project(self.manager.config(&id,patch,&caller).await)},
                 _=>Err(RunError::invalid())
             }

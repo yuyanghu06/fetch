@@ -66,6 +66,12 @@ the actual Navigation, Text input and Message structure above.
 
 ## Current implementation state
 
+November 3: components::server_header pairs the existing disclosure with a small
+× button and tooltip using common theme size/padding. It is shared across all
+server rows; the caller supplies busy/pending availability and deletion action.
+The button calls the existing DELETE API. New Figma specimen reconciliation is
+pending; a passing native build does not establish observed appearance.
+
 Shared Figma components and linked instances exist. Under D81, native code now
 uses src/ui/components.rs and theme.rs for repeated navigation, controls, page
 framing, messages, server cards and disclosures; the credential editor remains
@@ -75,6 +81,17 @@ Existing layout/labels/light defaults/masking/availability/scrolling are preserv
 The native build and68 fixture checks pass; no actual native visual or live login
 acceptance is claimed. Code Connect and the Railway Figma specimen follow-up are
 still separate reference work.
+
+November 3 discovery usage: an already-installed row reuses the existing checked
+disabled Checkbox state and appends "already installed" to its label. It is not
+part of the active installation selection or count. New supported rows retain
+ordinary checked/unchecked selection and explicit opt-in for source-disabled
+entries. Keep the installed-page specimen reconciliation tracked in
+[UI_STATE_COVERAGE.md](UI_STATE_COVERAGE.md); no new Figma/runtime evidence exists.
+The shared components::installed_checkbox and theme::installed_checkbox functions
+also dim the label using the theme's text color, because the default Iced disabled
+style grays the box only.
+
 
 Review populated, empty, busy, disabled, error, expanded and scrolled states when
 code changes are selected. Preserve the fixed Install footer and actual long

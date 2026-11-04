@@ -1151,3 +1151,89 @@ renderer is a recorded follow-up rather than assumed complete visual coverage.
 The user wants the install flow to find Claude and Codex configuration files from a base folder by default, with a specific file selected only when explicitly requested. Default discovery already exists; the page currently requires clicking Discover. The scoped update will call it on first opening Install, hide the custom-location controls until requested, and accept home/.codex folders through the same discovery API. Install still uses chosen servers and returned file paths internally.
 
 Follow-up: the user clarified they meant the `.codex` folder itself. Direct `.codex` selection is supported and tested. Scoped source/fixture work passed 47 relevant cases (10 new), native build and independent evaluation. Actual native picker/window interaction and Figma refresh remain pending; wider MVP work is unchanged.
+
+## November 3, 2026 — Already-installed discovery rows
+
+Delivery follow-up: the initial checkout was behind GitHub. A rejected push and
+fetch exposed twelve newer commits through a7a6e0d, including broader known
+endpoint/query/bridge imports, generic OAuth, shared UI and newer fixture results.
+The initial unsupported-entry and MVP-status explanations applied to the older
+local source; incoming records supersede them. Preserve newer implementation
+when integrating the checkbox fix. The running screenshot may reflect an older
+binary; no fresh runtime observation or rebuild was performed here.
+
+The user requested that definitions already installed in this Fetch instance
+appear checked and gray in later discovery. Match the exact source file/name
+association already used for installation reuse, preserving distinct accounts.
+Installed entries are excluded from active selections and installation count;
+successful installation progress updates the visible row and failures stay
+retryable. This source change does not broaden provider/import support or
+authorize builds, tests, app/provider/MCP execution, personal-state edits or a
+release. Its new Figma specimen and runtime appearance remain pending.
+
+The user's related URL questions were answered from the recorded import limits:
+Miro/Vercel root URLs and HF query strings are currently rejected before a
+connection attempt. Supporting a hosted endpoint's address does not require
+installing a local package, but preserving queries safely and completing provider
+authentication remain separate implementation/verification work. v0 additionally
+uses unsupported mcp-remote launcher arguments. No support expansion was requested
+or implemented in this fix.
+
+## November 3, 2026 — Shared authentication routing and multiple instances
+
+Confirmed user direction: the existing Authenticate operation selects common
+setup functions from imported command, arguments and environment requirements.
+It does not interpret README instructions. Remote HTTP servers default to web
+OAuth; shared handlers cover API credentials and supported CLI/local helpers.
+A selected-flow failure returns its safe error to the user without silently
+trying another authentication method.
+
+The user explicitly chose **keep Google pending; complete the shared router
+first** after reviewing the private encrypted helper/server storage bridge.
+Actual Fetch-installed @a-bonus/google-docs-mcp is1.11.3. Its existing callback
+must be reused when integration resumes. The browser success page precedes code
+exchange and token storage and is not proof of completed login. No bridge or
+plaintext fallback is approved by that choice.
+
+The user additionally requires **multiple instances of the same MCP**, each
+independently authenticated using its own method, credentials and account.
+Several Google instances signed into different Google accounts are the concrete
+example; Google is a special integration, while instance separation applies to
+all MCPs. Keep configuration, credentials, pending attempts and renewal tied to
+the individual server instance, never only the package name. The current
+installer already distinguishes different source entries, but reuses an existing
+instance for the same source path/name; this note does not claim an explicit
+same-source duplication workflow has been implemented or change that contract.
+
+After routing is complete, the user wants a walkthrough of the resulting
+behavior. Google implementation remains pending during this routing task.
+
+## November 3, 2026 — Request direct installation inputs
+
+User asks whether installation can also accept URLs/install directions or
+commands through a new key instead of requiring config_path. This requests an
+extension to the public install input, not permission to silently finalize its
+schema, identity/reuse or documentation-execution behavior. Clarification asked:
+actual remote connection URLs and explicit launch definitions, or README/install
+links too? Current source still requires config_path/server_name. Preserve all
+existing authorization, credential and preparation/connect rules. Implementation
+has not started. See milestones/direct-install-inputs/info.md.
+
+## November 3, 2026 — Commands should become internal install definitions
+
+User clarifies desired input: users paste a command and Fetch translates it into
+an internal definition to prepare and run. They do not need to construct the
+nested definition JSON themselves. A complete command/URL input amendment is
+proposed in docs/architecture/api-contract.md, including identity/reuse and
+existing permission/error/progress boundaries. Exact new contract awaits their
+answer; no new install input/parser or application source was implemented.
+
+## November 3, 2026 — Direct install POST body approved; no UI
+
+After the complete direct-command/URL body proposal, user instructed: add it to
+the existing POST route body and do not build any UI. Implement server_name plus
+one config_path/command/url, shared command-to-definition/preparation, described
+reuse/errors and existing authentication/credential boundaries. Existing config
+imports and Google deferral stay. No new route, install screen or duplicate UI.
+
+Delivery integration: GitHub main had newer installed-row/direct-install/deletion/authentication changes. A normal merge preserves them and the folder discovery change. Final64 relevant tests (12 new), native build and independent merged evaluation pass. The existing discovery request can use `config_path=/Users/you/.codex`; individual config files are optional overrides.

@@ -1,0 +1,10 @@
+# Direct install fixtures
+
+- Local timestamp / acting role / milestone: 2026-11-03T18:10:43.880763-05:00 / tester, inspected by Orchestrator / direct-install-inputs.
+- Requested scope: Implement/test/evaluate direct command/url POST body, no UI.
+- Starting repository state: Source implemented after approved contract; unrelated UI/startup/docs changes preserved; Google pending.
+- Work performed / changed files: Added6 internal mapping/hook cases and8 direct-install integration cases. Owned only src/installation/direct_tests.rs and tests/direct_install.rs. No production fix needed. Commands all with DEVELOPER_DIR=/Library/Developer/CommandLineTools: cargo test --locked --lib installation::direct_tests =>6/6 (compile11.39s/tests0.07s); cargo test --locked --test direct_install =>8/8 (compile1.34s/tests0.11s); cargo test --locked --lib --test backend --test import_compatibility --test local_mvp_acceptance --test raw_json -- --skip installation::direct_tests =>existing lib93/backend16/import7/MVP11/raw1 pass (compile1.79s). Total142 unique checks; zero failures, no repeated passing targets. Parser/classifier tests never prepare real packages. Preparation fixtures use remote records and inert local files with Installer::submit; hook outcome is explicitly simulated. HTTP cases exercise202/progress,401/403/400/no-store/Location. Reuse checks preserve saved edits and encrypted fixture access, distinguish source/direct identities and distinct definitions, and verify partial failure/active-group/sequential hooks. Independent Tester ACCEPT.
+- Decisions: No optional behavior or new public route/UI. Retain selected shape/reuse/error and credential boundaries.
+- Checks and evidence: Actual results above; disposable fixtures only. No real provider/helper/MCP client/native/Keychain/personal-state or release action.
+- Resulting state / acceptance: Scoped backend extension accepted; evidence separates tests/build from live installation/connection.
+- Remaining work and handoff: Scoped commit/push and user example; broader provider/native/client acceptance and Google remain pending.

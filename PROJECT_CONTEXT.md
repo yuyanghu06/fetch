@@ -1,6 +1,26 @@
 # Fetch — current project context
 
-November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); 47 relevant independent fixtures and native build pass; Evaluator ACCEPT. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.
+November 3: the user requests automatic Claude/Codex config discovery without manually locating files. The focused change makes opening Install discover default sources automatically and accepts an optional home/.codex folder or single config file. Selected-server installation stays explicit. See [the scoped milestone](milestones/automatic-config-discovery/info.md); Final merged64 relevant independent fixtures (12 new) and native build pass; Evaluator ACCEPT. Newer installed-row/direct-install/deletion/authentication source is preserved. Actual native picker/window interaction and Figma refresh remain pending. The user clarified the base folder is `.codex` itself.
+
+November3 active install extension: user approves command/url alternatives in the
+existing POST body after full contract review, explicitly without UI. Reuse the
+shared definition classifier/private installer and existing permission/progress/
+Connect/credential rules. Backend source is implemented;142 unique checks and
+native compilation pass, independent Tester/Evaluator ACCEPT. No real package
+installation/provider/connection acceptance is claimed.
+
+November3 current authentication slice: shared dispatcher implemented,99 fixture
+checks and native compilation pass; independent Tester/Evaluator ACCEPT. No real
+provider/helper/native/client acceptance is claimed. Dispatch is selected from
+imported command/arguments/environment needs, using web OAuth by default for
+remote HTTP servers and common API-credential/local-helper handlers. Return
+selected-flow errors without silently switching login methods. User chose to
+keep Google1.11.3 integration pending rather than approve a new encrypted helper
+storage bridge now. Multiple instances of the same MCP must independently own
+authentication methods, credentials and accounts (including different Google
+accounts); no package-global account state. Current same-source installation
+reuse is unchanged; a duplication workflow is not yet implemented. See NOTES.md.
+
 
 October31 clarification: Google and Slack already have their own sign-in/setup
 code. Fetch's missing work is using that setup while saving updated account

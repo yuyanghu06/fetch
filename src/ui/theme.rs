@@ -23,9 +23,18 @@ pub(super) const PANEL_PADDING: f32 = 10.0;
 
 // Match Iced's current primary button, full-width input and checkbox defaults.
 pub(super) const BUTTON_PADDING: [f32; 2] = [5.0, 10.0];
+pub(super) const DELETE_BUTTON_PADDING: [f32; 2] = [3.0, 7.0];
+pub(super) const DELETE_ICON_SIZE: f32 = 18.0;
 pub(super) const INPUT_PADDING: f32 = 5.0;
 pub(super) const CHECKBOX_SIZE: f32 = 16.0;
 pub(super) const CHECKBOX_GAP: f32 = 8.0;
+pub(super) const INSTALLED_LABEL_ALPHA: f32 = 0.5;
+
+pub(super) fn installed_checkbox(theme: &Theme, status: iced::widget::checkbox::Status) -> iced::widget::checkbox::Style {
+    let mut style = iced::widget::checkbox::primary(theme, status);
+    style.text_color = Some(theme.palette().text.scale_alpha(INSTALLED_LABEL_ALPHA));
+    style
+}
 
 pub(super) fn light() -> Theme {
     Theme::Light

@@ -9,6 +9,7 @@ use aes_gcm::{
 };
 use rand::{RngCore, rngs::OsRng};
 use std::{
+    collections::BTreeSet,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -38,6 +39,7 @@ pub trait KeyProvider: Send + Sync {
     fn key_for_server(&self, server_id: &str) -> Result<Zeroizing<[u8; 32]>, CredentialError>;
     /// Existing encrypted files must not cause replacement-key creation.
     fn existing_key_for_server(&self, server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> { self.key_for_server(server_id) }
+    fn delete_key_for_server(&self,_server_id:&str)->Result<(),CredentialError>{Err(CredentialError::KeyUnavailable)}
 }
 
 pub struct SecretDocument(Zeroizing<Vec<u8>>);
@@ -59,6 +61,8 @@ pub struct CredentialStore {
     root: PathBuf,
     keys: Arc<dyn KeyProvider>,
     writes: Mutex<()>,
+    deleted:Mutex<BTreeSet<String>>,
+    application:bool,
 }
 pub(crate) struct JsonUpdate {
     pub document: serde_json::Value,
@@ -75,10 +79,21 @@ impl CredentialStore {
             root,
             keys,
             writes: Mutex::new(()),
+            deleted:Mutex::new(BTreeSet::new()),application:false,
         }
     }
     /// App tokens and TLS identity use a separate encrypted application tree.
-    pub fn application_store(&self)->Self { Self::new(self.root.join("application"),self.keys.clone()) }
+    pub fn application_store(&self)->Self { let mut store=Self::new(self.root.join("application"),self.keys.clone());store.application=true;store }
+    pub(crate) fn delete_server(&self,server_id:&str)->Result<(),CredentialError>{
+        if self.application||server_id.starts_with("fetch-internal:"){return Err(CredentialError::StorageUnavailable);}
+        let _guard=self.writes.lock().map_err(|_|CredentialError::StorageUnavailable)?;
+        self.deleted.lock().map_err(|_|CredentialError::StorageUnavailable)?.insert(server_id.to_owned());
+        self.keys.delete_key_for_server(server_id)?;
+        if let Some(directory)=server_directory(&self.root,server_id,false).map_err(|_|CredentialError::StorageUnavailable)?{
+            directory.remove_file("credentials.enc").map_err(|_|CredentialError::StorageUnavailable)?;
+        }
+        Ok(())
+    }
     pub fn read(&self, server_id: &str) -> Result<Option<SecretDocument>, CredentialError> {
         let Some(dir) = server_directory(&self.root, server_id, false)
             .map_err(|_| CredentialError::StorageUnavailable)?
@@ -126,6 +141,7 @@ impl CredentialStore {
         Ok(JsonUpdate { document: value, changed })
     }
     fn save_locked(&self, server_id: &str, value: &SecretDocument) -> Result<(), CredentialError> {
+        if self.deleted.lock().map_err(|_|CredentialError::StorageUnavailable)?.contains(server_id){return Err(CredentialError::StorageUnavailable);}
         if value.expose().len() > MAX_SECRET_BYTES {
             return Err(CredentialError::TooLarge);
         }
@@ -281,6 +297,21 @@ impl MacKeychainKeys {
     }
 }
 impl KeyProvider for MacKeychainKeys {
+    fn delete_key_for_server(&self,server_id:&str)->Result<(),CredentialError>{
+        if server_id.starts_with("fetch-internal:"){return Err(CredentialError::KeyUnavailable);}
+        let _lock=self.creation.lock().map_err(|_|CredentialError::KeyUnavailable)?;
+        #[cfg(target_os="macos")]
+        {
+            use std::ffi::CString;use sha2::{Digest,Sha256};
+            let service=CString::new(self.service.as_str()).map_err(|_|CredentialError::KeyUnavailable)?;
+            let account=CString::new(format!("{:x}",Sha256::digest(server_id.as_bytes()))).map_err(|_|CredentialError::KeyUnavailable)?;
+            // SAFETY: exact service/account buffers remain valid for this synchronous call.
+            let status=unsafe{fetch_keychain_delete(service.as_ptr(),account.as_ptr())};
+            if status==0||status== -25300{Ok(())}else{Err(CredentialError::KeyUnavailable)}
+        }
+        #[cfg(not(target_os="macos"))]
+        {Err(CredentialError::KeyUnavailable)}
+    }
     fn existing_key_for_server(&self,server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> { self.read_key(server_id)?.ok_or(CredentialError::KeyUnavailable) }
     fn key_for_server(&self,server_id:&str)->Result<Zeroizing<[u8;32]>,CredentialError> {
         let _lock=self.creation.lock().map_err(|_|CredentialError::KeyUnavailable)?;
@@ -305,6 +336,7 @@ impl KeyProvider for MacKeychainKeys {
 }
 #[cfg(target_os="macos")]
 unsafe extern "C" {
+    fn fetch_keychain_delete(service:*const std::ffi::c_char,account:*const std::ffi::c_char)->i32;
     fn fetch_keychain_read(service:*const std::ffi::c_char,account:*const std::ffi::c_char,output:*mut u8,length:usize)->i32;
     fn fetch_keychain_create(service:*const std::ffi::c_char,account:*const std::ffi::c_char,input:*const u8,length:usize)->i32;
 }

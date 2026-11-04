@@ -112,6 +112,17 @@ int32_t fetch_keychain_create(const char *service, const char *account, const ui
     }
 }
 
+int32_t fetch_keychain_delete(const char *service, const char *account) {
+    @autoreleasepool {
+        if (!service || !account) return errSecParam;
+        NSDictionary *query = @{ (__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+            (__bridge id)kSecAttrService:[NSString stringWithUTF8String:service],
+            (__bridge id)kSecAttrAccount:[NSString stringWithUTF8String:account],
+            (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+        return SecItemDelete((__bridge CFDictionaryRef)query);
+    }
+}
+
 // Preserve Iced's application delegate and event loop. Actions are consumed by its UI subscription.
 #include <stdatomic.h>
 static _Atomic int fetch_app_action = 0;

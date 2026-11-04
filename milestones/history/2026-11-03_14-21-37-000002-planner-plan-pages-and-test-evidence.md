@@ -1,0 +1,10 @@
+# Reconcile original plan, implemented pages and test evidence
+
+- Local timestamp / acting role / milestone: November 3, 2026, 14:21:37 EST, sequence 2 / Planner, serialized by Orchestrator / selected MCP MVP readiness.
+- Requested scope: Compare current source with the original plan; identify built pages and actual testing versus unproved workflows.
+- Starting repository state: Source at 1276516; Orchestrator journal updates from the connector review only.
+- Work performed / changed files: Read original architecture handoff, consolidated build-readiness plan, UI source, testing handoff, historical verification and five-server roster. Specialist wrote no files; Orchestrator updated snapshot/to-do and appended this entry.
+- Decisions: Original seven discussion areas are historical; use the consolidated current build plan. Preserve deferred features and all execution restrictions.
+- Checks and evidence: src/ui/mod.rs:15,227-337 defines Servers, Install MCPs, Connect apps and Settings. OAuth/provider callback browser pages also exist. tests/verification.md records 37 passing earlier-foundation tests, formatting, Clippy and disposable real HTTPS requests. Later native/provider/runner/client paths have compilation/source-review evidence, not end-to-end acceptance. Four environment path tests are unrun. The five-server roster remains entirely not run; isolation is unprovisioned. Figma specimens do not establish runtime coverage.
+- Resulting state / acceptance: Source spans core plan areas; provider/import/credential gaps remain. Four native pages are implemented, while Connect apps supplies instructions rather than automatic client edits. Packaging/notarization is a distribution stage separate from demonstrating a locally built app.
+- Remaining work and handoff: Finish backend inventory coverage and shared UI extraction; verify isolated native/provider/client and repeated-session workflows when authorized, then distribution. No build, tests, validation, app/provider/MCP or personal-state operations ran.

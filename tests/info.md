@@ -49,3 +49,26 @@ history. No live provider/native/MCP/client acceptance follows.
 ## November 3 automatic discovery
 
 Seven new backend cases cover default discovery without a path, home/.codex folders, exact-file overrides, partial failures, empty/missing/symlinked folders, injected CODEX_HOME defaults and permission checks. Fixtures confirm known paths only, secret suppression and unchanged source bytes. Three new Desktop message cases in src/ui/auth_tests.rs cover first-visit discovery, explicit override/default reset and incompatible-operation guards. These 10 new cases and all 47 relevant backend/import/UI cases pass; native build passes. Desktop Tasks are dropped without execution; no actual native interaction or personal configuration is used.
+
+## November 3 shared authentication router
+
+The router's independent fixtures are in src/manager/router_tests.rs. They cover
+config-driven selection, common web request forms, preserved compatibility,
+Google's pending/no-execution result, isolated accounts of the same package,
+visible background errors and issuer/attempt ownership. They use disposable
+encrypted stores and loopback mocks; there are no real provider/helper logins.
+The existing persistent-alias case in local_mvp_acceptance.rs now configures
+stopped disposable routes after Runner restart before resolving aliases, matching
+the existing deletion protection. Configuring does not execute the fixture path.
+Current command/results are recorded in the shared authentication milestone.
+
+## November 3 direct installation POST inputs
+
+`direct_install.rs` contains8 disposable integration cases for command/url/source
+selections, identity/reuse, saved credentials, HTTP authority/progress/errors and
+partial failure. `src/installation/direct_tests.rs` contains6 pure capture and
+supervised-hook cases; hooks simulate outcomes and no actual executable/provider
+runs. New14 plus128 existing checks pass (142 unique); native binary builds.
+See milestones/direct-install-inputs/evidence.md for exact commands and limits.
+
+Merged-main follow-up: two additional installed-row checks now cover folder-discovered saved associations and native selection guards. Final integrated checks pass 64 distinct cases:24 backend,7 import,8 direct-install,18 UI and7 discovery units. This includes12 new cases for the feature; native build passes. Existing incoming deletion latency logs are preserved rather than rewritten for whitespace.

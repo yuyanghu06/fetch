@@ -1,5 +1,23 @@
 # Confirmed architecture decisions
 
+## D83 — Start installed servers and report when no login is needed
+
+November 3, 2026. User explicitly selects installation invoking the existing
+Restart / Connect backend operation after preparation and leaving successful
+servers running by default. Keep GET /api/v1/servers as the status read, using
+authentication.status not_required when a credential-free connection succeeds
+without a known login requirement. The frontend hides authentication controls
+then; unknown alone must not be treated as requiring login.
+
+Missing/rejected provider access requires setup; actual launch/network/protocol
+errors remain runtime failures. No automatic login or arbitrary tool calls.
+Connection readiness does not establish authenticated provider proof or universal
+tool access; D25/D31 verification remains. Preserve preparation success, distinct
+accounts, named restart status, existing permissions and ready installation reuse.
+This supersedes the earlier preparation-only/no-start sequencing for managed
+installation, without adding routes or granting agent-run runtime/test execution
+in this source pass. See milestones/install-connect/info.md and current journal.
+
 Recorded from the user's design discussion on October 26, 2026. These are design decisions, not implementation-completion claims. Exact API examples and unresolved details are tracked separately in [api-contract.md](api-contract.md) and [open-questions.md](open-questions.md).
 
 ## Current MCP resolution pointers — session audit October28
@@ -827,3 +845,17 @@ provider facts and precise unsupported outcomes remain explicit.
 The user requested a base-folder install flow without requiring users to locate each Claude/Codex config unless they explicitly choose to. Fetch keeps discovery and selected-server installation separate. Opening Install runs the existing read-only discovery API automatically; no path uses existing home/CODEX_HOME defaults. Optional config_path also accepts a home folder or `.codex` folder, resolving only known paths as described in the API contract. Explicit files retain single-file behavior. No recursive scan of sessions, authentication files, plugins or caches is selected. Source credentials are discarded and files are never modified.
 
 The user clarified the base folder they meant is `.codex` itself. This case reads its `config.toml` directly; the folder's parent supplies the already-selected usual Claude/OpenCode locations. No user file choice is required for ordinary default discovery.
+
+## November 3 — Direct installation POST inputs, backend only
+
+After reviewing the complete proposal, the user instructed adding direct inputs
+to the existing POST body and explicitly excluded UI. Accept server_name with
+exactly one config_path/command/url. Translate supported literal commands into
+the existing shared definition/preparation; direct URLs use Streamable HTTP.
+Keep existing config imports, permissions, progress, credential and Connect rules.
+Repeat name plus normalized original direct definition reuses the instance;
+changed name/definition creates another. Unsupported syntax returns item failure;
+malformed bodies return400. No shell/README interpreter, secret-value input, new
+route or UI. The approved amendment is at the end of api-contract.md. Implemented
+source has142 unique passing fixtures and a successful native build; live package/
+provider/client acceptance remains unverified. Google integration remains pending.

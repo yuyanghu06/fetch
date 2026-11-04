@@ -73,6 +73,7 @@ async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         expanded_tools: BTreeSet::new(),
         authentication: BTreeMap::new(),
         auth_requests: Requests::default(),
+        deletions: BTreeMap::new(),
     };
     (directory, desktop)
 }
@@ -128,6 +129,22 @@ async fn desktop_automatic_discovery_does_not_start_during_an_incompatible_opera
         assert!(!desktop.discovery_started, "must not start during {blocked}");
         assert!(desktop.config_path.is_empty());
     }
+}
+
+#[tokio::test]
+async fn desktop_folder_results_keep_installed_rows_out_of_select_all() {
+    let (_directory, mut desktop) = desktop_fixture().await;
+    let path = "/fixture/chosen-home/.codex/config.toml";
+    drop(desktop.update(Message::Discovery(Ok(json!({"configs":[{"path":path,"servers":[
+        {"name":"existing","status":"supported","installed":true,"installed_server_id":"saved-id","selected_by_default":false},
+        {"name":"available","status":"supported","installed":false,"selected_by_default":true}
+    ]}],"next_steps":[]})))));
+    assert_eq!(desktop.selected, BTreeSet::from([(path.to_owned(), "available".to_owned())]));
+    drop(desktop.update(Message::SelectAllServers));
+    assert_eq!(desktop.selected, BTreeSet::from([(path.to_owned(), "available".to_owned())]));
+    drop(desktop.update(Message::Select(path.into(), "existing".into(), true)));
+    assert_eq!(desktop.selected_for_install(), vec![(path.to_owned(), "available".to_owned())]);
+    assert!(desktop.job.is_none());
 }
 
 #[tokio::test]

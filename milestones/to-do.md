@@ -2,11 +2,121 @@
 
 ## Automatic config discovery — November 3
 
+- [x] Verify the merge with newer installed-row/direct-install/deletion/authentication work;64 relevant cases and native build pass, independent Evaluator ACCEPT. Normal delivery follows.
+
 - [x] Inspect existing default discovery and obtain independent bounded plan.
 - [x] Implement optional home/.codex folder or file paths and automatic Install-page discovery.
 - [x] Run independent backend/UI fixture checks and native build; 47 relevant cases (10 new) pass, native build passes, independent Evaluator ACCEPT.
 - [x] Record final test/evaluation evidence for the scoped change.
 - [ ] Check actual native picker/Install appearance in the protected environment; fixture checks alone do not establish visual acceptance.
+
+- [x] Clarify pasted-command translation and present complete direct command/URL
+  input amendment in the API contract; existing config imports stay.
+- [x] User approves direct command/url POST body after complete proposal; no UI.
+- [x] Research quote-aware parser and plan shared capture/preparation/identity.
+- [x] Implement backend-only direct input/schema/reuse, preserving imports.
+- [x] Independently test/evaluate direct inputs and build:142 unique checks,
+  native build and Tester/Evaluator ACCEPT. No real install/connection proof.
+- [x] Commit/push scoped direct-input source/evidence as53adad6; live refs
+  matched. Unrelated UI/startup/deletion-investigation/docs edits preserved.
+
+- [x] Complete scope sync: dispatch from imported command/args/environment; return
+  selected-flow errors without silent alternate-method fallback.
+- [x] Implement common dispatcher and Railway/Linear OAuth consolidation.
+- [x] Independently test/evaluate shared routing and compile the native binary;
+  99 unique fixtures pass, native build passes, Tester/Evaluator ACCEPT.
+- [x] Commit/push the accepted scoped router and evidence as4f18905; live remote
+  matched. Pre-existing uncommitted documentation changes are preserved.
+- [x] User selects keep Google pending; complete shared router first. Installed
+  Google is1.11.3; encrypted helper/server storage bridge is deferred.
+- [ ] After router completion, walk through selected behavior with the user.
+- [ ] Preserve requirement: multiple instances of the same MCP with independent
+  authentication methods, credentials and accounts; design explicit duplication
+  behavior before changing current same-source installation reuse.
+
+
+- [x] Prioritize user-requested server-header ×; shared control/DELETE state and
+  stale reply handling implemented. Native build and14 existing UI checks pass.
+- [ ] User verifies actual × appearance/click-through; Figma state mapping pending.
+- [x] Delete API/tool source delivered as64cff43 before authentication work.
+
+## Active — delete server
+
+- [x] Source-read current APIs and independently plan deletion under the user's
+  explicit delegation; preserve unrelated concurrent documentation.
+- [x] Implement shared safe deletion lifecycle/storage/key cleanup plus matching
+  HTTP DELETE and fetch__delete_server management tool.
+- [x] Implement URL-shaped HTTP handler/router and MCP tool/adapters; backend
+  integration and independent verification remain.
+- [x] Independently source-verify/evaluate and document deletion; Tester/Evaluator
+  final source ACCEPT, no material findings.
+- [ ] Commit/push scoped deletion source and records, then start authentication.
+
+## Next — shared asynchronous MCP authentication (after delete)
+
+- [x] Read current AGENTS, November3 upstream-auth reuse notes and authentication
+  engine source/records; inspect actual current/installed Google package version.
+- [x] Research/pin reusable Codex Rust OAuth and OpenCode v1.19.4 source, dependencies,
+  licenses/notices and exact reuse boundaries before dependent implementation.
+- [ ] Implement shared async HTTP OAuth/application registrations, URL elicitation
+  and local-helper orchestration, Google per-account state/refresh/storage, and
+  consolidate ordinary Railway/Linear OAuth while preserving their differences.
+- [ ] Verify authorized isolated flows, cancellation/failures/reuse/renewal; record
+  source versus fixtures versus actual-provider evidence and concrete blockers.
+- [ ] Deliver code, upstream attribution and journal; no packaging/release or
+  silent personal credential/config migration.
+
+## Focused backend change — install and connect
+
+- [x] User selects install invoking existing Restart / Connect and not_required
+  status through GET servers; source-reviewed bounded plan accepted.
+- [x] Implement preparation/connect sequencing, truthful runtime/auth states,
+  ready reuse and shutdown handling without automatic login or tool execution.
+- [x] Hide no-auth controls and stop treating unknown alone as requiring login.
+- [x] Bind late provider-auth errors to actual active connection/generation;
+  independent Tester re-review ACCEPT, no further material findings.
+- [x] Apply authentication-rejection latch to timeout/cancel detached responses;
+  preserve original uncertainty; Tester/Evaluator final source ACCEPT.
+- [x] Independently source-review/evaluate and document the scoped fix.
+- [x] Commit/push D83 source and records as fcf6c34; preserve unrelated concurrent docs.
+- [ ] Later run authorized compilation/native/runtime checks and reconcile changed
+  Figma specimens; this source pass adds no execution evidence.
+
+## Source organization — November 3 clarification
+
+- [x] Inspect and explain current route/backend folders; record the user's
+  requirement for HTTP handlers under `src/api` in URL-shaped subfolders.
+- [ ] Follow up with a bounded route-layout refactor when requested, including
+  existing OAuth/MCP HTTP adapters; preserve public URLs and shared backend rules.
+  This explanation pass changed documentation only.
+
+## Focused UI fix — installed discovery
+
+- [x] Fetch newer GitHub history after push rejection; preserve incoming D81/D82
+  source/evidence and adapt installed rendering to shared components/theme.
+- [x] Finish rebase, independently review integrated source ACCEPT and push as9eddd00.
+
+- [x] Plan exact-source installed matching shared by HTTP/MCP discovery and UI.
+- [x] Implement backend installed-row metadata and checked/disabled UI state.
+- [x] Exclude installed rows from every selection/count/submission path; update
+  successful progress while retaining failed-row retries.
+- [x] Obtain independent Tester source ACCEPT; update relevant guides and API/UI
+  state records. No execution-based acceptance is authorized here.
+- [x] Obtain final Evaluator source/documentation ACCEPT; no material findings.
+- [x] Commit/push the source fix and required project records as9eddd00.
+- [ ] Later verify compilation and actual checked/gray rows, new selections,
+  long-list/footer behavior and success/failure retry states when execution is
+  authorized; reconcile the new Figma specimen. No runtime result claimed.
+
+- [x] November 3: recheck connector source against the recorded gaps; distinguish
+  existing gateway/client machinery from missing inventory-specific setup and
+  historical foundation tests from unperformed runtime acceptance.
+- [x] November 3: independently reconcile original planning areas, four built
+  native pages and historical testing evidence; obtain Evaluator ACCEPT for the
+  factual status summary, without runtime execution or new scope decisions.
+- [ ] Track import, fresh authentication, verification and renewal coverage for
+  each selected server in the existing inventory; use this to close the four
+  backend gaps below without asking the user to relist their servers.
 
 - [x] Save/push accepted D81 scoped source/tests/evidence through f6563b3; remote/local commit matched. Native authentication, policy choices and real server/client proof remain pending.
 

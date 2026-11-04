@@ -20,6 +20,7 @@ struct State {
     next_id: u64,
     ready: bool,
     restarting: bool,
+    deleting: bool,
     active: BTreeMap<u64, bool>,
     waiting: VecDeque<Waiting>,
     waiting_bytes: usize,
@@ -30,7 +31,7 @@ pub struct Scheduler {
 }
 impl Scheduler {
     pub fn new(policy: ExecutionPolicy) -> Arc<Self> {
-        Arc::new(Self { state: Mutex::new(State { policy, next_id: 0, ready: false, restarting: false, active: BTreeMap::new(), waiting: VecDeque::new(), waiting_bytes: 0 }), changed: Notify::new() })
+        Arc::new(Self { state: Mutex::new(State { policy, next_id: 0, ready: false, restarting: false, deleting:false, active: BTreeMap::new(), waiting: VecDeque::new(), waiting_bytes: 0 }), changed: Notify::new() })
     }
     pub fn ready(&self, ready: bool) {
         let mut state = self.state.lock().expect("scheduler lock");
@@ -55,7 +56,7 @@ impl Scheduler {
         let (reply, receiver) = oneshot::channel();
         let (id, expires) = {
             let mut state = self.state.lock().expect("scheduler lock");
-            if state.restarting { return Err(RunError::busy()); }
+            if state.restarting || state.deleting { return Err(RunError::busy()); }
             if !state.ready { return Err(RunError::not_ready()); }
             Self::pump(&mut state);
             if !state.waiting.is_empty() || state.active.len() >= state.policy.max_concurrent_calls {
@@ -87,7 +88,7 @@ impl Scheduler {
         }
     }
     fn pump(state: &mut State) {
-        while state.ready && !state.restarting && state.active.len() < state.policy.max_concurrent_calls {
+        while state.ready && !state.restarting && !state.deleting && state.active.len() < state.policy.max_concurrent_calls {
             let Some(waiting) = state.waiting.pop_front() else { break; };
             state.waiting_bytes = state.waiting_bytes.saturating_sub(waiting.bytes);
             if waiting.expires <= Instant::now() || waiting.cancel.is_cancelled() || waiting.reply.is_closed() {
@@ -126,7 +127,7 @@ impl Scheduler {
     }
     pub fn begin_restart(&self) -> Result<(), RunError> {
         let mut state = self.state.lock().expect("scheduler lock");
-        if state.restarting { return Err(RunError::busy()); }
+        if state.restarting || state.deleting { return Err(RunError::busy()); }
         state.restarting = true;
         Self::flush(&mut state, RunError::busy());
         self.changed.notify_waiters();
@@ -137,6 +138,14 @@ impl Scheduler {
         state.restarting = false;
         Self::pump(&mut state);
         self.changed.notify_waiters();
+    }
+    pub(super) fn idle_for_delete(self:&Arc<Self>,retry:bool)->Result<DeleteAdmission,RunError>{
+        let mut state=self.state.lock().expect("scheduler lock");
+        // Manager excludes active named restarts and Runner holds the lifecycle
+        // lock. A terminal failed restart can leave this admission flag set.
+        if (!retry&&state.deleting)||!state.active.is_empty()||!state.waiting.is_empty(){return Err(RunError::busy());}
+        let already_closed=state.deleting;state.deleting=true;
+        Ok(DeleteAdmission{scheduler:self.clone(),committed:already_closed})
     }
     /// Only confirmed child exit, or the selected explicit remote-force recovery,
     /// may clear unresolved reservations without a terminal upstream response.
@@ -159,6 +168,11 @@ impl Scheduler {
         let state = self.state.lock().expect("scheduler lock");
         json!({"active_calls":state.active.len(),"queued_calls":state.waiting.len(),"uncertain_calls":state.active.values().filter(|value| **value).count(),"max_concurrent_calls":state.policy.max_concurrent_calls,"max_queued_calls":MAX_QUEUED,"max_queued_bytes":MAX_QUEUED_BYTES,"queue_wait_timeout_ms":QUEUE_WAIT.as_millis() as u64})
     }
+}
+pub(super) struct DeleteAdmission { scheduler:Arc<Scheduler>, committed:bool }
+impl DeleteAdmission { pub fn commit(&mut self){self.committed=true;} }
+impl Drop for DeleteAdmission {
+    fn drop(&mut self){if !self.committed{self.scheduler.state.lock().expect("scheduler lock").deleting=false;self.scheduler.changed.notify_waiters();}}
 }
 struct WaitingGuard { scheduler: Arc<Scheduler>, id: u64, armed: bool }
 impl Drop for WaitingGuard { fn drop(&mut self) { if self.armed { self.scheduler.remove_waiting(self.id); } } }

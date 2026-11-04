@@ -26,6 +26,10 @@ pub(super) fn checkbox<'a, M: Clone + 'a>(selected: bool) -> Checkbox<'a, M> {
         .spacing(theme::CHECKBOX_GAP)
 }
 
+pub(super) fn installed_checkbox<'a, M: Clone + 'a>() -> Checkbox<'a, M> {
+    checkbox(true).style(theme::installed_checkbox)
+}
+
 pub(super) fn navigation<'a, M: Clone + 'a>(actions: [M; 5]) -> Row<'a, M> {
     let [servers, install, connect, settings, quit] = actions;
     row![
@@ -88,4 +92,25 @@ pub(super) fn tool_disclosure<'a, M: Clone + 'a>(
         content = content.push(text(definition).size(theme::SMALL_TEXT));
     }
     widget::container(content).padding(theme::PANEL_PADDING)
+}
+
+pub(super) fn server_header<'a, M: Clone + 'a>(
+    title: &str,
+    expanded: bool,
+    toggle: M,
+    delete: Option<M>,
+    delete_hint: &str,
+) -> Row<'a, M> {
+    row![
+        disclosure(title, expanded, theme::SERVER_TITLE, toggle).width(iced::Fill),
+        widget::tooltip(
+            button(text("×").size(theme::DELETE_ICON_SIZE))
+                .padding(theme::DELETE_BUTTON_PADDING)
+                .on_press_maybe(delete),
+            text(delete_hint.to_owned()),
+            widget::tooltip::Position::Top,
+        ),
+    ]
+    .spacing(theme::CONTROL_GAP)
+    .align_y(iced::Center)
 }

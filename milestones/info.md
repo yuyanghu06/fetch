@@ -1,5 +1,13 @@
 # Milestone records
 
+[Delete server](delete-server/info.md) is the current scoped route/lifecycle work.
+The user's shared-authentication implementation is explicitly queued after it.
+The complete queued request is preserved in
+[shared MCP authentication](shared-mcp-authentication/info.md).
+
+[Install and connect](install-connect/info.md) tracks the selected final Connect
+step, default-on usable servers and truthful no-login status/controls.
+
 [Local working MVP](local-working-mvp/info.md) is active under D81: implementation,
 builds and protected actual UI/client testing are authorized; packaging/signing/DMG
 are excluded. Prior execution pauses are historical for this bounded local work.
@@ -8,6 +16,14 @@ are excluded. Prior execution pauses are historical for this bounded local work.
 read-only source reassessment: five known implementation areas, their relative
 size, actual local workflow acceptance and later distribution work. It adds no
 build/runtime evidence or permission to execute.
+
+[Installed discovery](installed-discovery/info.md) tracks checked and disabled
+previous imports, exact-source matching and consistent UI/backend behavior.
+
+The November 3 readiness reviews are linked at the top of the
+[snapshot](milestone.md). They reconcile the pre-fetch local checkout's connector source, four native
+pages, the original planning areas and older foundation-test evidence. They add
+no build/test/runtime acceptance; newer incoming source/evidence supersedes that older five-area snapshot.
 
 [Full-tree handoff](full-tree-handoff/info.md) records the October29 request to
 push all pending work and document the remaining implementation/verification.
@@ -63,3 +79,15 @@ It follows the completed parallel-request fix and retains its acceptance tests.
 
 
 [Automatic config discovery](automatic-config-discovery/info.md) records the November 3 scoped folder/API and Install-page change. Default discovery no longer requires choosing each config file; explicit file/folder overrides remain optional. See the snapshot for final checks.
+
+The shared-mcp-authentication milestone now tracks the implemented private router,
+common Railway/Linear/remote web requests and independent fixture evidence.
+Google's encrypted helper integration remains pending by user choice. The
+user's multiple-instance/account requirement and current same-source reuse
+limitation are recorded there and in NOTES.md.
+
+
+Direct-install-inputs records the user-approved direct command/URL POST-body
+extension alongside source-file imports. Source and independent
+verification are accepted:142 unique checks/native build pass. Scoped delivery
+is next; the user explicitly excluded UI work.

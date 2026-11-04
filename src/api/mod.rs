@@ -1,6 +1,7 @@
 //! Existing product routes wrap shared backend services.
 pub mod setup;
 pub mod runtime;
+pub mod v1;
 
 use crate::{
     authority::{AuthorizationError, Authorizer, Caller},
@@ -63,6 +64,7 @@ pub fn router(state: Arc<AppState>) -> Router {
     let mut routes = Router::new()
         .route("/.well-known/oauth-protected-resource/mcp", get(resource_metadata))
         .route("/api/v1/servers", get(servers))
+        .route("/api/v1/servers/{server_id}", axum::routing::delete(v1::servers::server_id::delete::handler))
         .route("/api/v1/setup/discovery", get(setup::discovery))
         .route("/api/v1/setup/installations", axum::routing::post(runtime::install))
         .route("/api/v1/setup/installations/{installation_id}", get(runtime::installation))

@@ -1,5 +1,12 @@
 # Current UI state coverage
 
+November 3 server-delete control: a shared × appears beside collapsed/expanded
+server headings, with idle/busy/pending/status-refresh tooltip states. Confirmed
+deletion clears the card and cached data; uncertain responses keep status checking
+without replay. Native compilation and14 existing UI checks pass, but this new
+control has not been visually/runtime verified or mapped into the153-specimen
+Figma library. Its count remains unchanged.
+
 Updated October 28, 2026. This is the index for the user's request to mock every
 currently displayable UI element, including authentication and individual settings.
 The official file contains **153 states/specimens**: full page states, reusable
@@ -34,6 +41,27 @@ phase/control specimens are reused; it does not claim captured simultaneous
 service workflows.
 
 ## October 29 source reconciliation needed
+
+November 3 D83 source change: installation now tries
+the normal Connect operation and report its result through GET servers. A usable
+credential-free server with no known login requirement reports not_required and
+shows no Authenticate button or inline authentication box, including a stale
+previous flow. Unknown alone also does not expose Authenticate. Required/failed
+authentication keeps its existing controls; unrelated launch errors retain their
+runtime presentation. Reconcile these changed branches and the installation
+connection-attempt state in Figma; the recorded153 count and historical fixtures
+do not establish coverage of the changed behavior or runtime appearance.
+
+November 3 source change: discovery now distinguishes already-installed entries
+from new selectable rows. The installed specimen must show a checked disabled
+checkbox and an "already installed" suffix, including when the source is disabled
+or has become unsupported. Counts and Select all exclude these rows. Successful
+installation progress changes its matching row to this state without rediscovery;
+failed siblings remain retryable. This additional rendering branch has not been
+mapped into the recorded Figma library or observed in a running window. The
+153-specimen count remains unchanged; add/reconcile this specimen in a future
+design pass rather than claiming existing visual coverage.
+
 
 The existing153 specimens remain the recorded library. The separate D80 Railway
 callback renderer in src/manager/provider_callback.rs is not traced by the

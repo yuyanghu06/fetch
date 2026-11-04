@@ -1,0 +1,119 @@
+{
+  "google": {
+    "canary-results": {
+      "outside": {
+        "read": 3,
+        "read_errno": 0,
+        "write": 3,
+        "write_errno": 0,
+        "signal": 0,
+        "signal_errno": 0,
+        "connect": 0,
+        "connect_errno": 0,
+        "securityd_lookup": 0,
+        "own_write": 3
+      },
+      "inside": {
+        "read": -1,
+        "read_errno": 1,
+        "write": -1,
+        "write_errno": 1,
+        "signal": -1,
+        "signal_errno": 1,
+        "connect": -1,
+        "connect_errno": 1,
+        "securityd_lookup": 1100,
+        "own_write": 3
+      },
+      "security_service": "com.apple.securityd.xpc",
+      "ignored_stdio_child_and_https": 0,
+      "registry_status": 200
+    },
+    "demo-result": {
+      "exit_code": 0,
+      "elapsed_seconds": 21.952266540989513
+    },
+    "final-state": {
+      "owned_processes_remaining": [],
+      "source_preserved": true,
+      "runtime_preserved": true,
+      "package_directories": [],
+      "saved_configs": 0
+    }
+  },
+  "everything": {
+    "canary-results": {
+      "inside": {
+        "read": -1,
+        "read_errno": 1,
+        "write": -1,
+        "write_errno": 1,
+        "signal": -1,
+        "signal_errno": 1,
+        "connect": -1,
+        "connect_errno": 1,
+        "securityd_lookup": 1100,
+        "own_write": 3
+      },
+      "ignored_stdio_child": 0
+    },
+    "demo-result": {
+      "exit_code": 0,
+      "elapsed_seconds": 4.310509667004226
+    },
+    "final-state": {
+      "owned_processes_remaining": [],
+      "source_preserved": true,
+      "runtime_preserved": true,
+      "package_directories": [],
+      "saved_configs": 0
+    },
+    "process-lifecycle": [
+      {
+        "at_ms": 3759,
+        "event": "seen",
+        "process": "38235 38197 /private/tmp/fetch-delete-demo-dc6nu8vv/state/packages/runtimes/node/24.22.1/bin/node"
+      },
+      {
+        "at_ms": 4046,
+        "event": "delete_started"
+      },
+      {
+        "at_ms": 4183,
+        "event": "gone",
+        "process": "38235 38197 /private/tmp/fetch-delete-demo-dc6nu8vv/state/packages/runtimes/node/24.22.1/bin/node"
+      }
+    ]
+  },
+  "storage_tests": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools cargo test --locked --lib storage:: -- --nocapture",
+    "exit_code": 0,
+    "passed": 6,
+    "filtered": 104,
+    "test_seconds": 0.1,
+    "compile_seconds_including_lock_wait": 21.04,
+    "names": [
+      "corruption_is_not_missing_and_unknown_fields_are_not_saved",
+      "unsafe_symlinks_and_permissions_are_rejected",
+      "unsafe_modes_hardlinks_and_dangling_roots_fail_closed",
+      "private_state_cleanup_preserves_config_and_external_targets_on_repeat",
+      "opaque_ids_stay_inside_store_and_status_is_not_evidence",
+      "package_deletion_preserves_symlink_targets_siblings_and_shared_runtime"
+    ]
+  },
+  "native_build": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools cargo build --locked --bin fetch --message-format short",
+    "exit_code": 0,
+    "seconds": 13.52,
+    "initial_attempt": "Failed while a concurrent helper-auth edit referenced an unfinished function; its owner supplied the function, then retry passed. No authentication files changed by this fix."
+  },
+  "cleanup": {
+    "owned_paths_removed": 4,
+    "owned_processes_remaining": 0,
+    "everyday_processes_preserved": [
+      2217,
+      2653,
+      2655
+    ]
+  }
+}

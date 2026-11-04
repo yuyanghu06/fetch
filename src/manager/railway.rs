@@ -1,6 +1,6 @@
 //! Railway's documented native/public OAuth flow and private CLI context.
 //! See docs.railway.com/integrations/oauth/{creating-an-app,login-and-tokens}.
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 pub(super) const AUTHORIZE: &str = "https://backboard.railway.com/oauth/auth";
@@ -16,11 +16,6 @@ pub(super) fn matches_record(record: &Value) -> bool {
         .is_some_and(|u| u.scheme() == "https" && u.host_str() == Some("mcp.railway.com")
             && u.port_or_known_default() == Some(443) && u.username().is_empty()
             && u.password().is_none() && u.fragment().is_none())
-}
-pub(super) fn registration(redirect: &str) -> Value {
-    json!({"client_name":"Fetch", "application_type":"native", "redirect_uris":[redirect],
-        "token_endpoint_auth_method":"none", "grant_types":["authorization_code","refresh_token"],
-        "response_types":["code"]})
 }
 pub(super) fn installation_id(record: &Value) -> Option<&str> {
     record["_installation"]["installation_id"].as_str().filter(|id| id.strip_prefix("package-")

@@ -1,0 +1,59 @@
+{
+  "everything": {
+    "outside": {
+      "read": 3,
+      "read_errno": 0,
+      "write": 3,
+      "write_errno": 0,
+      "signal": 0,
+      "signal_errno": 0,
+      "connect": 0,
+      "connect_errno": 0,
+      "securityd_lookup": 0,
+      "own_write": 3
+    },
+    "inside": {
+      "read": -1,
+      "read_errno": 1,
+      "write": -1,
+      "write_errno": 1,
+      "signal": -1,
+      "signal_errno": 1,
+      "connect": -1,
+      "connect_errno": 1,
+      "securityd_lookup": 1100,
+      "own_write": 3
+    },
+    "child_exit": 0,
+    "child_stdout": "allowed-child",
+    "security_service": "com.apple.securityd.xpc",
+    "inside_after_dev_null": {
+      "read": -1,
+      "read_errno": 1,
+      "write": -1,
+      "write_errno": 1,
+      "signal": -1,
+      "signal_errno": 1,
+      "connect": -1,
+      "connect_errno": 1,
+      "securityd_lookup": 1100,
+      "own_write": 3
+    },
+    "ignored_stdio_child": 0
+  },
+  "google": {
+    "inside": {
+      "read": -1,
+      "read_errno": 1,
+      "write": -1,
+      "write_errno": 1,
+      "signal": -1,
+      "signal_errno": 1,
+      "connect": -1,
+      "connect_errno": 1,
+      "securityd_lookup": 1100,
+      "own_write": 3
+    },
+    "ignored_stdio_child": 0
+  }
+}
