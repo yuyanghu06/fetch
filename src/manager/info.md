@@ -1,5 +1,10 @@
 # Managed servers
 
+At app startup, every saved server gets an independent connection attempt.
+Startup waits for all attempts together rather than connecting servers one at a
+time. Each retains its existing lock, saved-credential refresh, readiness timeout,
+authentication/error reporting and feature observation. No login is opened.
+
 ## Shared authentication router
 
 `authentication.rs` selects the common handler from saved imported launch and

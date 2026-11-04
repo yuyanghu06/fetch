@@ -1179,6 +1179,59 @@ authentication remain separate implementation/verification work. v0 additionally
 uses unsupported mcp-remote launcher arguments. No support expansion was requested
 or implemented in this fix.
 
+## November 3, 2026 — HTTP routes and backend folder structure
+
+The user clarified that `src/api` should contain raw HTTP route handlers grouped
+into subfolders matching the URL path. Separate folders may store reusable
+backend functions, but their responsibilities and connections need a clear
+explanation. Source inspection confirmed the current tree does not fully match:
+`api/runtime.rs` combines multiple route families, and `oauth`/`mcp` also define
+HTTP endpoints. Recorded the required direction in the architecture index and
+project context. No application source was moved or runtime action performed.
+
+## November 3, 2026 — Reuse upstream MCP authentication implementations
+
+Confirmed user preference from the authentication planning side conversation:
+reuse as much relevant existing open-source authentication code as practical,
+rather than independently rebuilding the browser, callback and token flow.
+Application implementation belongs to the main agent; this side conversation
+is planning-only, apart from explicitly requested documentation updates.
+
+Prefer the server's existing authentication mechanism and callback when it owns
+the login. Keep Fetch's existing Authenticate operation asynchronous, with shared
+browser presentation, progress, cancellation and completion handling. Avoid
+growing a separate provider-name branch for every connector. Confirm actual
+usable authentication rather than relying on a browser success page alone.
+
+Sources inspected: [Codex's Rust OAuth login implementation](https://github.com/openai/codex/blob/main/codex-rs/rmcp-client/src/perform_oauth_login.rs)
+and [CLI transport gate](https://github.com/openai/codex/blob/main/codex-rs/cli/src/mcp_cmd.rs#L508),
+plus [OpenCode v1.19.4 startAuth/authenticate/finishAuth](https://github.com/anomalyco/opencode/blob/v1.19.4/packages/opencode/src/mcp/index.ts#L750).
+Codex is a candidate for direct Rust reuse; OpenCode provides a clear example of
+returning an authorization URL and awaiting completion asynchronously. The
+reviewed Codex source is Apache-2.0 and the pinned OpenCode source is MIT. Pin the
+chosen source revision, inspect its dependency boundary and retain required
+license/copyright/NOTICE material before copying. No source has been copied by
+this side conversation.
+
+Preserve the distinctions established by research: their ordinary MCP login
+commands target HTTP servers, not arbitrary local package auth helpers.
+Standard remote OAuth discovery and server-requested URL-mode elicitation should
+be used where supplied. Under URL-mode elicitation, third-party credentials stay
+with the server; do not assume universal provider-token export into Fetch.
+Legacy local helpers, including the inspected Google package flow, need a small
+documented mapping for the auth command, login URL output, saved-token location
+and format, and successful completion/verification. Where Fetch imports such
+local credentials, preserve private per-server state, encrypted storage and
+consistent refresh ownership without touching everyday client logins.
+
+Before implementation, the main agent should confirm the portable upstream code
+to reuse and the Google helper's credential handoff/renewal behavior. These are
+bounded implementation checks; they do not require reopening the overall shared
+flow discussion. See [the current authentication architecture](docs/architecture/authentication-engine.md)
+for existing storage, verification and login boundaries. No implementation,
+package execution, browser login or personal-state change occurred in this note.
+
+
 ## November 3, 2026 — Shared authentication routing and multiple instances
 
 Confirmed user direction: the existing Authenticate operation selects common
@@ -1208,6 +1261,17 @@ same-source duplication workflow has been implemented or change that contract.
 After routing is complete, the user wants a walkthrough of the resulting
 behavior. Google implementation remains pending during this routing task.
 
+
+## November 3, 2026 — Existing instance imports are sufficient for now
+
+After the current random server IDs and source-entry reuse were explained, the
+user said the existing behavior is fine and the additional instance-creation
+control is not needed for now. Separate imported entries remain the way to
+install multiple instances of the same MCP. Do not add a duplicate-instance
+button, route or installation mode as part of the current work. Preserve
+independent credentials/accounts per instance; Google integration stays pending.
+
+
 ## November 3, 2026 — Request direct installation inputs
 
 User asks whether installation can also accept URLs/install directions or
@@ -1219,6 +1283,7 @@ links too? Current source still requires config_path/server_name. Preserve all
 existing authorization, credential and preparation/connect rules. Implementation
 has not started. See milestones/direct-install-inputs/info.md.
 
+
 ## November 3, 2026 — Commands should become internal install definitions
 
 User clarifies desired input: users paste a command and Fetch translates it into
@@ -1227,6 +1292,7 @@ nested definition JSON themselves. A complete command/URL input amendment is
 proposed in docs/architecture/api-contract.md, including identity/reuse and
 existing permission/error/progress boundaries. Exact new contract awaits their
 answer; no new install input/parser or application source was implemented.
+
 
 ## November 3, 2026 — Direct install POST body approved; no UI
 
@@ -1237,6 +1303,7 @@ reuse/errors and existing authentication/credential boundaries. Existing config
 imports and Google deferral stay. No new route, install screen or duplicate UI.
 
 Delivery integration: GitHub main had newer installed-row/direct-install/deletion/authentication changes. A normal merge preserves them and the folder discovery change. Final64 relevant tests (12 new), native build and independent merged evaluation pass. The existing discovery request can use `config_path=/Users/you/.codex`; individual config files are optional overrides.
+
 
 ## November 3, 2026 — Reusable helper credential-storage proposal
 
@@ -1252,6 +1319,7 @@ remain with that server. This is proposed, not implementation approval or a clai
 that every callback-based server works automatically. Google remains pending.
 See docs/architecture/authentication-engine.md for the complete proposed boundary.
 
+
 ## November 3, 2026 — Implement the shared helper credential bridge
 
 User replied go to the reusable helper credential-storage design, with Google
@@ -1264,3 +1332,25 @@ Current installed Google1.11.3 reverified under new package directory with the
 same auth.js hash. Its OAuth2 uses googleapis's nested auth-library10.5.0, not
 top-level10.9.1; await persisted renewal before returning tokens. Actual account
 login will still need authorized dedicated credentials and protected evidence.
+
+
+## November 3, 2026 — Repeated development Keychain dialogs
+
+User reports roughly five identical Fetch encrypted local state dialogs and asks
+about a single ask. Source has no key cache and labels separate items alike;
+current executable is ad-hoc signed, so rebuilt identity can trigger reapproval.
+Metadata-only check found one app and one server encrypted record; exact five
+dialogs were not traced. Stable dev signing plus optional per-process caching
+is recommended; a single wrapping-key alternative changes migration/recovery
+and remains unselected. No source/signing/Keychain/trust/credential change. See
+docs/architecture/keychain-prompts.md.
+
+
+## November 3, 2026 — Implement recommended Keychain prompt reduction
+
+User says pull in and go ahead after the stable dev identity/key-cache
+recommendation. This selects stable development signing and remembering only
+successfully loaded individual keys until Quit; per-server separation stays.
+It does not select the alternative shared wrapping key or credential migration.
+Local identity setup may need actual macOS human authentication; do not supply
+or capture the user's password. Release signing/packaging remains excluded.

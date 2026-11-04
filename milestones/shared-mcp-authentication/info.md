@@ -69,6 +69,29 @@ accounts (different Google accounts are the concrete example). Preserve
 server-ID ownership; do not silently change same-source installation reuse.
 User wants a behavior walkthrough after the routing implementation/checks.
 
+
+Instance-ID walkthrough: new server records use `server-` plus32 random hex
+digits, persisted separately from the display/source entry name. Distinct source
+entries can produce multiple instances of the same package; exact source
+path/name reimport reuses an existing ID. This is existing source behavior, not
+a new duplicate-install control or working Google-account integration.
+
+
+November3 user confirmation: existing distinct imported entries are sufficient
+for multiple instances. An explicit duplicate-instance control is not needed for
+now and is outside current scope. Preserve independent accounts; Google remains
+pending.
+
+
+November3 follow-up: user asks for reusable callback credential storage. A shared
+private helper/server storage bridge with small compatible-helper adapters is
+proposed in authentication-engine.md. Reuse CredentialStore, keep callbacks with
+their owners, preserve server-ID isolation and renewal consistency, and require
+saved-access checks. No universal provider-token export or automatic support for
+arbitrary helpers is promised. This substantial mechanism remains unapproved;
+Google implementation is still pending. No new auth route/UI or runtime action.
+
+
 ## Current November3 authorization — shared helper bridge
 
 User replied go to the proposed reusable bridge. The earlier Google deferral

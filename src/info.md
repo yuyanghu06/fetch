@@ -1,5 +1,14 @@
 # Shared Rust backend
 
+## November 3 source-layout clarification
+
+Current folders group reusable backend work by responsibility. HTTP adapters are
+currently spread across `api`, `oauth` and `mcp`, and `api/runtime.rs` combines
+unrelated URL families. The user's required direction is URL-shaped route
+subfolders in `api`, with reusable backend functions allowed in the other
+folders. The reorganization has not been implemented. See
+../docs/architecture/README.md for the recorded boundary.
+
 D81 current source includes the application host, real native authority/encrypted
 storage, private installer/manager, shared runner/MCP gateway and API-backed UI.
 browser.rs now centralizes escaped Fetch-owned HTML rendering; native repeated
@@ -39,3 +48,7 @@ message tests and does not establish real native/provider/MCP compatibility.
 D82 Manager now separates generic imported input resolution, trusted verification
 descriptions and generic HTTP checks. The existing native/UI/runner APIs and
 public configuration schema remain; unit fixtures use disposable keys/services.
+
+ApplicationHost shutdown now clears/closes the shared successful-key cache after
+stopping its manager; waiting for native operations runs off the async executor.
+The cache preserves separate application/server keys and is not credential migration.

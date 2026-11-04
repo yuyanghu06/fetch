@@ -1,5 +1,10 @@
 # Install list controls
 
+November 3 follow-up: bulk selection now toggles between Select all and Unselect
+all. The latter clears all selectable rows; partial selections select the rest.
+Installed/unsupported rows remain excluded. Current-pass evidence is recorded in
+the rolling milestone and rapid-ux milestone; earlier evidence below is historical.
+
 Goal: a long discovery list must scroll independently without hiding the install
 action; provide Select all above it. Keep existing API/import/picker behavior.
 

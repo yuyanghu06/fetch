@@ -1,5 +1,60 @@
 # Fetch milestone snapshot
 
+## November 3 — full working-tree delivery
+
+User explicitly requests publishing all remaining tracked/untracked changes.
+This snapshot includes UI selection/parallel startup, Keychain cache/development
+launcher, architecture notes, public verification evidence and preserved history.
+Independent review ACCEPTs snapshot publication; root scan finds no apparent
+credentials/private keys/conflict markers or large artifacts. No new runtime
+acceptance is claimed. Feature-specific verification and remaining work below
+retain their original scope. [Publication pass](history/2026-11-03_19-49-42-068944-orchestrator-full-working-tree-delivery.md).
+
+
+## November3 — implement development Keychain prompt fix
+
+User approved recommended stable DEVELOPMENT identity and process key caching,
+and requested pulling latest main. Remote d19d891 is integrated; duplicate helper
+source commit skipped after comparison, local notes/startup/UI toggle work restored
+and combined with new automatic folder discovery. Recovery autostash retained
+pending verification. Dev signing/cache research and bounded planning complete; source implemented
+and native build passes18.42s. Independent tests/review and final native signing
+identity setup remain. [Pass](history/2026-11-03_19-44-24-282882-researcher-stable-development-signing-design.md). [Pass](history/2026-11-03_19-44-24-283311-planner-successful-key-cache-plan.md). [Pass](history/2026-11-03_19-44-24-283447-coder-key-cache-and-signed-launcher.md).
+
+no shared unlock key, credential migration or release work selected.
+[Pull pass](history/2026-11-03_19-38-23-174358-orchestrator-pull-latest-before-keychain-fix.md).
+
+## November3 — development Keychain prompt investigation
+
+Read-only investigation of the user's five identical dialogs: no key cache, same
+label on separate keys, ad-hoc dev binary identity. Metadata-only current record
+count is one app/one server; exact five requests untraced. Dedicated research
+supports stable dev signing first, optional process caching; one wrapping key
+would be a new migration/recovery choice. No implementation or personal
+signing/Keychain/trust changes. [Findings](../docs/architecture/keychain-prompts.md).
+[Research pass](history/2026-11-03_19-24-21-984231-researcher-development-keychain-prompts.md). Independent review ACCEPTs source/research claims with exact prompt count untraced;
+no implementation selected. [Review](history/2026-11-03_19-25-00-343374-evaluator-development-keychain-prompt-findings.md).
+
+## November 3 — deletion speed fix complete
+
+User-approved subtree flush batching is implemented in storage/mod.rs. Recursive
+path/depth/ownership/nofollow checks and credential/config sync remain; wrapper
+flushes once after removal, including already-missing retries. Independent safety
+fixtures6/6 PASS, source/final evaluation ACCEPT, native build PASS13.52s.
+
+Real confined repeats use identical versions/entry counts: Google1.11.3 deletion
+75.225s to0.889s (74.336s saved); Everything2026.8.31 deletion20.400s to0.262s,
+with real connection/13tools/echo. Preservation and confinement probes pass.
+All temporary environments/packages/caches/processes cleaned; personal state and
+everyday Fetch/Node/Railway preserved. Quit/reopen Fetch to use the new binary.
+Native UI/HTTP/realKeychain/Google-account acceptance remains separate. Concurrent
+helper-bridge work below is preserved; no packaging/release action occurred.
+Delivered as ed78aac and pushed to main; unrelated working-tree changes remain
+preserved. [Delivery](history/2026-11-03_19-15-58-568116-orchestrator-deliver-deletion-speed-fix.md).
+[Optimized evidence](delete-server/optimized-evidence.md).
+[Source review](history/2026-11-03_19-14-39-483237-evaluator-batch-delete-source-acceptance.md), [tests/cleanup](history/2026-11-03_19-14-39-483624-tester-batch-delete-optimized-runs-and-cleanup.md),
+[native build](history/2026-11-03_19-14-39-483753-orchestrator-batch-delete-native-build.md), [final review](history/2026-11-03_19-14-39-483850-evaluator-batch-delete-final-acceptance.md).
+
 ## November 3 — shared helper credential storage accepted
 
 Integrated with newer automatic config discovery. Final188/188 fixture checks
@@ -43,6 +98,38 @@ Opening Install will read known global config files automatically. Explicit home
 
 [Planner report](history/2026-11-03_19-25-18-599038-planner-automatic-config-discovery.md).
 
+
+## November 3 — Google deletion latency reproduced
+
+Requested investigation and disposable backend demos are complete. Google MCP
+1.11.3 preparation/deletion PASSes:13,871files/1,798folders,75.225s total deletion;
+package cleanup through75.210s, final15ms. Fetch did not Connect or authenticate
+Google. Everything install/echo/delete also PASSes (20.400s delete; its process
+stopped within~139ms). A separate1000-file Rust comparison measured4559ms with a
+flush after every file versus42ms with one final flush. Source performs one full
+disk flush per removed file/folder, while holding the shared installer lock.
+
+Independent Tester and Evaluator ACCEPT actual results, confinement canaries and
+preservation. Both temporary environments, packages/caches/copied runtimes,
+failed-attempt state and external canary/pointer were removed; no owned process
+remains. Everyday Fetch/Node/Railway processes and personal settings/accounts
+were preserved. Only ignored diagnostic tests and evidence/documentation were
+added in that diagnostic pass. The subsequently approved optimization is complete
+above. Native UI/HTTP/real
+Keychain/Google-account acceptance remains open. Recommended next step, if user
+requested that fix: implemented and verified above. Broader MVP work remains
+tracked below.
+
+[Final integration pass](history/2026-11-03_18-24-07-034474-orchestrator-complete-google-delete-investigation.md).
+[Evidence](delete-server/latency-evidence.md), [Google log](delete-server/latency-google.log),
+[probes](delete-server/latency-confinement.json).
+[Google test/cleanup pass](history/2026-11-03_18-23-43-642191-tester-google-deletion-and-temporary-cleanup.md).
+[Google final evaluation](history/2026-11-03_18-23-43-643255-evaluator-google-delete-latency-acceptance.md).
+[Google source evaluation](history/2026-11-03_18-20-20-124512-evaluator-google-delete-diagnostic-source.md).
+[Everything test](history/2026-11-03_18-15-46-053228-tester-real-everything-delete-latency.md),
+[Everything evaluation](history/2026-11-03_18-16-32-060854-evaluator-everything-latency-evidence.md).
+[Research](history/2026-11-03_18-05-50-741147-researcher-delete-latency-trace.md).
+
 ## November 3 — direct installation body accepted
 
 User approved command/url alternatives in the existing POST body after the full
@@ -66,6 +153,39 @@ concurrent UI/startup edits, source imports and Google deferral.
 [Evaluator pass](history/2026-11-03_18-10-43-881085-evaluator-accept-direct-install-body.md).
 [Scope](direct-install-inputs/info.md). [Pass](history/2026-11-03_17-40-38-021507-orchestrator-scope-direct-install-inputs.md).
 
+## November 3 — rapid UX changes
+
+Active focused milestone: [rapid-ux](rapid-ux/info.md). Select all now becomes
+Unselect all when every selectable discovery row is selected and clears the
+selection on click. Startup attempts every saved MCP connection independently,
+so one slow connection no longer delays the remaining servers. Existing
+credentials, readiness deadlines and per-server status/error handling remain.
+Locked native compilation passes;53 manager and14 existing UI fixtures pass.
+Source review was direct, without agents; these checks were not independent and
+do not establish actual window or real saved-server startup acceptance. No app,
+real provider/MCP, personal state or packaging/release action ran. Next: user
+interaction/startup verification and any next requested UX change.
+[Pass evidence](history/2026-11-03_17-13-40-579746-orchestrator-selection-toggle-and-parallel-startup.md).
+
+## November 3 — install route walkthrough
+
+Read-only trace confirms POST setup/installations accepts selected source entries
+and returns202 progress tracking. One active group prepares entries sequentially,
+preserves successful preparation and attempts normal Connect for each prepared
+server. Runtime/authentication outcomes remain separate from preparation success;
+no Fetch Authenticate flow is invoked by installation. No application change or
+new execution evidence. [Walkthrough pass](history/2026-11-03_17-12-59-367921-orchestrator-explain-install-route.md).
+
+## November 3 — instance identity walkthrough
+
+Source inspection confirms each new instance receives a persisted `server-` ID
+with32 random hexadecimal digits. Names are separate. Different imported entries
+can create multiple instances of one package; the same source path/name reuses
+the existing ID. The user accepts this behavior and does not need an explicit
+duplicate-instance control for now; it is outside current scope. Google account
+integration remains pending. No source change or new execution evidence.
+[Scope confirmation](history/2026-11-03_17-09-36-297254-orchestrator-accept-existing-instance-imports.md).
+[Walkthrough evidence](history/2026-11-03_17-06-53-160519-orchestrator-explain-instance-identifiers.md).
 
 ## November 3 — shared authentication router accepted
 
@@ -97,6 +217,18 @@ uncommitted. [Delivery pass](history/2026-11-03_16-55-36-339850-orchestrator-del
 [Planner pass](history/2026-11-03_16-46-28-931238-planner-shared-authentication-dispatch.md).
 
 
+## November 3 — authentication scope sync before implementation
+
+Delete API and server-header × are delivered. The user requests another scope
+sync before authentication implementation starts; no authentication source has
+been changed in this pass. Proposed direction remains the existing generic
+Authenticate API wrapping standard MCP web authentication, reusing portable
+Codex code and OpenCode's start/URL/finish structure. Nonstandard local helpers
+need only their actual compatibility differences, not a Google-specific route.
+Optional small edge-case handling now requires explicit user approval, saved in
+the global Codex AGENTS.md. Research is complete at source-inspection level;
+no live provider login is verified. Await the requested scope sync.
+[Pass record](history/2026-11-03_16-26-52-000001-orchestrator-auth-scope-sync-and-global-preference.md).
 
 ## November 3 — server-header × ready for user testing
 

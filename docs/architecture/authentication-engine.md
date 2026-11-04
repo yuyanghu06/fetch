@@ -69,7 +69,9 @@ credentials, pending attempts and renewal separately, including multiple
 instances of the same MCP package using different accounts. Package identity
 selects compatibility code, not an account or shared credential store. The
 existing source-path/name installation reuse remains unchanged in this refactor;
-explicit duplication behavior needs its own complete contract if introduced.
+the user accepts separate imported entries and does not need an explicit
+duplicate-instance control for now. No such control is current implementation
+scope.
 
 Google is now the first approved local-helper integration. Current installed
 1.11.3 was reverified in package-45d4c35aec3aba7fe57de2e84813db00; its auth.js

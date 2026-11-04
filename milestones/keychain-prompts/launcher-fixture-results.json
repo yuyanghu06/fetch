@@ -1,0 +1,74 @@
+[
+  {
+    "case": "cargo-failure",
+    "exit_code": 17,
+    "old_output_preserved": true,
+    "no_launch": true,
+    "stage_removed": true,
+    "sign_calls": []
+  },
+  {
+    "case": "sign-failure",
+    "exit_code": 1,
+    "old_output_preserved": true,
+    "no_launch": true,
+    "stage_removed": true,
+    "sign_calls": [
+      [
+        "--force",
+        "--sign",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "--identifier",
+        "com.fetch.local.development",
+        "--timestamp=none",
+        "/private/tmp/fetch-signing-fixture-vmz426bi/project/fixture-target/debug/.fetch-development.J3XFiU"
+      ]
+    ]
+  },
+  {
+    "case": "verify-failure",
+    "exit_code": 1,
+    "old_output_preserved": true,
+    "no_launch": true,
+    "stage_removed": true,
+    "sign_calls": [
+      [
+        "--force",
+        "--sign",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "--identifier",
+        "com.fetch.local.development",
+        "--timestamp=none",
+        "/private/tmp/fetch-signing-fixture-vmz426bi/project/fixture-target/debug/.fetch-development.Z3fuko"
+      ],
+      [
+        "--verify",
+        "--strict",
+        "/private/tmp/fetch-signing-fixture-vmz426bi/project/fixture-target/debug/.fetch-development.Z3fuko"
+      ]
+    ]
+  },
+  {
+    "case": "build-only-success",
+    "exit_code": 0,
+    "old_output_preserved": false,
+    "no_launch": true,
+    "stage_removed": true,
+    "sign_calls": [
+      [
+        "--force",
+        "--sign",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "--identifier",
+        "com.fetch.local.development",
+        "--timestamp=none",
+        "/private/tmp/fetch-signing-fixture-vmz426bi/project/fixture-target/debug/.fetch-development.YeTPuW"
+      ],
+      [
+        "--verify",
+        "--strict",
+        "/private/tmp/fetch-signing-fixture-vmz426bi/project/fixture-target/debug/.fetch-development.YeTPuW"
+      ]
+    ]
+  }
+]

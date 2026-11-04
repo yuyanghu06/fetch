@@ -1,0 +1,28 @@
+{
+  "two_changed_binaries": [
+    {
+      "version": 0,
+      "cdhash": "f51cf37e201623bbc903bf16cde2deb8f3279d1c",
+      "designated_requirement": "identifier \"com.fetch.local.development\" and certificate leaf = H\"8a674d33f736264cb43421e28c2d22493f9c82a5\"",
+      "strict_verify": true
+    },
+    {
+      "version": 1,
+      "cdhash": "e8b86f120224d2fe8f5a0e05ee39453fa204943b",
+      "designated_requirement": "identifier \"com.fetch.local.development\" and certificate leaf = H\"8a674d33f736264cb43421e28c2d22493f9c82a5\"",
+      "strict_verify": true
+    }
+  ],
+  "same_identity": true,
+  "cross_requirement_verification": true,
+  "signed_fetch_metadata": [
+    "designated => identifier \"com.fetch.local.development\" and certificate leaf = H\"8a674d33f736264cb43421e28c2d22493f9c82a5\"",
+    "Identifier=com.fetch.local.development",
+    "CDHash=30dbb108583de1d0e181ad577acd9e4a297cfde1",
+    "Authority=Fetch Development Local Signing",
+    "TeamIdentifier=not set"
+  ],
+  "native_prompt_persistence_tested": false,
+  "private_key_exported": false,
+  "app_launched": false
+}

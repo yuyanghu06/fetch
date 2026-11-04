@@ -91,3 +91,6 @@ Direct-install-inputs records the user-approved direct command/URL POST-body
 extension alongside source-file imports. Source and independent
 verification are accepted:142 unique checks/native build pass. Scoped delivery
 is next; the user explicitly excluded UI work.
+
+[Development Keychain prompts](keychain-prompts/info.md) tracks read-only source/
+identity findings and options; it does not authorize signing or storage migration.

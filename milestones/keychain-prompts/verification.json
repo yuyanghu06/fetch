@@ -1,0 +1,47 @@
+{
+  "credentials": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools cargo test --locked --lib credentials:: -- --nocapture",
+    "passed": 30,
+    "new_cache_cases": 8,
+    "exit_code": 0,
+    "compile_seconds": 26.77,
+    "test_seconds": 30.04
+  },
+  "host_shutdown": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools cargo test --locked --lib application_shutdown_closes_keys_even_while_host_and_store_are_retained -- --nocapture",
+    "passed": 1,
+    "new_cases": 1,
+    "exit_code": 0,
+    "compile_seconds": 6.09,
+    "test_seconds": 0.01
+  },
+  "ui_auth_discovery": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools cargo test --locked --lib ui::auth_tests -- --nocapture",
+    "initial_passed": 17,
+    "initial_failed": 1,
+    "finding": "Pulled fixture expected idempotent Select all; preserved pre-existing approved Unselect-all toggle clears an already-selected row. Test now checks clear then reselect while installed entries remain excluded.",
+    "final_passed": 18,
+    "final_failed": 0,
+    "exit_code": 0,
+    "compile_seconds": 5.62,
+    "test_seconds": 0.01
+  },
+  "launcher_stub_cases": 4,
+  "native_build": {
+    "exit_code": 0,
+    "seconds": 18.42
+  },
+  "actual_signed_build": {
+    "command": "DEVELOPER_DIR=/Library/Developer/CommandLineTools ./scripts/run-development.sh --build-only",
+    "exit_code": 0,
+    "cargo_build_seconds": 0.45,
+    "binary": "target/debug/fetch-development",
+    "identifier": "com.fetch.local.development"
+  },
+  "new_identity_created_by": "User in Certificate Assistant",
+  "private_key_exported": false,
+  "trust_settings_changed_by_agent": false,
+  "real_keychain_rebuild_prompt_persistence_tested": false,
+  "existing_fetch_restarted": false,
+  "fixture_cleanup": true
+}

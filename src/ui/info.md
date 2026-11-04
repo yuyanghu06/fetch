@@ -54,6 +54,8 @@ whole-page scrolling. This keeps long imports from hiding the install control.
 Select all sits in the fixed toolbar above the discovery list. It selects only
 supported path/name pairs, including disabled-source supported rows as an
 explicit user choice, without changing source flags or starting installation.
+When all selectable rows are selected, it reads Unselect all and clears the
+selection on click. A partial selection still offers Select all.
 Busy, picker and active-install states disable the bulk action. The footer shows
 the selected count; reopened windows retain the same minimum dimensions.
 Locked native compilation passed; actual layout interaction remains unverified.

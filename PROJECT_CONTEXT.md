@@ -20,8 +20,17 @@ integrated fixture checks, native compilation and independent acceptance pass. A
 account authentication remains unverified. Multiple instances of the same MCP must independently own
 authentication methods, credentials and accounts (including different Google
 accounts); no package-global account state. Current same-source installation
-reuse is unchanged; a duplication workflow is not yet implemented. See NOTES.md.
+reuse is unchanged; the user accepts separate imported entries and does not
+need a duplicate-instance control for now. See NOTES.md.
 
+## November 3 — source organization clarified
+
+The user wants HTTP route handlers in `src/api`, grouped into subfolders that
+follow the URL path. Backend functions may remain in separate folders grouped
+by responsibility. Current source does not fully follow that requirement:
+`api/runtime.rs` combines several route families, while `oauth` and `mcp` also
+own HTTP adapters. This clarification is recorded; no source reorganization has
+been performed. See docs/architecture/README.md for the boundary.
 
 October31 clarification: Google and Slack already have their own sign-in/setup
 code. Fetch's missing work is using that setup while saving updated account

@@ -62,6 +62,8 @@ impl ApplicationHost {
             loop { let done=self.shutdown_done.notified(); if self.stopped.load(Ordering::Acquire){return;} done.await; }
         }
         self.oauth.shutdown();self.manager.shutdown().await;
+        let credentials=self.manager.credentials.clone();
+        let _=tokio::task::spawn_blocking(move||credentials.clear_cached_keys()).await;
         self.handle.graceful_shutdown(Some(Duration::from_secs(3)));
         let _=fs::remove_file(self.root.join("activation.sock"));
         self.stopped.store(true,Ordering::Release);self.shutdown_done.notify_waiters();

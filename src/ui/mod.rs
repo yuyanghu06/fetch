@@ -220,7 +220,8 @@ impl Desktop {
             Message::Select(path,name,selected)=>{let key=(path,name);if selected&&self.supported_selections().contains(&key){self.selected.insert(key);}else{self.selected.remove(&key);}}
             Message::SelectAllServers=>{
                 if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
-                self.selected=self.supported_selections();
+                let eligible=self.supported_selections();
+                if eligible.is_subset(&self.selected){self.selected.clear();}else{self.selected=eligible;}
             }
             Message::Install=>{self.cleanup_confirmed=false;let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
             Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{"Installation accepted. Fetch will connect prepared servers automatically; required login remains separate.".into()};},Err(error)=>self.error=Some(error)}}
@@ -404,7 +405,9 @@ impl Desktop {
         self.selected.retain(|key|eligible.contains(key));
     }
     fn install_view(&self)->Element<'_,Message>{
-        let can_select_all=!self.busy&&self.picker_window.is_none()&&self.job.is_none()&&!self.supported_selections().is_empty();
+        let eligible=self.supported_selections();
+        let all_selected=!eligible.is_empty()&&eligible.is_subset(&self.selected);
+        let can_select_all=!self.busy&&self.picker_window.is_none()&&self.job.is_none()&&!eligible.is_empty();
         let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
         let mut header=column![text("Discover and install").size(theme::PAGE_TITLE),text("Fetch automatically finds your global Claude Code, Codex and OpenCode configuration files. Select the servers you want to install. Imported credentials are never copied.")].spacing(theme::PAGE_GAP);
         if self.custom_config {
@@ -414,7 +417,7 @@ impl Desktop {
         }else{
             header=header.push(button("Use a different file or folder…").on_press_maybe(available.then_some(Message::CustomConfig(true))));
         }
-        header=header.push(row![button(if self.busy{"Working…"}else{"Refresh servers"}).on_press_maybe(available.then_some(Message::Discover)),button("Select all").on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP));
+        header=header.push(row![button(if self.busy{"Working…"}else{"Refresh servers"}).on_press_maybe(available.then_some(Message::Discover)),button(if all_selected{"Unselect all"}else{"Select all"}).on_press_maybe(can_select_all.then_some(Message::SelectAllServers))].spacing(theme::CONTROL_GAP));
         let mut items=column![].spacing(theme::PAGE_GAP);
         if let Some(error)=&self.error{items=items.push(components::error_message(error.as_str()));}
         if !self.notice.is_empty(){items=items.push(components::message(self.notice.as_str()));}

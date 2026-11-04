@@ -1,5 +1,14 @@
 # HTTP application routes
 
+## November 3 requested organization
+
+The user requires raw HTTP route handlers here, grouped in subfolders matching
+URL paths, while reusable backend work may stay in separate service folders.
+Current `mod.rs`, `setup/mod.rs` and `runtime.rs` only partially follow that
+layout; OAuth and MCP also currently define HTTP endpoints outside this folder.
+No routes or source files were moved in this explanation pass. Future extraction
+must preserve URLs, behavior and shared backend authorization.
+
 D81: provider callbacks now retain one optional iss value and reject duplicates;
 generic OAuth validates its exact saved issuer before exchanging codes. Shared
 browser HTML is supplied by src/browser.rs without changing API authority.

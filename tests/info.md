@@ -62,6 +62,16 @@ stopped disposable routes after Runner restart before resolving aliases, matchin
 the existing deletion protection. Configuring does not execute the fixture path.
 Current command/results are recorded in the shared authentication milestone.
 
+## Opt-in deletion latency demo
+
+delete_latency_demo.rs is ignored by normal test runs. It requires an explicit
+fresh /private/tmp/fetch-delete-demo-* root and marker plus independently verified
+OS confinement. It installs real Everything2026.8.31, verifies echo, times deletion
+and checks package/config removal and preservation. Its fixture keys bypass the
+OS credential store, so results do not establish native window or Keychain
+acceptance. Never enable it as part of ordinary automated fixture runs.
+
+
 ## November 3 direct installation POST inputs
 
 `direct_install.rs` contains8 disposable integration cases for command/url/source
@@ -72,6 +82,27 @@ runs. New14 plus128 existing checks pass (142 unique); native binary builds.
 See milestones/direct-install-inputs/evidence.md for exact commands and limits.
 
 Merged-main follow-up: two additional installed-row checks now cover folder-discovered saved associations and native selection guards. Final integrated checks pass 64 distinct cases:24 backend,7 import,8 direct-install,18 UI and7 discovery units. This includes12 new cases for the feature; native build passes. Existing incoming deletion latency logs are preserved rather than rewritten for whitespace.
+
+The Google-specific ignored case prepares @a-bonus/google-docs-mcp1.11.3 through
+Installer::submit and deletes it through Manager, without Connect, Google server
+execution, login or account calls. Run exactly one named ignored case per process
+with its own fresh root; do not enable all ignored cases together. The Everything
+case additionally connects and verifies echo. Google package cleanup evidence
+does not establish working Google authentication.
+
+November3 actual confined diagnostic results: Everything install/echo/delete PASS
+(20.400s delete); Google package preparation/delete PASS (75.225s delete). Both
+retain source/runtime/unrelated canaries during deletion. Independent evidence
+review ACCEPTs cleanup latency diagnosis; all temporary environments were removed.
+See [the evidence](../milestones/delete-server/latency-evidence.md). These opt-in
+measurements do not replace native UI, Keychain, provider or separate-client checks.
+
+November3 approved flush optimization: independent storage checks6/6 PASS
+(two new cases in src/storage/deletion_tests.rs); confined Google deletion now
+0.889s and Everything0.262s with matching baseline entry counts. Actual connection/
+echo is verified for Everything; Google remains preparation-only. See
+[optimized evidence](../milestones/delete-server/optimized-evidence.md).
+
 
 ## Shared helper credential storage
 

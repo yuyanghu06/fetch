@@ -128,6 +128,25 @@ The October 26 collaboration ended with [the architecture handoff](milestones/mc
 - Maintain a dedicated milestone folder with goal, scope, completion criteria and status. Add plain-English `info.md` guides to human-authored source folders as they are created; exclude dependencies, caches, generated/tool state, version-control internals and binary-only folders.
 - Complete a milestone only after its criteria and material findings are resolved. The journal does not authorize implementation. No map work is selected; apply the user's browser-evidence rule if maps are later selected.
 
+## Temporary MCP flow experiments while coding (2026-11-03)
+
+The user authorizes installing MCP server packages in a task-specific temporary
+cache while coding to inspect and test how installation, authentication and
+other server flows work. Keep this cache separate from Fetch test folders, the
+repository, and Fetch development/release application state. These disposable
+experiments are separate from the maintained Fetch acceptance-test environment.
+
+Stop any processes started for the experiment and delete its installed packages,
+temporary cache and task-created state when finished, including on failure or
+cancellation. Preserve pre-existing files and services. Do not register temporary
+servers in personal client/MCP configurations or use personal credentials without
+separate authorization. Continue applying the resource-isolation protections
+below; a temporary folder alone does not isolate access to files or desktop apps.
+
+This permission supersedes earlier installation/flow-testing pauses for these
+bounded temporary experiments only. It does not require starting an experiment
+merely to record this rule.
+
 ## Isolated MCP connection testing (2026-10-27)
 
 Use a virtual computer/virtual machine or a suitably isolated test environment for new MCP connection tests so they cannot affect the user's real files, credentials, personal harness/MCP configurations, running apps or services. Use disposable fixtures and dedicated test accounts/credentials; a language virtual environment or temporary directory alone does not establish isolation. Desktop-app MCP tests require isolation of the apps/state they control. See [the project note](NOTES.md#october-27-2026--isolate-new-mcp-connection-tests).

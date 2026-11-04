@@ -291,11 +291,13 @@ impl Manager {
         Ok(ServerRoute{server_id:id.to_owned(),transport,execution:policy(config)?})
     }
     pub async fn startup(self:&Arc<Self>){
-        if let Ok(records)=self.repository.list_saved(){for candidate in records{
-            if self.stopping.load(Ordering::SeqCst){break;}let Some(id)=candidate["server_id"].as_str()else{continue};
+        if let Ok(records)=self.repository.list_saved(){
+            // A slow connection must not hold up startup of the other saved servers.
+            futures_util::future::join_all(records.into_iter().map(|candidate|async move{
+            if self.stopping.load(Ordering::SeqCst){return;}let Some(id)=candidate["server_id"].as_str()else{return};
             let gate=self.lock(id).await;let guard=gate.lock().await;
-            let record=match self.record(id){Ok(record)=>record,Err(_)=>continue};
-            if let Err(error)=self.refresh_owned(&record).await{self.connection_failed(id,error.code,error.message).await;continue;}
+            let record=match self.record(id){Ok(record)=>record,Err(_)=>return};
+            if let Err(error)=self.refresh_owned(&record).await{self.connection_failed(id,error.code,error.message).await;return;}
             let mut connected=false;
             match self.route(&record).await{
                 Ok(route)=>match self.runner.configure(route).await{
@@ -314,7 +316,8 @@ impl Manager {
             drop(guard);
             if connected {self.observe_features(id).await;}
             self.schedule_refresh(id.to_owned()).await;
-        }}
+            })).await;
+        }
     }
     pub async fn shutdown(&self){self.stopping.store(true,Ordering::SeqCst);self.stop.notify_waiters();self.installer.shutdown();self.flows.lock().await.clear();self.revoke_helpers().await;self.runner.shutdown().await;}
     fn secrets(&self,id:&str)->Result<Value,ManagementError>{let value=self.credentials.read_json(id).map_err(|_|store_error())?.unwrap_or_else(||json!({"manual":{},"oauth":null}));if !value["manual"].is_object(){return Err(store_error());}Ok(value)}

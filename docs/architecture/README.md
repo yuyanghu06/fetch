@@ -1,5 +1,27 @@
 > **D81 active local work:** Implementation/build/test and protected actual MCP/client checks are authorized; packaging/signing/DMG are excluded. Native build and93 fixtures pass after the October 30 parallel-authentication fix; real UI/provider/MCP proof is still pending. Two focused choices remain unanswered: deletion/non-auth credential-change outcomes under D31, and bounded protected-MCP authentication proof when no separate provider account API exists. Ordinary supported API-key saves retain their required authenticated check. Preserve D25/D31 until answered. See [the current run](../testing/LOCAL_MVP_RUN.md). Older execution-pause paragraphs below are historical.
 
+## November 3 — HTTP handlers and backend folders
+
+Confirmed user direction: `src/api` should contain the raw HTTP route handlers,
+with subfolders following URL paths. Separate backend folders are acceptable;
+they hold the reusable functions called by those handlers. For example, a handler
+for `/api/v1/servers/{server_id}/restart` belongs under the matching servers,
+server-ID and restart path, while the restart implementation belongs in the
+server-management backend. Route handlers read requests, check request-level
+requirements, call shared backend functions and form HTTP responses. Backend
+rules and caller permissions must remain shared with the MCP interface.
+
+Current implementation differs: `api/mod.rs` registers most application paths
+and implements server listing; `api/setup/mod.rs` handles discovery;
+`api/runtime.rs` handles installation, configuration, authentication, restart,
+tools and the provider callback. `oauth/mod.rs` and `mcp/mod.rs` also register
+HTTP endpoints. These are current facts, not the requested finished layout.
+A future refactor must cover those endpoints too, preserve existing URLs and
+behavior, and distinguish HTTP adapters from OAuth/MCP implementation logic.
+Exact Rust naming for variable and punctuation-containing path segments is an
+implementation detail, not a change to public routes. No source was moved in
+this explanation pass.
+
 > **October29 current handoff:** five required implementation areas plus isolated
 > runtime acceptance/fixes and distribution preparation remain. See
 > [MVP_GAPS.md](../testing/MVP_GAPS.md). Railway/auth/logging source compiles;
@@ -64,3 +86,10 @@ Fetch's product API remains HTTPS. Scoped Railway/auth/logging source now
 compiles, but actual native/provider/client proof remains unrun. See
 [known required source gaps](../testing/MVP_GAPS.md); the full selected MVP is
 not complete merely because its current source compiles.
+
+## Development Keychain prompt investigation
+
+[Repeated prompts](keychain-prompts.md) records read-only findings, ad-hoc
+rebuild identity, duplicate key reads, traditional-store UI limitations and
+unselected stable-signing/cache/wrapping-key options. No personal Keychain or
+signing/storage change was made.

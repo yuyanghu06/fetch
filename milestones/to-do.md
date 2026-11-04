@@ -1,5 +1,10 @@
 # Fetch current work
 
+- [x] Review and include the full remaining working tree for the user's explicit
+  commit/push request. Independent publication review ACCEPT; no new runtime
+  acceptance claimed. Confirm final commit/live remote and working-tree state.
+
+
 ## Shared helper credential storage — November 3
 
 - [x] User approves shared helper credential-storage bridge, Google first.
@@ -35,6 +40,16 @@
 - [x] Commit/push scoped direct-input source/evidence as53adad6; live refs
   matched. Unrelated UI/startup/deletion-investigation/docs edits preserved.
 
+## Rapid UX changes — November 3
+
+- [x] Toggle Select all / Unselect all using the existing selectable rows.
+- [x] Attempt all saved MCP connections independently on app startup.
+- [x] Review directly and compile;53 existing manager and14 UI fixtures pass.
+- [ ] Verify actual selection labels/clicks and saved-server startup in Fetch;
+  reconcile changed selection labels with Figma during a future design pass.
+
+- [x] Save the user's global instruction: ask before adding small optional
+  edge-case handling; apply it to the shared authentication rewrite.
 - [x] Complete scope sync: dispatch from imported command/args/environment; return
   selected-flow errors without silent alternate-method fallback.
 - [x] Implement common dispatcher and Railway/Linear OAuth consolidation.
@@ -43,12 +58,14 @@
 - [x] Commit/push the accepted scoped router and evidence as4f18905; live remote
   matched. Pre-existing uncommitted documentation changes are preserved.
 - [x] User selects keep Google pending; complete shared router first. Installed
-  Google is1.11.3; bridge deferral superseded by the later go approval above.
-- [ ] After router completion, walk through selected behavior with the user.
-- [ ] Preserve requirement: multiple instances of the same MCP with independent
-  authentication methods, credentials and accounts; design explicit duplication
-  behavior before changing current same-source installation reuse.
-
+  Google is1.11.3; encrypted helper/server storage bridge is deferred.
+- [ ] Continue behavior walkthrough: routing, random instance IDs/source reuse
+  and installation request/preparation/connect/progress boundaries inspected
+  and explained. No new behavior selected by these explanation passes.
+- [x] Record multiple-instance/account requirement and confirm existing distinct
+  imported entries are enough for now. No duplicate-instance control is needed;
+  preserve per-instance credentials and current same-source reuse. Google
+  account integration remains pending under the existing deferred task.
 
 - [x] Prioritize user-requested server-header ×; shared control/DELETE state and
   stale reply handling implemented. Native build and14 existing UI checks pass.
@@ -65,7 +82,8 @@
   integration and independent verification remain.
 - [x] Independently source-verify/evaluate and document deletion; Tester/Evaluator
   final source ACCEPT, no material findings.
-- [ ] Commit/push scoped deletion source and records, then start authentication.
+- [x] Commit/push scoped deletion source and records as64cff43; × delivered
+  separately as63fa83e. Authentication is awaiting the user's requested scope sync.
 
 ## Next — shared asynchronous MCP authentication (after delete)
 
@@ -333,3 +351,43 @@ Historical D77/D79 checkpoint — October 28, 2026. The initial source delivery 
 - [ ] Explicitly build/package/sign/notarize as selected and authorized; packaging script was not run and no app/DMG exists. No release/publication is authorized.
 - [ ] Keep personal client cleanup manual and after successful verification; never perform it automatically.
 - [ ] Preserve future project/session organizer, common cross-computer context/MCP sharing, same-product memory, PostgreSQL/retention, graph, extra processes and deferred native features for a later selected scope. Their design/implementation is deferred, not completed or cancelled.
+
+## November 3 — deletion latency demo
+
+- [x] Trace the delete route, stop, storage, credentials and UI waits.
+- [x] Verify OS confinement with disposable positive/negative canaries.
+- [x] Install/connect/echo/delete Everything and record phase evidence (20.400s delete).
+- [x] Prepare/delete Google1.11.3 package without Fetch Connect/login (75.225s delete), following user clarification.
+- [x] Independently evaluate timing evidence and clean all temporary packages/caches/state/processes.
+- [ ] Native window/Keychain deletion acceptance remains pending protected native setup.
+
+Deletion-latency diagnostic complete; user subsequently approved the optimization.
+
+## November 3 — deletion speed fix
+
+- [x] Independent bounded plan preserving path safety and final durable removal.
+- [x] Implement one containing-directory flush per selected subtree, including missing retry.
+- [x] Independent storage containment/private-state regression checks and native build.
+- [x] Repeat confined Google and live Everything deletion, report observed improvement.
+- [x] Independent evaluation, clean disposable packages/state/processes and integrate evidence.
+
+
+Deletion speed fix complete: Google75.225s to0.889s, Everything20.400s to0.262s.
+Preserved running Fetch needs Quit/reopen; native/account acceptance remains separate.
+
+Scoped deletion fix/evidence committed and pushed as ed78aac. Existing Fetch
+process was preserved; explicitly Quit/reopen to use the built binary.
+
+## November3 — development Keychain prompt investigation
+
+- [x] Trace key reads/labels and inspect signing metadata without reading secrets.
+- [x] Dedicated primary-source and maintained implementation research; document options.
+- [x] Independent review ACCEPTs scoped explanation; user handoff includes recommendation/limits.
+- [x] User selects stable dev identity plus successful-key process cache; larger wrapping-key migration remains unselected.
+- [ ] Protected native proof for the selected approach; no prompt-count reduction is yet measured.
+
+- [x] Pull latest main, preserving remote folder discovery and local UI/startup/docs.
+- [x] Implement successful-key cache, delete eviction, creation readback and Quit cleanup.
+- [ ] Independent cache/backend/host checks and final evaluation.
+- [x] Implement stable dev build/signing workflow; final task-specific identity setup pending human-owned creation.
+- [ ] Validate native identity across rebuilds and protected disposable key access; preserve personal state.

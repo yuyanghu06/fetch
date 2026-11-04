@@ -60,3 +60,10 @@ Historical detailed proposals and append-only history preserve evidence/chronolo
 ## Current implementation status after D74
 
 The first developer-backend foundation is implemented and pushed; the developer command defaults to `https://localhost:53671`. Native approval/token issuance, lasting identity/Keychain, package installation, desktop UI and MCP sharing remain unfinished. Build/push authorization is already granted; the old D73 pause above is historical. Continue the existing build sequence without requesting that permission again. Main MCP tests remain for the later joint isolated environment. No release is authorized.
+
+## November3 — development Keychain prompts
+
+User asks why approximately five identical access dialogs appear and whether
+they can be combined. Read-only [findings/options](keychain-prompts.md) recommend
+stable dev identity first, optional in-process keys, and describe one wrapping-key
+alternative. No signing/keychain/cache/storage implementation choice is selected.

@@ -35,6 +35,15 @@ no CLI --version is run. npm's official postinstall fetches its binary over HTTP
 it does not provide an independent archive checksum. No package install executed
 in this source pass. First-party download HTTP now uses safe diagnostics.
 
+
+November3 source walkthrough confirmed the existing HTTP/MCP product path uses
+Manager's connection hook; raw Installer::submit remains preparation-only. The
+original request contains source path/name selections; the later approved direct
+inputs are described below and still do not accept credential values. Preparation errors currently collapse to INSTALLATION_FAILED;
+connection/login outcomes live in GET servers and do not undo installation.
+This was read-only inspection, not a new installation or runtime test.
+
+
 Direct POST bodies also accept server_name plus command or url. direct.rs checks
 literal command syntax before shlex splitting, builds an ordinary shared capture
 and computes a digest of the name/normalized original definition. Existing

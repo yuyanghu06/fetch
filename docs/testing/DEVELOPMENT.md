@@ -36,11 +36,59 @@ Release means they are disabled, as in normal `cargo run --release`. Explicit
 
 ## Launching
 
-From the checkout, the normal native development command is:
+For a stable development identity across rebuilds, use:
+
+```sh
+./scripts/run-development.sh
+```
+
+This builds the debug binary, signs a separate copy as
+`com.fetch.local.development`, verifies it, and launches
+`target/debug/fetch-development app`. It leaves Cargo's original `fetch` binary
+unchanged. The copy is staged and replaced only after signing and verification
+succeed, so it never rewrites a running executable in place. `CARGO_TARGET_DIR`
+is respected; a relative value is resolved from this checkout. Additional app
+arguments, such as `--port 53672`, are forwarded to Fetch.
+
+The launcher requires the exact 40-digit hexadecimal fingerprint of the dedicated
+development signing certificate. Set `FETCH_DEV_SIGNING_IDENTITY` for that command,
+or save only that public fingerprint in:
+
+```text
+~/Library/Application Support/Fetch-Development/development-signing-identity
+```
+
+The certificate and its private signing key are created separately in macOS
+Keychain Access: **Certificate Assistant → Create a Certificate…**, using a
+dedicated Fetch development name, **Self Signed Root**, and **Code Signing**.
+Keep the private key in Keychain and leave certificate trust settings unchanged.
+The launcher does not create identities, import keys, change Keychain access or
+trust settings, or store passwords. macOS may ask for confirmation when the
+signing key is first used. This identity is for local development; release
+signing and packaging remain separate.
+
+To build and sign without launching Fetch:
+
+```sh
+./scripts/run-development.sh --build-only
+```
+
+An existing encrypted-state item may need a final human approval for the newly
+stable Fetch identity. This does not move credentials or change their encryption
+format. Stable signing is intended to let macOS recognize later development
+builds; it does not guarantee one approval for every existing item. See
+[Apple's development signing guidance](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html).
+
+The original Cargo command still works:
 
 ```sh
 cargo run --locked --bin fetch -- app
 ```
+
+Cargo can rebuild that executable with an ad-hoc signature, which identifies
+only that build. Use the signed launcher above for ordinary development when
+you want Keychain approvals to recognize successive builds. Cargo configuration,
+`build.rs`, test runners and release behavior are unchanged.
 
 To make the same development state choice explicit, including when testing an
 optimized/release binary:

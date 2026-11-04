@@ -1,5 +1,11 @@
 # Current UI state coverage
 
+November 3 bulk-selection change: the Install toolbar offers Select all with no
+or partial selection, and Unselect all when every selectable row is selected.
+The latter clears the selection. Existing installed/unsupported exclusions and
+busy/picker/install disabling remain. These labels have not yet been reconciled
+with the Figma specimens or observed in a running window.
+
 November 3 server-delete control: a shared × appears beside collapsed/expanded
 server headings, with idle/busy/pending/status-refresh tooltip states. Confirmed
 deletion clears the card and cached data; uncertain responses keep status checking

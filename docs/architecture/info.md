@@ -73,3 +73,6 @@ approved by the user on November3. It separates common encrypted persistence/ren
 callback/storage adapters and preserves the existing provider proof and ownership
 boundaries. Google is the first adapter;176 fixture checks, native compilation
 and independent acceptance pass. Actual Google account login remains untested.
+
+keychain-prompts.md records the November3 development prompt investigation and
+unselected ways to reduce repeated access without silently changing storage.

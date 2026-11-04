@@ -141,6 +141,8 @@ async fn desktop_folder_results_keep_installed_rows_out_of_select_all() {
     ]}],"next_steps":[]})))));
     assert_eq!(desktop.selected, BTreeSet::from([(path.to_owned(), "available".to_owned())]));
     drop(desktop.update(Message::SelectAllServers));
+    assert!(desktop.selected.is_empty(), "Unselect all clears the already selected available row");
+    drop(desktop.update(Message::SelectAllServers));
     assert_eq!(desktop.selected, BTreeSet::from([(path.to_owned(), "available".to_owned())]));
     drop(desktop.update(Message::Select(path.into(), "existing".into(), true)));
     assert_eq!(desktop.selected_for_install(), vec![(path.to_owned(), "available".to_owned())]);
