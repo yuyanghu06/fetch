@@ -6,7 +6,8 @@
 connection facts and assigned input requirements. Remote defaults to web OAuth
 except trusted manual-credential compatibility. Local assigned inputs use the
 credential handler; known no-auth servers and unsupported setup retain explicit
-outcomes. Google is identified as a pending helper integration and is not run.
+outcomes. Google1.11.3 now uses the shared helper bridge and existing callback;
+actual provider account login is distinct from fixture evidence.
 No CLI command or README instruction is guessed. Account state remains keyed
 by server ID, so the same package can have independent credential owners.
 
@@ -144,3 +145,22 @@ uses the same profile-selection path as tests. New remote profiles default to
 standard OAuth; unrelated saved settings do not count as authentication, and
 manual-header-only proof does not create an OAuth record. Source-review findings
 and bounded evidence are recorded in the generic-authentication milestone.
+
+
+## Google as the first shared storage adapter
+
+helper_auth.rs supervises Google1.11.3 through its existing helper/callback using
+credentials/bridge.rs. google_helper.mjs maps only its known token path into
+encrypted reads/conditional updates; it patches the actual nested OAuth2 renewal
+method and waits for stored-access verification before returning new tokens.
+Google's refresh-only initial payload and later access/expiry updates share one
+canonical helper section; no duplicate oauth token document is maintained.
+App inputs come only from assigned encrypted entries; private profile paths and
+noninteractive guards prevent personal fallback and unsolicited browser startup.
+
+Manager owns contexts/pending attempts and config/input invalidation; Runner owns
+each normal-process lease. Execution-only edits preserve renewal. Late failure
+callbacks must still own their exact process session after the live-state lock.
+The shared verifier uses the trusted Drive about request with fields=user; only
+unchanged saved revision proof can establish success. D25/D31 stay required,
+including checked app-credential changes. No manual save success exemption.

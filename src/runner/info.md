@@ -19,3 +19,12 @@ Execution timeout precedence is an explicit per-tool override, then an internall
 Remote MCP HTTP POST, legacy SSE opening and session event GETs use the safe
 diagnostics sender. Logged completion is HTTP headers-ready, not terminal tool
 completion. JSON-RPC payloads, content and provider headers are never logged.
+
+
+ManagedStdio is an internal attachment for approved local helpers using the
+shared credential bridge. Each actual child launch receives a fresh runtime
+lease/capability; Connection owns it and closes it on setup failure, connection
+failure, stop/delete and drop. Ordinary Stdio constructors are unchanged.
+Credential RPCs use a separate private Unix socket so MCP stdin/stdout messages
+remain raw. The runner neither selects provider fields nor verifies accounts;
+Manager supplies the fixed-owner factory/trusted verifier.

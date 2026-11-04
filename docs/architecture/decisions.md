@@ -859,3 +859,17 @@ malformed bodies return400. No shell/README interpreter, secret-value input, new
 route or UI. The approved amendment is at the end of api-contract.md. Implemented
 source has142 unique passing fixtures and a successful native build; live package/
 provider/client acceptance remains unverified. Google integration remains pending.
+
+
+## November 3 — Shared helper credential storage, Google first
+
+User replied go to the reusable storage design. Reuse the current per-server
+encrypted store with a private helper/server channel, conditional updates and
+acknowledged readback. Preserve each helper's callback/login owner and renewal;
+verify saved access before success. Google1.11.3 is first adapter, using its
+existing helper and actual nested OAuth2 implementation. No new public route/UI,
+login engine, personal credential sourcing or plaintext fallback. The earlier
+Google implementation deferral is superseded for this bounded work. Implemented
+source has176 passing fixture checks, native build and independent acceptance;
+real Google consent/account/native acceptance remains pending. See
+authentication-engine.md and the shared authentication storage evidence.

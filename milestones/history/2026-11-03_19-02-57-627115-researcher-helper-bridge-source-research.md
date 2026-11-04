@@ -1,0 +1,10 @@
+# Helper bridge source research
+
+- Local timestamp / acting role / milestone: 2026-11-03T19:02:57.627115-05:00 / researcher, inspected by Orchestrator / shared-mcp-authentication.
+- Requested scope: User go to approved reusable helper credential-storage bridge, Google first.
+- Starting repository state: Shared router/direct install source delivered; Google bridge unimplemented; unrelated dirty UI/startup/deletion/docs preserved.
+- Work performed / changed files: Reverified current installed @a-bonus/google-docs-mcp1.11.3 in package-45d4c35aec3aba7fe57de2e84813db00. auth.js SHA256 d6965355e0a9462b30b19504462238a1eeee1b0d8d3c14c4988a7e14ebf5f9dd. Actual OAuth2 comes through googleapis171.4.0/googleapis-common8.0.3/nested google-auth-library10.5.0 (oauth2client.js SHA256 af1aeb78dcd8ac899f157686f07c7b492131605fbf940909890fe9a4eeb90fe1), not top-level10.9.1. RefreshTokenNoCache is awaitable; persist/readback before returning and preserve rotated refresh before library caller restores old value. fs/promises exact token-path mapping + syncBuiltinESMExports retains helper callback. Normal-mode authorize catches load errors and must not fall back to browser. Compared maintained MIT VS Code Unix IPC and Apache2 memfs; reuse bounded UDS approach, no frameworks/source copied. Primary sources: Node module builtin sync/net IPC/EventEmitter docs, Drive about.get and maintained google-cloud-node OAuth2 source. No temp cache created or helper/providers executed. Orchestrator synchronized current authorization and journal.
+- Decisions: No further approval loop for the selected bridge; implementation details remain within approved ownership, encryption/proof and resource-isolation boundaries.
+- Checks and evidence: Read-only source/primary research and plan; no new test/build/helper/provider/native/personal operation. No personal credentials/token files read.
+- Resulting state / acceptance: Research/plan accepted; two exclusive writers and independent Tester assigned.
+- Remaining work and handoff: Implement, independently test/evaluate/build; actual account auth requires protected dedicated credentials/evidence, not browser success alone.

@@ -8,7 +8,7 @@ use serde_json::{Value, json};
 use url::Url;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum Route { NotRequired, Web, Credentials, LocalHelperPending, Unsupported }
+pub(super) enum Route { NotRequired, Web, Credentials, LocalHelper, Unsupported }
 
 pub(super) fn dispatch(record: &Value, provider: Provider) -> Result<Route, ManagementError> {
     if provider == Provider::None { return Ok(Route::NotRequired); }
@@ -17,11 +17,11 @@ pub(super) fn dispatch(record: &Value, provider: Provider) -> Result<Route, Mana
     if config["kind"] == "remote" {
         return Ok(if provider == Provider::Manual { Route::Credentials } else { Route::Web });
     }
-    // This identifies the installed helper requirement only. Until its encrypted
-    // storage handoff is selected, neither its command nor a fallback is run.
+    // Compatibility selects a helper interface; the server ID owns its account.
+    // Exact installed version/launch checks happen before any process is run.
     if config["package"]["name"] == "@a-bonus/google-docs-mcp"
         && config["executable"].is_string() && config["args"].is_array() {
-        return Ok(Route::LocalHelperPending);
+        return Ok(Route::LocalHelper);
     }
     let inputs = bindings::InputBindings::from_record(record)?;
     Ok(if provider == Provider::Manual || !inputs.references().is_empty() {
@@ -124,4 +124,14 @@ pub(super) async fn token(http: &reqwest::Client, endpoint: &str, metadata: Opti
     let response = send(if refresh { UpstreamOperation::ProviderRefresh } else { UpstreamOperation::ProviderTokenExchange }, http.post(endpoint).form(fields))
         .await.map_err(|_| auth_required())?;
     bounded_json(response).await
+}
+
+/// Shared browser presentation for web OAuth and supervised helper URLs.
+pub(super) async fn open_browser(target:&str)->Result<(),ManagementError>{
+    let mut browser=tokio::process::Command::new("/usr/bin/open");
+    browser.arg(target).stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).kill_on_drop(true);
+    match tokio::time::timeout(std::time::Duration::from_secs(5),browser.status()).await{
+        Ok(Ok(status)) if status.success()=>Ok(()),
+        _=>Err(ManagementError::new(409,"SERVER_AUTH_REQUIRED","The provider sign-in browser could not be opened. Retry Authenticate explicitly.")),
+    }
 }

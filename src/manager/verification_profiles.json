@@ -251,5 +251,37 @@
         }
       ]
     }
+  },
+  {
+    "id": "google",
+    "targets": {
+      "packages": [
+        "@a-bonus/google-docs-mcp"
+      ],
+      "hosts": []
+    },
+    "manual": [],
+    "oauth": {
+      "method": "GET",
+      "url": "https://www.googleapis.com/drive/v3/about",
+      "query": {
+        "fields": "user"
+      },
+      "credentials": [
+        {
+          "input": "token",
+          "placement": "header",
+          "name": "Authorization",
+          "prefix": "Bearer "
+        }
+      ],
+      "success": [
+        {
+          "rule": "string",
+          "pointer": "/user/permissionId",
+          "nonempty": true
+        }
+      ]
+    }
   }
 ]

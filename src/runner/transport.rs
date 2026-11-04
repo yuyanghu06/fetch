@@ -40,6 +40,7 @@ pub struct Connection {
     pub revision: RwLock<String>,
     pub capabilities: RwLock<Value>,
     child: Mutex<Option<Child>>,
+    helper: Option<crate::credentials::bridge::Lease>,
     child_exit_confirmed: AtomicBool,
     pub closed: AtomicBool,
     pub changes: broadcast::Sender<String>,
@@ -56,12 +57,17 @@ impl Connection {
     pub async fn open(config: &TransportConfig) -> Result<Arc<Self>, RunError> {
         let (changes, _) = broadcast::channel(128);
         match config {
-            TransportConfig::Stdio { executable, args, working_directory, environment } => {
+            TransportConfig::Stdio { executable, args, working_directory, environment }
+            | TransportConfig::ManagedStdio { executable, args, working_directory, environment, .. } => {
                 if !executable.is_absolute() { return Err(RunError::not_ready()); }
+                let helper=if let TransportConfig::ManagedStdio {bridge,..}=config {
+                    Some(bridge.start(crate::credentials::bridge::Policy::Runtime).await.map_err(|_|RunError::provider_auth())?)
+                } else {None};
                 let mut command = Command::new(executable);
                 command.args(args).env_clear().envs(environment)
                     .stdin(std::process::Stdio::piped()).stdout(std::process::Stdio::piped())
                     .stderr(std::process::Stdio::piped()).kill_on_drop(true);
+                if let Some(helper)=&helper {command.envs(helper.environment());}
                 if let Some(directory) = working_directory { command.current_dir(directory); }
                 // A dedicated process group permits owned descendant cleanup on Quit.
                 #[cfg(unix)]
@@ -74,7 +80,7 @@ impl Connection {
                 let connection = Arc::new(Self {
                     wire: Wire::Stdio(writer), sequence: AtomicU64::new(0), pending: Mutex::new(HashMap::new()),
                     session: RwLock::new(None), revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})),
-                    child: Mutex::new(Some(child)), child_exit_confirmed:AtomicBool::new(false), closed: AtomicBool::new(false), changes, close: CancelToken::new(),
+                    child: Mutex::new(Some(child)), helper, child_exit_confirmed:AtomicBool::new(false), closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
                 });
                 let mut opening=CloseOnDrop::new(connection.clone());
@@ -114,7 +120,7 @@ impl Connection {
                 let connection = Arc::new(Self {
                     wire: Wire::Remote { client, endpoint: endpoint.clone(), headers: RwLock::new(headers), sse: matches!(config, TransportConfig::Sse { .. }) },
                     sequence: AtomicU64::new(0), pending: Mutex::new(HashMap::new()), session: RwLock::new(None),
-                    revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})), child: Mutex::new(None), child_exit_confirmed:AtomicBool::new(false),
+                    revision: RwLock::new(LEGACY.into()), capabilities: RwLock::new(json!({})), child: Mutex::new(None), helper:None, child_exit_confirmed:AtomicBool::new(false),
                     closed: AtomicBool::new(false), changes, close: CancelToken::new(),
                     legacy_post_endpoint: RwLock::new(None), background: Mutex::new(vec![]),
                 });
@@ -383,6 +389,7 @@ impl Connection {
         let _=self.notify("notifications/cancelled",raw::raw(&json!({"requestId":id,"reason":"The owning Fetch request ended."}))).await;
     }
     pub async fn close(self:&Arc<Self>)->bool {
+        if let Some(helper)=&self.helper {helper.close();}
         self.close.cancel(); self.closed.store(true,Ordering::Release);
         let confirmed=if let Some(mut child)=self.child.lock().await.take() {
             #[cfg(unix)]
@@ -400,6 +407,7 @@ impl Connection {
     /// Delete only an idle context. Retain its Child until exit is confirmed so
     /// a bounded failed close remains retryable without guessing that it stopped.
     pub(super) async fn close_for_delete(self:&Arc<Self>)->bool{
+        if let Some(helper)=&self.helper {helper.close();}
         self.close.cancel();self.closed.store(true,Ordering::Release);
         if self.is_local()&&!self.child_exit_confirmed.load(Ordering::Acquire){
             let mut stored=self.child.lock().await;
@@ -423,6 +431,7 @@ impl Connection {
         self.fail_closed().await;true
     }
     async fn fail_closed(&self) {
+        if let Some(helper)=&self.helper {helper.close();}
         self.closed.store(true,Ordering::Release);
         for (_,pending) in self.pending.lock().await.drain() { let _=pending.reply.send(Err(RunError::unavailable())); }
     }

@@ -1,7 +1,10 @@
 //! Encrypted server-local bytes. Persistence is not provider authentication.
 pub(crate) mod document;
+pub(crate) mod bridge;
 #[cfg(test)]
 mod document_tests;
+#[cfg(test)]
+mod bridge_tests;
 use crate::storage::server_directory;
 use aes_gcm::{
     Aes256Gcm, KeyInit, Nonce,

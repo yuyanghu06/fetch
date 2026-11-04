@@ -523,3 +523,31 @@ Existing imported mcp-remote --header values are deliberately discarded during
 capture. New direct commands have no credential-value authority; reject those
 inputs before direct identity is saved. Existing source imports are unchanged.
 The user approved this POST-body extension and explicitly excluded UI work.
+
+
+## November 3 — Google helper bridge implementation evidence
+
+Current installed Google1.11.3 was re-inventoried under
+package-45d4c35aec3aba7fe57de2e84813db00 with unchanged helper hashes. Actual OAuth2
+uses googleapis171.4.0/googleapis-common8.0.3/nested google-auth-library10.5.0;
+top-level10.9.1 is only the JWT dependency. An awaited refreshTokenNoCache wrapper
+can persist/verify before returning; install replacement refresh_token before
+outer library code restores this.credentials.refresh_token. Initial helper save
+remains refresh-token-only. Reuse actual callback and exported authorize/runAuthFlow.
+
+Primary sources: [Node builtin export synchronization](https://nodejs.org/api/module.html#modulesyncbuiltinesmexports),
+[private IPC sockets](https://nodejs.org/api/net.html#ipc-support),
+[EventEmitter behavior](https://nodejs.org/api/events.html#asynchronous-vs-synchronous),
+[Google Drive about.get](https://developers.google.com/workspace/drive/api/reference/rest/v3/about/get)
+and [maintained Google OAuth2 source](https://github.com/googleapis/google-cloud-node/blob/main/core/packages/google-auth-library-nodejs/src/auth/oauth2client.ts).
+Maintained MIT [VS Code IPC](https://github.com/microsoft/vscode/blob/main/src/vs/base/parts/ipc/node/ipc.net.ts)
+provides a short-socket design reference; Apache-2.0
+[memfs](https://github.com/streamich/memfs) replaces far more filesystem behavior
+and adds unnecessary dependencies here. No implementation source copied or new
+runtime dependency selected; narrow provider adapter wraps the existing package.
+
+Fixture confinement was compared with [Anthropic's macOS sandbox source](https://github.com/anthropics/sandbox-runtime/blob/main/src/sandbox/macos-sandbox-utils.ts).
+Its broader Keychain/LaunchServices permissions are not adopted. Test Node runs
+use deny-default OS policy, owned files, system runtime mappings and one private
+Unix socket; file/TCP denial canaries must pass first. This is testing evidence,
+not a production sandbox feature or actual Google-account authentication proof.

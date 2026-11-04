@@ -1,5 +1,31 @@
 # Fetch milestone snapshot
 
+## November 3 — shared helper credential storage accepted
+
+User replied go to the shared bridge with Google first. Independent research
+reverified installed1.11.3 and its nested OAuth2 implementation; Planner completed
+the bounded lifecycle/storage/verification plan. Shared credential/runner core
+is implemented and inspected, including revocation/timeout corrections. Google/
+Manager source is integrated. Independent review found and corrected stored-proof,
+retry, config-invalidation and late process-failure issues.176 unique fixture
+checks pass, including OS-confined Node/actual managed-child lifecycle and raw
+MCP checks; locked native build passes (0.48s). Independent Tester/Evaluator
+ACCEPT. Initial sandbox/fixture failures were corrected in tests only. No real
+Google login/installed-helper account/native acceptance is claimed. Delivery next. Preserve callback ownership, per-server
+encrypted readback/CAS/renewal and service-access proof. No new public route/UI
+or personal credential authority. Existing unrelated edits are preserved; real
+provider account authentication remains unverified.
+[Researcher pass](history/2026-11-03_19-02-57-627115-researcher-helper-bridge-source-research.md).
+[Planner pass](history/2026-11-03_19-02-57-627390-planner-shared-helper-bridge-plan.md).
+[Core implementation pass](history/2026-11-03_19-08-28-176447-coder-shared-helper-storage-core.md).
+[Coder pass](history/2026-11-03_19-21-11-988354-coder-google-helper-adapter.md).
+[Orchestrator pass](history/2026-11-03_19-21-11-988889-orchestrator-helper-bridge-review-corrections.md).
+[Helper storage evidence](shared-mcp-authentication/helper-storage-evidence.md).
+[Tester pass](history/2026-11-03_19-28-52-403779-tester-helper-storage-fixture-acceptance.md).
+[Orchestrator pass](history/2026-11-03_19-28-52-405135-orchestrator-helper-storage-native-build.md).
+[Evaluator pass](history/2026-11-03_19-28-52-405501-evaluator-accept-shared-helper-storage.md).
+[Proposal pass](history/2026-11-03_18-18-43-063245-orchestrator-propose-shared-helper-credential-storage.md).
+
 ## November 3 — automatic config discovery
 
 Delivery found newer main commits; both sets of changes are merged with conflicts resolved. Integrated independent checks pass: 64 relevant cases, including 12 new, plus final native build. [Merged test evidence](history/2026-11-03_19-30-58-261856-tester-integrated-folder-discovery.md). Independent Evaluator ACCEPTs the merged result. [Final review](history/2026-11-03_19-31-19-393149-evaluator-integrated-discovery-acceptance.md). Delivered as369267a; local/live main refs matched and tree was clean. [Delivery record](history/2026-11-03_19-31-43-298030-orchestrator-deliver-folder-discovery.md). [Integration report](history/2026-11-03_19-29-25-940238-coder-integrate-newer-main.md).

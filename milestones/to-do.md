@@ -1,5 +1,18 @@
 # Fetch current work
 
+## Shared helper credential storage — November 3
+
+- [x] User approves shared helper credential-storage bridge, Google first.
+- [x] Reverify actual installed helper/dependencies and independently plan
+  storage/runner/renewal ownership without Manager-lock deadlock.
+- [x] Implement/inspect shared storage core and Runner lease lifecycle.
+- [x] Complete Google/Manager adapter and material proof/lifecycle review fixes;
+  preserve unrelated UI/startup work.
+- [x] Independently verify encrypted ACK/CAS, account isolation, lifecycle,
+  noninteractive startup, renewal/access proof and raw MCP:176 unique checks,
+  native build and Tester/Evaluator ACCEPT. Real Google login remains unrun.
+- [ ] Commit/push scoped shared helper storage/Google adapter and evidence.
+
 ## Automatic config discovery — November 3
 
 - [x] Verify the merge with newer installed-row/direct-install/deletion/authentication work;64 relevant cases and native build pass, independent Evaluator ACCEPT. Delivered as369267a; local/live main refs matched.
@@ -28,7 +41,7 @@
 - [x] Commit/push the accepted scoped router and evidence as4f18905; live remote
   matched. Pre-existing uncommitted documentation changes are preserved.
 - [x] User selects keep Google pending; complete shared router first. Installed
-  Google is1.11.3; encrypted helper/server storage bridge is deferred.
+  Google is1.11.3; bridge deferral superseded by the later go approval above.
 - [ ] After router completion, walk through selected behavior with the user.
 - [ ] Preserve requirement: multiple instances of the same MCP with independent
   authentication methods, credentials and accounts; design explicit duplication

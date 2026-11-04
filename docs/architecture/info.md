@@ -66,3 +66,10 @@ and upstream references. No public contract or duplication route is introduced.
 The November3 direct command/URL installation amendment at the end of
 api-contract.md is approved for backend implementation only. The user explicitly
 excluded UI work; the direct-install milestone tracks source and verification.
+
+
+The shared helper credential-storage section of authentication-engine.md was
+approved by the user on November3. It separates common encrypted persistence/renewal from helper
+callback/storage adapters and preserves the existing provider proof and ownership
+boundaries. Google is the first adapter;176 fixture checks, native compilation
+and independent acceptance pass. Actual Google account login remains untested.

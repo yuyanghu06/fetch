@@ -3,6 +3,9 @@ mod railway;
 mod provider_callback;
 mod remote_auth;
 mod authentication;
+mod helper_auth;
+#[cfg(test)]
+mod helper_auth_tests;
 #[cfg(test)]
 mod router_tests;
 mod bindings;
@@ -39,14 +42,16 @@ impl Default for Live {fn default()->Self{Self{auth:json!({"status":"unknown","e
 struct ProviderFlow {server:String, state:String, provider:Provider, verifier:String, client_id:String, token_endpoint:String, redirect:String, resource:Option<String>, remote_metadata:Option<remote_auth::Metadata>, revision:u64, expires:u64, _callback:Option<provider_callback::Lease>}
 pub struct Manager {
     pub repository:ServerRepository, pub credentials:Arc<CredentialStore>, pub runner:Arc<Runner>, pub installer:Arc<Installer>,
-    locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>, live:Mutex<BTreeMap<String,Live>>, attempts:Mutex<BTreeMap<(String,String),Value>>, flows:Mutex<BTreeMap<String,ProviderFlow>>, origin:RwLock<String>, http:reqwest::Client, stopping:AtomicBool, stop:Arc<Notify>,
+    locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>, live:Arc<Mutex<BTreeMap<String,Live>>>, helpers:Mutex<BTreeMap<String,helper_auth::Context>>, attempts:Mutex<BTreeMap<(String,String),Value>>, flows:Mutex<BTreeMap<String,ProviderFlow>>, origin:RwLock<String>, http:reqwest::Client, stopping:AtomicBool, stop:Arc<Notify>,
     #[cfg(test)]
     verification_test_endpoint:Option<String>,
     #[cfg(test)]
     verification_test_profile:Option<verification::Profile>,
+    #[cfg(test)]
+    helper_test_launch:Option<helper_auth::GoogleLaunch>,
 }
 impl Manager {
-    pub fn new(repository:ServerRepository,credentials:Arc<CredentialStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,credentials,runner,installer,locks:Mutex::new(BTreeMap::new()),live:Mutex::new(BTreeMap::new()),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),http:reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none()).build().expect("static provider HTTP configuration"),#[cfg(test)] verification_test_endpoint:None,#[cfg(test)] verification_test_profile:None})}
+    pub fn new(repository:ServerRepository,credentials:Arc<CredentialStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,credentials,runner,installer,locks:Mutex::new(BTreeMap::new()),live:Arc::new(Mutex::new(BTreeMap::new())),helpers:Mutex::new(BTreeMap::new()),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),http:reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none()).build().expect("static provider HTTP configuration"),#[cfg(test)] verification_test_endpoint:None,#[cfg(test)] verification_test_profile:None,#[cfg(test)] helper_test_launch:None})}
     pub fn set_origin(&self,origin:String){if let Ok(mut value)=self.origin.write(){*value=origin;}}
     async fn lock(&self,id:&str)->Arc<Mutex<()>>{self.locks.lock().await.entry(id.to_owned()).or_insert_with(||Arc::new(Mutex::new(()))).clone()}
     fn record(&self,id:&str)->Result<Value,ManagementError>{self.repository.get_saved(id).map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.ok_or_else(||ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."))}
@@ -90,7 +95,7 @@ impl Manager {
         }
     }
     async fn connection_succeeded(&self,id:&str,record:&Value,hashes:BTreeMap<String,String>)->Result<(),ManagementError>{
-        let document=self.secrets(id)?;
+        let document=if helper_auth::matches(record){self.helper_document(id).await?}else{self.secrets(id)?};
         let bindings=bindings::InputBindings::from_record(record)?;
         let known_requirement=self.verification_profile(record).is_some()||self.auth_provider(record)==Provider::Railway;
         let missing=missing_binding(record,document["oauth"]["access_token"].is_string())
@@ -102,6 +107,7 @@ impl Manager {
         state.applied=Some(record["config"].clone());state.applied_manual_hashes=hashes;state.oauth_restart_pending=false;state.runtime_error=None;
         if !state.authenticating{
             if missing{state.auth=json!({"status":"required","error":null});}
+            else if helper_auth::matches(record) && document["helper"]["adapter"]==helper_auth::ADAPTER && document["helper"]["revision"].as_u64().is_some_and(|revision|document["helper"]["verified_revision"].as_u64()==Some(revision)){state.auth=json!({"status":"authenticated","error":null});}
             else if credential_free{
                 state.auth=json!({"status":"not_required","error":null});
             }
@@ -193,8 +199,11 @@ impl Manager {
             record["config"]=next.clone();
             if launch_changed {record["restart_required"]=json!(live.applied.as_ref().is_some_and(|applied|launch_config(applied)!=launch_config(&next)) || pending_manual(&live,&next) || (remote && live.applied.is_none()));}
             self.repository.save(id,&record).map_err(|_|ManagementError::new(500,"CONFIG_WRITE_FAILED","The complete configuration could not be safely saved. Read server state before retrying."))?;
-            let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.revision=state.revision.wrapping_add(1);if launch_changed{state.auth=json!({"status":"unknown","error":null});}drop(states);
+            if launch_changed{self.revoke_helper(id).await;}
+            let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.revision=state.revision.wrapping_add(1);let revision=state.revision;if launch_changed{state.auth=json!({"status":"unknown","error":null});}drop(states);
+            if !launch_changed{if let Some(context)=self.helpers.lock().await.get_mut(id){context.revision=revision;}}
             let _=self.runner.update_execution(id,policy(&next)?).await;
+            if launch_changed&&helper_auth::matches(&record){if let Err(mut error)=self.invalidate_helper_proof(id).await{error.message="The configuration was saved, but its previous Google credential proof could not be cleared safely. Authentication is unknown; review protected storage before reconnecting.";return Err(error);}}
         }
         let steps=if let Some(restart)=live.restart{let attempt=self.attempts.lock().await.get(&(id.to_owned(),restart.clone())).cloned();if attempt.is_some_and(|v|v["status"]=="restarting"){vec![restart_step(id,&restart)]}else if launch_changed||record["restart_required"]==true{vec![settings_step("Settings were saved. Authentication evidence must be established for changed launch settings; Restart applies pending changes.")]}else{vec![]}}else if launch_changed||record["restart_required"]==true{vec![settings_step("Settings were saved. Review authentication and use Connect or Restart to apply them.")]}else{vec![]};
         Ok(json!({"server_id":id,"status":"ok","changed":changed,"restart_required":record["restart_required"],"next_steps":steps}))
@@ -249,7 +258,9 @@ impl Manager {
     async fn phase(&self,id:&str,attempt:&str,phase:&str,remote:bool){let mut value=json!({"restart_id":attempt,"status":"restarting","phase":phase});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.to_owned(),attempt.to_owned()),value);}
     async fn failed_restart(&self,id:&str,attempt:&str,code:&str,message:&str,remote:bool){self.connection_failed(id,code,message).await;let mut value=json!({"restart_id":attempt,"status":"failed","error":{"code":code,"message":message}});if remote{value["operation"]=json!("reconnect");}self.attempts.lock().await.insert((id.to_owned(),attempt.to_owned()),value);}
     async fn route(&self,record:&Value)->Result<ServerRoute,ManagementError>{
-        let id=record["server_id"].as_str().ok_or_else(invalid)?;let config=&record["config"];let document=self.secrets(id)?;
+        let id=record["server_id"].as_str().ok_or_else(invalid)?;let config=&record["config"];
+        if helper_auth::matches(record){return Ok(ServerRoute{server_id:id.to_owned(),transport:self.helper_transport(record).await?,execution:policy(config)?});}
+        let document=self.secrets(id)?;
         {let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.current_manual_hashes=manual_hashes(&document);state.oauth_present=document["oauth"]["access_token"].is_string();}
         let railway=self.auth_provider(record)==Provider::Railway;
         let railway_token=if railway{
@@ -305,7 +316,7 @@ impl Manager {
             self.schedule_refresh(id.to_owned()).await;
         }}
     }
-    pub async fn shutdown(&self){self.stopping.store(true,Ordering::SeqCst);self.stop.notify_waiters();self.installer.shutdown();self.flows.lock().await.clear();self.runner.shutdown().await;}
+    pub async fn shutdown(&self){self.stopping.store(true,Ordering::SeqCst);self.stop.notify_waiters();self.installer.shutdown();self.flows.lock().await.clear();self.revoke_helpers().await;self.runner.shutdown().await;}
     fn secrets(&self,id:&str)->Result<Value,ManagementError>{let value=self.credentials.read_json(id).map_err(|_|store_error())?.unwrap_or_else(||json!({"manual":{},"oauth":null}));if !value["manual"].is_object(){return Err(store_error());}Ok(value)}
     fn update_secrets(&self,id:&str,update:impl FnOnce(&mut Value)->Result<(),CredentialError>)->Result<JsonUpdate,ManagementError>{self.credentials.update_json(id,&json!({"manual":{},"oauth":null}),|document|{if !document["manual"].is_object(){return Err(CredentialError::InvalidDocument);}update(document)}).map_err(|_|store_error())}
     pub async fn credential_fingerprint(&self,id:&str,patch:&Value)->Result<String,ManagementError>{let gate=self.lock(id).await;let _guard=gate.lock().await;self.fingerprint(id,patch)}
@@ -321,7 +332,10 @@ impl Manager {
         let mut names=BTreeSet::new();let mut updates=serde_json::Map::new();let mut removals=Vec::new();let mut affected=Vec::new();
         for item in set{let o=item.as_object().filter(|o|o.len()==2).ok_or_else(invalid)?;let name=o.get("name").and_then(Value::as_str).filter(|n|credential_name(n)).ok_or_else(invalid_credential)?;let value=o.get("value").and_then(Value::as_str).filter(|v|!v.contains('\0')&&v.len()<=256*1024).ok_or_else(invalid_credential)?;if !names.insert(name.to_owned()){return Err(invalid());}updates.insert(name.to_owned(),json!(value));affected.push(json!({"name":name,"status":"stored"}));}
         for item in remove{let name=item.as_str().filter(|n|credential_name(n)).ok_or_else(invalid_credential)?;if !names.insert(name.to_owned()){return Err(invalid());}removals.push(name.to_owned());affected.push(json!({"name":name,"status":"missing"}));}
-        let updated=self.update_secrets(id,|document|document::update_section(document,"manual",&updates,&removals).map_err(|_|CredentialError::InvalidDocument))?;
+        let current=self.secrets(id)?;
+        let helper_changed=helper_auth::matches(&record)&&(updates.iter().any(|(name,value)|current["manual"][name]!=*value)||removals.iter().any(|name|current["manual"].get(name).is_some()));
+        if helper_changed{self.revoke_helper(id).await;}
+        let updated=self.update_secrets(id,|document|{document::update_section(document,"manual",&updates,&removals).map_err(|_|CredentialError::InvalidDocument)?;if helper_changed&&document["helper"].is_object(){document["helper"]["verified_revision"]=Value::Null;}Ok(())})?;
         let document=updated.document;let changed=updated.changed;
         if changed{let mut credentials=record["credentials"].as_array().cloned().unwrap_or_default();for item in &affected{if let Some(old)=credentials.iter_mut().find(|v|v["name"]==item["name"]){*old=item.clone();}else{credentials.push(item.clone());}}record["credentials"]=json!(credentials);let mut updated_live=live.clone();updated_live.current_manual_hashes=manual_hashes(&document);record["restart_required"]=json!(updated_live.applied.as_ref().is_some_and(|applied|launch_config(applied)!=launch_config(&record["config"])) || pending_manual(&updated_live,&record["config"]) || (live.applied.is_none() && record["config"]["kind"]=="remote"));{let mut states=self.live.lock().await;let state=states.entry(id.to_owned()).or_default();state.auth=json!({"status":"unknown","error":null});state.current_manual_hashes=manual_hashes(&document);state.revision=state.revision.wrapping_add(1);}self.repository.save(id,&record).map_err(|_|store_error())?;}
         // Every submitted authentication value must participate in verification of
@@ -345,11 +359,13 @@ impl Manager {
         provider_for_profile(record,self.verification_profile(record).as_ref())
     }
     fn has_stored_authentication(&self,record:&Value,document:&Value)->Result<bool,ManagementError>{
+        if helper_auth::matches(record){return Ok(document["helper"]["adapter"]==helper_auth::ADAPTER&&(document["helper"]["payload"]["refresh_token"].is_string()||document["helper"]["payload"]["access_token"].is_string()));}
         let inputs=bindings::InputBindings::from_record(record).map_err(|_|verification_error())?;
         let references=self.verification_profile(record).map(|profile|profile.manual_references(&inputs)).unwrap_or_default();
         Ok(document["oauth"]["access_token"].is_string() || references.iter().any(|entry|document["manual"][entry].is_string()))
     }
     async fn verify_stored_with_manual(&self,record:&Value,submitted:&[String])->Result<(),ManagementError>{
+        if helper_auth::matches(record){let assigned=helper_auth::input_names(record)?;if submitted.iter().any(|name|!assigned.contains(name)){return Err(verification_error());}self.prepare_helper_access(record,true).await?;return Ok(());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let document=self.secrets(id)?;
         if self.auth_provider(record)==Provider::Railway&&(document["oauth"]["provider"]!="railway"
             ||document["oauth"]["expires_at"].as_u64().is_none_or(|expiry|expiry<=now())){return Err(verification_error());}
@@ -379,7 +395,7 @@ impl Manager {
         let route=authentication::dispatch(&record,provider)?;
         match route {
             authentication::Route::NotRequired=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"not_required","error":null});return Ok(auth_response(id,"not_required",vec![]));},
-            authentication::Route::LocalHelperPending=>{self.live.lock().await.entry(id.to_owned()).or_default().auth=json!({"status":"unknown","error":null});return Ok(auth_response(id,"unknown",vec![settings_step("Google's installed login helper requires an encrypted credential handoff before Fetch can use it. That integration is pending; Fetch has not run the helper or verified this account.")]));},
+            authentication::Route::LocalHelper=>{return self.authenticate_helper_locked(id,record,live).await;},
             authentication::Route::Unsupported=>{return Ok(self.unsupported_authentication(id).await);},
             authentication::Route::Credentials if self.verification_profile(&record).is_none()=>{return Ok(self.unsupported_authentication(id).await);},
             _=>{}
@@ -449,9 +465,7 @@ impl Manager {
         if remote_metadata.is_some(){remote_auth::validate_browser_destination(target.as_str()).await?;}
         drop(guard);
         if self.stopping.load(Ordering::SeqCst){self.flows.lock().await.remove(attempt);return Err(auth_required());}
-        let mut browser=tokio::process::Command::new("/usr/bin/open");browser.arg(target.as_str()).stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).kill_on_drop(true);
-        let opened=tokio::time::timeout(Duration::from_secs(5),browser.status()).await;
-        if !matches!(opened,Ok(Ok(s)) if s.success()){self.flows.lock().await.remove(attempt);return Err(auth_required());}
+        if let Err(error)=authentication::open_browser(target.as_str()).await{self.flows.lock().await.remove(attempt);return Err(error);}
         let manager=Arc::downgrade(self);let server=id.to_owned();let state=attempt.to_owned();let expires=live.auth_deadline;
         let request_id=crate::diagnostics::current_request_id();
         tokio::spawn(crate::diagnostics::with_request_context(request_id,async move{tokio::time::sleep(Duration::from_secs(expires.saturating_sub(now()))).await;
@@ -522,6 +536,7 @@ impl Manager {
     }
     async fn refresh_owned(&self,record:&Value)->Result<(),ManagementError>{
         if self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
+        if helper_auth::matches(record){self.prepare_helper_access(record,false).await?;return Ok(());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;let document=self.secrets(id)?;let oauth=document["oauth"].clone();
         let provider=self.auth_provider(record);
         // Railway rotates refresh tokens. An interrupted exchange must never
@@ -642,6 +657,7 @@ fn remote_headers(config:&Value,document:&Value)->Result<BTreeMap<String,String>
 fn reserved_header(name:&str)->bool{let lower=name.to_ascii_lowercase();["host","content-type","content-length","accept","connection","origin","cookie","transfer-encoding","te","trailer","upgrade"].contains(&lower.as_str())||lower.starts_with("mcp-")||lower.starts_with("proxy-")}
 fn missing_binding(record:&Value,oauth:bool)->bool{
     record["config"]["environment"].as_array().into_iter().flatten()
+        .filter(|v|!helper_auth::overridden_binding(record,v["name"].as_str().unwrap_or("")))
         .filter(|v|!(oauth&&provider_kind(record)==Provider::Railway&&v["name"].as_str().is_some_and(|name|["RAILWAY_API_TOKEN","RAILWAY_TOKEN","HOME","PATH","RAILWAY_NO_AUTO_UPDATE","RAILWAY_NO_TELEMETRY"].contains(&name))))
         .chain(record["config"]["connection"]["headers"].as_array().into_iter().flatten().filter(|v|!(oauth&&v["name"].as_str().is_some_and(|s|s.eq_ignore_ascii_case("Authorization")))))
         .filter_map(|v|v["credential_ref"].as_str()).any(|name|!record["credentials"].as_array().is_some_and(|a|a.iter().any(|entry|entry["name"]==name&&entry["status"]=="stored")))

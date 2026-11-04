@@ -36,6 +36,7 @@ impl ExecutionPolicy {
 #[derive(Clone)]
 pub enum TransportConfig {
     Stdio{executable:PathBuf,args:Vec<String>,working_directory:Option<PathBuf>,environment:BTreeMap<String,String>},
+    ManagedStdio{executable:PathBuf,args:Vec<String>,working_directory:Option<PathBuf>,environment:BTreeMap<String,String>,bridge:crate::credentials::bridge::Factory},
     Http{endpoint:String,headers:BTreeMap<String,String>},
     Sse{endpoint:String,headers:BTreeMap<String,String>},
 }

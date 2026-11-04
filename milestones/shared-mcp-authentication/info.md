@@ -1,5 +1,12 @@
 # Shared asynchronous MCP authentication
 
+Current November3 state: shared credential bridge and Google1.11.3 adapter are
+implemented.176 unique fixture checks, native build and independent Tester/
+Evaluator ACCEPT. [Storage evidence](helper-storage-evidence.md) includes initial
+fixture failures/corrections, cleanup and limits. Real Google consent/account/
+native acceptance remains untested. This supersedes earlier Google deferral
+notes below; broader authentication work remains unfinished. Scoped delivery next.
+
 User request November 3: main agent must implement this after delivering the
 delete-server route. Side conversation researched/recorded direction only.
 Status: deletion and × delivered. User completed scope sync: select shared startup/
@@ -59,3 +66,19 @@ instances of the same MCP must support independent methods, credentials and
 accounts (different Google accounts are the concrete example). Preserve
 server-ID ownership; do not silently change same-source installation reuse.
 User wants a behavior walkthrough after the routing implementation/checks.
+
+## Current November3 authorization — shared helper bridge
+
+User replied go to the proposed reusable bridge. The earlier Google deferral
+is superseded for implementation of this bounded shared core and first Google
+adapter. Existing helper/callback retained; same per-server encrypted canonical
+helper payload and acknowledged renewal, with stored-access verification. No
+public route/UI/engine/plaintext fallback or personal credential authority added.
+
+Independent Researcher reverified installed1.11.3 from its current package and
+actual nested OAuth2 dependency. Planner identifies separate lease gates to avoid
+Manager startup-lock deadlock, per-process Runner cleanup, CAS/readback and
+verification-before-runtime-renewal ACK. Core Coder owns credentials bridge/JS
+client and minimal runner attachment; Adapter Coder owns Google/bootstrap and
+Manager/verifier integration; independent Tester owns focused fixtures. No
+actual provider/helper account login has run in this pass.

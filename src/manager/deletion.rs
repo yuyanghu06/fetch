@@ -38,6 +38,7 @@ impl Manager {
             else{ManagementError::new(503,"SERVER_DELETE_UNAVAILABLE","Fetch cannot safely close this server right now.")}
         })?;
         deletion.stop().await.map_err(|_|ManagementError::new(503,"SERVER_STOP_FAILED","The idle upstream could not be confirmed closed within five seconds. Saved server data was preserved; review its state before retrying deletion."))?;
+        self.revoke_helper(id).await;
         let repository=self.repository.clone();let credentials=self.credentials.clone();let server_id=id.to_owned();
         // Package/home traversal and Keychain operations must not block the UI's
         // async executor. Config remains the final removed file for safe retries.

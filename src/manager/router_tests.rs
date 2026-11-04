@@ -47,22 +47,22 @@ fn local_requirements_choose_credentials_without_guessing_a_cli_login_command() 
 }
 
 #[tokio::test]
-async fn google_accounts_remain_pending_without_running_helper_or_rewriting_their_saved_entries() {
+async fn google_accounts_without_assigned_app_inputs_require_settings_without_running_helper_or_rewriting_entries() {
     let mut provider = MockProvider::new().await;
     let fixture = Fixture::new(&provider.endpoint);
     for id in ["google-personal", "google-work"] {
         fixture.local(id, "@a-bonus/google-docs-mcp", &[("GOOGLE_CLIENT_ID", "client-id"), ("GOOGLE_CLIENT_SECRET", "client-secret")],
-            json!({"client-id":format!("fixture-{id}-id"),"client-secret":format!("fixture-{id}-secret")}));
+            json!({"client-id":format!("fixture-{id}-id")}));
         let mut record = fixture.manager.record(id).unwrap();
         record["config"]["package"]["installed_version"] = json!("1.11.3");
         record["config"]["executable"] = json!("/private/disposable/not-executed/node");
         record["config"]["args"] = json!(["/private/disposable/not-executed/google-docs-mcp/dist/index.js"]);
         fixture.manager.repository.save(id, &record).unwrap();
-        assert_eq!(authentication::dispatch(&record, Provider::Unknown).unwrap(), Route::LocalHelperPending);
+        assert_eq!(authentication::dispatch(&record, Provider::Unknown).unwrap(), Route::LocalHelper);
         let before = fixture.manager.credentials.read(id).unwrap().unwrap();
         let (status, result) = done(fixture.post(id)).await;
         assert_eq!(status, StatusCode::OK);
-        assert_eq!(result["status"], "unknown");
+        assert_eq!(result["status"], "required");
         assert_eq!(fixture.manager.credentials.read(id).unwrap().unwrap().expose(), before.expose());
         clean_response(&result, &[&format!("fixture-{id}-id"), &format!("fixture-{id}-secret")]);
     }

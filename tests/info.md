@@ -72,3 +72,14 @@ runs. New14 plus128 existing checks pass (142 unique); native binary builds.
 See milestones/direct-install-inputs/evidence.md for exact commands and limits.
 
 Merged-main follow-up: two additional installed-row checks now cover folder-discovered saved associations and native selection guards. Final integrated checks pass 64 distinct cases:24 backend,7 import,8 direct-install,18 UI and7 discovery units. This includes12 new cases for the feature; native build passes. Existing incoming deletion latency logs are preserved rather than rewritten for whitespace.
+
+## Shared helper credential storage
+
+Core bridge_tests.rs and manager/helper_auth_tests.rs add21 checks around the
+real encrypted store/shared channel/actual Google bootstrap with synthetic
+modules. tests/helper_bridge documents the OS-confined Node peers and support.
+176 unique selected checks pass; final managed-child test asserts raw results,
+startup authentication and PID/socket cleanup. No real Google/native/account
+execution. Initial sandbox/bootstrap and same-owner fixture failures were fixed
+in tests only; exact commands and cleanup are in the shared authentication
+helper-storage evidence.

@@ -1,0 +1,10 @@
+# Helper bridge review corrections
+
+- Local timestamp / acting role / milestone: 2026-11-03T19:21:11.988889-05:00 / orchestrator / shared-mcp-authentication.
+- Requested scope: Approved shared helper credential bridge, Google first, preserving callback ownership/encrypted access proof and responsiveness.
+- Starting repository state: Core source stable; Google integration in progress; unrelated source/docs retained outside this pass.
+- Work performed / changed files: Root inspected actual core/adapter source and integrated two independent Evaluator findings in credentials/bridge.rs: verify clears previous verified marker with same-revision CAS before service recheck, and failure callbacks carry an exact process-session-active predicate. Manager rechecks that predicate after acquiring live state so an old lease failure cannot overwrite replacement success. Adapter Coder corrected config persistence/error ordering and runtime-owner preservation under execution-only changes. No optional behavior or public contract added. Initial core tests8/9 passed; confined Node preflight aborted before client code. Tester diagnosed fixture startup permission (literal root-directory read plus narrow executable mappings); corrected confined client test1/1 passes with outside file/TCP denial canaries. Full final fixture/build/evaluation remains in progress.
+- Decisions: No new public route/UI/auth engine/plaintext fallback or personal credential authority. Google is a compatible adapter to shared encrypted storage, not universal automatic helper support.
+- Checks and evidence: Actual source inspection and stated preliminary fixtures only. No real provider/helper account/native/client action; source Coder ran no tests/build.
+- Resulting state / acceptance: Source integrated with material review corrections; final independent checks/evaluation pending.
+- Remaining work and handoff: Finish OS-confined Node/Manager/core/regression cases, native build and independent acceptance; distinguish fixture evidence from real account consent.

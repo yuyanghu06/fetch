@@ -1237,3 +1237,30 @@ reuse/errors and existing authentication/credential boundaries. Existing config
 imports and Google deferral stay. No new route, install screen or duplicate UI.
 
 Delivery integration: GitHub main had newer installed-row/direct-install/deletion/authentication changes. A normal merge preserves them and the folder discovery change. Final64 relevant tests (12 new), native build and independent merged evaluation pass. The existing discovery request can use `config_path=/Users/you/.codex`; individual config files are optional overrides.
+
+## November 3, 2026 — Reusable helper credential-storage proposal
+
+User asks whether the missing Google callback/storage integration can be shared
+with other servers. Recommended design reuses current per-server encrypted
+storage through a shared private helper/server channel; small adapters connect
+each supported helper's credential format/storage hook and existing callback.
+Renewal must use the same store and preserve newer updates; successful encrypted
+readback plus applicable saved-access verification remains required. The callback
+usually returns a temporary code; the resulting credentials are stored encrypted.
+Compatibility depends on a usable storage interface; server-owned remote tokens
+remain with that server. This is proposed, not implementation approval or a claim
+that every callback-based server works automatically. Google remains pending.
+See docs/architecture/authentication-engine.md for the complete proposed boundary.
+
+## November 3, 2026 — Implement the shared helper credential bridge
+
+User replied go to the reusable helper credential-storage design, with Google
+as first adapter. This supersedes the earlier Google implementation deferral for
+this bounded work. Preserve its existing helper/callback, same per-server
+encrypted store, renewal consistency, saved-access check, async ownership and
+safe errors. No new public auth route/UI/login engine, plaintext token file,
+personal credential migration/use or everyday client change is selected.
+Current installed Google1.11.3 reverified under new package directory with the
+same auth.js hash. Its OAuth2 uses googleapis's nested auth-library10.5.0, not
+top-level10.9.1; await persisted renewal before returning tokens. Actual account
+login will still need authorized dedicated credentials and protected evidence.
