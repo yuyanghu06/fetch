@@ -1,0 +1,83 @@
+
+running 1 test
+test google_package_prepare_and_delete_latency_demo ... DELETE_DEMO {"details":{"connect_requested":false,"installation_id":"installation-ff5750b31fc86ac122d2d77486eca30e","package_spec":"@a-bonus/google-docs-mcp@1.11.3"},"stage":"installation_accepted"}
+DELETE_DEMO {"details":{"connect_verified":false,"echo_verified":false,"elapsed_ms":21487,"files":13871,"folders":1798,"package_version":"1.11.3","server_id":"server-10cbd501ceb3024d17cbd941e0e40679","tools":null},"stage":"installation_prepared"}
+DELETE_DEMO {"details":{"files":13871,"folders":1798},"stage":"delete_started"}
+DELETE_DEMO {"details":{"elapsed_ms":1073,"package_exists":true,"remaining_files":13666,"remaining_folders":1790},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":2146,"package_exists":true,"remaining_files":13435,"remaining_folders":1779},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":3219,"package_exists":true,"remaining_files":13221,"remaining_folders":1760},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":4294,"package_exists":true,"remaining_files":13029,"remaining_folders":1721},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":5385,"package_exists":true,"remaining_files":12825,"remaining_folders":1690},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":6465,"package_exists":true,"remaining_files":12624,"remaining_folders":1671},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":7540,"package_exists":true,"remaining_files":12441,"remaining_folders":1623},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":8614,"package_exists":true,"remaining_files":12215,"remaining_folders":1615},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":9689,"package_exists":true,"remaining_files":11986,"remaining_folders":1597},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":10755,"package_exists":true,"remaining_files":11786,"remaining_folders":1555},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":11831,"package_exists":true,"remaining_files":11593,"remaining_folders":1517},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":12906,"package_exists":true,"remaining_files":11375,"remaining_folders":1488},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":13983,"package_exists":true,"remaining_files":11131,"remaining_folders":1487},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":15054,"package_exists":true,"remaining_files":10897,"remaining_folders":1477},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":16125,"package_exists":true,"remaining_files":10668,"remaining_folders":1467},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":17191,"package_exists":true,"remaining_files":10457,"remaining_folders":1440},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":18257,"package_exists":true,"remaining_files":10267,"remaining_folders":1402},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":19333,"package_exists":true,"remaining_files":10094,"remaining_folders":1346},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":20405,"package_exists":true,"remaining_files":9892,"remaining_folders":1322},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":21446,"package_exists":true,"remaining_files":9704,"remaining_folders":1287},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":22515,"package_exists":true,"remaining_files":9548,"remaining_folders":1211},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":23575,"package_exists":true,"remaining_files":9355,"remaining_folders":1159},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":24625,"package_exists":true,"remaining_files":9184,"remaining_folders":1093},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":25690,"package_exists":true,"remaining_files":8995,"remaining_folders":1040},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":26748,"package_exists":true,"remaining_files":8766,"remaining_folders":1031},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":27818,"package_exists":true,"remaining_files":8533,"remaining_folders":1028},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":28886,"package_exists":true,"remaining_files":8309,"remaining_folders":1016},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":29954,"package_exists":true,"remaining_files":8100,"remaining_folders":1002},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":31018,"package_exists":true,"remaining_files":7891,"remaining_folders":995},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":32084,"package_exists":true,"remaining_files":7680,"remaining_folders":994},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":33157,"package_exists":true,"remaining_files":7478,"remaining_folders":984},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":34223,"package_exists":true,"remaining_files":7272,"remaining_folders":978},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":35296,"package_exists":true,"remaining_files":7071,"remaining_folders":961},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":36364,"package_exists":true,"remaining_files":6861,"remaining_folders":954},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":37431,"package_exists":true,"remaining_files":6658,"remaining_folders":941},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":38498,"package_exists":true,"remaining_files":6448,"remaining_folders":932},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":39558,"package_exists":true,"remaining_files":6236,"remaining_folders":923},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":40623,"package_exists":true,"remaining_files":6020,"remaining_folders":922},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":41689,"package_exists":true,"remaining_files":5809,"remaining_folders":912},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":42744,"package_exists":true,"remaining_files":5599,"remaining_folders":905},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":43807,"package_exists":true,"remaining_files":5413,"remaining_folders":874},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":44836,"package_exists":true,"remaining_files":5235,"remaining_folders":837},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":45887,"package_exists":true,"remaining_files":5184,"remaining_folders":826},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":46937,"package_exists":true,"remaining_files":5122,"remaining_folders":813},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":47992,"package_exists":true,"remaining_files":5059,"remaining_folders":800},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":49039,"package_exists":true,"remaining_files":4994,"remaining_folders":787},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":50081,"package_exists":true,"remaining_files":4808,"remaining_folders":758},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":51121,"package_exists":true,"remaining_files":4622,"remaining_folders":724},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":52160,"package_exists":true,"remaining_files":4423,"remaining_folders":689},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":53201,"package_exists":true,"remaining_files":4229,"remaining_folders":651},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":54242,"package_exists":true,"remaining_files":4036,"remaining_folders":618},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":55281,"package_exists":true,"remaining_files":3844,"remaining_folders":581},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":56319,"package_exists":true,"remaining_files":3642,"remaining_folders":553},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":57350,"package_exists":true,"remaining_files":3454,"remaining_folders":509},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":58375,"package_exists":true,"remaining_files":3259,"remaining_folders":473},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":59406,"package_exists":true,"remaining_files":3058,"remaining_folders":441},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":60439,"package_exists":true,"remaining_files":2866,"remaining_folders":406},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":61461,"package_exists":true,"remaining_files":2661,"remaining_folders":381},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":62484,"package_exists":true,"remaining_files":2486,"remaining_folders":340},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":63506,"package_exists":true,"remaining_files":2304,"remaining_folders":308},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":64531,"package_exists":true,"remaining_files":2112,"remaining_folders":273},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":65554,"package_exists":true,"remaining_files":1907,"remaining_folders":242},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":66575,"package_exists":true,"remaining_files":1707,"remaining_folders":222},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":67584,"package_exists":true,"remaining_files":1485,"remaining_folders":209},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":68607,"package_exists":true,"remaining_files":1262,"remaining_folders":203},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":69625,"package_exists":true,"remaining_files":1062,"remaining_folders":167},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":70640,"package_exists":true,"remaining_files":881,"remaining_folders":120},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":71654,"package_exists":true,"remaining_files":659,"remaining_folders":109},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":72665,"package_exists":true,"remaining_files":457,"remaining_folders":86},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":73673,"package_exists":true,"remaining_files":265,"remaining_folders":56},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":74678,"package_exists":true,"remaining_files":88,"remaining_folders":24},"stage":"deleting"}
+DELETE_DEMO {"details":{"elapsed_ms":75210,"keychain_used":false},"stage":"package_cleanup_finished_before_fixture_key_delete"}
+DELETE_DEMO {"details":{"elapsed_ms":75225,"response":{"next_steps":[],"server_id":"server-10cbd501ceb3024d17cbd941e0e40679","status":"deleted"}},"stage":"delete_completed"}
+DELETE_DEMO {"details":{"keychain_used":false,"package_removed":true,"runner_removed":true,"runtime_preserved":true,"saved_record_removed":true,"source_unchanged":true,"unrelated_file_unchanged":true},"stage":"preservation_verified"}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 96.72s
+

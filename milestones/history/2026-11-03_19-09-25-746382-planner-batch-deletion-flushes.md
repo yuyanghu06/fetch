@@ -1,0 +1,10 @@
+# Plan the approved deletion speed fix
+
+- Local timestamp / acting role / milestone: November 3, 2026 / independent Planner; serialized by Orchestrator / delete-server.
+- Requested scope: User replied do it to batching disk flushes and measuring the real Google saving.
+- Starting repository state: Baseline Google75.225s and Everything20.400s recorded. Concurrent helper-bridge/manager/runner/UI/docs changes preserved; storage source currently unchanged. Shared role/workflow files remain absent; session team instructions used.
+- Work performed / changed files: Read-only plan reviewed recursive cleanup and existing durability/retry behavior. Orchestrator records plan and assigns exclusive ownership: Coder storage/mod.rs; Tester storage/deletion_tests.rs and temporary confined fixtures; Orchestrator shared docs; Evaluator read-only.
+- Decisions: Wrapper performs one held-parent sync after private recursive unflushed helper succeeds, including missing subtree retry. Helper preserves current descriptor/nofollow/ownership/inode/device/depth/path checks. remove_file, credential/config flushing and final record removal remain unchanged. Partial traversal error remains failure with record retained; no new product route/behavior scope.
+- Checks and evidence: Inspected current remove_installation_package, clear_server_private_state, Directory removal and existing storage tests. Source implementation not yet begun at planning completion.
+- Resulting state / acceptance: Bounded implementation plan accepted. Meaningful tests: nested/symlink containment, sibling/runtime preservation, missing retry, private cleanup preserving config. Native compilation and actual isolated Google repeat required; report observed time, not a universal timing assertion.
+- Remaining work and handoff: Implement, independently test/build, rerun Google and live Everything shutdown/delete in fresh confined fixtures, review, clean fixtures and record actual speedup. Preserve personal services/settings/accounts.

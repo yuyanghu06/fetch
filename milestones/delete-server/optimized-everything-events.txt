@@ -1,0 +1,12 @@
+
+running 1 test
+test real_install_echo_and_delete_latency_demo ... DELETE_DEMO {"details":{"connect_requested":true,"installation_id":"installation-c2226ac8a14bc2427421bf7e430a2b63","package_spec":"@modelcontextprotocol/server-everything@2026.8.31"},"stage":"installation_accepted"}
+DELETE_DEMO {"details":{"connect_verified":true,"echo_verified":true,"elapsed_ms":3800,"files":3870,"folders":611,"package_version":"2026.8.31","server_id":"server-bc580ecdf8093a43908ca9bf89b1e0ef","tools":13},"stage":"installed_and_echo_verified"}
+DELETE_DEMO {"details":{"files":3870,"folders":611},"stage":"delete_started"}
+DELETE_DEMO {"details":{"elapsed_ms":238,"keychain_used":false},"stage":"package_cleanup_finished_before_fixture_key_delete"}
+DELETE_DEMO {"details":{"elapsed_ms":262,"response":{"next_steps":[],"server_id":"server-bc580ecdf8093a43908ca9bf89b1e0ef","status":"deleted"}},"stage":"delete_completed"}
+DELETE_DEMO {"details":{"keychain_used":false,"package_removed":true,"runner_removed":true,"runtime_preserved":true,"saved_record_removed":true,"source_unchanged":true,"unrelated_file_unchanged":true},"stage":"preservation_verified"}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 4.07s
+

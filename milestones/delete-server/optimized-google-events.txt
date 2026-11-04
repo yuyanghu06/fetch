@@ -1,0 +1,12 @@
+
+running 1 test
+test google_package_prepare_and_delete_latency_demo ... DELETE_DEMO {"details":{"connect_requested":false,"installation_id":"installation-21e9b27ee436a7ca9a616eec6b644881","package_spec":"@a-bonus/google-docs-mcp@1.11.3"},"stage":"installation_accepted"}
+DELETE_DEMO {"details":{"connect_verified":false,"echo_verified":false,"elapsed_ms":20717,"files":13871,"folders":1798,"package_version":"1.11.3","server_id":"server-31705ae2349c6e343e2107b2f0b2cfff","tools":null},"stage":"installation_prepared"}
+DELETE_DEMO {"details":{"files":13871,"folders":1798},"stage":"delete_started"}
+DELETE_DEMO {"details":{"elapsed_ms":842,"keychain_used":false},"stage":"package_cleanup_finished_before_fixture_key_delete"}
+DELETE_DEMO {"details":{"elapsed_ms":889,"response":{"next_steps":[],"server_id":"server-31705ae2349c6e343e2107b2f0b2cfff","status":"deleted"}},"stage":"delete_completed"}
+DELETE_DEMO {"details":{"keychain_used":false,"package_removed":true,"runner_removed":true,"runtime_preserved":true,"saved_record_removed":true,"source_unchanged":true,"unrelated_file_unchanged":true},"stage":"preservation_verified"}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 21.61s
+

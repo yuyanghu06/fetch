@@ -1,4 +1,6 @@
 //! Private, atomic local records. No API caller can write through this module directly.
+#[cfg(test)]
+mod deletion_tests;
 use rand::{RngCore, rngs::OsRng};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -320,6 +322,12 @@ impl Directory {
         self.file.sync_all().map_err(|_|StorageError::Unavailable)
     }
     fn remove_entry(&self,name:&str,depth:usize)->Result<(),StorageError>{
+        self.remove_entry_unflushed(name,depth)?;
+        // Persist the selected subtree's removal once after traversal, including
+        // a retry whose entry is already absent, rather than after every unlink.
+        self.file.sync_all().map_err(|_|StorageError::Unavailable)
+    }
+    fn remove_entry_unflushed(&self,name:&str,depth:usize)->Result<(),StorageError>{
         if depth>=128{return Err(StorageError::TooLarge);}
         let c=c_name(name)?;
         // SAFETY: stat is an integer/pointer-free C record; fstatat fills it on success.
@@ -338,7 +346,7 @@ impl Directory {
             let opened=file.metadata().map_err(|_|StorageError::Unavailable)?;
             if !opened.is_dir()||opened.uid()!=effective_uid()||opened.ino()!=metadata.st_ino as u64||opened.dev()!=metadata.st_dev as u64{return Err(StorageError::UnsafePath);}
             let child=Directory{file};
-            for name in child.names()?{child.remove_entry(&name,depth+1)?;}
+            for name in child.names()?{child.remove_entry_unflushed(&name,depth+1)?;}
             // SAFETY: remove this exact named directory from its held parent.
             if unsafe{libc::unlinkat(self.file.as_raw_fd(),c.as_ptr(),libc::AT_REMOVEDIR)}<0{return Err(StorageError::Unavailable);}
         }else{
@@ -346,7 +354,7 @@ impl Directory {
             // following them. Their external targets are never traversed.
             if unsafe{libc::unlinkat(self.file.as_raw_fd(),c.as_ptr(),0)}<0{return Err(StorageError::Unavailable);}
         }
-        self.file.sync_all().map_err(|_|StorageError::Unavailable)
+        Ok(())
     }
     fn open(path: &Path, create: bool) -> Result<Self, StorageError> {
         if create && !path_present(path)? {

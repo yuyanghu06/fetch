@@ -1,6 +1,6 @@
 # Saved server records
 
-Deletion cleans only validated Fetch-owned package/private-state paths relative to held descriptors. Recursive unlink never follows symlinks and tolerates normal nested package modes. config.json is removed last, with restoration attempted if final directory removal fails. Trees beyond128 levels or the existing4096 entries per-directory limit fail explicitly; no secure-erasure claim.
+Deletion cleans only validated Fetch-owned package/private-state paths relative to held descriptors. Recursive unlink never follows symlinks and tolerates normal nested package modes. Recursive removal batches disk flushing at the selected subtree boundary: descendants are unlinked without individual flushes, then the held containing directory is flushed once, including already-missing retry targets. Credential/config file flushes stay separate. config.json is removed last, with restoration attempted if final directory removal fails. Trees beyond128 levels or the existing4096 entries per-directory limit fail explicitly; no secure-erasure claim.
 
 The repository reads and atomically saves normalized, non-secret local server records. It hashes opaque IDs only for directory names, so IDs cannot escape their server directory. Private directory/file permissions, directory handles and no-follow opens protect owned paths. Invalid records fail the read rather than disappearing.
 
@@ -16,3 +16,7 @@ validated direct_identity digest, with shared source_name/installation_id/
 protected_args fields. Metadata stays backend-only and is stripped from public
 server reads. Existing records require no migration; identity survives edits to
 the saved launch settings.
+
+Deletion preservation fixtures are in deletion_tests.rs. They verify nested cleanup,
+symlink-target/sibling/runtime preservation, missing-package retry and private-state
+cleanup that leaves config.json intact. No native credential store is used.
