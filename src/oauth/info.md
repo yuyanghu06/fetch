@@ -1,3 +1,11 @@
+## November 6 — Chrome callback policy
+
+The approval page permits form submission to Fetch itself plus only the validated loopback callback origin for its pending request. Chrome applies form-action to the303 callback redirect; self-only blocked the real client after native confirmation. Callback origin comes from the already-validated registered request, with exact scheme/host/port and no wildcard. Existing exact redirect/path/token checks remain; other OAuth pages retain the fixed restrictive policy.
+
+## November 6 — approval form origin
+
+Approval HTML uses same-origin referrer policy so normal browser form submission retains the exact Origin required by the existing checks. Redirects and token/error responses keep no-referrer. tests.rs exercises registration, rendered form fields/cookie, origin refusal, fixture native approval, callback and PKCE code exchange through the full API router using disposable state and fake keys. It does not use real Mac approval or client credentials.
+
 # Connecting apps to Fetch
 
 D81 browser rendering now uses the shared escaped document/form/permission

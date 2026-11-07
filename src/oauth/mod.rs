@@ -1,4 +1,6 @@
 //! Account-free local OAuth. Provider tokens are never accepted as Fetch authority.
+#[cfg(test)]
+mod tests;
 use crate::{authority::{AuthorizationError,Authorizer,Caller},credentials::{CredentialStore,SecretDocument},native_auth::{NativeAuthError,NativeAuthority}};
 use axum::{Router,body::to_bytes,extract::{Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response},routing::{get,post},Json};
 use base64::{Engine,engine::general_purpose::URL_SAFE_NO_PAD};
@@ -13,6 +15,7 @@ use zeroize::Zeroizing;
 const SCOPES:[&str;4]=["fetch:catalog","fetch:tools:call","fetch:content:read","fetch:manage"];
 const DEFAULT_SCOPES:[&str;3]=["fetch:catalog","fetch:tools:call","fetch:content:read"];
 const BODY_LIMIT:usize=16*1024;
+const BROWSER_POLICY:&str="default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 const APPROVAL_SECONDS:u64=600;
 const CODE_SECONDS:u64=60;
 const ACCESS_SECONDS:u64=3600;
@@ -268,7 +271,15 @@ fn approval_page(approval: &Approval, client: &Client, message: Option<&str>) ->
         escape(&client.name), escape(&approval.parameters.redirect), notice,
         browser::hidden("request_id", &approval.id), browser::hidden("csrf", &approval.csrf), permissions,
         browser::decision_button("allow", "Allow"), browser::decision_button("deny", "Deny"));
-    secure(Html(browser::document("Connect to Fetch", &body, Some(browser::APPROVAL_STYLE))).into_response())
+    let mut response = secure(Html(browser::document("Connect to Fetch", &body, Some(browser::APPROVAL_STYLE))).into_response());
+    // no-referrer makes browser form POSTs send Origin:null, rejecting our own approval.
+    // Keep the origin for the same-origin form while withholding referrers elsewhere.
+    response.headers_mut().insert(header::REFERRER_POLICY, HeaderValue::from_static("same-origin"));
+    // Chrome also checks form redirects. Permit only this request's validated callback origin.
+    let callback_origin = Url::parse(&approval.parameters.redirect).expect("validated callback").origin().ascii_serialization();
+    let policy = BROWSER_POLICY.replace("form-action 'self'", &format!("form-action 'self' {callback_origin}"));
+    response.headers_mut().insert(header::CONTENT_SECURITY_POLICY, HeaderValue::from_str(&policy).expect("validated loopback origin"));
+    response
 }
 fn page_error(status: StatusCode, message: &str) -> Response {
     secure((status, Html(crate::browser::message_page("Fetch connection", message))).into_response())
@@ -276,7 +287,7 @@ fn page_error(status: StatusCode, message: &str) -> Response {
 fn oauth_error(status:StatusCode,code:&str)->Response {standard_json(status,json!({"error":code}))}
 fn standard_json(status:StatusCode,value:Value)->Response {secure((status,Json(value)).into_response())}
 fn busy()->Response {let mut response=oauth_error(StatusCode::TOO_MANY_REQUESTS,"temporarily_unavailable");response.headers_mut().insert(header::RETRY_AFTER,HeaderValue::from_static("5"));response}
-fn secure(mut response:Response)->Response {let headers=response.headers_mut();headers.insert(header::CACHE_CONTROL,HeaderValue::from_static("no-store"));headers.insert(header::PRAGMA,HeaderValue::from_static("no-cache"));headers.insert(header::REFERRER_POLICY,HeaderValue::from_static("no-referrer"));headers.insert(header::X_FRAME_OPTIONS,HeaderValue::from_static("DENY"));headers.insert(header::X_CONTENT_TYPE_OPTIONS,HeaderValue::from_static("nosniff"));headers.insert(header::CONTENT_SECURITY_POLICY,HeaderValue::from_static("default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"));response}
+fn secure(mut response:Response)->Response {let headers=response.headers_mut();headers.insert(header::CACHE_CONTROL,HeaderValue::from_static("no-store"));headers.insert(header::PRAGMA,HeaderValue::from_static("no-cache"));headers.insert(header::REFERRER_POLICY,HeaderValue::from_static("no-referrer"));headers.insert(header::X_FRAME_OPTIONS,HeaderValue::from_static("DENY"));headers.insert(header::X_CONTENT_TYPE_OPTIONS,HeaderValue::from_static("nosniff"));headers.insert(header::CONTENT_SECURITY_POLICY,HeaderValue::from_static(BROWSER_POLICY));response}
 
 // Registration is a security boundary; duplicate top-level fields are not resolved by last-wins.
 struct RegistrationObject(serde_json::Map<String,Value>);

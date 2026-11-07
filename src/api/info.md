@@ -1,3 +1,7 @@
+## November 6 — preserve approval page policy
+
+The HTTP boundary supplies no-referrer only when the route did not already supply a referrer policy. OAuth approval HTML needs same-origin for its own browser form submission. Exact Host/Origin checks remain unchanged; response policies come from Fetch handlers, not caller headers.
+
 # HTTP application routes
 
 ## November 3 requested organization
