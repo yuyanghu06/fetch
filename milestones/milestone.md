@@ -1,5 +1,39 @@
 # Fetch milestone snapshot
 
+## Full working-tree push — in progress
+
+User requested all current changes pushed. Source commits cdae260(UI),aac26e6(browser approval),5375131(MCP negotiation) created after direct review; documentation records and remote delivery next. Existing checks/build and actual Codex405tool connection remain the verification evidence. [Delivery preparation](history/2026-11-06_22-04-58-268781-orchestrator-prepare-working-tree-push.md).
+
+Latest note: user screenshot confirms connected405tools in actual /mcp display; old failed snapshot resolved. Context growth concern and server-first discovery tree saved as proposals, not selected implementation. No actual context/token measurement yet. [Note/research pass](history/2026-11-06_22-01-33-747121-orchestrator-note-405-tool-context-tree-proposal.md).
+
+## Real Codex connection — working
+
+After the initial-version negotiation correction, actual dedicated fetch_codex app-server initializes and loads405Fetch tools using saved OAuth access, with no connection error or password prompt.13focused checks and signed native build8.49s/strict verification pass. No model task, global settings change or individual upstream tool call. Restart the already-open Codex session to replace its old failure snapshot. [Real result](history/2026-11-06_21-44-39-278965-orchestrator-verify-real-codex-405-tools.md). Earlier pending sign-in/version checkpoints below are superseded for this scoped connection; broader provider acceptance remains.
+
+## Authenticated Codex connection — active
+
+Dedicated client logs identify Fetch rejecting initial2025-06-18offer with-32022, after login credentials pass. Standard initialize negotiation corrected to reply with already-supported2025-11-25; new actual-Codex-offer fixture fails before/passes after,13focused checks pass, signed build8.49s/strict verification pass. No new operating version or config change. Await user Quit and real saved-login connection check. [Implementation/build](history/2026-11-06_21-42-19-957622-orchestrator-fix-initialize-negotiation-await-restart.md). [Diagnosis](history/2026-11-06_21-40-44-147053-orchestrator-codex-protocol-negotiation-diagnosis.md), [scope](mcp-version-negotiation/info.md).
+
+Observed result: fixed Chrome return reaches Codex callback with access_denied after uncompleted Mac confirmation; CLI automatically opened a fresh page. Browser redirect correction is runtime-verified, successful login is not. Waiting for user readiness before another Mac prompt. [Callback evidence](history/2026-11-06_21-24-34-290770-orchestrator-observe-callback-human-approval-pending.md).
+
+Real retry now active: updated development process is running; separate fetch_codex login started, fresh approval page observed and Allow clicked with management permission unchecked. Await human Mac confirmation; command/browser completion unobserved. [Live retry](history/2026-11-06_21-23-44-948896-orchestrator-real-fetch-codex-await-mac.md).
+
+Active follow-up: real Chrome/Codex sign-in still waits after Mac prompt. DevTools shows form-action self blocking callback navigation; prior fixture missed this browser policy. Scoped callback-origin policy implemented; focused regression fails before/passes after, signed native build6.81s and strict verification pass. Await explicit user Quit, then signed relaunch and fetch_codex retry. [Build/handoff](history/2026-11-06_21-18-05-918228-orchestrator-build-callback-policy-await-quit.md). Warp/Terminal computer control denied; no existing sessions changed. [Observed diagnosis](history/2026-11-06_21-16-28-779096-orchestrator-browser-callback-policy-diagnosis.md).
+
+Latest discussion: pre-login agent guidance is possible through public documentation or client-readable setup instructions, but MCP metadata alone does not guarantee the model sees or acts on it. Proposal only; no source/config changes. [Research](../docs/architecture/research.md#november-6--agent-readable-fetch-connection-instructions-before-login), [pass](history/2026-11-06_21-11-27-802276-orchestrator-prelogin-agent-guidance-research.md).
+
+## Codex browser approval and cleanup — implemented
+
+Approval HTML now preserves origin for its own form; Fetch no longer asks the browser to suppress the proof it requires. Exact origin/cookie/CSRF/native confirmation/PKCE checks retained. Cleanup checkbox/prompt and unused UI state removed; compact command blocks retained. New disposable registration/approval/token fixture fails on old policy and passes after fix.38focused checks pass (1new flow,36UI,1boundary); signed native build16.15s/strict verification/whitespace pass. Direct review ACCEPT; checks not independent, no new sub-sessions. Real browser/Codex/Mac approval retry unobserved. Next: explicit Quit, signed relaunch and fresh MCP login. [Implementation/checks/review](history/2026-11-06_21-05-35-534356-orchestrator-fix-codex-approval-cleanup.md).
+
+[Diagnosis/plan](history/2026-11-06_21-03-37-460161-orchestrator-codex-approval-origin-plan.md).
+
+## Copyable connection commands — implemented
+
+Claude Code and Codex now each have a shared monospace command block and their own Copy button. Copy receives exactly the displayed commands, retaining Codex's newline and the current Fetch origin. Initial implementation passed independent review. Follow-up puts Copy beside the commands, removing the blank header row; direct signed build9.75s/strict verification/whitespace pass. [Gap and session-scope correction](history/2026-11-06_21-01-31-825289-orchestrator-tighten-blocks-session-only.md). No app launch or actual clipboard/native observation. Explicit Quit, then ./scripts/run-development.sh loads the update. Correction: no sub-sessions applies only to this session. The unintended lasting instruction in AGENTS.md and NOTES.md was removed; global configuration was not edited. Completed passes: [tester](history/2026-11-06_20-58-19-982180-tester-verify-connect-command-code-blocks.md), [evaluator](history/2026-11-06_20-58-19-982181-evaluator-accept-connect-command-code-blocks.md), [orchestrator](history/2026-11-06_20-58-19-982182-orchestrator-complete-command-blocks-direct-work.md).
+
+[Plan](history/2026-11-06_20-56-11-477521-planner-connect-command-code-blocks.md).
+
 ## Working-tree delivery — November 4 follow-up
 
 Complete: requested source and documentation pushed and remote-confirmed. Actual OpenAI/Fetch login and live MCP/Blender acceptance remain separate product follow-up; no app/session launched or credentials copied during delivery. [Latest pass](history/2026-11-04_18-22-10-968811-orchestrator-followup-working-tree-delivery.md).

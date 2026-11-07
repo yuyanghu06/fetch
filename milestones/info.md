@@ -1,3 +1,9 @@
+[Codex version negotiation](mcp-version-negotiation/info.md) tracks the authenticated client initialization failure and scoped fix.
+
+[Browser approval origin](oauth-approval-origin/info.md) tracks the Codex approval403 repair and selected Connect apps cleanup.
+
+[Copyable connection commands](connect-command-code-blocks/info.md) tracks the two Connect apps code blocks and their independent Copy buttons.
+
 [Persistent Fetch-only Codex](persistent-fetch-only-codex/info.md) records the permanent separate test client and its checks.
 
 [Python server environments](python-server-environments/info.md) tracks delegating private package/Python preparation to uv and removing the universal package Python pin.

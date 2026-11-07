@@ -1,3 +1,11 @@
+## November 6 — Codex initialization offer
+
+local_mvp_acceptance.rs adds one realistic client flow: offer2025-06-18without a negotiated HTTP version header, receive Fetch's supported2025-11-25, send initialized with that header/session, then list the permitted Fetch tool. It failed with400before the negotiation correction and now passes along with12existing tests in that target. Injected authority/disposable files only; actual saved-client reconnect remains distinct.
+
+## November 6 — browser approval form
+
+The focused in-process flow lives in src/oauth/tests.rs. It registers a disposable client, loads the real approval HTML/cookie through the full router, checks its browser-compatible referrer policy, rejects null/foreign Origin submissions, approves via the existing test-only native fixture, and exchanges the PKCE-bound code for usable Fetch access. Disposable encrypted files/fake keys only; no real client, Keychain, browser or Mac approval. The test fails against the original no-referrer response and passes after correction.
+
 ## Python MCP installation — November 4
 
 `python_installation.rs` submits imported Blender and Time definitions through

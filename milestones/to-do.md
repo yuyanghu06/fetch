@@ -1,5 +1,53 @@
 # Fetch current work
 
+## Full working-tree push — November6
+
+- [x] Review all pending source/new files and current verification evidence; fetch remote and confirm clean base.
+- [x] Create three focused UI/browser/MCP source commits.
+- [ ] Commit remaining notes/research/journal/guides and pushmain.
+- [ ] Confirm remote head and clean tree; commit/push delivery result.
+
+
+Discussion only: possible server-first tool discovery to reduce context growth; current405catalog count is observed, actual token cost is unmeasured. No implementation selected. [Recorded proposal](../docs/architecture/research.md#november-6--405-tool-catalog-and-per-server-discovery-proposal).
+
+## Codex version negotiation — complete
+
+- [x] Read dedicated diagnostic logs and identify exact post-login failure.
+- [x] Actual initial-offer fixture fails before/passes after; standard negotiation fixed,13focused checks and signed build8.49s/strict verification pass.
+- [x] Updated signed process and real dedicated Codex client load405Fetch tools using saved OAuth access; no password prompt or connection error.
+- [x] User screenshot confirms actual /mcp now connected405tools; stale failure snapshot resolved.
+
+
+## Real Codex approval retry — active
+
+- [x] Observe live Chrome form-action policy error after user Mac approval.
+- [x] Permit only pending validated callback origin; extended fixture fails before/passes after; signed build6.81s/strict verification pass.
+- [x] Updated signed instance running; fetch_codex login/browser observed. Fixed redirect reaches callback (access_denied after uncompleted Mac confirmation).
+- [x] Superseded by actual saved-login Codex connection/tool listing:405tools loaded. Earlier agent-started login-command success was not directly observed.
+
+
+Pre-login agent guidance: delivery mechanism remains an unselected proposal; no implementation task or client/global settings change authorized. [Research pass](history/2026-11-06_21-11-27-802276-orchestrator-prelogin-agent-guidance-research.md).
+
+## Codex browser approval and Connect apps cleanup
+
+- [x] Trace403 and confirm standard browser behavior.
+- [x] Remove cleanup checkbox/prompt and unused state.
+- [x] Correct approval page policy and preserve route response policy.
+- [x]38focused checks pass (new flow1/UI36/boundary1); signed build16.15s and strict verification pass; direct review accepts scope.
+- [ ] Observe user Codex/native sign-in retry after explicit Quit/relaunch.
+
+[Diagnosis/plan](history/2026-11-06_21-03-37-460161-orchestrator-codex-approval-origin-plan.md).
+
+## Copyable connection commands
+
+- [x] Independent bounded plan.
+- [x] Implement two shared copyable command blocks; remove separate header gap with Copy alongside commands.
+- [x] Signed native build, strict signature verification, exact display/clipboard inspection and completed independent review ACCEPT.
+- [ ] Observe native appearance and clipboard after deliberate relaunch; app was not launched.
+- [x] Correct earlier overbroad instruction: no sub-sessions only in this session; restore AGENTS.md and NOTES.md. Global configuration not edited.
+
+[Plan](history/2026-11-06_20-56-11-477521-planner-connect-command-code-blocks.md).
+
 ## Working-tree delivery — November 4 follow-up
 
 Complete: requested source and documentation pushed and remote-confirmed. Actual OpenAI/Fetch login and live MCP/Blender acceptance remain separate product follow-up; no app/session launched or credentials copied during delivery. [Latest pass](history/2026-11-04_18-22-10-968811-orchestrator-followup-working-tree-delivery.md).

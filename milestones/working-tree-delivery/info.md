@@ -1,3 +1,7 @@
+## November6 full working-tree request
+
+User explicitly requests full current working tree pushed. Direct review covers compact copyable client commands/removal of cleanup UI, OAuth browser policies, initial protocol negotiation and all session notes/research/history. Three source commits created: cdae260,aac26e6,5375131. Documentation commit/push/remote confirmation pending. Existing signed build and focused checks plus actual Codex405tool connection provide evidence; no new app launch, release or personal settings edits selected for delivery.
+
 # Working-tree delivery
 
 Goal: turn the current Fetch working tree into focused commits and push them to origin/main.

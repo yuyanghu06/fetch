@@ -1879,3 +1879,18 @@ User selected a permanent separate client under ~/Library/Application Support/Fe
 ## November 4 — Python environment change and cross-Mac setup completed
 
 User additionally requests documentation so other computers know how to set it up. [Setup guide](docs/testing/PYTHON_MCP_SETUP.md) is linked from AGENTS/README/development docs and covers fresh local signing/tool setup, automatic private uv/Python downloads, explicit Python requests and no automatic state/key migration. Scoped implementation passes32focused checks and signed native build; independent Evaluator ACCEPTs code and guide. Actual Blender package/connection acceptance remains unrun; the restricted experiment stopped before execution and was cleaned. [Evidence](milestones/python-server-environments/evidence.md). Explicit Quit/relaunch needed to load the change.
+
+
+## November 6 — Connect apps cleanup and Codex approval403
+
+User requested separate copyable command blocks for Claude/Codex, removal of the blank header gap, and removal of the manual connected/verified checkbox plus revealed cleanup prompt. Implemented these source changes. For the reported Codex browser403 at /oauth/authorize, source and browser specification identify no-referrer making form Origin:null; Fetch's exact-origin checks reject it. Approval HTML now preserves origin for its own form with same-origin policy, without removing the checks. The full-router disposable register/approve/token fixture passes and rejects null/foreign origins; native user sign-in retry remains separate. Global config was not edited. The user's no-sub-session instruction applies only to this session; an unintended lasting project instruction was removed, with correction recorded in immutable history.
+
+
+## November 6 — Real Codex connection repaired
+
+After browser sign-in repairs, dedicated Codex0.166.0failed initialization because Fetch rejected its2025-06-18initial version offer. The standard requires Fetch to answer with its own supported version, allowing the client to continue. Fixed this within the existing supported2025-11-25mode; no older operating mode or client/global settings change. New realistic fixture fails before/passes after;13focused checks/signed build pass. After explicit user Quit/relaunch, actual fetch_codex app-server initializes and lists405Fetch tools with saved OAuth access, no error/password prompt. No model task or upstream tool calls; existing open TUI may need restart. [Evidence](milestones/mcp-version-negotiation/info.md).
+
+
+## November 6 —405tools and possible context growth
+
+User screenshot now confirms fetch: connected (405tools) in the actual Codex /mcp display. User is concerned that Fetch exposes individual tools together rather than first showing the managed MCP servers, potentially consuming too much model context. They propose exploring a tree: Fetch exposes server names/groups first; choosing a server exposes that server's tools. This is an idea to investigate, not an approved architecture/API change or implementation request. Record actual definition/context use separately from the405available-tool count; no token size has been measured. [Research and tradeoffs](docs/architecture/research.md#november-6--405-tool-catalog-and-per-server-discovery-proposal).

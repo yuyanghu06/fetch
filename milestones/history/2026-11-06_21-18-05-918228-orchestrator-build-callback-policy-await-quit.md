@@ -1,0 +1,10 @@
+# Build callback correction and prepare real retry
+
+- Local timestamp / acting role / milestone: 2026-11-06T21:18:05.918228-05:00 / Primary agent directly, coding/testing/review / oauth-approval-origin.
+- Requested scope: Fix observed Chrome form-action callback block and use fetch_codex/browser control until auth works.
+- Starting repository state: Browser CSP block observed after user Mac confirmation; original focused flow lacked callback policy coverage.
+- Work performed / changed files: Added shared BROWSER_POLICY constant in src/oauth/mod.rs and specialized only approval HTML form-action with self plus validated pending callback origin. URL parser's serialized origin supplies scheme/host/port, excluding path/query. Updated existing full-router fixture's policy expectation, source guide and canonical authorization contract.
+- Decisions: Preserve exact redirect/client/resource/state/cookie/CSRF/native approval/PKCE checks, default restrictive policy and existing globals. No browser settings weakened or credentials inspected. Source review finds callback origin derived only from previously validated request. Do not change existing terminal sessions or kill processes.
+- Checks and evidence: Extended focused fixture failed before fix (self only) and passes after through token exchange. Signed build-only launcher exit0, build6.81s, selected local development signing and strict verification pass. git diff --check passes. Dedicated client config has exactly Fetch at development53672; credential values not inspected. CUA denies Warp/Terminal and cannot target bare Fetch executable; Chrome control works. Requested user explicitly Quit old app before launch, per project instruction.
+- Resulting state / acceptance: Code/test/build correction accepted by direct review, no independent specialists. Real login not yet retried and not claimed working.
+- Remaining work and handoff: Await user's explicit Quit confirmation, launch signed app, run separate fetch_codex login via command runner, use Chrome computer control and human Mac confirmation, observe terminal/browser success. Continue until success or concrete user-action blocker.

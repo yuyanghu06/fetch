@@ -1,0 +1,10 @@
+# Diagnose Codex approval403 and plan correction
+
+- Local timestamp / acting role / milestone: 2026-11-06T21:03:37.460161-05:00 / Primary agent directly, research/plan / oauth-approval-origin.
+- Requested scope: Fix browser403 at https://localhost:53672/oauth/authorize after connecting Codex to Fetch; remove cleanup checkbox/prompt; retain compact command blocks.
+- Starting repository state: Code blocks implemented, gap corrected and built; earlier project preference edits reverted, global configs not modified.
+- Work performed / changed files: Traced authorize form and API boundary. Both use strict origin proof; approval page has no-referrer and boundary overwrites response policy. New focused in-process flow test fails on actual page policy no-referrer versus required same-origin, before changing policy. Test uses disposable encrypted state, fake keys and existing native-confirmation fixture; no real account/Keychain/browser/MCP.
+- Decisions: Limit policy correction to approval HTML using same-origin; preserve all exact origin/cookie/CSRF/PKCE/native confirmation checks and no-referrer for redirects/token responses. Boundary supplies default only if route has no policy. Remove cleanup checkbox, revealed prompt and unused state/constant. No new route or public contract.
+- Checks and evidence: Browser standard explicitly specifies no-referrer makes form POST Origin:null, while same-origin retains origin for same-origin requests: https://fetch.spec.whatwg.org/#append-a-request-origin-header . Source rejects null at the outer boundary with empty403, matching screenshot and user-supplied URL. New fixture failed as expected on old response header. Actual browser request headers were not captured, so exact cause in user's run remains an inference.
+- Resulting state / acceptance: Bounded correction implemented; focused retest underway. No independent checks or sub-sessions in this pass.
+- Remaining work and handoff: Finish realistic register/approve/token fixture, focused existing boundary/UI checks, signed native build and direct review; record any failures and native limits.

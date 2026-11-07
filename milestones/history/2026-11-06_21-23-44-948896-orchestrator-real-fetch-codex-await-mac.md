@@ -1,0 +1,10 @@
+# Run real dedicated Codex login and await Mac approval
+
+- Local timestamp / acting role / milestone: 2026-11-06T21:23:44.948896-05:00 / Primary agent directly, real browser/client retry / oauth-approval-origin.
+- Requested scope: After user confirms Quit, relaunch and run fetch_codex login using browser computer control until successful.
+- Starting repository state: Scoped callback policy fix passes focused regression/signed build; user reports Done for required Quit.
+- Work performed / changed files: Checked current process/listener; new development Fetch was already running, started after the fixed build. Signed launcher rebuilt (actual output0.59s), verified signature and forwarded to existing instance, exiting0; no claim a second native process replaced it. Ran existing ~/.local/bin/fetch_codex mcp login fetch via command runner because CUA denies terminal apps. Console wrapper suppresses authorization query parameters without altering the command/client. Browser computer control observed fresh Connect Codex to Fetch page; Manage servers stayed unchecked. Clicked Allow and requested human Mac confirmation. No saved secrets read or global configs changed.
+- Decisions: One active agent-started login attempt only; do not retry while Mac confirmation pending. Preserve existing user terminal sessions. Actual password/Touch ID remains human-owned.
+- Checks and evidence: New Fetch process listens on127.0.0.1:53672; launcher signature verification succeeds. Dedicated login command prints authorization URL and remains running. Browser page and Allow activation observed. Browser/command still waiting at this record; no authentication success claimed.
+- Resulting state / acceptance: Real retry is pending human Mac confirmation. Code correction remains built; no new source changes in this pass.
+- Remaining work and handoff: Complete human confirmation, observe callback success and command exit0. If timeout/error, inspect actual browser result and fix/retry within selected scope. This interim record is append-only; later evidence supersedes pending state.

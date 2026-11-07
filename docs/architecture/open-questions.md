@@ -1,3 +1,5 @@
+November6 discussion: user proposes exploring server-first tool discovery after actual Codex reports Fetch connected with405tools. Context cost is unmeasured; catalog count alone does not prove full definitions are always in model context. No catalog/API/visibility/connection change selected. See [research proposal](research.md#november-6--405-tool-catalog-and-per-server-discovery-proposal).
+
 November4: publicclientidentity andHTTP127callback selected/implemented/deployed/independentlyaccepted. FixedpublicURL https://www.yuyang-hu.org/oauth-client.json; nohostingchoice remainsopen. ActualVercelaccountsign-in isstillruntimeacceptance, not provenbyfixtures. See milestones/client-identity/evidence.md.
 
 November 4: custom issuer-feature and other redundant pre-login gates are selected for removal under the wrapper design. Library validation and existing application boundaries remain. See milestones/wrapper-authentication/info.md; no new API or provider-specific flow selected.
