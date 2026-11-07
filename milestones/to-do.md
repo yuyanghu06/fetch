@@ -4,8 +4,8 @@
 
 - [x] Review all pending source/new files and current verification evidence; fetch remote and confirm clean base.
 - [x] Create three focused UI/browser/MCP source commits.
-- [ ] Commit remaining notes/research/journal/guides and pushmain.
-- [ ] Confirm remote head and clean tree; commit/push delivery result.
+- [x] Commit remaining notes/research/journal/guides as3d3d13dand pushmain.
+- [x] Live remote/local3d3d13dmatch and pre-record tree clean; delivery confirmation recorded for final documentation commit/push.
 
 
 Discussion only: possible server-first tool discovery to reduce context growth; current405catalog count is observed, actual token cost is unmeasured. No implementation selected. [Recorded proposal](../docs/architecture/research.md#november-6--405-tool-catalog-and-per-server-discovery-proposal).

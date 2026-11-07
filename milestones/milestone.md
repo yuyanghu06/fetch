@@ -1,8 +1,8 @@
 # Fetch milestone snapshot
 
-## Full working-tree push — in progress
+## Full working-tree push — delivered
 
-User requested all current changes pushed. Source commits cdae260(UI),aac26e6(browser approval),5375131(MCP negotiation) created after direct review; documentation records and remote delivery next. Existing checks/build and actual Codex405tool connection remain the verification evidence. [Delivery preparation](history/2026-11-06_22-04-58-268781-orchestrator-prepare-working-tree-push.md).
+User-requested source/tests/docs delivered: cdae260(UI),aac26e6(browser approval),5375131(MCP negotiation),3d3d13d(notes/research/history). git push succeeds and live origin/main equals local3d3d13d; pre-record working tree clean. This final documentation follow-up records delivery and is pushed with final verification. Existing checks/build and actual405tool Codex connection remain evidence. [Delivery confirmation](history/2026-11-06_22-05-40-510333-orchestrator-confirm-full-working-tree-push.md). [Delivery preparation](history/2026-11-06_22-04-58-268781-orchestrator-prepare-working-tree-push.md).
 
 Latest note: user screenshot confirms connected405tools in actual /mcp display; old failed snapshot resolved. Context growth concern and server-first discovery tree saved as proposals, not selected implementation. No actual context/token measurement yet. [Note/research pass](history/2026-11-06_22-01-33-747121-orchestrator-note-405-tool-context-tree-proposal.md).
 
