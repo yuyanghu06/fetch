@@ -67,6 +67,23 @@ pub(super) fn console_line<'a>(content: impl widget::text::IntoFragment<'a>) -> 
     text(content).font(iced::Font::MONOSPACE).size(theme::CONSOLE_TEXT_SIZE)
 }
 
+pub(super) fn code_block<'a, M: Clone + 'a>(
+    commands: String,
+    copy: impl FnOnce(String) -> M,
+) -> Container<'a, M> {
+    let copy_message = copy(commands.clone());
+    let content = row![
+        console_line(commands).width(iced::Fill),
+        button(text("Copy").size(theme::SMALL_TEXT)).on_press(copy_message),
+    ]
+    .spacing(theme::CONTROL_GAP)
+    .align_y(iced::Center);
+    widget::container(content)
+        .padding(theme::MESSAGE_PADDING)
+        .width(iced::Fill)
+        .style(widget::container::rounded_box)
+}
+
 pub(super) fn console<'a, M: Clone + 'a>(content: impl Into<Element<'a,M>>, copy: M) -> Container<'a,M> {
     let header = row![
         widget::Space::new().width(iced::Fill),

@@ -8,7 +8,6 @@ pub(super) const FIELD_TITLE: f32 = 20.0;
 pub(super) const SERVER_TITLE: f32 = 19.0;
 pub(super) const TOOL_TITLE: f32 = 17.0;
 pub(super) const SMALL_TEXT: f32 = 12.0;
-pub(super) const CLEANUP_TEXT: f32 = 13.0;
 
 pub(super) const CONTROL_GAP: f32 = 10.0;
 pub(super) const NAVIGATION_GAP: f32 = 12.0;

@@ -1,3 +1,11 @@
+## November 6 — remove cleanup confirmation
+
+Connect apps no longer contains the manual connected/verified checkbox, its revealed cleanup prompt or Copy cleanup prompt button. Associated local state/message/reset code and unused text size are removed. Copyable client command blocks remain, with Copy alongside the commands and no separate blank header row.
+
+## Copyable connection commands — November 6
+
+Connect apps uses components::code_block for Claude Code and Codex instructions. Each fitted-height rounded block contains monospace commands and its own Copy button alongside them. The helper sends the same displayed string through Message::Copy and the existing clipboard action, preserving the Codex newline and current Fetch address. Clicking Copy does not execute commands or edit coding-client configurations.
+
 November 4 unsupported import rows: install_view displays each server error.message using the shared Message component below its existing disabled checkbox. Figma Remote returns unsupported/unselected; no new layout/component or automatic server action.
 
 ## Mouse input in a scrolled server page — November4

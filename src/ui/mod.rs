@@ -36,7 +36,7 @@ enum Message {
     Changed(String,Result<Value,String>), RestartStatus(String,Result<Value,String>),
     Choose(String), Timeout(String), Concurrency(String), SaveExecution,
     SecretName(String), SecretValue(String), SaveSecret, RemoveSecret,
-    Copy(String), CleanupConfirmed(bool), ToggleServer(String), ToggleTool(String),
+    Copy(String), ToggleServer(String), ToggleTool(String),
 }
 impl std::fmt::Debug for Message { fn fmt(&self,f:&mut std::fmt::Formatter<'_>)->std::fmt::Result { f.write_str("FetchNativeMessage") } }
 struct Desktop {
@@ -44,7 +44,7 @@ struct Desktop {
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
     config_path:String, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, timeout:String, concurrency:String, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
-    busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, cleanup_confirmed:bool, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
+    busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
     authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
     deletions:BTreeMap<String,Deletion>, opening_folders:BTreeSet<String>,
     terminals:BTreeMap<String,server_terminal::State>,
@@ -54,7 +54,7 @@ impl Desktop {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
         let (id,open)=window::open(window::Settings { size:iced::Size::new(1080.0,760.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default() });
-        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),cleanup_confirmed:false,expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new()};
+        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new()};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
         (state,Task::batch([open.map(Message::Opened),read]))
@@ -69,7 +69,7 @@ impl Desktop {
     }
     fn operation(&mut self,id:String,method:Method,suffix:&str,body:Value)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
-        if self.busy||self.auth_active(&id){return Task::none();} self.busy=true;self.error=None;self.cleanup_confirmed=false;
+        if self.busy||self.auth_active(&id){return Task::none();} self.busy=true;self.error=None;
         let path=format!("/api/v1/servers/{}{suffix}",component(&id));
         Task::perform(async move{client.request(method,&path,Some(body)).await},move |result|Message::Changed(id.clone(),result))
     }
@@ -91,7 +91,7 @@ impl Desktop {
         let Some(client)=self.client.clone() else{return Task::none();};
         let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
         self.deletions.insert(id.clone(),Deletion::Pending(token));
-        self.error=None;self.notice.clear();self.cleanup_confirmed=false;
+        self.error=None;self.notice.clear();
         let path=format!("/api/v1/servers/{}",component(&id));
         Task::perform(async move{client.request(Method::DELETE,&path,None).await},move|result|Message::Deleted(token,id.clone(),result))
     }
@@ -112,7 +112,6 @@ impl Desktop {
             }}}
         }}
         if let Some(rows)=self.progress["servers"].as_array_mut(){rows.retain(|row|row["server_id"].as_str()!=Some(id));}
-        self.cleanup_confirmed=false;
     }
     fn clear_secrets(&mut self) {
         self.secret_value.zeroize();
@@ -131,7 +130,6 @@ impl Desktop {
         if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
         let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
         self.clear_secrets();self.authentication.entry(id.clone()).or_insert_with(||AuthFlow::passive(&Value::Null)).begin_authentication();
-        self.cleanup_confirmed=false;
         self.expanded_servers.insert(id.clone());
         let path=format!("/api/v1/servers/{}/restart",component(&id));
         Task::perform(async move{client.request(Method::POST,&path,Some(json!({"interactive":true}))).await},move|result|Message::AuthFinished(token,id.clone(),result))
@@ -152,7 +150,7 @@ impl Desktop {
     fn submit_credential_request(&mut self,id:String,body:Value,settings:bool)->Task<Message>{
         let Some(client)=self.client.clone() else{return Task::none();};
         let Some(token)=self.auth_requests.begin(&id) else{return Task::none();};
-        self.cleanup_confirmed=false;self.expanded_servers.insert(id.clone());
+        self.expanded_servers.insert(id.clone());
         let path=format!("/api/v1/servers/{}/credentials",component(&id));
         Task::perform(async move{client.request(Method::PATCH,&path,Some(body)).await},move|result|Message::CredentialFinished(token,id.clone(),settings,result))
     }
@@ -248,7 +246,7 @@ impl Desktop {
                 let eligible=self.supported_selections();
                 if eligible.is_subset(&self.selected){self.selected.clear();}else{self.selected=eligible;}
             }
-            Message::Install=>{self.cleanup_confirmed=false;let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.notice.clear();self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
+            Message::Install=>{let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.notice.clear();self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
             Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{String::new()};},Err(error)=>self.error=Some(error)}}
             Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{self.mark_installed_from_progress(&value);let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
                     self.selected.clear();
@@ -321,7 +319,6 @@ impl Desktop {
                 }
             }
             Message::Copy(value)=>return iced::clipboard::write(value),
-            Message::CleanupConfirmed(value)=>self.cleanup_confirmed=value,
             Message::ToggleServer(id)=>{if self.expanded_servers.remove(&id){if let Some(flow)=self.authentication.get_mut(&id){flow.secret.zeroize();}}else{self.clear_secrets();self.expanded_servers.insert(id);}}
             Message::ToggleTool(id)=>{if !self.expanded_tools.remove(&id){self.expanded_tools.insert(id);}}
             Message::Tick=>{
@@ -458,13 +455,8 @@ impl Desktop {
     }
     fn connect_view(&self)->Element<'_,Message>{
         let endpoint=format!("{}/mcp",self.host.state.origin);
-        let mut items=column![text("Connect your coding apps").size(theme::PAGE_TITLE),text("Each app connects once to Fetch and keeps its own renewable token. Review and approve its access in your browser, then confirm on your Mac. Provider logins remain separate."),text(endpoint.clone()).size(theme::FIELD_TITLE),button("Copy Fetch MCP address").on_press(Message::Copy(endpoint.clone())),text(format!("Public certificate: {}",self.host.certificate_path.display())),text("The certificate must be explicitly trusted before the browser and clients can connect normally. Fetch never changes trust or client configurations automatically."),text("Claude Code"),text(format!("claude mcp add --transport http fetch {endpoint}")),text("Codex"),text(format!("codex mcp add fetch --url {endpoint}\ncodex mcp login fetch")),text("OpenCode"),text(format!("Configure a remote MCP named fetch with URL {endpoint}, then use its MCP authentication flow.")),checkbox(self.cleanup_confirmed).label("I have connected my apps, completed required provider authentication and verified the imported tools work.").on_toggle(Message::CleanupConfirmed)].spacing(theme::PAGE_GAP);
-        if self.cleanup_confirmed{let prompt=self.cleanup_prompt();items=items.push(text("After verification, paste this into your coding agent to review cleanup:")).push(text(prompt.clone()).size(theme::CLEANUP_TEXT)).push(button("Copy cleanup prompt").on_press(Message::Copy(prompt)));}
+        let items=column![text("Connect your coding apps").size(theme::PAGE_TITLE),text("Each app connects once to Fetch and keeps its own renewable token. Review and approve its access in your browser, then confirm on your Mac. Provider logins remain separate."),text(endpoint.clone()).size(theme::FIELD_TITLE),button("Copy Fetch MCP address").on_press(Message::Copy(endpoint.clone())),text(format!("Public certificate: {}",self.host.certificate_path.display())),text("The certificate must be explicitly trusted before the browser and clients can connect normally. Fetch never changes trust or client configurations automatically."),text("Claude Code"),components::code_block(format!("claude mcp add --transport http fetch {endpoint}"),Message::Copy),text("Codex"),components::code_block(format!("codex mcp add fetch --url {endpoint}\ncodex mcp login fetch"),Message::Copy),text("OpenCode"),text(format!("Configure a remote MCP named fetch with URL {endpoint}, then use its MCP authentication flow."))].spacing(theme::PAGE_GAP);
         items.into()
-    }
-    fn cleanup_prompt(&self)->String{
-        let mut names=Vec::new();if let Some(servers)=self.servers["servers"].as_array(){for server in servers{names.push(server["name"].as_str().unwrap_or("unnamed").to_owned());}}
-        format!("I have verified Fetch's connection, provider authentication and imported tools. Review my original MCP configuration entries for these migrated servers: {}. Identify the exact original file/name pairs and show me the intended cleanup. Remove only those original entries after matching them to successful Fetch imports. Preserve the Fetch connection, unrelated entries and all other settings. Do not delete credentials, server data or packages. If the mapping or verification is unclear, ask me before changing it.",names.join(", "))
     }
     fn settings_view(&self)->Element<'_,Message>{
         let mut items=column![text("Server settings").size(theme::PAGE_TITLE),

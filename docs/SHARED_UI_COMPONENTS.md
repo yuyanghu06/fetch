@@ -1,3 +1,11 @@
+## November 6 — remove manual cleanup confirmation
+
+Connect apps no longer renders the connected/verified checkbox or its conditional cleanup prompt/Copy button. The two shared client command blocks remain. No original MCP entries or client settings are edited by this change.
+
+## Copyable command blocks — November 6
+
+components::code_block shares the padded rounded container, monospace command text and Copy button beside the commands for Claude Code and Codex on Connect apps. The caller supplies the complete command string and existing clipboard callback. Height follows content; common padding, spacing, button and text size use the existing theme. Figma reconciliation and observed native clipboard/appearance remain separate.
+
 ## November 4 unsupported import reasons
 
 Import rows reuse the existing checkbox and components::message to show each server's supplied error.message. Unsupported rows remain disabled through the shared installable check. Figma Remote adds data/reason to this existing pattern; no new component styling or Figma edit is selected.
@@ -143,7 +151,7 @@ The shared console is always present in an expanded server row, even before auth
 
 One shared Console uses compact monospace text, dark background and internal scrolling. It wraps actual startup service logs/instructions/errors and observed process exit status from the native-only memory capture. Synthetic Fetch authentication phase/host-progress prose is removed. Genuine local request/read errors are fallback only until actual service output arrives; old fallback lines are then removed. In-console host consent, row controls and shared Settings credential editor remain. Credential values are redacted before retention; successful protocol/tool/token bodies are excluded. Capture retains the beginning up to1MiB/4096lines,64KiB perline, with explicit notices. No logfile or native/Figma appearance proof.
 
-November 4 Copy follow-up: Console includes a small fixed top-right Copy button,
+November 4 Copy follow-up: Console includes a small fixed Copy button beside the commands,
 using the shared button and console-action style. The caller supplies an action
 that copies all displayed log lines in order, separated by newlines. The header
 stays visible while the console body scrolls.

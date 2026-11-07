@@ -84,7 +84,6 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         polling: None,
         installation_polling: false,
         restart_polling: BTreeSet::new(),
-        cleanup_confirmed: false,
         expanded_servers: BTreeSet::new(),
         expanded_tools: BTreeSet::new(),
         authentication: BTreeMap::new(),

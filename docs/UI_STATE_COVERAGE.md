@@ -1,3 +1,11 @@
+## November 6 — remove Connect apps cleanup branch
+
+The manual connected/verified checkbox and revealed cleanup prompt/Copy button are removed from current source. Earlier cleanup specimens are historical and no longer describe a current branch. Both client code blocks retain their separate Copy actions, now beside the commands. Existing Figma specimen counts are not updated or claimed as reconciled.
+
+## November 6 — copyable connection command blocks
+
+Connect apps now renders Claude Code as one command block and Codex as a two-line command block, each with its own enabled Copy button. Source uses a single string for display and clipboard through the shared helper and existing Message::Copy. Endpoint remains derived from the current Fetch origin. No client commands are executed. Native visual/clipboard observation and Figma reconciliation are not claimed; existing specimen counts remain unchanged.
+
 ## November 4 — Figma Remote unsupported import
 
 Implemented source change: the official Figma Remote row uses the existing unsupported/disabled selection state and shows its existing row error.message below the checkbox. Figma Desktop and already-installed metadata retain their current behavior. Independent19focused import/install checks (2new), native build and review pass; no Figma specimen update or native screenshot is claimed. Track milestones/figma-remote-unsupported/info.md.
@@ -422,7 +430,7 @@ Cover an empty new attempt until actual output; pending host-consent controls wi
 
 Logging source uses one native-only per-attempt capture with explicit output limits/redaction. Actual confined fixtures and library/UI checks are recorded under milestones/service-startup-logs/evidence.md when finalized. These are not native screenshots/Figma or live-provider acceptance. Earlier28/31console results apply to older progress/tail behavior.
 
-Console Copy follow-up: a fixed top-right Copy button copies the current server
+Console Copy follow-up: a fixed Copy button beside the commands copies the current server
 log lines with newline separators, including lines outside the visible scroll
 area. The host-consent control stays in the scroll body. Native clipboard/window
 behavior is not observed by source/build checks.
