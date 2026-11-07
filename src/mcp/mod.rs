@@ -96,8 +96,8 @@ impl McpGateway{
         }
         if method=="initialize"{
             if revision!=LEGACY||message.id.is_none(){return protocol_error(StatusCode::BAD_REQUEST,message.id.as_deref(),-32600,"Initialize requires the legacy request flow.");}
-            let requested=raw::text(&params,"protocolVersion");
-            if requested.as_deref()!=Some(LEGACY){return unsupported_version(message.id.as_deref());}
+            if raw::text(&params,"protocolVersion").is_none(){return protocol_error(StatusCode::BAD_REQUEST,message.id.as_deref(),-32602,"Initialize requires a protocol version.");}
+            // Negotiate our supported handshake version; the client decides whether to continue.
             let caps=raw::field(&params,"capabilities").and_then(|v|raw::scalar(&v).ok()).unwrap_or_else(||json!({}));
             if !caps.is_object(){return protocol_error(StatusCode::BAD_REQUEST,message.id.as_deref(),-32602,"Capabilities must be an object.");}
             let mut sessions=self.sessions.lock().await;if sessions.len()>=256{return StatusCode::TOO_MANY_REQUESTS.into_response();}

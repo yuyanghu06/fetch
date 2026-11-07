@@ -162,6 +162,27 @@ async fn nested_duplicate_protocol_values_are_rejected_before_dispatch() {
 }
 
 #[tokio::test]
+async fn codex_initial_version_offer_negotiates_fetch_legacy_and_lists_tools() {
+    let (_, _, app) = fixture(&["fetch:catalog"]);
+    let mut initialize = request(json!({"jsonrpc":"2.0","id":1,"method":"initialize",
+        "params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"codex-mcp-client","version":"0.166.0"}}}).to_string(), LEGACY);
+    // The first handshake offers a version in JSON; the negotiated header follows afterward.
+    initialize.headers_mut().remove("mcp-protocol-version");
+    let response = app.clone().oneshot(initialize).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let session = response.headers()["mcp-session-id"].clone();
+    assert_eq!(json_body(response).await["result"]["protocolVersion"], LEGACY);
+    let mut initialized = request(json!({"jsonrpc":"2.0","method":"notifications/initialized","params":{}}).to_string(), LEGACY);
+    initialized.headers_mut().insert("mcp-session-id", session.clone());
+    assert_eq!(app.clone().oneshot(initialized).await.unwrap().status(), StatusCode::ACCEPTED);
+    let mut list = request(json!({"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}).to_string(), LEGACY);
+    list.headers_mut().insert("mcp-session-id", session);
+    let response = app.oneshot(list).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(json_body(response).await["result"]["tools"][0]["name"], "fetch__list_tools");
+}
+
+#[tokio::test]
 async fn legacy_session_requires_initialization_and_is_removed_on_revocation() {
     let (gateway, management, app) = fixture(&["fetch:catalog"]);
     let initialize = request(json!({"jsonrpc":"2.0","id":1,"method":"initialize",

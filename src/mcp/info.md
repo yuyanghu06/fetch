@@ -1,3 +1,7 @@
+## November 6 — initial version negotiation
+
+An authenticated initialize request must supply a protocol version, but its initial offer need not already equal Fetch's supported handshake version. Fetch returns2025-11-25and the client decides whether to continue. This corrects standard negotiation for the real Codex0.166.0offer2025-06-18; it does not implement an extra operating version. Existing negotiated headers/session/authentication and modern mode checks remain. tests/local_mvp_acceptance.rs exercises this offer, initialized notification and actual management-tool listing.
+
 # Client-facing MCP
 
 fetch__delete_server shares Manager's per-server deletion permission, busy checks,
