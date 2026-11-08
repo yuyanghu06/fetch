@@ -1,3 +1,11 @@
+## November 7 — automatic server list refresh
+
+The open app schedules GET /api/v1/servers every60seconds through the same refresh() and NativeClient used by the Refresh button. AutomaticRefresh reuses existing pending-read tracking and skips while a read is pending or the native client is absent. Faster one-second console/auth/deletion/restart/installation checks and manual Refresh remain. Closing the window still revokes its session and removes the client; this adds no background management authority.
+
+## November 7 — hide healthy authentication labels
+
+servers_view keeps the server name and runtime in every card header. It omits the authentication suffix for authenticated/not_required; other statuses retain their exact suffix. This changes display only. Independent six-state Desktop::view render and locked binary build pass; no app was launched. The neumorphic UI and manual-install popup designs remain Figma-only.
+
 ## November 6 — remove cleanup confirmation
 
 Connect apps no longer contains the manual connected/verified checkbox, its revealed cleanup prompt or Copy cleanup prompt button. Associated local state/message/reset code and unused text size are removed. Copyable client command blocks remain, with Copy alongside the commands and no separate blank header row.

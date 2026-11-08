@@ -717,3 +717,42 @@ fn old_history_does_not_hide_a_new_authentication_request_failure() {
         "startup":{"generation":2,"lines":["Earlier boot failure","Process exited with status 9.","Actual current service rejection"],"exit_code":null,"signal":null}}));
     assert_eq!(flow.log,vec!["[server] Earlier boot failure","[server] Process exited with status 9.","[server] Actual current service rejection"]);
 }
+
+#[tokio::test]
+async fn automatic_refresh_updates_collapsed_server_list_from_another_page() {
+    let (_directory,mut desktop)=desktop_fixture().await;
+    desktop.page=Page::Connect;
+    assert!(desktop.expanded_servers.is_empty());
+    let previous_sequence=desktop.auth_requests.latest_sequence();
+    drop(desktop.update(Message::AutomaticRefresh));
+    let sequence=desktop.polling.expect("the minute event schedules an ordinary server-list read");
+    assert!(sequence>previous_sequence);
+    let revision=desktop.auth_requests.revision();let window=desktop.window;
+    drop(desktop.update(Message::AutomaticRefresh));
+    assert_eq!(desktop.auth_requests.latest_sequence(),sequence,"another timer event waits for the pending server-list read");
+    let refreshed=json!({"servers":[{"server_id":"filesystem","name":"Filesystem","runtime":{"status":"ready"},"authentication":{"status":"not_required","error":null},"config":{"environment":[]}}],"next_steps":[]});
+    drop(desktop.update(Message::Servers(revision,sequence,window,Ok(refreshed.clone()))));
+    assert_eq!(desktop.servers,refreshed,"the normal GET reply updates the list without opening Servers or expanding a card");
+    assert!(desktop.polling.is_none());assert!(desktop.page==Page::Connect);
+    assert!(!desktop.auth_requests.contains("filesystem"));
+}
+
+#[tokio::test]
+async fn automatic_refresh_respects_closed_client_and_existing_fast_console_reads() {
+    let (_directory,mut desktop)=desktop_fixture().await;
+    let client=desktop.client.take();
+    let previous_sequence=desktop.auth_requests.latest_sequence();
+    drop(desktop.update(Message::AutomaticRefresh));
+    assert!(desktop.polling.is_none());
+    assert_eq!(desktop.auth_requests.latest_sequence(),previous_sequence,"no native client means no automatic read");
+    desktop.client=client;
+    desktop.page=Page::Servers;
+    desktop.expanded_servers.insert("github".into());
+    drop(desktop.update(Message::Tick));
+    let sequence=desktop.polling.expect("the existing one-second tick still reads an expanded console");
+    assert!(sequence>previous_sequence);
+    drop(desktop.update(Message::AutomaticRefresh));
+    assert_eq!(desktop.polling,Some(sequence));
+    assert_eq!(desktop.auth_requests.latest_sequence(),sequence,"the minute event does not overlap the fast console read");
+    assert!(!desktop.auth_requests.contains("github"));assert!(!desktop.busy);
+}

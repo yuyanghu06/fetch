@@ -27,7 +27,7 @@ fn installable(row:&Value)->bool { row["status"]=="supported" && row["installed"
 enum Message {
     Terminal(server_terminal::Message),
     Page(Page), Opened(window::Id), Closed(window::Id), Tick, Show, Quit, Stopped,
-    Refresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
+    Refresh, AutomaticRefresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
     Select(String,String,bool), SelectAllServers, Install, Installed(Result<Value,String>), Progress(Result<Value,String>),
     Inspect(String), Tools(String,Option<window::Id>,Result<Value,String>), Authenticate(String), Restart(String,bool), Delete(String), Deleted(u64,String,Result<Value,String>),
     AuthFinished(u64,String,Result<Value,String>), AuthDismiss(String), AuthOpenSignIn(String),
@@ -65,7 +65,7 @@ impl Desktop {
         Task::perform(async move{client.servers().await},move|result|Message::Servers(revision,sequence,window,result))
     }
     fn subscription(&self)->Subscription<Message> {
-        Subscription::batch([iced::time::every(Duration::from_secs(1)).map(|_|Message::Tick),window::close_events().map(Message::Closed),self.terminal_subscription()])
+        Subscription::batch([iced::time::every(Duration::from_secs(1)).map(|_|Message::Tick),iced::time::every(Duration::from_secs(60)).map(|_|Message::AutomaticRefresh),window::close_events().map(Message::Closed),self.terminal_subscription()])
     }
     fn operation(&mut self,id:String,method:Method,suffix:&str,body:Value)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
@@ -194,6 +194,10 @@ impl Desktop {
             Message::Quit=>{self.picker_window=None;file_picker::cancel();self.close_authentication();self.client=None;self.session=None;let host=self.host.clone();return Task::perform(async move{host.shutdown().await;},|_|Message::Stopped);}
             Message::Stopped=>return iced::exit(),
             Message::Refresh=>return self.refresh(),
+            Message::AutomaticRefresh=>{
+                if self.client.is_none()||self.polling.is_some(){return Task::none();}
+                let read=self.refresh();self.polling=Some(self.auth_requests.latest_sequence());return read;
+            }
             Message::Servers(revision,sequence,window,result)=>{
                 if window!=self.window{return Task::none();}
                 if self.polling==Some(sequence){self.polling=None;}
@@ -359,7 +363,8 @@ impl Desktop {
         let mut items=column![row![text("Installed servers").size(theme::PAGE_TITLE),button("Refresh").on_press(Message::Refresh)].spacing(theme::SECTION_GAP)].spacing(theme::CARD_GAP);
         if let Some(servers)=self.servers["servers"].as_array(){if servers.is_empty(){items=items.push(text("No servers installed yet. Open Install MCPs to discover your existing definitions."));}for server in servers{
             let id=server["server_id"].as_str().unwrap_or("").to_owned();let runtime=server["runtime"]["status"].as_str().unwrap_or("unknown");let auth=server["authentication"]["status"].as_str().unwrap_or("unknown");
-            let title=format!("{}  ·  {}  ·  authentication: {}",server["name"].as_str().unwrap_or(&id),runtime,auth);
+            let name=server["name"].as_str().unwrap_or(&id);
+            let title=if matches!(auth,"authenticated"|"not_required"){format!("{name}  ·  {runtime}")}else{format!("{name}  ·  {runtime}  ·  authentication: {auth}")};
             let can_change=!self.busy&&!self.auth_active(&id)&&!self.restarts.contains_key(&id);
             let mut controls=row![button("Inspect tools").on_press_maybe((!self.deletions.contains_key(&id)).then_some(Message::Inspect(id.clone()))),button("Settings").on_press_maybe(can_change.then_some(Message::Choose(id.clone())))].spacing(theme::CONTROL_GAP);
             if matches!(auth,"required"|"failed"|"unknown"){controls=controls.push(button("Authenticate").on_press_maybe(can_change.then_some(Message::Authenticate(id.clone()))));}

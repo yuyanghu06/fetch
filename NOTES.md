@@ -1,3 +1,51 @@
+## November 8 — selected and hover appearance
+
+Selected controls must not glow. Glow appears only while hovering, including on the selected Settings gear shown in the user’s reference. Hovering over the red × must make the × bold. Recorded as requested; Figma and app source have not been changed for these rules.
+
+## November 8 — tools inside expanded server; working-tree audit
+
+User explicitly requires tools inside the expanded server view. Applied to Figma, retaining Console and footer. User also asked what else is uncommitted: beyond minute refresh and its tests, the only functional source change hides authenticated/not_required labels in card headers. Remaining tracked changes are design/project/milestone documentation; untracked files are reference images/palette, screenshots and milestone records. No backend/API/dependency changes found.
+
+## November 7 — minute server-list refresh complete
+
+Added the app timer through existing GET /api/v1/servers, with pending/client guards; faster console/auth/restart/installation reads stay. Two focused scheduling/reply checks, locked build12.17s and independent ACCEPT. No live HTTP timing or native relaunch; source changes apply on a later rebuild/relaunch. The alternative parameter form design is still a proposal.
+
+## November 7 — automatic server list refresh selected
+
+User requested refresh every minute and clarified the app server list via existing GET /api/v1/servers. Preserve faster active-work polling and stop native-client reads when the window closes. Implementation/checks tracked in milestones/periodic-server-refresh/. JSON parameter forms were suggested as an alternative to code blocks; that layout is a proposal, not yet applied.
+
+## November 7 — Available tools label
+
+User renamed the new Figma Tool definitions section to Available tools. Applied as a text-only design change.
+
+## November 7 — tool cards and inline output buttons
+
+User moved Console/Terminal to the right of the Inspect tools/Settings row, removed filesystem · available, and requested each tool as a large square blob with Name/Required fields inputs. Implemented shared360×360Tool card and retained exact raw definition invisibly. No tool-editing/execution behavior selected; only Figma changed.
+
+## November 7 — server card followups
+
+Gray authentication based on existing confirmed auth state, not merely a running process; lighten disabled key further. Dot centered to name; per-card gear added then cancelled/removed. Console/Terminal light gray; repeated server ID removed; inline footer counts left and connection details right. Independent visual ACCEPT. Tool definitions remain separate for now; moving them into the matching card was recommended after inspecting current source. Figma-only.
+
+## November 7 — simpler disclosure and header actions
+
+User disliked the circular disclosure; replaced it with a plain small muted chevron. User added blue per-server restart and black filled-white authentication-key buttons before the red close button. Names remain bold18px; starting dot stays yellow. Figma-only design, independently reviewed; actual native button wiring remains later work.
+
+## November 7 — server header design
+
+User selected bold server names, colored runtime dots (yellow while starting), warnings beside the dot and a clearer expand control. Final size reduced to18px name/28px button/8px dot after feedback. Applied to the new Figma cards only; no further Rust changes.
+
+## November 7 — final popup and gray installed-state acceptance
+
+All five discovery/install popup variants plus the manual-install Console page pass independent visual checks. Already-installed rows are selected/disabled with gray face, gray check and muted label. The Select all/Unselect all label still reflects current eligible selections. Manual command execution remains undefined/unimplemented; only the explicit Rust healthy-auth header display change was coded/tested.
+
+## November 7 — current visual and Install UX refinements
+
+The new Figma designs use convex blue/red controls, bold white text on every blue action, centered white vector × on retained red#C64545, white filled Copy glyphs on dark Console and blue copies on light surfaces. Settings gear is at the right: gray#A6ABB2, white outlined glyph when unselected; darker gray#939BA5 with filled white gear when selected. Blue Refresh retains a white cycle glyph. Checkbox outlines are removed and checks restored; already-installed rows use gray faces/checks/labels. Code blocks and inputs use very light gray#EEEFEF; Settings has32px bottom padding.
+
+Install discovery choices, searching, no results, installation progress and failure now appear in five shared popup variants. The main Install page has its file selector plus a separate manual-install command field, Install MCP action and empty shared Console. These are Figma designs only; manual command execution/API behavior is not selected or implemented. Close returns to the main Install specimen. The library has105local main definitions/13sets. Existing app/browser reference pages are retained.
+
+One explicitly requested Rust change is complete: server headers omit authentication status for authenticated/not_required and retain every other status. Six-state native-view render, locked native build and independent review pass. The temporary exporter is removed; Fetch was not launched. Active original and new Figma headers match this source change. Earlier “Rust/original pages unchanged” statements below describe prior passes.
+
 ## November 4, 2026 — fix normal clicks after surrounding page scroll
 
 Corrected the second selection issue: movement now uses the same parent-adjusted cursor as a press. Previous tests lacked an actual scrolled parent; the new real Scrollable scenario reproduced a500pxselection jump on tiny movement. After the two-line fix, normal click does not broadly highlight, deliberate shortdrag stays on its intended row and plainclickclears.11focused terminalUI checks1new/native build6.90s and independent ACCEPT. User native reload/observation remains; no app/login/credentials used. See milestones/terminal-pointer-coordinates/evidence.md.
@@ -1894,3 +1942,27 @@ After browser sign-in repairs, dedicated Codex0.166.0failed initialization becau
 ## November 6 —405tools and possible context growth
 
 User screenshot now confirms fetch: connected (405tools) in the actual Codex /mcp display. User is concerned that Fetch exposes individual tools together rather than first showing the managed MCP servers, potentially consuming too much model context. They propose exploring a tree: Fetch exposes server names/groups first; choosing a server exposes that server's tools. This is an idea to investigate, not an approved architecture/API change or implementation request. Record actual definition/context use separately from the405available-tool count; no token size has been measured. [Research and tradeoffs](docs/architecture/research.md#november-6--405-tool-catalog-and-per-server-discovery-proposal).
+
+
+## November 7, 2026 — current native app Figma sync
+
+User requested that Figma match the current app. Updated the official existing file with current native pages and meaningful Console/Terminal/install/settings states, using editable shared components. Older removed UI is clearly historical. Source-real window-free renders used disposable data and synthetic keys; no actual app launch, provider login, Keychain prompt or managed connection. Figma cannot render the app fonts exactly; Arimo/Roboto Mono substitutes are explicitly disclosed. See docs/FIGMA.md and milestones/current-figma-sync/info.md for scope/evidence.
+
+
+## November 7, 2026 — neumorphic UI overhaul inspiration and accent
+
+The user wants a full app UI overhaul, loves neumorphism, and is collecting more UI references before design work. Saved all four supplied original images in [docs/design-inspiratinos](docs/design-inspiratinos/info.md): their Flock@NYU floating input, a neumorphic music player, lavender Heart Limit settings and a color palette. The user explicitly selected the palette's light blue (third circle) as Fetch's accent: **#95D4F1**, RGB149/212/241, sampled from the supplied image. Other colors/layout details are inspiration only. This records the direction and accent; no app or Figma redesign was performed.
+
+
+## November 7 — separate neumorphic Figma overhaul and live feedback
+
+User requested exactly three separate new Figma pages for the app, all copied components and browser UI. Keep existing current pages until the design is later implemented directly in Rust, then update/archive them. Built24native states,83copied component definitions and29browser states using independent tokens/styles and copied instances. Current app source is unchanged.
+
+User preferred outward-bulging physical controls, asked for a lighter background, briefly considered a cooler gray, then explicitly chose to keep the lighter warm white#F7F6F1. Blue remains#95D4F1. They asked to reduce bright white highlights, fix square/cropped button/card/edge shadows, clean scrolled Settings shadow remnants, add giant page-name dividers and make the entire app window a rounded raised surface. These changes are reflected in the separate new pages. User intends substantial UX changes next; no new operations/API contracts are selected here. See docs/FIGMA.md and milestones/neumorphic-figma/info.md.
+
+Final follow-up: user requested removing the flat edgeless base rectangle. Native presentation stages are now transparent, retaining the shared rounded raised app surface and its shadow. One new Window surface component brings the new library to84main definitions (83copied). Focused independent Tester PASS.
+
+
+## November 7 — new navigation and action icons
+
+User requested removing the Quit Fetch navigation module, replacing the navigation Settings label with a round neumorphic gear, replacing Refresh with a circular cycle icon and making×marks red. Applied across separate new Figma app/component pages with selected/disabled states preserved. Red is#C64545. Current Rust UI and literal reference pages are unchanged. Per-server Settings remains a separate text action; Working…remains the busy-state label. See docs/FIGMA.md and milestones/neumorphic-figma/info.md.

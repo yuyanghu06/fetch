@@ -1,3 +1,31 @@
+November 8 design note: selected controls have no glow; glow is hover-only. The red × becomes bold on hover. Recorded requirements; applying them to Figma and Rust remains pending. See NOTES.md and docs/SHARED_UI_COMPONENTS.md.
+
+November8: user corrected tools placement. Available tools now nest inside their server expanded card in Figma (master153:1912/review153:1981; app78:1438). Console/footer retained; long content scrolls.123mains/14sets; visual ACCEPT. Rust tools layout unchanged.
+
+November7 source update: app server list now auto-refreshes through GET /api/v1/servers every60seconds, retaining1sactive-work reads and manual Refresh. Existing client/pending-read lifecycle reused.2focused fixture tests/build12.17s/independent ACCEPT. App not relaunched; no background Runner change. Parameter JSON-as-form design remains a suggestion. See milestones/periodic-server-refresh/info.md.
+
+Latest Figma wording: Available tools replaces Tool definitions in the new design. Source/original references unchanged.
+
+Latest inline output/tool-card design independently ACCEPTed; full raw tool definition preserved and fields exposed; no source/runtime changes.
+
+November7 latest Figma: Console/Terminal right-aligned inline with Inspect tools/Settings;7cards updated. Tools now360pxsquare shared cards146:2456 with Name/Required fields, full raw JSON preserved hidden; removed filesystem · available.122mains/14sets. Figma-only; independent review pending.
+
+November7 latest cards: light-gray inactive authentication keys from auth state, centered dots, gray Console/Terminal, repeated ID removed, per-card gear cancelled/removed. Footer shared139:1940 is inline, counts left/access details right.121mains/14sets; independent visual ACCEPT. Figma-only. Tool-definition move into card remains a recommendation, not implemented.
+
+November7 final header actions: simple uncircled14px chevron,18px bold name/8px dot (yellow starting); right side black/white key → blue/white restart → red/white close. Shared actions on13headers/8masters;120mains/14sets. Independent visual ACCEPT. Figma-only; original references/Rust unchanged in this pass.
+
+November7 server-header follow-up: new Figma cards now use bold18px name,28px recessed disclosure,8px colored runtime dot (yellow starting/restarting) and plain amber warnings. Eight shared variants update13native headers;116local mains/14sets. Figma-only; no new source change. See docs/FIGMA.md.
+
+November7 latest: new Figma Install states now use five popup variants plus a shared manual-install input/action/empty Console on the main page. All blue buttons have bold white labels and restored convex depth; installed checkboxes are gray.105local mains/13sets. This UX is Figma-only; manual execution remains undefined. Explicit Rust server-header fix hides authenticated/not_required labels; six-state render/build/independent ACCEPT. See docs/FIGMA.md and milestones/server-header-auth-status/info.md. Earlier unchanged-source notes are historical.
+
+November7 new Figma follow-up: navigation Quit Fetch removed; Settings round gear, Refresh round cycle icon, server×red#C64545.24gears/14refreshes/13redmarks; current Rust unchanged. New local library88mains/11sets. See docs/FIGMA.md.
+
+November7 new visual design: three separate neumorphic Figma pages75:2718(app),75:2251(components),75:2719(browser);24native/29browser states and83copied main definitions. Final user-retained warmwhite#F7F6F1 withblue#95D4F1, curved raised edges, softened glare, uncut shadows, giant group headings and raised app shell. Rust unchanged; user wants major UX iteration next. Independent Tester PASS and Evaluator ACCEPT; see docs/FIGMA.md and milestones/neumorphic-figma/info.md.
+
+November7 UI direction: user wants a full app overhaul and is collecting neumorphic references in docs/design-inspiratinos/. Selected accent is light blue #95D4F1 (RGB149,212,241), from the third palette swatch. Original references saved; no new screen layout or app/Figma implementation performed. See folder info.md and NOTES.md.
+
+November7: official Figma native board updated from current source/offscreen sample renders:24editable specimens, shared Console/Terminal/command blocks/manual-key editor; removed native UI archived. No app source/account/MCP changes. Figma font limitations require Arimo/Roboto Mono; no pixel-exact typography claim. See docs/FIGMA.md and milestones/current-figma-sync/info.md.
+
 November6 user screenshot confirms actual Codex /mcp now shows Fetch connected (405tools). User wants to note possible context growth and explore choosing managed MCP servers first, then loading their tools as a tree. Proposal only; current context/token cost unmeasured and no catalog/API change approved. See NOTES.md and architecture research/open questions.
 
 November6 final scoped connection result: actual dedicated fetch_codex client now initializes and loads405Fetch tools using saved OAuth access, without another password prompt or connection error. Fixed initial version negotiation;13focused tests and signed native build8.49s/strict verification pass. Existing open Codex needs restart to replace its old failed snapshot. No global/client configuration edits, model task or individual upstream tool calls. See milestones/mcp-version-negotiation/info.md.

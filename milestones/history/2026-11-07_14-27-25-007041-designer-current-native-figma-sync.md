@@ -1,0 +1,10 @@
+# Sync current editable native Fetch UI
+
+- Local timestamp / acting role / milestone: 2026-11-07T14:27:25.007041-05:00 / Designer and Orchestrator / current-figma-sync.
+- Requested scope: Sync official Figma with the exact current native app UI.
+- Starting repository state: Plan recorded; old October 28 screens and state library.
+- Work performed / changed files: Updated 13 existing native frames and added11current specimens. Updated shared navigation/buttons/input/checkbox/server cards/manual-key editor; added Console/Terminal/output controls/command blocks. Marked superseded state boards historical. Added current navigation prototype links and native scrolling. Recorded reference PNG evidence; product source restored exactly after temporary window-free export helper.
+- Decisions: No app/API behavior changes. Existing local Iced components match source; macOS kit controls were unsuitable. Fonts cannot be exact: SF Pro is listed but fresh text renders blank/zero-width; Menlo is absent. Use calibrated Arimo and Roboto Mono. Keep old OS titlebar representation and sample data separate from actual live-state claims.
+- Checks and evidence: Temporary reference exporter ran one selected test twice successfully (171total tests registered;170filtered each time), with in-memory fixture keys/temp state, no window/listener/Keychain/MCP or tasks executed. Second run initialized widget redraw state and confirmed actual native font families System Font/.SF NS and Menlo.24current editable screens audited: no image fills or zero-width visible text. Representative Figma/native PNGs compared; corrected shared row heights, source text sizes, empty-state buttons and sign-in monospace. Tester independently found two small state/text issues; both corrected.
+- Resulting state / acceptance: Current native source reflected in editable Figma; final targeted screenshots/review pending. Pixel-exact native fonts cannot be claimed. Browser/OS-owned surfaces and exhaustive data/error combinations are outside this native sync.
+- Remaining work and handoff: Final targeted checks, independent Evaluator decision, update current docs and return Figma link.

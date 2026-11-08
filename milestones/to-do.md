@@ -1,3 +1,96 @@
+## November 8 — hover appearance
+
+- [x] Record the selected-state and red × hover requirements.
+- [ ] Apply hover-only glow to shared Figma controls; selected state alone has no glow.
+- [ ] Make the red × bold on hover in Figma; include both rules in the later Rust UI port.
+
+- [x] Independently recheck the current working-tree diff; source contains only minute refresh and healthy-auth label changes. [Inspection](history/2026-11-08_18-33-18-380591-orchestrator-current-working-tree-inspection.md).
+
+- [x] Nest Available tools inside expanded server in Figma; preserve Console/footer and scrollable long content.
+- [x] Audit current working-tree changes and identify source versus documentation/assets.
+
+## One-minute app server refresh
+
+- [x] Clarify app server list, inspect existing GET path and bound plan.
+- [x] Add60-second automatic refresh using existing pending-read guard.
+- [x] Two focused fixture checks and locked binary build pass.
+- [x] Independent final source/evidence review ACCEPT.
+
+- [x] Rename the new Figma tool section to Available tools.
+
+## Latest output/tool design
+
+- [x] Align Console/Terminal right on the Inspect tools/Settings row across7cards.
+- [x] Remove filesystem · available and replace tool disclosure with square two-field card.
+- [x] Reuse shared inputs; preserve full raw tool definition.
+- [x] Independent final visual review ACCEPT for this layout.
+- [ ] Later Rust port when selected; no tool edit/call behavior implemented here.
+
+## Latest server card followups
+
+- [x] Center dot with name; gray inactive key based on auth, not runtime; lighten disabled gray.
+- [x] Cancel/remove per-card gear; retain navbar Settings.
+- [x] Gray Console/Terminal and remove redundant ID.
+- [x] Shared inline footer with activity left and access details right; preserve7specimen values.
+- [x] Independent visual ACCEPT.
+- [x] User selected nesting Available tools inside owning expanded server; Figma updated and reviewed.
+- [ ] Port approved design to Rust when requested.
+
+- [x] Preserve uncut shadows in new header action groups/review rows.
+
+## Final header actions
+
+- [x] Replace circular disclosure with a plain muted chevron.
+- [x] Add black/white authentication key and blue/white restart before red/white close on all native design cards.
+- [x] Preserve busy/disabled variants and verify final appearance.
+- [ ] Wire the new authentication/restart controls during the separately selected Rust UI port.
+
+## Compact server headers
+
+- [x] Replace combined header strings with bold names, colored dots, clear disclosure and warnings in new Figma designs.
+- [x] Reduce names/buttons/dots to18px/28px/8px after feedback; starting/restarting stays yellow.
+- [x] Independent final visual review ACCEPT; plain chevron and three header actions verified.
+- [ ] Port this header design to Rust when implementation is requested.
+
+## Latest visual and Install UX follow-up
+
+- [x] Apply icon/depth/text/Copy/field/padding refinements; restore blue protrusion and checkbox checks.
+- [x] Implement/test/review server-header healthy-auth label rule in Rust and Figma.
+- [x] Create five discovery popup states and separate manual-install Console section in Figma.
+- [x] Gray already-installed selected checkbox, checkmark and label.
+- [x] Independent Tester PASS for main page and all five popups.
+- [x] Final Evaluator ACCEPT for popup/installed-state visuals.
+- [ ] Define manual installation execution when selecting its Rust implementation; this design does not select a new API/shell workflow.
+- [ ] Port remaining approved neumorphic designs to Rust when requested; current changes are Figma-only except the header rule.
+
+## Neumorphic navigation/icons
+
+- [x] Remove Quit Fetch module; circular Settings/Refresh icons and red×marks.
+- [x] Verify selected/disabled appearance and final screenshots.
+- [x] Independent Evaluator ACCEPT.
+
+## Neumorphic Figma redesign
+
+- [x] Inventory source screens/components and record selected palette.
+- [x] Create three separate pages and independent foundations; copy/remap83components.
+- [x] Restyle24native/29browser specimens with copied components and apply live visual feedback.
+- [x] Inspect final screenshots and obtain independent Tester PASS / Evaluator ACCEPT; preserve existing pages.
+- [ ] Define the user’s next UX changes; Rust implementation remains separate.
+
+## UI overhaul inspiration
+
+- [x] Save all four original references and document the selected neumorphic direction.
+- [x] Record light blue #95D4F1 as the user-selected accent.
+- [ ] Continue collecting the user’s additional references.
+
+## Current Figma sync
+
+- [x] Read-only source/Figma plan.
+- [x] Render disposable window-free app references.
+- [x] Update 24 editable native specimens/shared controls and mark removed UI historical.
+- [x] Compare screenshots, fix independent findings and obtain Evaluator ACCEPT.
+- [ ] Optional follow-up: exact native fonts when Figma can render them; current substitutes are explicit.
+
 # Fetch current work
 
 ## Full working-tree push — November6

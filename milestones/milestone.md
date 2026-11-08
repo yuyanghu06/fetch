@@ -1,4 +1,132 @@
+## November 8 — control hover rules recorded
+
+Selected controls must have no glow; glow is hover-only. Red × becomes bold on hover. Saved in NOTES.md, PROJECT_CONTEXT.md and the shared component requirements. Figma/app changes remain pending. User also requested committing and pushing the whole current working tree after this note. No new application changes or runtime checks in this pass. [Record](history/2026-11-08_18-34-43-803529-orchestrator-record-control-hover-rules.md).
+
+## November 8 — fresh working-tree inspection
+
+Independently inspected the actual source diff and file inventory. Before this journal entry:11modified tracked files (+599/−8),100untracked files, nothing staged. Only application changes are the60-second server-list refresh and hiding healthy/unneeded authentication labels, plus2refresh tests. Other changes are design/project documentation, reference images, screenshots and milestone records. No backend/API/dependency files changed. No tests or app launches run in this pass. [Inspection](history/2026-11-08_18-33-18-380591-orchestrator-current-working-tree-inspection.md).
+
+## Latest complete — tools nested in expanded server
+
+## November 8 — tools belong to the expanded server
+
+Available tools now live inside their owning expanded server card in the new Figma design. Shared card153:1912 contains the normal header/actions, Console, Available tools grid and footer. Review153:1981 shows the whole card; app frame78:1438 uses it with vertical scrolling. Standalone heading/grid were removed. Inspect tools links open this expanded specimen; the header collapses back to the ordinary server list. Tool data/shared inputs are preserved. Independent review ACCEPT;123local main definitions/14sets. This relocation is Figma-only; the Rust tool section remains unchanged until the UI port.
+
+Working-tree audit: outside minute refresh and its tests, only other functional source edit is healthy-auth header text hiding. Remaining changes are docs/reference/evidence/milestone files; no backend/API/dependency changes. [Pass 1](history/2026-11-08_14-42-20-601666-designer-tools-inside-expanded-server.md), [Pass 2](history/2026-11-08_14-42-20-601667-orchestrator-working-tree-diff-audit.md), [Pass 3](history/2026-11-08_14-42-20-601668-evaluator-accept-tools-nested-in-server.md). Earlier separate-tools recommendations are superseded by the user’s explicit selection.
+
+## Complete — app server list every minute
+
+The app now schedules existing GET /api/v1/servers every60seconds through AutomaticRefresh, while retaining faster active-work polling. Missing-client/in-flight guards and existing reply ordering are reused.2focused UI checks, locked binary build12.17s and independent Evaluator ACCEPT. No app relaunch/live HTTP/timing test. [Final review](history/2026-11-07_23-24-17-847252-evaluator-accept-minute-server-list-refresh.md), [scope/evidence](periodic-server-refresh/info.md). Earlier in-progress records below are superseded.
+
+## Minute refresh — focused checks/build pass
+
+Two realistic UI fixture checks pass; locked binary build passes12.17s. No live HTTP or60s timing exercised; interval/GET reuse source-inspected. Independent evaluation pending. [Pass](history/2026-11-07_22-50-11-225799-tester-minute-server-list-refresh.md), [evidence](periodic-server-refresh/evidence/).
+
+## Minute refresh — implemented, checking
+
+Independent Coder added a60-second app timer through existing GET /api/v1/servers, guarded by existing pending-read/client state. Faster/manual reads unchanged; source diff inspected. Focused fixture tests/build underway. [Pass](history/2026-11-07_22-48-47-285102-coder-minute-server-list-refresh.md).
+
+## Active — app server list every minute
+
+User selected a60-second automatic app refresh through existing GET /api/v1/servers. Preserve faster active-console/auth/restart/installation checks and native-session close behavior. Coder implementation underway; focused checks/build/review remain. [Plan](history/2026-11-07_22-47-39-910626-planner-minute-server-list-refresh.md), [scope](periodic-server-refresh/info.md).
+
+Latest text update: renamed the new Figma section to **Available tools**. [Pass](history/2026-11-07_22-40-10-817872-designer-rename-available-tools.md).
+
+## Latest accepted — inline controls and square tool cards
+
+Independent Evaluator ACCEPT for ordinary/recovery toolbars and square Name/Required fields tool cards. No overlap/clipping; origin label removed; original full JSON preserved. Figma-only. [Review](history/2026-11-07_22-38-26-646895-evaluator-accept-inline-tabs-square-tool-cards.md). Earlier pending-review entries below are superseded.
+
+## Latest — inline output controls and tool cards
+
+## November 7 — inline output controls and square tool cards
+
+Console and Terminal now sit on the right of the same row as Inspect tools/Settings. Seven active expanded-card masters and seven native specimens reuse the shared output controls; the last button ends at the1072pxcontent edge in every row, including recovery with extra actions. Availability and light-gray treatment stay intact.
+
+The new Tool card146:2456 is a360×360 raised rounded square with two shared inset Text input instances: Name and Required fields. Their values are exposed for specimen edits; read_file uses path from the actual required list. Full original tool JSON is preserved unchanged in a hidden editable Raw definition property. This layout does not implement tool renaming, argument submission or execution. Review frame146:2466 and current app tool78:1456 show the card; a wrapping grid147:2704 holds cards. The filesystem · available origin label is removed. Prior disclosure set75:2331 is retained and marked Legacy. Library122local main definitions/14sets.
+
+Tool cards remain in the current separate Tool definitions section; moving that section into the owning server card is still a recommendation, not selected. Original reference pages and Rust source are unchanged in this Figma-only pass.
+
+Root visual checks pass; independent review pending. [Pass](history/2026-11-07_22-37-57-272799-designer-inline-output-tabs-square-tool-card.md).
+
+## Latest complete — gray authentication and inline server footer
+
+## November 7 — authentication states and compact server footer
+
+Authentication keys now use light gray#B8BDC3 when sign-in is confirmed, unnecessary or already underway; required/failed/unknown states retain the black action. Runtime ready alone is not authentication proof. The new designs use the existing authentication fields; there is no backend behavior change. The official [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) defines optional HTTP authorization, while local stdio servers use separate credential handling. A running local server is not universal proof of a signed-in service account.
+
+Runtime dots are optically centered with the visible name. The user requested then cancelled a per-server settings gear; it has been removed. Header actions remain key/restart/close; the navbar Settings gear is retained. Repeated lowercase server IDs are removed from expanded cards. Console/Terminal controls are light gray#E3E6E9 with availability preserved.
+
+New shared footer139:1940 puts activity counts at left and connection expiry/last verification together at right on one line. Seven expanded-card specimens preserve their exact values. All13headers have three actions, no per-card gear and no redundant direct ID;14output controls updated. Library121local main definitions/14sets. Independent visual Evaluator ACCEPT; no overlap/clipping.
+
+Tool definitions are still separate because src/ui/mod.rs renders the section after the server list. Moving definitions into their matching server card is the assistant's recommendation, not yet a user-approved change. This entire pass is Figma-only; no Rust/native/backend changes or account/MCP execution occurred.
+
+[Pass 1](history/2026-11-07_19-44-26-505318-researcher-mcp-auth-versus-runtime.md), [Pass 2](history/2026-11-07_19-44-26-505319-designer-server-footer-auth-and-control-followups.md), [Pass 3](history/2026-11-07_19-44-26-505320-evaluator-accept-auth-footer-card-refinements.md). Earlier states below are historical checkpoints.
+
+Final header shadow follow-up: action/review rows allow overflow so round-button shadows are not cut off. Final screenshots refreshed. [Pass](history/2026-11-07_19-32-19-520137-designer-preserve-header-action-shadows.md).
+
+## Latest complete — server identity and actions
+
+## November 7 — final server header actions
+
+The disclosure is now a plain14px muted chevron with no circular background/shadow, inside a transparent28px click target. Name stays18px Bold; dot stays8px and yellow during starting/restarting. Three44px actions sit on the right: black#1D2023 with filled white key opens authentication; blue with white circular arrow restarts the server; red with white× removes it. All13native headers and8active card masters use shared Server actions132:1678. Busy authentication/restart controls use disabled variants; existing disabled deletion states are retained. Disabled red remains saturated per the user's earlier color instruction.
+
+The new library has120local main definitions/14sets. Review sheet129:1601 now pairs identities and actions. Independent final visual review ACCEPTs the current app headers. These actions specify the new Figma UX; they are not newly wired native buttons or executed backend operations. Rust/original reference pages were unchanged in this pass.
+
+[Design pass](history/2026-11-07_19-31-28-739541-designer-header-actions-plain-disclosure.md), [final review](history/2026-11-07_19-31-28-739542-evaluator-accept-final-server-headers.md). Earlier circle/size records below are historical checkpoints.
+
+## Latest — compact server headers
+
+New Figma headers use18px bold names,28px recessed disclosure buttons,8px colored dots (yellow starting/restarting) and adjacent warnings.8shared variants cover4statuses ×2expansion states;8active card masters/13native headers updated.116local mains/14sets. Root screenshot/structural checks pass; independent review pending. Rust/original pages unchanged in this pass. [Pass](history/2026-11-07_19-24-44-326624-designer-compact-server-identity-headers.md).
+
+## Latest completion — November 7
+
+Independent Tester PASS and final Evaluator ACCEPT for the manual-install main page, all five discovery/install popups, gray installed rows, close× and selected filled gear. Current controls retain raised blue/red edges, bold white accent labels, consistent Copy glyphs, gray fields and Settings bottom spacing. Figma library:105local main definitions/13sets. [Final review](history/2026-11-07_18-28-08-610864-evaluator-accept-install-popups-controls.md).
+
+The only Rust implementation in this slice is the separately accepted authentication-header display rule. Its six-state real-view render and locked build pass; Fetch was not launched. Popup/manual execution remains Figma-only and needs a later app implementation decision. Earlier pending-review checkpoints below are superseded by this acceptance.
+
+## Latest independent popup check
+
+Tester PASS for the main Install page and all five dialog states; no clipping/overlap. Final Evaluator review pending. [Pass](history/2026-11-07_18-27-14-829921-tester-install-popup-visual-review.md).
+
+## Latest — Install popups and control refinements
+
+## November 7 — current visual and Install UX refinements
+
+The new Figma designs use convex blue/red controls, bold white text on every blue action, centered white vector × on retained red#C64545, white filled Copy glyphs on dark Console and blue copies on light surfaces. Settings gear is at the right: gray#A6ABB2, white outlined glyph when unselected; darker gray#939BA5 with filled white gear when selected. Blue Refresh retains a white cycle glyph. Checkbox outlines are removed and checks restored; already-installed rows use gray faces/checks/labels. Code blocks and inputs use very light gray#EEEFEF; Settings has32px bottom padding.
+
+Install discovery choices, searching, no results, installation progress and failure now appear in five shared popup variants. The main Install page has its file selector plus a separate manual-install command field, Install MCP action and empty shared Console. These are Figma designs only; manual command execution/API behavior is not selected or implemented. Close returns to the main Install specimen. The library has105local main definitions/13sets. Existing app/browser reference pages are retained.
+
+One explicitly requested Rust change is complete: server headers omit authentication status for authenticated/not_required and retain every other status. Six-state native-view render, locked native build and independent review pass. The temporary exporter is removed; Fetch was not launched. Active original and new Figma headers match this source change. Earlier “Rust/original pages unchanged” statements below describe prior passes.
+
+Latest passes:
+
+- [2026-11-07_18-25-29-915209-planner-healthy-auth-header.md](history/2026-11-07_18-25-29-915209-planner-healthy-auth-header.md)
+- [2026-11-07_18-25-29-915210-coder-healthy-auth-header.md](history/2026-11-07_18-25-29-915210-coder-healthy-auth-header.md)
+- [2026-11-07_18-25-29-915211-tester-healthy-auth-header.md](history/2026-11-07_18-25-29-915211-tester-healthy-auth-header.md)
+- [2026-11-07_18-25-29-915212-evaluator-healthy-auth-header.md](history/2026-11-07_18-25-29-915212-evaluator-healthy-auth-header.md)
+- [2026-11-07_18-25-29-915213-designer-neumorphic-control-refinements.md](history/2026-11-07_18-25-29-915213-designer-neumorphic-control-refinements.md)
+- [2026-11-07_18-25-29-915214-planner-install-popups-manual-console.md](history/2026-11-07_18-25-29-915214-planner-install-popups-manual-console.md)
+- [2026-11-07_18-25-29-915215-designer-install-dialogs-manual-console.md](history/2026-11-07_18-25-29-915215-designer-install-dialogs-manual-console.md)
+
+Next: finish independent popup/gray-installed-state review and preserve evidence. Rust implementation of the new UX remains separate.
+
 # Fetch milestone snapshot
+
+## Neumorphic navigation/icons — complete
+
+New navigation removes Quit Fetch; Settings uses a circular gear, Refresh uses a circular cycle glyph, server×marks are red#C64545.24gears/14refreshes/13redmarks verified; active/disabled states retained.88local main definitions/11sets; Rust/original pages unchanged. Independent Evaluator ACCEPT. [Review](history/2026-11-07_17-41-49-179137-evaluator-accept-navigation-icons.md). [Pass](history/2026-11-07_17-41-31-865511-designer-neumorphic-navigation-icons.md).
+
+## Neumorphic Figma baseline — complete
+
+Three separate new pages: 24 native states, 29 browser states, and 83 copied main component definitions plus one shared Window surface (84 total). Final user-retained warm white #F7F6F1 / blue #95D4F1; convex controls, reduced white glare, uncut shadows, giant group headings and a complete raised app shell over transparent stages. Source text/visibility/permission state checks pass; independent Tester PASS and Evaluator ACCEPT. Existing native/browser reference-frame fingerprints unchanged; raw original-component-page preservation not proven (no observed defect). Rust unchanged. Next: the user's major UX changes. [Final acceptance](history/2026-11-07_15-14-11-865656-evaluator-accept-neumorphic-figma-baseline.md), [scope/evidence](neumorphic-figma/info.md), [Figma links](../docs/FIGMA.md).
+
+## UI overhaul inspiration — collecting
+
+Four original references saved unchanged in docs/design-inspiratinos/. User prefers neumorphism and selected light blue #95D4F1 as the accent. No new layout or app/Figma change performed; more references expected. [Pass](history/2026-11-07_14-39-29-442857-orchestrator-save-neumorphic-ui-inspiration.md), [scope](ui-overhaul-inspiration/info.md).
+
+## Current native Figma sync — complete with font limitation
+
+24editable current native specimens across all four app pages and shared components are updated in the official file. Source-real disposable offscreen references, structural checks and representative screenshot comparisons pass; independent Tester findings were corrected and Evaluator ACCEPTs final layout/control states. Product source, accounts and client settings unchanged. Figma cannot render SF Pro/Menlo exactly, so Arimo/Roboto Mono remain explicit substitutions. Browser/OS-owned surfaces were not refreshed; no live-state/exhaustive-coverage claim. [Final acceptance](history/2026-11-07_14-30-40-996220-evaluator-accept-current-native-figma-sync.md), [scope/evidence](current-figma-sync/info.md), [current Figma guide](../docs/FIGMA.md). Next: user review; exact native fonts require Figma renderer support.
 
 ## Full working-tree push — delivered
 

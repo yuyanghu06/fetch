@@ -1,0 +1,28 @@
+{
+  "accent": {
+    "hex": "#95D4F1",
+    "rgb": [
+      149,
+      212,
+      241
+    ],
+    "selected_on": "2026-11-07",
+    "source": "04-neumorphism-color-palette.png",
+    "source_swatch": "Third circle from the left: light blue",
+    "sampling": "Most common RGB value in an 11 by 11 pixel area near the swatch center",
+    "status": "User-selected; applied to the separate new Figma pages only"
+  },
+  "background": {
+    "hex": "#F7F6F1",
+    "rgb": [
+      247,
+      246,
+      241
+    ],
+    "selected_on": "2026-11-07",
+    "source": "05-warm-white-neumorphic-surfaces.png",
+    "sampling": "Representative central raised-panel area near pixel170,270; supplied image includes lighting gradients",
+    "status": "User selected keeping the lighter warm-white Figma background after reviewing it; cool-gray alternative not adopted",
+    "previous_sample": "#E7E5DB"
+  }
+}
