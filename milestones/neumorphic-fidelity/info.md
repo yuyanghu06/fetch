@@ -27,3 +27,7 @@ Verification uses temporary fixtures and synthetic keys. No native Fetch window,
 Manual command installation remains outside scope pending its agreed behavior. Browser approval screens and OS title bars remain separate.
 
 [Independent acceptance](../history/2026-11-09_15-27-42-333375-evaluator-accept-neumorphic-appearance-correction.md).
+
+## Delivery — November 9
+
+The accepted UI code, assets, checks and related design records are committed and pushed to GitHub main as `0c4ace6`. Local and remote commit IDs matched after the push. The independent delivery review returned ACCEPT. Native launch and exact pixel-equality limits remain unchanged.
