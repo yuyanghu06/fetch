@@ -1,0 +1,2 @@
+warning: `fetch-local` (lib) generated 27 warnings (run `cargo fix --lib -p fetch-local` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.01s

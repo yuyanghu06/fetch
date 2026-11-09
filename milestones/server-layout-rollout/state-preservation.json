@@ -1,0 +1,413 @@
+{
+  "before": {
+    "states": [
+      {
+        "id": "78:1407",
+        "name": "Servers \u00b7 Empty",
+        "textCount": 7,
+        "textHash": "e8dc108b",
+        "reactionCount": 4,
+        "reactionHash": "d2a12b02",
+        "outputs": []
+      },
+      {
+        "id": "78:1422",
+        "name": "Servers \u00b7 Populated",
+        "textCount": 10,
+        "textHash": "38ef3615",
+        "reactionCount": 5,
+        "reactionHash": "517fa793",
+        "outputs": []
+      },
+      {
+        "id": "78:1438",
+        "name": "Servers \u00b7 Tools expanded",
+        "textCount": 50,
+        "textHash": "9b1ecc86",
+        "reactionCount": 10,
+        "reactionHash": "652b3a73",
+        "outputs": [
+          [
+            "I78:1452;153:1921",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1457",
+        "name": "Servers \u00b7 Recovery",
+        "textCount": 18,
+        "textHash": "c3d7883d",
+        "reactionCount": 10,
+        "reactionHash": "821b4a7d",
+        "outputs": [
+          [
+            "I78:1471;75:2320",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1705",
+        "name": "Servers \u00b7 Console empty",
+        "textCount": 19,
+        "textHash": "dbf0e578",
+        "reactionCount": 10,
+        "reactionHash": "14b6facd",
+        "outputs": [
+          [
+            "I78:1719;75:2303",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1721",
+        "name": "Servers \u00b7 Sign-in pending",
+        "textCount": 19,
+        "textHash": "eac1d246",
+        "reactionCount": 8,
+        "reactionHash": "d9450fc9",
+        "outputs": [
+          [
+            "I78:1735;77:1485",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1737",
+        "name": "Servers \u00b7 Remote console",
+        "textCount": 18,
+        "textHash": "13fce85e",
+        "reactionCount": 9,
+        "reactionHash": "cbeeb3bd",
+        "outputs": [
+          [
+            "I78:1751;77:1435",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1752",
+        "name": "Servers \u00b7 Terminal running",
+        "textCount": 16,
+        "textHash": "9c08456a",
+        "reactionCount": 11,
+        "reactionHash": "473c4c5c",
+        "outputs": [
+          [
+            "I78:1766;77:1451",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1767",
+        "name": "Servers \u00b7 Terminal exited",
+        "textCount": 17,
+        "textHash": "94fb43b9",
+        "reactionCount": 11,
+        "reactionHash": "a3871c2c",
+        "outputs": [
+          [
+            "I78:1781;77:1467",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1782",
+        "name": "Servers \u00b7 Restarting",
+        "textCount": 18,
+        "textHash": "34e789ba",
+        "reactionCount": 8,
+        "reactionHash": "c7047eb2",
+        "outputs": [
+          [
+            "I78:1796;77:1500",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "170:2698",
+        "name": "Servers \u00b7 Expanded \u00b7 panels closed",
+        "textCount": 19,
+        "textHash": "c637a39b",
+        "reactionCount": 10,
+        "reactionHash": "88b61d3b",
+        "outputs": [
+          [
+            "I170:2714;75:2303",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "170:2818",
+        "name": "Servers \u00b7 Recovery \u00b7 Console open",
+        "textCount": 18,
+        "textHash": "990ae50b",
+        "reactionCount": 10,
+        "reactionHash": "5a4041ad",
+        "outputs": [
+          [
+            "I170:2834;75:2320",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "170:2918",
+        "name": "Servers \u00b7 Sign-in pending \u00b7 Console open",
+        "textCount": 19,
+        "textHash": "ec471a7e",
+        "reactionCount": 8,
+        "reactionHash": "7456f6dd",
+        "outputs": [
+          [
+            "I170:2934;77:1485",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "170:3044",
+        "name": "Servers \u00b7 Restarting \u00b7 Console open",
+        "textCount": 18,
+        "textHash": "2642c8d0",
+        "reactionCount": 8,
+        "reactionHash": "d6e7db3e",
+        "outputs": [
+          [
+            "I170:3060;77:1500",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "177:3654",
+        "name": "Servers \u00b7 Tools \u00b7 scrolling demo",
+        "textCount": 50,
+        "textHash": "558bb71b",
+        "reactionCount": 10,
+        "reactionHash": "368d46c9",
+        "outputs": [
+          [
+            "I177:3670;153:1921",
+            false
+          ]
+        ]
+      }
+    ],
+    "otherNodesInProposedArea": []
+  },
+  "after": {
+    "states": [
+      {
+        "id": "78:1407",
+        "name": "Servers \u00b7 Empty",
+        "textCount": 7,
+        "textHash": "e8dc108b",
+        "reactionCount": 4,
+        "reactionHash": "d2a12b02",
+        "outputs": []
+      },
+      {
+        "id": "78:1422",
+        "name": "Servers \u00b7 Populated",
+        "textCount": 10,
+        "textHash": "38ef3615",
+        "reactionCount": 5,
+        "reactionHash": "517fa793",
+        "outputs": []
+      },
+      {
+        "id": "78:1438",
+        "name": "Servers \u00b7 Tools expanded",
+        "textCount": 50,
+        "textHash": "9b1ecc86",
+        "reactionCount": 10,
+        "reactionHash": "652b3a73",
+        "outputs": [
+          [
+            "I78:1452;153:1921",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1457",
+        "name": "Servers \u00b7 Recovery",
+        "textCount": 18,
+        "textHash": "c3d7883d",
+        "reactionCount": 10,
+        "reactionHash": "821b4a7d",
+        "outputs": [
+          [
+            "I78:1471;75:2320",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1705",
+        "name": "Servers \u00b7 Console empty",
+        "textCount": 19,
+        "textHash": "dbf0e578",
+        "reactionCount": 10,
+        "reactionHash": "14b6facd",
+        "outputs": [
+          [
+            "I78:1719;75:2303",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1721",
+        "name": "Servers \u00b7 Sign-in pending",
+        "textCount": 19,
+        "textHash": "eac1d246",
+        "reactionCount": 8,
+        "reactionHash": "d9450fc9",
+        "outputs": [
+          [
+            "I78:1735;77:1485",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "78:1737",
+        "name": "Servers \u00b7 Remote console",
+        "textCount": 18,
+        "textHash": "13fce85e",
+        "reactionCount": 9,
+        "reactionHash": "cbeeb3bd",
+        "outputs": [
+          [
+            "I78:1751;77:1435",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1752",
+        "name": "Servers \u00b7 Terminal running",
+        "textCount": 16,
+        "textHash": "9c08456a",
+        "reactionCount": 11,
+        "reactionHash": "473c4c5c",
+        "outputs": [
+          [
+            "I78:1766;77:1451",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1767",
+        "name": "Servers \u00b7 Terminal exited",
+        "textCount": 17,
+        "textHash": "94fb43b9",
+        "reactionCount": 11,
+        "reactionHash": "a3871c2c",
+        "outputs": [
+          [
+            "I78:1781;77:1467",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "78:1782",
+        "name": "Servers \u00b7 Restarting",
+        "textCount": 18,
+        "textHash": "34e789ba",
+        "reactionCount": 8,
+        "reactionHash": "c7047eb2",
+        "outputs": [
+          [
+            "I78:1796;77:1500",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "170:2698",
+        "name": "Servers \u00b7 Expanded \u00b7 panels closed",
+        "textCount": 19,
+        "textHash": "c637a39b",
+        "reactionCount": 10,
+        "reactionHash": "88b61d3b",
+        "outputs": [
+          [
+            "I170:2714;75:2303",
+            false
+          ]
+        ]
+      },
+      {
+        "id": "170:2818",
+        "name": "Servers \u00b7 Recovery \u00b7 Console open",
+        "textCount": 18,
+        "textHash": "990ae50b",
+        "reactionCount": 10,
+        "reactionHash": "5a4041ad",
+        "outputs": [
+          [
+            "I170:2834;75:2320",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "170:2918",
+        "name": "Servers \u00b7 Sign-in pending \u00b7 Console open",
+        "textCount": 19,
+        "textHash": "ec471a7e",
+        "reactionCount": 8,
+        "reactionHash": "7456f6dd",
+        "outputs": [
+          [
+            "I170:2934;77:1485",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "170:3044",
+        "name": "Servers \u00b7 Restarting \u00b7 Console open",
+        "textCount": 18,
+        "textHash": "2642c8d0",
+        "reactionCount": 8,
+        "reactionHash": "d6e7db3e",
+        "outputs": [
+          [
+            "I170:3060;77:1500",
+            true
+          ]
+        ]
+      },
+      {
+        "id": "177:3654",
+        "name": "Servers \u00b7 Tools \u00b7 scrolling demo",
+        "textCount": 50,
+        "textHash": "558bb71b",
+        "reactionCount": 10,
+        "reactionHash": "368d46c9",
+        "outputs": [
+          [
+            "I177:3670;153:1921",
+            false
+          ]
+        ]
+      }
+    ],
+    "overlaps": []
+  },
+  "stateDifferences": []
+}

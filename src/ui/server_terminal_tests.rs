@@ -27,11 +27,15 @@ async fn console_switch_collapse_and_page_changes_keep_screen_session_and_output
     assert!(!desktop.terminals["github"].opening);assert_eq!(desktop.terminals["github"].session.as_deref(),Some("terminal-fixture"));assert_eq!(desktop.terminals["github"].terminal.as_ref().unwrap().id,model);
 }
 #[tokio::test]
-async fn remote_terminal_is_disabled_and_console_is_present_without_authentication() {
+async fn remote_terminal_is_disabled_and_console_requires_an_explicit_click() {
     let (_directory,mut desktop)=desktop_fixture().await;desktop.servers=json!({"servers":[{"server_id":"remote","config":{"kind":"remote"}}]});
+    assert!(desktop.server_panel("remote")==Pane::Hidden);
     drop(desktop.update_terminal(Message::Open("remote".into())));assert!(!desktop.terminals.contains_key("remote"));
     drop(desktop.update_terminal(Message::Console("remote".into())));assert!(desktop.terminals["remote"].pane==Pane::Console);assert!(desktop.terminals["remote"].session.is_none());
     let _view=desktop.server_output_view("remote",&desktop.servers["servers"][0]);
+    drop(_view);
+    drop(desktop.update_terminal(Message::Console("remote".into())));
+    assert!(desktop.server_panel("remote")==Pane::Hidden);
 }
 #[tokio::test]
 async fn close_bypasses_blocked_input_and_stale_responses_do_not_mutate_session() {

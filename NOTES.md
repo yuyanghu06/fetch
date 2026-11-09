@@ -1,3 +1,19 @@
+## November 9, 2026 — correct the rejected glossy appearance
+
+The user rejected the first native port as too glossy and asked for a pixel-perfect match to the Figma design. That supersedes the earlier acceptance of approximate native shadows. The correction removes all invented face gradients/hard rims, uses the actual Figma flat fills and complete shadow layers, and fixes measured spacing, corner radii, font weights/line heights and embedded numeric arrow strips.
+
+Matching-size comparisons revealed rendering faults that source review/builds did not establish: Iced SVG transparency was applied twice, mixed image filter batches covered glyphs, cold memory images sometimes arrived late, and background images covered foreground checkbox/arrow quads. The shared wrapper now renders the same pinned resvg effects to straight RGBA, caches each surface, uses correct display scale, prepares memory images before drawing and keeps foreground controls in a later drawing layer. Original SVG asset bytes remain unchanged; icon slots/colors match Figma.
+
+The extra Raw definition text control was absent from the Figma cards and is removed; the complete original Tool JSON remains unchanged in API/state. Manual command installation remains outside scope pending its agreed behavior. Actual native launch/Keychain/account acceptance is still untested; this Mac's dedicated development signer remains unconfigured. [Current fidelity evidence](milestones/neumorphic-fidelity/info.md) records exact residual differences rather than claiming that matching numeric styles proves pixel equality.
+
+## November 9, 2026 — port the neumorphic design to the dev app
+
+User requested syncing the approved Figma design onto the native development app. Implemented shared warm-white/blue controls, three-tab navigation, recessed server/tool sections, round authentication/restart/removal, explicit tools/Settings/Console/Terminal panels, inline Settings and discovery/install popup. Existing APIs, raw tool JSON, manual-key editor and terminal sessions are retained. Manual command installation remains unimplemented because its execution/API contract is still unselected; no dummy shell action was added. The existing browser approval UI is outside this native port.
+
+Current Figma context uses pale-blue#EAF5FB read-only tool values; earlier warm-white descriptions are historical. Exact SVGs and Inter/Roboto Mono fonts are bundled locally with font licenses. Static Inter400/600/700 faces avoid observed bold-font fallback. Iced button depth uses the framework's available gradient/shadow drawing; native OS titlebar remains system-owned.
+
+Actual widget/scroll/copy/inline-key/progress-reopen checks and sample-data native-view renders are tracked in [the implementation milestone](milestones/neumorphic-dev-sync/info.md). This Mac has build tools but lacks Fetch's dedicated development signing selection/certificate. The signed launcher stops before building/signing; no app, personal settings, account login, Keychain operation or real MCP was run. Follow the existing per-Mac signing checklist before launching.
+
 ## November 8 — selected and hover appearance
 
 Selected controls must not glow. Glow appears only while hovering, including on the selected Settings gear shown in the user’s reference. Hovering over the red × must make the × bold. Recorded as requested; Figma and app source have not been changed for these rules.
@@ -1966,3 +1982,27 @@ Final follow-up: user requested removing the flat edgeless base rectangle. Nativ
 ## November 7 — new navigation and action icons
 
 User requested removing the Quit Fetch navigation module, replacing the navigation Settings label with a round neumorphic gear, replacing Refresh with a circular cycle icon and making×marks red. Applied across separate new Figma app/component pages with selected/disabled states preserved. Red is#C64545. Current Rust UI and literal reference pages are unchanged. Per-server Settings remains a separate text action; Working…remains the busy-state label. See docs/FIGMA.md and milestones/neumorphic-figma/info.md.
+
+
+## November 8, 2026 — scrolling trial cancelled
+
+User tried a fixed-navigation/recessed-page-scroll Figma design, then explicitly asked to revert the scrolling fixes. Original Tools expanded screen layout and shared page scrolling are restored. No depth/position redesign is selected by the cancelled exchange. See milestones/recessed-page-scroll/info.md.
+
+
+## November 8, 2026 — explicit panels, pressed selection and restart shortcut
+
+User requires Available tools to open from Inspect tools, and Console to stay hidden unless explicitly opened. Selected Inspect tools/Settings/Console/Terminal should look pressed downward without glow. User removed the extra Restart / Connect and Force restart buttons: use normal round restart, with Shift-click for force restart. Both Terminal surfaces must align at the right edge. Applied on new Figma pages; original scrolling retained after the separately cancelled scroll trial. No Rust/API change. Figma cannot distinguish Shift-click in its click trigger; that shortcut remains a later application implementation requirement. See milestones/explicit-server-panels/info.md.
+
+
+## November 8, 2026 — recessed tools and read-only demo
+
+User extended pressed/no-glow selection to Servers/Install MCPs/Connect apps tabs. Available tools should be its own large recessed section, with raised tool cards and independent scrolling. User selected multiple rows, then three cards per row, requested a different well color, recessed Installed servers as well, and enlarged demo app boundaries so expanded content fits. Name/Required fields must read as information rather than editable inputs; user selected raised outward warm-white values instead of gray inset fields. Current demo uses warm gray#EAE6DF, six illustrative tool cards/three columns/two rows, and actual nested scrolling. Original read_file JSON preserved; five extra definitions are explicitly demo fixtures. Two tools windows enlarged; other windows/source references unchanged. Actual independent prototype checks PASS. No Rust or live server execution. See milestones/recessed-tools-demo/info.md.
+
+
+## November 9, 2026 — approved rollout and per-server Settings
+
+User approved the recessed Servers/tools design for all tools pages. Rolled the shared background/window layout across the remaining Servers states. User briefly requested fixed navigation on Settings, then cancelled that request and explicitly chose Settings inside each server card beside Inspect tools/Console/Terminal, removing the navbar gear. Repurposed old Settings specimens, kept Filesystem/Search context correct and preserved folder, timeout/concurrency and assigned manual-key states. Original literal references and Rust remain unchanged.
+
+User removed the exact short setup sentence, requested timeout/concurrency side by side with small right up/down arrows, shortened their titles to Time until timeout and Max concurrent calls (bold, matching the former17px heading spacing), and removed Fetch call limits heading. User also removed the white surround from the light blue Copy icon. Numeric arrows remain Figma appearances; no backend validation/default/step rules or numeric runtime editing were implemented. Prototype clipboard execution is not claimed. API_KEY→search-key was explained as choosing that assigned key entry for editing; Edit API key was a suggestion only.
+
+Current new board:30 windows/22 Servers states, all Servers windows enlarged and recessed; Settings panels scroll internally. The earlier whole-page/fixed-navigation trial stays cancelled. Structure/rendered checks pass; actual new gestures were not rerun because user was actively using Figma. See milestones/server-layout-rollout/info.md and milestones/inline-server-settings/info.md.

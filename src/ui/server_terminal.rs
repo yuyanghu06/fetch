@@ -11,7 +11,7 @@ use std::{collections::VecDeque, sync::atomic::{AtomicU64, Ordering}, time::Dura
 static NEXT_WIDGET: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
-enum Pane { #[default] Console, Terminal }
+pub(super) enum Pane { #[default] Hidden, Tools, Settings, Console, Terminal }
 
 #[derive(Clone)]
 pub(super) enum Message {
@@ -47,6 +47,7 @@ pub(super) struct State {
 }
 
 impl State {
+    pub(super) fn hide_settings(&mut self){if self.pane==Pane::Settings{self.pane=Pane::Hidden;}}
     fn emulator(&self) -> Terminal {
         Terminal::new_external(NEXT_WIDGET.fetch_add(1, Ordering::Relaxed), Default::default(), self.columns.max(1), self.rows.max(1))
     }
@@ -78,6 +79,15 @@ impl State {
 }
 
 impl Desktop {
+    pub(super) fn server_panel(&self,id:&str)->Pane {
+        self.terminals.get(id).map(|state|state.pane).unwrap_or_default()
+    }
+    pub(super) fn select_server_panel(&mut self,id:&str,pane:Pane)->bool {
+        let state=self.terminals.entry(id.to_owned()).or_default();
+        state.pane=if state.pane==pane{Pane::Hidden}else{pane};
+        state.pane!=Pane::Hidden
+    }
+
     pub(super) fn pause_terminals(&mut self) {
         for state in self.terminals.values_mut() {
             // Responses belonging to the invalidated window must not alter a
@@ -136,8 +146,16 @@ impl Desktop {
 
     pub(super) fn update_terminal(&mut self, message: Message) -> Task<AppMessage> {
         match message {
-            Message::Console(id) => { self.terminals.entry(id).or_default().pane = Pane::Console; Task::none() }
-            Message::Open(id) => self.open_terminal(id, false),
+            Message::Console(id) => {
+                self.clear_secrets();self.expanded_servers.insert(id.clone());
+                self.select_server_panel(&id,Pane::Console); Task::none()
+            }
+            Message::Open(id) => {
+                if self.deletions.contains_key(&id)||!self.servers["servers"].as_array().into_iter().flatten().any(|server|server["server_id"].as_str()==Some(id.as_str())&&server["config"]["kind"]!="remote"){return Task::none();}
+                self.clear_secrets();self.expanded_servers.insert(id.clone());
+                if !self.select_server_panel(&id,Pane::Terminal){return Task::none();}
+                self.open_terminal(id, false)
+            },
             Message::Start(id) => self.open_terminal(id, true),
             Message::Opened(id, epoch, result) => {
                 let Some(state) = self.terminals.get_mut(&id) else { return Task::none(); };
@@ -248,16 +266,10 @@ impl Desktop {
         }
     }
 
-    pub(super) fn server_output_view<'a>(&'a self, id: &str, server: &Value) -> Element<'a, AppMessage> {
-        let local = server["config"]["kind"] != "remote";
+    pub(super) fn server_output_view<'a>(&'a self, id: &str, _server: &Value) -> Element<'a, AppMessage> {
         let state = self.terminals.get(id);
         let terminal_selected = state.is_some_and(|state| state.pane == Pane::Terminal);
-        let enabled = local && self.client.is_some() && !self.deletions.contains_key(id);
-        let mut pane = column![components::output_controls(
-            AppMessage::Terminal(Message::Console(id.to_owned())),
-            enabled.then(|| AppMessage::Terminal(Message::Open(id.to_owned()))),
-        )].spacing(theme::CONTROL_GAP);
-        if !local { pane = pane.push(text("Terminal is unavailable for a URL-only remote server.").size(theme::SMALL_TEXT)); }
+        let mut pane = column![].spacing(theme::CONTROL_GAP).width(iced::Fill);
         if !terminal_selected { return pane.push(self.authentication_view(id, self.authentication.get(id))).into(); }
         if let Some(state) = state {
             if let Some(error) = &state.error { pane = pane.push(components::message(error.as_str())); }

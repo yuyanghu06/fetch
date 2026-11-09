@@ -1,3 +1,47 @@
+## November 9 — UI delivery requested
+
+The user requested committing and pushing the accepted native Figma update. Source, local assets, visual evidence and related design records are staged; GitHub main has no newer commits. Existing verification and native-launch limits remain unchanged. [Delivery preparation](history/2026-11-09_16-27-39-974344-orchestrator-prepare-figma-ui-delivery.md).
+
+## November 9 — matte Figma correction accepted
+
+The rejected glossy gradients are gone. Native surfaces use actual Figma fills and full shadow layers, with corrected text geometry, radii and numeric controls. Equal-size rendering exposed and resolved transparency, image-order, cold-loading and foreground control defects. Full54/54UI checks pass; final5affected checks pass again; locked native build passes6.69s. Independent Evaluator ACCEPTs the visual correction. Measured font/shadow-edge differences remain; literal pixel equality is not claimed. Actual app launch remains untested because local signing setup is missing. [Scope](neumorphic-fidelity/info.md); [acceptance](history/2026-11-09_15-27-42-333375-evaluator-accept-neumorphic-appearance-correction.md); [comparison](neumorphic-fidelity/evidence/pixel-comparison.json).
+
+## Exact effects implemented; final visual fixes under review
+
+Flat fills and Figma shadow stacks replace invented gradients. Matched-size buttons now track the reference (mean RGB error0.6189/255); full-page inspection found image-order and cold-loading faults that functional checks did not detect. Source corrections are ready; fresh first/cached renders and final acceptance remain. [Pass](history/2026-11-09_15-14-43-927182-orchestrator-exact-shadow-rendering-and-comparison-findings.md); [research](neumorphic-fidelity/research.md).
+
+## November 9 — visual fidelity correction
+
+User rejects the previous port as too glossy and requires the actual Figma appearance. Earlier approximate visual acceptance is superseded. Research and planning are complete; exact shadow rendering, typography/geometry correction and equal-size reference comparisons are underway. [Scope](neumorphic-fidelity/info.md); [plan](history/2026-11-09_14-59-35-744214-planner-correct-neumorphic-fidelity.md).
+
+## November 9 — neumorphic native port accepted
+
+The approved native design is implemented and independently ACCEPTed. Shared components, inline server panels, round actions, tools scrolling and discovery popup use the existing APIs. Full UI52/52PASS; final affected3/3PASS; final locked build6.01sPASS;16fresh native-view captures reviewed. No app/Keychain/MCP launched. Local signing setup is missing, so the next action is the user's per-Mac certificate setup followed by ./scripts/run-development.sh. Manual command installation remains unselected; browser approval UI is separate. [Scope](neumorphic-dev-sync/info.md); [acceptance](history/2026-11-09_14-53-49-754916-evaluator-accept-native-neumorphic-port.md); [verification](neumorphic-dev-sync/evidence/tester-report.md).
+
+## Native neumorphic implementation and first review
+
+Shared appearance and screens are integrated. First actual-widget/render checks caught remote-state, wheel-scroll, font and popup-layout issues; fixes are in source and final checks are underway. [Pass](history/2026-11-09_14-47-37-870294-orchestrator-native-neumorphic-implementation-and-findings.md); [scope](neumorphic-dev-sync/info.md).
+
+## Neumorphic design in the development app
+
+User requested the native Figma port. Plan complete; implementation and window-free visual/interaction checks underway. Existing backend operations retained; manual command install remains unselected. Dedicated local dev signing setup is missing. [Scope](neumorphic-dev-sync/info.md); [plan](history/2026-11-09_14-39-28-808404-planner-neumorphic-native-port.md).
+
+## Inline Settings and approved Servers layout
+
+Approved recessed layout rolled out to all Servers states. Settings is now an inline per-server tab; navbar gear and standalone new-design Settings pages are removed. Numeric limits sit side by side under the requested bold titles, with right-side increment-arrow appearances; helper sentence removed. Light Copy has only its blue glyph. Current new design:30 windows/22 Servers states. Source/Rust/original references unchanged. Structure/rendered rollout and inline Settings checks PASS. Independent final evaluation ACCEPT. [Review](history/2026-11-09_13-38-31-278029-evaluator-accept-inline-settings-and-rollout.md). [Test](history/2026-11-09_13-38-02-990504-tester-pass-inline-settings-and-controls.md). [Rollout](server-layout-rollout/info.md); [inline Settings](inline-server-settings/info.md); [implementation](history/2026-11-09_13-36-16-905683-designer-implement-inline-server-settings-and-controls.md).
+
+## November 8 — recessed server/tools demo and read-only details
+
+Selected navigation is now inset without glow. Tools use a warm-gray recessed area with six raised cards, three across/two rows, and real internal overflow. Gray input-looking values became raised warm-white read-only details. Installed servers also has a recessed section in the two enlarged tools demo windows; original page scrolling remains.29 new native design specimens; original source references and Rust unchanged. Independent actual nested scroll/nav/read-only checks PASS. Independent final review ACCEPT. [Review](history/2026-11-08_19-12-00-193541-evaluator-accept-recessed-tools-demo.md). [Test](history/2026-11-08_19-11-34-697766-tester-pass-recessed-tools-scrolling.md). [Plan](history/2026-11-08_19-10-36-944600-planner-bound-recessed-tools-demo.md); [implementation](history/2026-11-08_19-10-36-944707-designer-build-recessed-tools-demo.md); [scope](recessed-tools-demo/info.md).
+
+## November 8 — explicit server panels in Figma
+
+Figma now hides Console until explicitly opened, opens Available tools from Inspect tools, uses an inset selected button with no glow, removes redundant Recovery restart buttons and aligns both Terminal panes at1072px. Original scrolling is preserved. Normal restart/Shift-click force restart is selected; Figma cannot simulate the modifier click. Four state-preserving prototype counterparts added; Rust remains unchanged. Independent prototype clicks/readback PASS after fixing selected label binding. Independent final review ACCEPT. [Review](history/2026-11-08_19-10-36-942953-evaluator-accept-explicit-server-panels.md). [Test](history/2026-11-08_18-58-56-541892-tester-pass-explicit-panel-clicks.md). [Plan](history/2026-11-08_18-57-14-589586-planner-plan-explicit-server-panels.md); [implementation](history/2026-11-08_18-57-14-589741-designer-implement-explicit-server-panels.md); [scope](explicit-server-panels/info.md).
+
+## November 8, 2026 — Figma scroll trial reverted
+
+Tried fixed navigation and a recessed scroll area on Tools expanded (78:1438), with actual prototype scrolling independently checked. User then requested a revert. Original shared page scrolling, hierarchy, geometry and prototype starts are restored; no Rust or broader Figma changes. Independent restoration review ACCEPT. [Review](history/2026-11-08_18-50-52-196383-evaluator-accept-figma-scroll-revert.md). [Pass](history/2026-11-08_18-50-39-019609-orchestrator-revert-figma-scroll-trial.md); [scope](recessed-page-scroll/info.md).
+
 ## November 8 — control hover rules recorded
 
 Selected controls must have no glow; glow is hover-only. Red × becomes bold on hover. Saved in NOTES.md, PROJECT_CONTEXT.md and the shared component requirements. Figma/app changes remain pending. User also requested committing and pushing the whole current working tree after this note. No new application changes or runtime checks in this pass. [Record](history/2026-11-08_18-34-43-803529-orchestrator-record-control-hover-rules.md).

@@ -1,3 +1,53 @@
+## November 9 — remove gloss and compare the actual pixels
+
+The user rejects the earlier approximate gradient/rim appearance and requires the actual design. Current source uses uniform design fills and all shadow layers from the fresh high-fidelity Button75:2252, Navigation77:1401, server202:2101 and app78:1438 contexts. Matching-size references are preserved in [neumorphic-fidelity](../milestones/neumorphic-fidelity/info.md).
+
+The Button set is compared at524×208with exact component positions; native content is compared at1248×1128against the Figma window after excluding its32pxOS titlebar and40pxpresentation margin. The static Button state sheet is a style specimen; it does not prove literal font matching during every live gesture. Source effects/geometry are exact design values; different font-edge and blur rasterization can still change individual pixels. Measurements, not an invented threshold, describe those residuals.
+
+Navigation uses28pxSemibold/40pxline, text tabs14pxMedium/20pxline; primary/folder labels follow22pxline variants. Server card gaps14px, list20px, footer22px; tool cards have32pxcorners and muted labels with24pxfield-group spacing. Numeric arrows sit inside a44pxgray field with24×36pxwhite strip. Read-only values use actual pale-blue#EAF5FB, not the older prose description. No extra Raw definition text action appears in cards; full original JSON remains in API/state.
+
+The correction retains native input/actions and original SVG bytes. Its shared renderer fixes transparency and draw-order problems found in actual captures. No native window/account/MCP or signed launch is established by those captures.
+
+## November 9 — native development implementation
+
+The approved native neumorphic design is now ported into src/ui. The implementation uses the high-fidelity current Figma context/screenshots for Tools78:1438, inline Settings78:1639, Install78:1498 and Connect78:1593. Current design values are warm-white#F7F6F1, accent#95D4F1, recessed#EAE6DF and read-only tool detail#EAF5FB. This last value corrects earlier warm-white prose.
+
+Native code now follows the three-tab navigation, inline Settings, explicit panels, server actions and nested tools layout. Complete raw tool definitions remain available through a small Raw definition control. Narrow windows retain three columns with readable325px-tall cards and wrapping values. No UI field executes a tool. Discovery uses existing APIs in a popup with retained progress reopening. Manual command installation remains outside implementation pending its execution contract. Browser design specimens and OS titlebar are outside this native-only port.
+
+Exact SVGs are stored under src/ui/assets; fonts/licenses are bundled under assets/fonts. Panel depth uses paired shadows and narrow light/shade rims; stock Iced button depth approximates Figma's multiple inner shadows. Earlier literal native Figma boards now describe the former app baseline, not this implementation. Sample-data native captures and verification are under [neumorphic-dev-sync](../milestones/neumorphic-dev-sync/info.md); they are window-free renders, not a real running-account screenshot.
+
+## Current — Settings is inside each server card
+
+The user approved the recessed Servers/tools layout for all new-design Servers screens. Settings now opens as a tab inside its own server card, alongside Inspect tools, Console and Terminal. The separate new-design Settings page and navbar gear are removed. The temporary fixed-Settings-navigation request was cancelled before implementation. Original source/reference pages and Rust remain unchanged.
+
+The new board has30 native-window specimens,22 under Servers. All22 use the approved1248×1160 windows, shared recessed Installed servers surface197:4166 and raised server cards. The three-column scrolling tools area and raised read-only tool details remain shared. The22 specimens are arranged in two canvas rows without overlap; Install/Connect boards remain separate. Navigation stays in the page; Settings has its own1072×440 scrolling panel.
+
+Shared Settings family202:2558 preserves Filesystem folder/call-limit controls and Search assigned-key/ready/folder-opening/filled/busy controls. [Filesystem Settings](https://www.figma.com/proto/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=78-1639&starting-point-node-id=78%3A1639&scaling=scale-down&content-scaling=fixed) and [Search Settings](https://www.figma.com/proto/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=78-1653&starting-point-node-id=78%3A1653&scaling=scale-down&content-scaling=fixed) have the selected Settings tab inset without glow. Each Settings button targets its own server; it no longer routes Filesystem to Search’s key. Obsolete standalone introduction/selected-server line and the exact short setup sentence requested for deletion are gone.
+
+The two limits are side by side, titled **Time until timeout** and **Max concurrent calls**, both17pxBold with the former heading’s spacing. Fetch call limits heading and verbose field descriptions are removed. Values remain120 and1. Shared number input212:2318 has small right-side up/down arrows. Figma arrows are appearances only, not numeric editing/saving behavior. Light Copy115:1371 is a blue glyph on a transparent40px hit area, with no white surround; prototype clipboard execution is not established.
+
+Independent structure/rendered-appearance checks PASS and final Evaluator ACCEPT. Actual new clicks/scrolling were not repeated because the user was actively using Figma; earlier successful tools scrolling remains historical evidence. [Rollout evidence](../milestones/server-layout-rollout/info.md); [inline Settings record](../milestones/inline-server-settings/info.md). These changes do not implement any Rust/API behavior.
+
+## November 8 — recessed sections, three-column scrolling tools and read-only details
+
+The new tools demo now has a recessed warm-gray #EAE6DF Available tools area177:1914, containing six raised tool cards in three columns/two rows. Its1072×440 viewport scrolls vertically over722.667px of content. The original read_file JSON remains intact; five extra definitions are illustrative fixtures, not live server discovery. Name/Required fields use shared read-only value182:3991: raised warm-white plain text rather than gray inset Text inputs.
+
+Installed servers is recessed as well in Tools expanded78:1438 and demo177:3654. These two trial windows are1248×1160; their page content fits the enlarged viewport without outer cutoff. Other window sizes remain unchanged. Original page scrolling, including navigation, remains. Active Servers/Install/Connect tabs across the29 new native design specimens use the shared Selected state, blue fill/bold white text and inner shadows only; inactive tabs remain raised. The earlier cancelled fixed-navigation/whole-page recess trial stays reverted.
+
+Independent final Evaluator ACCEPT; actual desktop prototype verification PASS: wheel scrolling inside the tool well reaches all second-row cards while navigation, heading, footer and Search remain still; actual Install/Connect tab clicks select correctly. [Open the scrolling demo](https://www.figma.com/proto/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=177-3654&starting-point-node-id=177%3A3654&scaling=scale-down&content-scaling=fixed). Use Fit width and height if preview is at100%. These are Figma-only changes; no Rust or account/server execution. [Scope](../milestones/recessed-tools-demo/info.md).
+
+## November 8 — explicitly opened server panels
+
+The new Figma design now hides Console until Console is clicked. Inspect tools opens Available tools without opening Console; Terminal opens the terminal specimen. The selected control can close the demonstrated panel. Server panels prototype starts at [170:2698](https://www.figma.com/proto/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=170-2698&starting-point-node-id=170%3A2698&scaling=scale-down&content-scaling=fixed). Original page scrolling is retained.
+
+The two extra recovery buttons are removed: normal click on the shared round restart means restart/connect; Shift-click means force restart in the later app implementation. Figma's click trigger cannot distinguish Shift-click, so that modifier behavior is documented rather than simulated.
+
+Shared Button Selected172:1910 uses the existing Inset style with two inner shadows and no glow/drop shadows. Inspect tools, Console and Terminal show it in their open states; review172:3525 includes Settings as well. Both Terminal masters now fill their1072px parent width. Four additional window specimens demonstrate panels closed and Console open while preserving recovery/sign-in/restarting state; new design has28 native-window specimens, while original current-source references remain24. These changes are Figma-only; Rust still retains its existing always-present Console and restart controls until a port is requested. [Scope and checks](../milestones/explicit-server-panels/info.md).
+
+## November 8 — scrolling trial reverted
+
+A one-screen fixed-navigation/recessed-scroll trial on Tools expanded 78:1438 was tested in the actual Figma desktop prototype, then reverted at the user's explicit request. Original scrolling includes navigation and heading again; viewport 1152×820, content 1152×1132, 16px padding, transparent/unshadowed boundary and original prototype starts are restored. No new raised/recessed tool treatment or broader rollout was made. Rust is unchanged. [Record](../milestones/recessed-page-scroll/info.md).
+
 ## November 8 — tools belong to the expanded server
 
 Available tools now live inside their owning expanded server card in the new Figma design. Shared card153:1912 contains the normal header/actions, Console, Available tools grid and footer. Review153:1981 shows the whole card; app frame78:1438 uses it with vertical scrolling. Standalone heading/grid were removed. Inspect tools links open this expanded specimen; the header collapses back to the ordinary server list. Tool data/shared inputs are preserved. Independent review ACCEPT;123local main definitions/14sets. This relocation is Figma-only; the Rust tool section remains unchanged until the UI port.

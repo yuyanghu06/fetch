@@ -41,7 +41,8 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 futures-util = "0.3"
 tokio-stream = { version = "0.1", features = ["sync"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "http2", "stream"] }
-iced = { version = "0.14.0", default-features = false, features = ["wgpu", "tokio"] }
+iced = { version = "0.14.0", default-features = false, features = ["wgpu", "tokio", "svg", "image-without-codecs"] }
+resvg = { version = "=0.45.1", default-features = false }
 rmcp = { version = "=3.8.0", default-features = false, features = ["auth", "client"] }
 oauth2 = { version = "5", default-features = false }
 async-trait = "0.1"
@@ -59,3 +60,11 @@ tower = { version = "0.5", features = ["util"] }
 [profile.release]
 lto = "thin"
 strip = true
+
+# The design's soft SVG shadows run CPU blur filters on their first render.
+# Optimize only these libraries so debug UI startup does not stall on those blurs.
+[profile.dev.package.resvg]
+opt-level = 3
+
+[profile.dev.package.tiny-skia]
+opt-level = 3

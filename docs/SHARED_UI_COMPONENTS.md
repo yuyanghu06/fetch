@@ -1,3 +1,39 @@
+## November 9 — precise shared rendering replaces the glossy approximation
+
+surface.rs now paints flat fills with the full Figma shadow stacks through the existing pinned resvg implementation. Its Button/TextInput builders delegate actual native behavior to Iced. Decoration is cached per widget and rendered at the window's current display scale. Straight RGBA conversion fixes the SVG transparency issue; retained in-memory images, one image filter batch and a later foreground layer keep backgrounds, icons, checkboxes and number arrows correctly visible from the initial frame. No invented diagonal gradient or hard rim remains.
+
+Shared typography uses actual Inter400/500/600/700faces. Navigation, tabs, raised panels/controls, blue actions, selected inset surfaces, gray inputs,32px tool cards,12px read-only details and glyph slots follow current Figma values. Scrollers are hidden at rest and neutral gray while used; scroll behavior is unchanged. Complete tool JSON is preserved behind the two displayed fields; the earlier extra Raw definition control is removed to match the design. [Verification/limits](../milestones/neumorphic-fidelity/info.md).
+
+## November 9 — native shared components now implement the design
+
+src/ui/components.rs and theme.rs share the three-tab Navigation, text/round buttons, selected/output tabs, inputs/checkboxes, page/server/tool surfaces, read-only tool values, code Copy glyphs and Console/Terminal framing. surface.rs forwards the wrapped widget's layout/events/overlays/operations while drawing paired panel shadows and narrow raised/recessed rims. Selected controls have no resting glow; hover can glow, and the removal × thickens on hover. Disabled removal stays saturated red.
+
+Native Settings reuses the same credential_editor and existing API operations. Number arrows use the exact local Figma8×5SVGs and existing timeout/concurrency bounds. Console/Terminal remain gray tabs. Tool fields use current Figma pale-blue#EAF5FB, superseding earlier warm-white prose; values wrap in narrow cards and full raw definitions remain accessible. Bundled Inter regular/semibold/bold and Roboto Mono keep typography portable. No font is installed globally. See [scope/evidence](../milestones/neumorphic-dev-sync/info.md).
+
+## Current — shared recessed sections and inline Settings
+
+Recessed section surface197:4166 is reused behind all22 new-design Installed servers sections; its warm-gray fill and Inset effect are shared, with raised server cards above it. Stage/window sizes are consistent across those states. Settings card family202:2558 has five data-preserving variants: Filesystem ready, Search ready, folder opening, key filled and key busy. Existing Button/Text input/manual-key editor components remain reused; selected Settings uses Selected172:1910 with inner shadows only.
+
+Settings forms use a1072×440 scrolling panel. The former separate Settings specimens are now inline states; no navbar Settings control or new-design Settings page remains. Shared Navigation77:1401 has Fetch plus three tabs only. Source/reference navigation remains unchanged.
+
+Number input212:2318 adds value text and small up/down arrows at the right. Two500px inputs share a row with24px gap; bold17px Time until timeout / Max concurrent calls labels have20px label-to-input spacing. Generic heading/long field descriptions and requested helper sentence are removed. Values120/1 remain unchanged; arrows are visual prototype controls, with no new execution/bounds rules selected.
+
+Light Copy115:1371 has no background/stroke/effect; its blue glyph and40px area remain. Dark Console glyph treatment is retained. Actual prototype clipboard actions were not present/tested; do not claim runtime copying from appearance. [Current scope](../milestones/inline-server-settings/info.md).
+
+## November 8 — recessed tool area and display-only details
+
+Shared Available tools area177:1914 is warm-gray/inset with vertical overflow and a padded wrapping grid153:1930. Six demo cards occupy three columns/two rows; each is325.333px square with24px gaps/padding. Shared read-only value182:3991 replaces the gray input instances inside Tool card146:2456. The new warm-white raised value has a Value text property and no editing/action behavior. Original full raw Tool JSON remains hidden/preserved; five added definitions are illustrative fixtures.
+
+Navigation77:1401 reuses Selected172:1910 for the active blue/bold-white tab with two inner shadows/no glow; other tabs remain raised. Existing links/layout persist. Installed servers recess and larger windows are trialed on the two tools screens, using shared warm-gray fill alias and Inset style. No Rust/source-reference change. [Current demo](../milestones/recessed-tools-demo/info.md).
+
+## November 8 — explicit panel controls and inset selection
+
+New-design shared Button set75:2252 adds Selected172:1910. Selected controls stay enabled and use two INNER_SHADOW effects from the existing Inset style, without glow or raised DROP_SHADOW. The Label text property is bound on the selected variant; disabled remains separate. Review172:3525 shows Inspect tools, Settings, Console and Terminal selected.
+
+Expanded default/Tools/recovery/sign-in/restarting cards hide output by default. Explicit Console-open specimens override output visibility while preserving their state. Individual controls own prototype actions; Console/Terminal parent rows no longer act as Console links. New-design tools have no automatic Console. Original source/reference components remain separate.
+
+The shared round restart replaces separate recovery Restart / Connect and Force restart buttons. Normal click restarts/connects; Shift-click force restarts (may interrupt work), recorded in shared actions132:1678 guidance. Figma cannot execute that modifier-click distinction. Terminal77:1453/77:1469 fill1072px parents. These are selected Figma design requirements for a later Rust port, not new native behavior.
+
 ## November 8 — selected and hover states
 
 Selected controls must not glow. Glow appears only while hovering, including on the selected Settings gear shown in the user’s reference. Hovering over the red × must make the × bold. These rules update the intended shared control states; this note does not establish that Figma variants or app code have been updated.

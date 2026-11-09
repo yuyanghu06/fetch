@@ -1,3 +1,9 @@
+[Inline per-server Settings](../milestones/inline-server-settings/info.md) and [approved Servers layout rollout](../milestones/server-layout-rollout/info.md) describe the current Figma design, requested numeric/copy refinements and testing limits.
+
+[Recessed tools demo](../milestones/recessed-tools-demo/info.md) records the final three-column scroll area, read-only values, selected navigation and enlarged trial windows.
+
+[Explicit server panel designs](../milestones/explicit-server-panels/info.md) records the new Figma-only explicit-open panels, inset selection without glow, restart shortcut requirement and terminal width correction. Current Rust behavior remains separate.
+
 ## November 7 visual follow-up
 
 FIGMA.md, SHARED_UI_COMPONENTS.md and UI_STATE_COVERAGE.md describe the current control refinements, five Install popup states, manual-install Console design and tested Rust header-only change. The new popup/manual workflow is a design, not implemented app behavior.

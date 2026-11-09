@@ -1,0 +1,7 @@
+# Local design assets
+
+SVG sources: exact asset downloads returned by the official Figma get_design_context for native Tools78:1438, inline Settings78:1639 and Connect78:1593 in fileOcgOlmfuoSTJMHTeN753TF. Source root dimensions are retained: key20×20, chevrons18×18, status dot8×24, warning20×20, Copy20×20, refresh/close24×24, numeric arrows8×5. Controls center glyphs without stretching their SVG roots. Status colors are dynamic data presentation. Native titlebar controls belong to macOS; the unused reference traffic-light asset was removed. Temporary Figma asset URLs are never runtime sources.
+
+Fonts: [Google Fonts Inter](https://github.com/google/fonts/tree/main/ofl/inter) and [Roboto Mono](https://github.com/google/fonts/tree/main/ofl/robotomono), with their SIL Open Font License files in src/ui/assets/fonts. Inter static400/600/700faces were generated from the official Inter[opsz,wght].ttf atopsz14with fontTools.varLib.instancer(updateFontNames=True), because the variable font registered only its regular face in the renderer and bold text visibly fell back. Roboto Mono retains the upstream variable bytes. All fonts are loaded into Fetch's renderer only; no system font installation.
+
+The later fidelity correction also bundles an Inter Medium 500 face from the same official variable font and license. Native SVG bytes remain unchanged; glyph slots match Figma and explicit monochrome colors avoid the renderer's transparency problem. [Current rendering evidence](../neumorphic-fidelity/info.md).

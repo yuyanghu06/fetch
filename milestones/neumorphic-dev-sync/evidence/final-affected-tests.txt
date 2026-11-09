@@ -1,0 +1,7 @@
+running 3 tests
+test ui::neumorphic_tests::neumorphic_server_panels_open_from_their_own_controls_and_keep_key_ownership ... ok
+test ui::neumorphic_tests::neumorphic_tools_have_three_columns_and_scroll_without_moving_the_page ... ok
+test ui::neumorphic_tests::neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.74s
+

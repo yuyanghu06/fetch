@@ -89,6 +89,8 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         authentication: BTreeMap::new(),
         terminals: BTreeMap::new(),
         auth_requests: Requests::default(),
+        modifiers: Default::default(),
+        scale_factor: 1.0,
         deletions: BTreeMap::new(),
         opening_folders: BTreeSet::new(),
     };

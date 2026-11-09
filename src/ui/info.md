@@ -1,3 +1,24 @@
+Final fidelity verification: independent 54 UI checks pass; after the final rendering fixes, two fidelity and three affected interaction/render checks pass again. Locked binary build passes in 6.69 seconds. Cold/cached rendered pages are identical, and first-frame backgrounds/glyphs/checkbox boxes/number plates are verified. Independent Evaluator ACCEPTs the visual correction. Literal native/Figma pixel equality is not established; measured font/blur-edge differences are recorded in milestones/neumorphic-fidelity/info.md. No native app was launched.
+
+## November 9 — flat faces and exact Figma shadow layers
+
+The earlier gradients and hard rims are replaced by generated decoration SVGs using Figma's actual fill, radius, shadow colors/offsets/blur and layer order. The pinned resvg library renders them; pixels are demultiplied once before Iced draws raw RGBA. This avoids the observed dark SVG halos. Surface Tree state retains one raster/allocation, reused until geometry/effect/color or physical display dimensions change. Window Opened/Rescaled supplies current DPI through a scoped draw wrapper; native logical layout stays unchanged.
+
+Decorations use the same nearest image batch as original SVG glyphs, and child content draws in a later viewport layer. This preserves first-frame backgrounds, white icon edges, checkbox boxes and white numeric strips. Native Button/TextInput widgets still own input/editing/clipboard/secure masking. Debug optimization is restricted to resvg/tiny-skia filters; Fetch remains a debug build. No external services or third-party source patches are introduced.
+
+Geometry/typography now follow the current contexts; complete Tool JSON remains in API/state while cards show only the design's Name/Required fields. Actual verification and residual font/blur-edge differences are tracked in milestones/neumorphic-fidelity/info.md.
+
+
+Final November 9 verification: 52 focused UI checks pass; 3 affected actual-widget tests pass again after the final wrapping fix; locked binary build passes in 6.01 seconds. Sixteen fresh sample-data native-view captures and source/evidence receive independent Evaluator ACCEPT. Actual native launch is untested because this Mac lacks the selected dedicated development signer. See milestones/neumorphic-dev-sync/info.md.
+
+## November 9 — native neumorphic design port
+
+Shared warm-white/blue tokens and controls now drive three navigation tabs, recessed Installed servers/tools sections, round header actions and inline server Settings. surface.rs draws paired panel shadows and narrow raised/recessed rims while forwarding layout, events, overlays and widget operations. Inter regular/semibold/bold and Roboto Mono are bundled with their SIL licenses; no global fonts are installed. Exact Figma SVGs live under assets/.
+
+Console is hidden until explicitly opened. Tools/Settings/Console/Terminal select one panel per server; hiding a terminal preserves its session and output. Settings keeps existing folder/manual-key/execution APIs; the two numeric arrows use existing bounds. Shift-click restart sends the existing force flag. Tool cards show Name/Required fields with full raw JSON available through Raw definition; reading/scrolling cards does not call tools. Discovery results/progress appear in a popup and can be reopened after closing. Manual command installation remains unimplemented because no execution contract is selected. Native OS titlebar remains system-owned.
+
+Current verification is tracked in milestones/neumorphic-dev-sync; early diagnostic captures do not establish final visual acceptance.
+
 ## November 7 — automatic server list refresh
 
 The open app schedules GET /api/v1/servers every60seconds through the same refresh() and NativeClient used by the Refresh button. AutomaticRefresh reuses existing pending-read tracking and skips while a read is pending or the native client is absent. Faster one-second console/auth/deletion/restart/installation checks and manual Refresh remain. Closing the window still revokes its session and removes the client; this adds no background management authority.

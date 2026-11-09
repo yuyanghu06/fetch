@@ -1,3 +1,56 @@
+## November 9 — UI delivery
+
+- [x] Review the accepted UI changes, local assets and related design records.
+- [ ] Commit, push and confirm GitHub main matches local main.
+
+## November 9 — visual correction verified
+
+- [x] Remove glossy gradients and synthetic rims; apply actual Figma fills/shadow layers.
+- [x] Resolve real transparency, cold-loading and foreground drawing defects from equal-size captures.
+- [x] Verify 54 UI checks, five final affected checks, exact cold/cached pixels and locked build.
+- [x] Independent Evaluator ACCEPT; record remaining font/blur-edge differences honestly.
+- [ ] Dedicated development signing setup and actual native launch remain a human/OS setup step.
+
+## Neumorphic appearance correction
+
+- [x] Identify invented gradients and missing shadow layers; read current exact Figma values.
+- [x] Independently plan geometry corrections and research existing renderer support.
+- [x] Implement flat faces and complete Figma shadows across shared controls/surfaces.
+- [x] Correct measured typography, spacing, corner and numeric-arrow differences.
+- [x] Compare equal-size component/page renders, rerun relevant checks, build and independently evaluate — ACCEPT.
+- [x] Report measured font/blur-edge differences; literal pixel equality remains unestablished.
+
+## November 9 — native design port complete
+
+- [x] Shared controls and native page layouts implemented; existing API/data boundaries retained.
+- [x] Independent actual-widget interactions, 16 native-view captures and final locked binary build pass.
+- [x] Independent Evaluator ACCEPT; observed scroll/font/popup/overflow findings resolved.
+- [ ] User configures this Mac's dedicated Fetch development signer, then launches through the signed script.
+- [ ] Manual command installation execution contract remains unselected; no shell workflow implemented.
+
+## Neumorphic native port
+
+- [x] Inspect current Figma and source; bound implementation.
+- [x] Implement shared depth, three-tab navigation, inline Settings/tools/output controls and discovery popup.
+- [x] Independent realistic interactions and native-view screenshots; compile and evaluate — ACCEPT, November 9.
+- [ ] Configure dedicated local development signer before signed launch (user setup required).
+
+## Inline Settings and approved Servers layout
+
+Approved recessed layout rolled out to all Servers states. Settings is now an inline per-server tab; navbar gear and standalone new-design Settings pages are removed. Numeric limits sit side by side under the requested bold titles, with right-side increment-arrow appearances; helper sentence removed. Light Copy has only its blue glyph. Current new design:30 windows/22 Servers states. Source/Rust/original references unchanged. Structure/rendered rollout and inline Settings checks PASS. Independent final evaluation ACCEPT. [Review](history/2026-11-09_13-38-31-278029-evaluator-accept-inline-settings-and-rollout.md). [Test](history/2026-11-09_13-38-02-990504-tester-pass-inline-settings-and-controls.md). [Rollout](server-layout-rollout/info.md); [inline Settings](inline-server-settings/info.md); [implementation](history/2026-11-09_13-36-16-905683-designer-implement-inline-server-settings-and-controls.md).
+
+## November 8 — recessed server/tools demo and read-only details
+
+Selected navigation is now inset without glow. Tools use a warm-gray recessed area with six raised cards, three across/two rows, and real internal overflow. Gray input-looking values became raised warm-white read-only details. Installed servers also has a recessed section in the two enlarged tools demo windows; original page scrolling remains.29 new native design specimens; original source references and Rust unchanged. Independent actual nested scroll/nav/read-only checks PASS. Independent final review ACCEPT. [Review](history/2026-11-08_19-12-00-193541-evaluator-accept-recessed-tools-demo.md). [Test](history/2026-11-08_19-11-34-697766-tester-pass-recessed-tools-scrolling.md). [Plan](history/2026-11-08_19-10-36-944600-planner-bound-recessed-tools-demo.md); [implementation](history/2026-11-08_19-10-36-944707-designer-build-recessed-tools-demo.md); [scope](recessed-tools-demo/info.md).
+
+## November 8 — explicit server panels in Figma
+
+Figma now hides Console until explicitly opened, opens Available tools from Inspect tools, uses an inset selected button with no glow, removes redundant Recovery restart buttons and aligns both Terminal panes at1072px. Original scrolling is preserved. Normal restart/Shift-click force restart is selected; Figma cannot simulate the modifier click. Four state-preserving prototype counterparts added; Rust remains unchanged. Independent prototype clicks/readback PASS after fixing selected label binding. Independent final review ACCEPT. [Review](history/2026-11-08_19-10-36-942953-evaluator-accept-explicit-server-panels.md). [Test](history/2026-11-08_18-58-56-541892-tester-pass-explicit-panel-clicks.md). [Plan](history/2026-11-08_18-57-14-589586-planner-plan-explicit-server-panels.md); [implementation](history/2026-11-08_18-57-14-589741-designer-implement-explicit-server-panels.md); [scope](explicit-server-panels/info.md).
+
+## November 8, 2026 — Figma scroll trial reverted
+
+Tried fixed navigation and a recessed scroll area on Tools expanded (78:1438), with actual prototype scrolling independently checked. User then requested a revert. Original shared page scrolling, hierarchy, geometry and prototype starts are restored; no Rust or broader Figma changes. Independent restoration review ACCEPT. [Review](history/2026-11-08_18-50-52-196383-evaluator-accept-figma-scroll-revert.md). [Pass](history/2026-11-08_18-50-39-019609-orchestrator-revert-figma-scroll-trial.md); [scope](recessed-page-scroll/info.md).
+
 ## November 8 — hover appearance
 
 - [x] Record the selected-state and red × hover requirements.
@@ -24,7 +77,7 @@
 - [x] Remove filesystem · available and replace tool disclosure with square two-field card.
 - [x] Reuse shared inputs; preserve full raw tool definition.
 - [x] Independent final visual review ACCEPT for this layout.
-- [ ] Later Rust port when selected; no tool edit/call behavior implemented here.
+- [x] Native Rust design port completed November 9; tool edit/call behavior remains unchanged.
 
 ## Latest server card followups
 
@@ -34,7 +87,7 @@
 - [x] Shared inline footer with activity left and access details right; preserve7specimen values.
 - [x] Independent visual ACCEPT.
 - [x] User selected nesting Available tools inside owning expanded server; Figma updated and reviewed.
-- [ ] Port approved design to Rust when requested.
+- [x] Approved native design ported to Rust November 9; see neumorphic-dev-sync/info.md.
 
 - [x] Preserve uncut shadows in new header action groups/review rows.
 
@@ -43,14 +96,14 @@
 - [x] Replace circular disclosure with a plain muted chevron.
 - [x] Add black/white authentication key and blue/white restart before red/white close on all native design cards.
 - [x] Preserve busy/disabled variants and verify final appearance.
-- [ ] Wire the new authentication/restart controls during the separately selected Rust UI port.
+- [x] Round authentication/restart controls wired to existing APIs in the November 9 native port.
 
 ## Compact server headers
 
 - [x] Replace combined header strings with bold names, colored dots, clear disclosure and warnings in new Figma designs.
 - [x] Reduce names/buttons/dots to18px/28px/8px after feedback; starting/restarting stays yellow.
 - [x] Independent final visual review ACCEPT; plain chevron and three header actions verified.
-- [ ] Port this header design to Rust when implementation is requested.
+- [x] Header design ported to Rust in the November 9 native sync.
 
 ## Latest visual and Install UX follow-up
 
@@ -61,7 +114,7 @@
 - [x] Independent Tester PASS for main page and all five popups.
 - [x] Final Evaluator ACCEPT for popup/installed-state visuals.
 - [ ] Define manual installation execution when selecting its Rust implementation; this design does not select a new API/shell workflow.
-- [ ] Port remaining approved neumorphic designs to Rust when requested; current changes are Figma-only except the header rule.
+- [x] Approved native neumorphic UI port completed November 9; manual command installation and browser screens remain separate scope.
 
 ## Neumorphic navigation/icons
 

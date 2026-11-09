@@ -1,0 +1,127 @@
+{
+  "explanation": "RGB error at identical dimensions. No threshold converts these measurements into a pixel-perfect claim. Component states use the official Figma bounds; app reference removes only40pxpresentationmargin and32pxOSbar.",
+  "buttons_full": {
+    "pixels": 108992,
+    "mean_absolute_RGB_error_0_to_255": 3.2726,
+    "max_channel_error": 153,
+    "exact_RGB_match_percent": 73.059
+  },
+  "buttons_excluding_dark_text_pixels": {
+    "pixels": 108357,
+    "mean_absolute_RGB_error_0_to_255": 3.0351,
+    "max_channel_error": 117,
+    "exact_RGB_match_percent": 73.426
+  },
+  "enabled": {
+    "face": {
+      "pixels": 3080,
+      "mean_absolute_RGB_error_0_to_255": 7.2156,
+      "max_channel_error": 153,
+      "exact_RGB_match_percent": 37.143
+    },
+    "reference_quiet_point": [
+      247,
+      246,
+      241,
+      255
+    ],
+    "native_quiet_point": [
+      247,
+      246,
+      241,
+      255
+    ]
+  },
+  "disabled": {
+    "face": {
+      "pixels": 3080,
+      "mean_absolute_RGB_error_0_to_255": 5.3064,
+      "max_channel_error": 110,
+      "exact_RGB_match_percent": 34.675
+    },
+    "reference_quiet_point": [
+      246,
+      246,
+      243,
+      255
+    ],
+    "native_quiet_point": [
+      246,
+      245,
+      242,
+      255
+    ]
+  },
+  "hovered": {
+    "face": {
+      "pixels": 3080,
+      "mean_absolute_RGB_error_0_to_255": 7.2146,
+      "max_channel_error": 153,
+      "exact_RGB_match_percent": 37.175
+    },
+    "reference_quiet_point": [
+      247,
+      246,
+      241,
+      255
+    ],
+    "native_quiet_point": [
+      247,
+      246,
+      241,
+      255
+    ]
+  },
+  "blue_action": {
+    "face": {
+      "pixels": 3160,
+      "mean_absolute_RGB_error_0_to_255": 4.5661,
+      "max_channel_error": 73,
+      "exact_RGB_match_percent": 15.601
+    },
+    "reference_quiet_point": [
+      149,
+      212,
+      241,
+      255
+    ],
+    "native_quiet_point": [
+      150,
+      213,
+      241,
+      255
+    ]
+  },
+  "selected": {
+    "face": {
+      "pixels": 3080,
+      "mean_absolute_RGB_error_0_to_255": 5.6366,
+      "max_channel_error": 153,
+      "exact_RGB_match_percent": 35.455
+    },
+    "reference_quiet_point": [
+      247,
+      246,
+      241,
+      255
+    ],
+    "native_quiet_point": [
+      246,
+      245,
+      240,
+      255
+    ]
+  },
+  "tools_app_full": {
+    "pixels": 1407744,
+    "mean_absolute_RGB_error_0_to_255": 11.1323,
+    "max_channel_error": 251,
+    "exact_RGB_match_percent": 43.77
+  },
+  "tools_app_excluding_dark_text_pixels": {
+    "pixels": 1394564,
+    "mean_absolute_RGB_error_0_to_255": 10.5847,
+    "max_channel_error": 204,
+    "exact_RGB_match_percent": 44.099
+  }
+}

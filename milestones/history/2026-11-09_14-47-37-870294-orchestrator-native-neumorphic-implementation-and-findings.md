@@ -1,0 +1,10 @@
+# Implement the native neumorphic screens and inspect first evidence
+
+- Local timestamp / acting role / milestone: 2026-11-09T14:47:37.870294-05:00 / Coder, Tester, Evaluator and Orchestrator / neumorphic-dev-sync.
+- Requested scope: sync native development UI to the approved Figma design.
+- Starting repository state: planner accepted bounded native-only port; existing Figma documentation preserved.
+- Work performed / changed files: component coder changed theme/components and added surface drawing plus exact local SVGs; screen coder changed mod/server_terminal for inline panels, navigation, headers and popup. Tester added a small actual-widget/headless fixture module, updated the desktop constructor and explicit remote-console expectation. Orchestrator added fonts/SVG feature+lock, fixed font-builder ordering, instantiated static Inter400/600/700 faces, localized surface rim lighting, removed tool-card scroll capture, restored remote guard ordering, moved popup over the whole app, retained progress reopening and saturated disabled deletion.
+- Decisions: existing backend APIs, raw tool definitions, credentials/session rules and terminal state retained. No manual shell install, browser approval redesign or real account execution. Current Figma tools use pale-blue#EAF5FB read-only values, correcting older warm-white prose.
+- Checks and evidence: shared source compiled apart from a corrected daemon API call. First UI run49/52passed; two actual regressions (remote state mutation and nested tool scrolling) fixed, one test adjusted to scroll to a below-window Settings control. Independent evaluator found broad panel gradient/font fallback and minimum-window popup problems; source fixes applied, fresh verification pending. Reference PNGs saved; first native renders were diagnostic and superseded by later captures.
+- Resulting state / acceptance: implementation integrated; final tests, fresh visual review and native build remain.
+- Remaining work and handoff: inspect redraw-initialized screenshots with static fonts, fix concrete findings, obtain independent ACCEPT, update rolling docs, and report missing dedicated local signing setup.

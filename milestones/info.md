@@ -1,3 +1,15 @@
+[Neumorphic fidelity](neumorphic-fidelity/info.md) supersedes the user's rejected glossy approximation with actual Figma fills/shadow layers, equal-size comparisons and corrected native rendering.
+
+[Neumorphic development sync](neumorphic-dev-sync/info.md) tracks the approved native Figma port, independent window-free interaction/render checks, compilation and the local signing setup still needed before launch.
+
+[Approved Servers layout rollout](server-layout-rollout/info.md) and [inline per-server Settings](inline-server-settings/info.md) track the current shared Figma layout and settings move.
+
+[Recessed tools demo](recessed-tools-demo/info.md) tracks selected nav, read-only tool details, nested scrolling and enlarged trial windows.
+
+[Explicit server panels](explicit-server-panels/info.md) tracks requested Figma panel opens, inset selection without glow, restart cleanup and terminal alignment.
+
+[Cancelled Figma scroll trial](recessed-page-scroll/info.md) records the tested trial and user-requested restoration of the original layout.
+
 [Codex version negotiation](mcp-version-negotiation/info.md) tracks the authenticated client initialization failure and scoped fix.
 
 [Browser approval origin](oauth-approval-origin/info.md) tracks the Codex approval403 repair and selected Connect apps cleanup.

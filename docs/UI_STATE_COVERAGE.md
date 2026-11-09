@@ -1,3 +1,29 @@
+## November 9 — equal-size visual verification
+
+The glossy port is superseded by the exact-fill/layered-shadow correction. New evidence compares Figma's524×208Button state board with native1xand2xrenders at the same logical bounds, and Figma native content with1248×1128Tools/Settings views using matching visible fixture values. Cold and cached images must both show every background/glyph. Additional observed defects receive pixel checks: white numeric arrow plates and blue/gray checkbox faces must paint above their backgrounds.
+
+Existing panel/key ownership, three-column scrolling, Copy, restart modifier state, remote-terminal restriction and progress reopening checks remain. Captures use actual widget trees with disposable fixtures, not a running app. The Button board is a visual state specimen; its styled Pressed example is not a claim of literal all-gesture font equality. Fonts/blur edges still require honest residual measurements. [Current evidence](../milestones/neumorphic-fidelity/info.md).
+
+## November 9 — native implementation and sample-data renders
+
+The native source now implements the separate neumorphic Figma design. Window-free actual-widget verification covers opening/closing Tools/Settings/Console, correct per-server limit/key bindings and secret clearing, raw JSON disclosure, three-column tools with internal scrolling while the page stays still, round restart clicks with normal/Shift state, remote Terminal rejection, address Copy and retained installation progress reopening.
+
+Representative source-real captures cover Servers closed, tools, tools internally scrolled, inline Settings, Console, Install base/popup and Connect at1248×900and760×520, including an outer-scrolled minimum-window tools view. Fixtures use temporary state and synthetic keys; no tasks, native window, listener, Keychain, provider login or real MCP run. These do not establish every live/error/value combination. Browser approval screens and OS titlebar remain separate. [Evidence](../milestones/neumorphic-dev-sync/info.md).
+
+## Current — inline Settings and full Servers layout rollout
+
+New app board75:2718 now has30 native-window specimens:22 Servers and8 Install/Connect. The6 former standalone Settings frames keep their IDs but now show per-server inline Settings; no-server Settings was superseded by Filesystem Settings because Settings opens from a server card. New Search panels-closed204:4868 provides correct Search expand/close routing. Former manually scrolled key state reuses its identical filled editor state and now uses panel scrolling rather than a separate Settings page.
+
+All22 Servers frames have enlarged windows/shared recessed Installed servers backgrounds. Settings family202:2558 preserves five ready/opening/filled/busy variants; each Settings button identifies the correct server. Inline numeric row uses requested bold titles and arrow appearances; light Copy is transparent. Original literal/source24-state board is unchanged. Structure/rendered checks PASS; actual new gestures were not rerun while user actively used Figma. [Scope/evidence](../milestones/inline-server-settings/info.md).
+
+## November 8 — populated internal-scroll demo
+
+New native design specimens now total29, adding Tools scrolling demo177:3654 (source-reference page remains24). Tools78:1438 and demo177:3654 use six linked cards/three columns/two rows with true internal vertical overflow. The enlarged windows and recessed Installed servers section fit the outer content. Name/Required fields are read-only raised values; full original read_file JSON retained; other five definitions are illustrative. Active navtabs across29 designs use inset/no-glow selection. Actual nested wheel scrolling, navigation and12values independently PASS. [Scope/evidence](../milestones/recessed-tools-demo/info.md).
+
+## November 8 — explicit server panel states
+
+New Figma app page75:2718 now contains28 window specimens (original current-source reference page remains24): added panels-closed170:2698 and state-preserving Console-open recovery170:2818/sign-in170:2918/restarting170:3044. Existing Tools78:1438 has no Console; Console78:1705 and Terminal78:1752/78:1767 show output only as explicit-open specimens. Shared selected state172:1910 has inset shadows and no glow; four-control review172:3525 includes Settings. Both terminal panes fill the card width. Original page scrolling remains. Shift-click force restart is an implementation requirement; Figma does not simulate it. See [scope](../milestones/explicit-server-panels/info.md).
+
 ## November 8 — tools belong to the expanded server
 
 Available tools now live inside their owning expanded server card in the new Figma design. Shared card153:1912 contains the normal header/actions, Console, Available tools grid and footer. Review153:1981 shows the whole card; app frame78:1438 uses it with vertical scrolling. Standalone heading/grid were removed. Inspect tools links open this expanded specimen; the header collapses back to the ordinary server list. Tool data/shared inputs are preserved. Independent review ACCEPT;123local main definitions/14sets. This relocation is Figma-only; the Rust tool section remains unchanged until the UI port.

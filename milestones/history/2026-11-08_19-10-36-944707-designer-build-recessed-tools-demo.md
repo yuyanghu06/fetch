@@ -1,0 +1,10 @@
+# Build recessed tools demo
+
+- Local timestamp / acting role / milestone: 2026-11-08T19:10:36.944707-05:00 / designer / recessed-tools-demo.
+- Requested scope: User's successive Figma refinements: pressed selected navbar without glow, recessed tools area/different color, multiple rows/three cards across/internal scrolling, recessed Installed servers, larger tools windows, and raised warm-white read-only tool details.
+- Starting repository state: Local documentation only; prior explicit-panel work independently accepted. Original whole-page scroll trial reverted.
+- Work performed / changed files: Root added shared tools area177:1914, warm-gray primitive/semantic fill aliases, six linked tool fixtures in three columns/two rows, shared read-only value182:3991, pressed blue active nav across new specimens, recessed Installed servers on two tools frames, enlarged those trial windows, and kept the neighboring canvas specimen clear. Root updated project design documentation and milestone records; no application files changed.
+- Decisions: Keep warm-white raised server/tool cards on warm-gray #EAE6DF recessed sections. Preserve original page scrolling. First read_file data retained; five extra cards explicitly illustrative. Enlarge only the two tools trial windows. Use actual fixed440px tools overflow rather than a fake scrollbar or invented live tool results.
+- Checks and evidence: Figma readback: six325.333px squares at3columns×2rows, grid722.667px/viewport440px. Two trial windows1248×1160; outer viewport1200×1080/page1200×1046, so expanded server/footer and Search fit. Root screenshot confirms visual hierarchy and no outer clipping. Selected nav uses existing two-inner-shadow style. Tool fields now use read-only value182:3991; raw JSON retained. Actual final scroll/click verification pending.
+- Resulting state / acceptance: Implementation complete, awaiting independent final prototype verification/evaluation.
+- Remaining work and handoff: Actual nested scroll, nav selections and read-only text inspection; final review. Rust port and executable Shift-click remain separate.
