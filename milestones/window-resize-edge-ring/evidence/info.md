@@ -1,0 +1,5 @@
+# Evidence
+
+Hidden disposable native fixture passes inside/outside/curved-corner hit testing, native direction forwarding, unchanged unconfigured-window behavior, resized ring bounds, top-left controls, every hover glyph/exact leave restoration, close routing and full teardown. Initial experimental per-instance subclasses caused recursion/KVO teardown failures; removed and replaced with guarded concrete-class wrappers before any final binary launch. Native hooks use private AppKit SPI, guarded for availability. CUA inventory could not attach to the unbundled fetch-development process (Invalid app); live pointer/drag feel is NOT observed. No real Fetch launch/window manipulation, MCP/account/Keychain access or global Mac setting changes. Direct fixture/source review ACCEPT; live user Quit/reopen check remains.
+
+Text logs record actual commands/results; PNGs are offscreen or disposable native fixtures. No live product acceptance is inferred. Reproducible raw RGBA captures are discarded after selected PNG inspection.

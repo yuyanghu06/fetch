@@ -133,6 +133,8 @@ impl ServerRepository {
 // Saved status is not live evidence in this process. No disk flag can manufacture authentication.
 fn project_record(mut v: Value) -> Value {
     v.as_object_mut().map(|o| {o.remove("_installation");o.remove("credentials");});
+    if v["config"].get("enabled").is_none(){v["config"]["enabled"]=Value::Bool(true);}
+    if v["config"].get("scope").is_none(){v["config"]["scope"]=serde_json::json!({"project_id":null});}
     v["runtime"] = serde_json::json!({"status":"stopped","error":null});
     v["authentication"] = serde_json::json!({"status":"unknown","error":null});
     v["restart"] = Value::Null;
@@ -208,7 +210,7 @@ fn valid_record(id: &str, v: &Value) -> bool {
             "args",
             "working_directory",
             "environment",
-            "connection", "execution", "tool_features",
+            "connection", "execution", "tool_features", "enabled", "scope",
         ].contains(&k.as_str()))) || !matches!(c["kind"].as_str(), Some("npm" | "pypi" | "local_script" | "remote"))
         || !(if c["kind"]=="remote" {c["executable"].is_null()} else {c["executable"].is_string()})
         || !nullable_string(&c["working_directory"])
@@ -237,6 +239,10 @@ fn valid_record(id: &str, v: &Value) -> bool {
             || !matches!(conn["transport"].as_str(), Some("streamable_http" | "sse"))
             || !conn["url"].as_str().is_some_and(|u| url::Url::parse(u).is_ok_and(|u| crate::discovery::supported_remote_endpoint(&u)))
             || !conn["headers"].as_array().is_some_and(|a| a.iter().all(|x| keys(x, &["name", "credential_ref"]) && nonempty(&x["name"]) && nonempty(&x["credential_ref"]))) { return false; }
+    }
+    if c.get("enabled").is_some_and(|value|!value.is_boolean()){return false;}
+    if let Some(scope)=c.get("scope") {
+        if !keys(scope,&["project_id"]) || !(scope["project_id"].is_null() || scope["project_id"].as_str().is_some_and(crate::projects::valid_project_id)) {return false;}
     }
     if let Some(e) = c.get("execution") {
         if !keys(e, &["max_concurrent_calls", "default_timeout_ms", "tool_timeouts_ms"])
@@ -306,7 +312,7 @@ impl Directory {
         if unsafe{libc::unlinkat(self.file.as_raw_fd(),name.as_ptr(),0)}<0&&std::io::Error::last_os_error().kind()!=std::io::ErrorKind::NotFound{return Err(StorageError::Unavailable);}
         self.file.sync_all().map_err(|_|StorageError::Unavailable)
     }
-    fn open(path: &Path, create: bool) -> Result<Self, StorageError> {
+    pub(crate) fn open(path: &Path, create: bool) -> Result<Self, StorageError> {
         if create && !path_present(path)? {
             std::fs::DirBuilder::new()
                 .recursive(true)
@@ -338,7 +344,7 @@ impl Directory {
         }
         Ok(Self { file })
     }
-    fn names(&self) -> Result<Vec<String>, StorageError> {
+    pub(crate) fn names(&self) -> Result<Vec<String>, StorageError> {
         let clone = self
             .file
             .try_clone()
@@ -380,7 +386,7 @@ impl Directory {
             }
         }
     }
-    fn child(&self, name: &str, create: bool) -> Result<Option<Self>, StorageError> {
+    pub(crate) fn child(&self, name: &str, create: bool) -> Result<Option<Self>, StorageError> {
         let name = c_name(name)?;
         if create {
             // SAFETY: directory fd and name remain valid for this call.

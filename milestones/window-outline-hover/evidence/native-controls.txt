@@ -1,0 +1,30 @@
+In file included from tests/native_window_controls.m:2:
+tests/../src/native_auth/bridge.m:81:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+   81 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+      |                                                               ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+ 1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+      |                          ^
+In file included from tests/native_window_controls.m:2:
+tests/../src/native_auth/bridge.m:95:27: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+   95 |         OSStatus status = SecTrustedApplicationCreateFromPath(NULL, &application);
+      |                           ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+   61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+      |          ^
+In file included from tests/native_window_controls.m:2:
+tests/../src/native_auth/bridge.m:99:18: warning: 'SecAccessCreate' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+   99 |         status = SecAccessCreate(CFSTR("Fetch encrypted local state"), (__bridge CFArrayRef)trusted, &access);
+      |                  ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:132:10: note: 'SecAccessCreate' has been explicitly marked deprecated here
+  132 | OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
+      |          ^
+In file included from tests/native_window_controls.m:2:
+tests/../src/native_auth/bridge.m:108:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+  108 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+      |                                                               ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+ 1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+      |                          ^
+4 warnings generated.
+PASS: top-left positioning, matching frame/content edges, resize, each of three native hover glyphs, exact leave restoration and close delegation; hidden fixture only.

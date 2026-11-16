@@ -19,3 +19,7 @@ Keychain.
 Online MCP client grants and manually entered fixed keys are stored directly in
 Keychain through remote_oauth's one shared store, using the official library for
 online login/renewal. Native servers manage their own files and refresh behavior.
+
+## November 12 — final reload, copy, startup status and resize UI
+
+Native backend Keychain errors retain OSStatus through KeychainUnavailable(i32); error descriptions include only code/reason. Not-found/create-duplicate behavior, key caching, key ownership and cryptography are unchanged. Eleven existing fake-Keychain/credential cases pass; no real saved keys were read during diagnosis.

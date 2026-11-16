@@ -1,3 +1,12 @@
+## November 12 — project installation core
+
+Scoped preparation includes project identity in reuse and progress records.
+New local project instances default an absent working directory to the saved
+project folder, preserving supported explicit directories. Packages stay central.
+Existing global helpers remain available. Public adapters use verified caller
+binding and native destination choices; progress is scoped too. No personal
+installation was performed by the focused synthetic fixtures.
+
 ## November 4 — uv owns Python package preparation
 
 New packaged uvx servers are installed with `uv tool install --managed-python`, forwarding an explicit imported Python request and otherwise letting uv choose compatible Python. Each installation owns `tools/` environments and exported `bin/` commands; downloaded interpreters stay in Fetch's private shared runtime folder. Fetch reads installed METADATA for the actual version and saves the validated installed executable. `program_paths.rs` records the actual environment bin plus exported bin so helpers remain discoverable; old records keep their `venv/bin` fallback. Existing saved installations are reused without migration. The older fixed Python provisioning below still applies to standalone local-script imports only; it is superseded for packaged uvx installs. No login or MCP process starts during standalone preparation.

@@ -336,3 +336,29 @@ D73 replaces the repeated approval backlog with docs/architecture/build-readines
 D76 scopes the first testing batch to short standard MCP behavior, installation and authentication checks. Define the location first, then choose a representative server list in a later step and record it in milestone/to-do. The external Fetch-Testing layout in docs/architecture/isolated-testing.md is proposed, not yet selected/provisioned. Do not select servers ahead of that requested sequence or infer live-test/personal-state permission; preserve D46 and broader release acceptance.
 
 The user subsequently explicitly requested curation. The initial targets are now Everything, Filesystem, Time, Tavily and Linear, documented in milestones/isolated-mcp-testing/servers.md and milestone/to-do, all not run. The earlier server-selection wait is fulfilled; do not reopen it as a missing request or infer installation/auth/test permission from curation.
+
+## Nested scroll areas and page messages — November 12, 2026
+
+Wheel/trackpad scrolling inside any internal scroll area belongs to that area,
+including at its top/bottom or when its content fits. Do not pass extra wheel
+movement to the surrounding page/list. Use the shared native contain_scroll
+wrapper for new scroll areas; Console/Terminal frames, Tools, Settings, discovery
+and the installed-server list use it. Scrolling outside an internal pane still
+moves its surrounding list normally.
+
+Do not render global error/notice banners in the space beneath navigation. The
+user removed that entire page-level message display. Contextual Console and
+installation-dialog messages remain; do not silently add a replacement banner.
+
+## Copy, startup and reload feedback — November 12, 2026
+
+Shared copy controls show plain Copied! immediately on the left for about1.4s,
+without a background. Blue copy SVGs lighten on hover; white SVGs use a subtle
+shine. Do not add a hover tile behind the glyph. App names on Connect are muted
+gray/bold with small marks on their right. OpenCode/explanatory intro are hidden.
+
+Installed servers manual reload has about3s of visual feedback and replays the
+cards, even for instant results; data responses are still applied immediately.
+Every server starting/restarting uses an orange dot and spinning restart arrow;
+hide unknown-sign-in text while pending. Apply returned states immediately and
+keep pending status reads active; do not infer authenticated from runtime ready.

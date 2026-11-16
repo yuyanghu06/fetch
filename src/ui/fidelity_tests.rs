@@ -79,9 +79,10 @@ async fn fidelity_full_views_use_design_size_and_matching_visible_tool_values() 
     eprintln!("UI cold capture native-design-tools1248x1128: {:.3}s",started.elapsed().as_secs_f64());
     export("native-design-tools",size,&pixels);
     let at=|x:usize,y:usize|&pixels[(y*1248+x)*4..(y*1248+x)*4+3];
-    assert_eq!(at(600,170),[234,230,223],"the first frame includes the recessed Installed servers background, matching the Figma flat face");
+    assert_eq!(at(600,170),[247,246,241],"the fixed Installed servers heading sits above the recessed list on the page surface");
+    assert_eq!(at(600,980),[234,230,223],"the list retains its recessed background below the title");
     for (name,center_x) in [("authentication",1030),("restart",1084),("removal",1138)] {
-        let white=(center_x-10..center_x+10).flat_map(|x|(269..289).map(move|y|(x,y))).filter(|&(x,y)|at(x,y).iter().all(|channel|*channel>245)).count();
+        let white=(center_x-10..center_x+10).flat_map(|x|(293..313).map(move|y|(x,y))).filter(|&(x,y)|at(x,y).iter().all(|channel|*channel>245)).count();
         assert!(white>3,"the first frame contains the real white {name} icon over its colored button; observed{white}whitepixels");
     }
     fixture.export(&desktop,"native-design-tools-cached");
@@ -91,8 +92,32 @@ async fn fidelity_full_views_use_design_size_and_matching_visible_tool_values() 
     let pixels=fixture.pixels(&desktop);
     eprintln!("UI cold capture native-design-settings1248x1128: {:.3}s",started.elapsed().as_secs_f64());
     export("native-design-settings",size,&pixels);
-    let arrow_plate=&pixels[(551*1248+587)*4..(551*1248+587)*4+3];
+    let arrow_plate=&pixels[(575*1248+587)*4..(575*1248+587)*4+3];
     assert_eq!(arrow_plate,[255,255,255],"the editable number field keeps the Figma white arrow plate above its background image");
     assert_eq!(desktop.timeout,"120");
     assert_eq!(desktop.concurrency,"1");
+}
+
+#[tokio::test]
+async fn right_shadow_fades_before_the_viewport_edge() {
+    let size=Size::new(152.0,120.0);
+    let card=components::raised(iced::widget::Space::new().width(120).height(80));
+    let element=iced::widget::container(card).padding(iced::Padding{left:20.0,right:12.0,top:20.0,bottom:20.0}).into();
+    let pixels=render_component(element,size,iced::mouse::Cursor::Unavailable,1.0).await;
+    let at=|x:usize|{let i=(60*152+x)*4;pixels[i..i+3].to_vec()};
+    assert!(at(143)[0]<245,"the right shadow is still present close to the card");
+    assert!(at(151).iter().all(|channel|*channel>=244),"the shadow reaches the background before the right clip: {:?}",at(151));
+    export("right-shadow-fade",size,&pixels);
+}
+
+#[tokio::test]
+async fn retina_window_edge_has_no_dark_filtering_outline() {
+    let size=Size::new(100.0,100.0);
+    let face=super::surface::window(iced::widget::Space::new().width(80).height(80));
+    let element=iced::widget::container(face).padding(10).into();
+    let pixels=render_component(element,size,iced::mouse::Cursor::Unavailable,2.0).await;
+    let at=|x:usize|{let i=(100*200+x)*4;pixels[i..i+3].to_vec()};
+    eprintln!("Retina window right edge: {:?} {:?} {:?}",at(178),at(179),at(180));
+    assert!(at(179).iter().all(|channel|*channel>=225),"linear texture sampling must not introduce a dark outline at the rounded face: {:?}",at(179));
+    export("retina-outline",Size::new(200.0,200.0),&pixels);
 }

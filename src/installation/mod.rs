@@ -25,12 +25,13 @@ const MAX_DOWNLOAD: usize = 256 * 1024 * 1024;
 pub struct InstallError { pub http_status:u16, pub code:&'static str, pub message:&'static str, pub installation_id:Option<String> }
 impl InstallError { fn invalid()->Self { Self{http_status:400,code:"INVALID_REQUEST",message:"Supply a server name and exactly one configuration path, literal command or URL for each selection.",installation_id:None} } }
 #[derive(Clone)]
-struct Selection { input:SelectionInput, name:String }
+struct Selection { input:SelectionInput, name:String, project:Option<crate::projects::Project> }
 #[derive(Clone)]
 enum SelectionInput { Source(PathBuf), Direct(Result<direct::DirectDefinition,()>) }
 impl Selection {
     fn config_path(&self)->Option<&Path>{match &self.input{SelectionInput::Source(path)=>Some(path),SelectionInput::Direct(_)=>None}}
     fn matches_saved(&self,record:&Value)->bool{
+        if crate::projects::server_project_id(record)!=self.project.as_ref().map(|project|project.id.as_str()){return false;}
         if record["_installation"]["source_name"]!=self.name{return false;}
         match &self.input{
             SelectionInput::Source(path)=>record["_installation"]["source_path"]==json!(path),
@@ -39,7 +40,7 @@ impl Selection {
         }
     }
 }
-struct Job { id:String, status:&'static str, items:Vec<Value> }
+struct Job { id:String, status:&'static str, items:Vec<Value>, project_id:Option<String> }
 struct Jobs { active:Option<String>, all:Vec<Job> }
 pub(crate) struct IdleInstallation<'a> { _guard:tokio::sync::MutexGuard<'a,Jobs> }
 pub struct Installer { root:PathBuf, repository:ServerRepository, discovery:DiscoveryService, jobs:Mutex<Jobs>, runtime_lock:Mutex<()>, stopping:AtomicBool, stop:Notify, client:reqwest::Client }
@@ -57,12 +58,18 @@ impl Installer {
         Arc::new(Self{repository:ServerRepository::new(root.clone()),root,discovery,jobs:Mutex::new(Jobs{active:None,all:vec![]}),runtime_lock:Mutex::new(()),stopping:AtomicBool::new(false),stop:Notify::new(),client})
     }
     pub async fn submit(self:&Arc<Self>, body:Value)->Result<Value,InstallError> {
-        self.submit_prepared(body,None).await
+        self.submit_prepared(body,None,None).await
+    }
+    pub async fn submit_scoped(self:&Arc<Self>,body:Value,project:Option<crate::projects::Project>)->Result<Value,InstallError>{
+        self.submit_prepared(body,None,project).await
     }
     pub(crate) async fn submit_with_connect(self:&Arc<Self>,body:Value,hook:PreparedHook)->Result<Value,InstallError>{
-        self.submit_prepared(body,Some(hook)).await
+        self.submit_prepared(body,Some(hook),None).await
     }
-    async fn submit_prepared(self:&Arc<Self>, body:Value, hook:Option<PreparedHook>)->Result<Value,InstallError> {
+    pub(crate) async fn submit_scoped_with_connect(self:&Arc<Self>,body:Value,project:Option<crate::projects::Project>,hook:PreparedHook)->Result<Value,InstallError>{
+        self.submit_prepared(body,Some(hook),project).await
+    }
+    async fn submit_prepared(self:&Arc<Self>, body:Value, hook:Option<PreparedHook>, project:Option<crate::projects::Project>)->Result<Value,InstallError> {
         let object=body.as_object().filter(|o|o.len()==1).ok_or_else(InstallError::invalid)?;
         let rows=object.get("servers").and_then(Value::as_array).filter(|a|!a.is_empty() && a.len()<=256).ok_or_else(InstallError::invalid)?;
         let mut selections=Vec::new(); let mut unique=BTreeSet::new();
@@ -78,24 +85,31 @@ impl Installer {
                 "url"=>SelectionInput::Direct(direct::url(n,value)),
                 _=>unreachable!(),
             };
-            selections.push(Selection{input,name:n.into()});
+            selections.push(Selection{input,name:n.into(),project:project.clone()});
         }
+        let project_id=project.as_ref().map(|project|project.id.clone());
         let mut jobs=self.jobs.lock().await;
-        if let Some(id)=&jobs.active { return Err(InstallError{http_status:409,code:"INSTALLATION_IN_PROGRESS",message:"An installation is already running. Monitor its progress before submitting another.",installation_id:Some(id.clone())}); }
+        if let Some(id)=&jobs.active {let visible=jobs.all.iter().find(|job|job.id==*id).is_some_and(|job|job.project_id==project_id);return Err(InstallError{http_status:409,code:"INSTALLATION_IN_PROGRESS",message:"An installation is already running. Wait for it to finish before submitting another.",installation_id:visible.then(||id.clone())});}
         if jobs.all.len()>=4096 {return Err(InstallError{http_status:503,code:"INSTALLATION_ACCEPTANCE_FAILED",message:"This Fetch run has reached its installation-history capacity. Existing current-run results remain available.",installation_id:None});}
         if self.stopping.load(Ordering::SeqCst) { return Err(InstallError{http_status:503,code:"INSTALLATION_ACCEPTANCE_FAILED",message:"Fetch is shutting down.",installation_id:None}); }
         let id=opaque("installation");
         let items=selections.iter().map(|s|json!({"config_path":s.config_path(),"server_name":s.name,"server_id":null,"status":"pending","error":null})).collect();
-        jobs.active=Some(id.clone()); jobs.all.push(Job{id:id.clone(),status:"installing",items}); drop(jobs);
+        jobs.active=Some(id.clone()); jobs.all.push(Job{id:id.clone(),status:"installing",items,project_id:project_id.clone()}); drop(jobs);
         let service=self.clone(); let task_id=id.clone();
         tokio::spawn(async move { service.prepare_group(task_id,selections,hook).await; });
-        Ok(json!({"installation_id":id,"status":"installing","next_steps":[monitor_installation(&id)]}))
+        Ok(json!({"installation_id":id,"project_id":project_id,"status":"installing","next_steps":[monitor_installation(&id)]}))
     }
     pub async fn progress(&self,id:&str)->Result<Value,InstallError> {
+        self.progress_matching(id,None).await
+    }
+    pub async fn progress_scoped(&self,id:&str,project_id:Option<&str>)->Result<Value,InstallError>{
+        self.progress_matching(id,Some(project_id)).await
+    }
+    async fn progress_matching(&self,id:&str,project:Option<Option<&str>>)->Result<Value,InstallError>{
         let jobs=self.jobs.lock().await;
-        let job=jobs.all.iter().find(|j|j.id==id).ok_or(InstallError{http_status:404,code:"INSTALLATION_NOT_FOUND",message:"No matching installation exists in this Fetch run.",installation_id:None})?;
+        let job=jobs.all.iter().find(|job|job.id==id&&project.is_none_or(|project|job.project_id.as_deref()==project)).ok_or(InstallError{http_status:404,code:"INSTALLATION_NOT_FOUND",message:"No matching installation exists in this Fetch run.",installation_id:None})?;
         let steps=if job.status=="installing" {vec![monitor_installation(id)]} else if job.status=="failed" {vec![json!({"actor":"agent","action":"resolve_installation_failures","instructions":"Resolve failed preparation entries and submit only those entries again. Successful installations are preserved; review their separate runtime/authentication status through GET /api/v1/servers."})]} else {vec![json!({"actor":"agent","action":"check_server_status","instructions":"Read the resulting servers through GET /api/v1/servers. Fetch attempted their normal Connect stage after preparation; required login or connection failure does not undo installation. Review runtime/authentication status before using tools."})]};
-        Ok(json!({"installation_id":id,"status":job.status,"servers":job.items,"next_steps":steps}))
+        Ok(json!({"installation_id":id,"project_id":job.project_id,"status":job.status,"servers":job.items,"next_steps":steps}))
     }
     async fn prepare_group(&self,id:String,selections:Vec<Selection>,hook:Option<PreparedHook>) {
         for (index,selection) in selections.iter().enumerate() {
@@ -122,10 +136,13 @@ impl Installer {
     async fn prepare(&self,selection:&Selection)->Result<String,()> {
         let records=self.repository.list_saved().map_err(|_|())?;
         if let Some(old)=records.iter().find(|record|selection.matches_saved(record)){return old["server_id"].as_str().map(str::to_owned).ok_or(());}
-        let capture=match &selection.input{
+        let mut capture=match &selection.input{
             SelectionInput::Source(path)=>self.discovery.capture(path,&selection.name).map_err(|_|())?,
             SelectionInput::Direct(definition)=>definition.as_ref().map_err(|_|())?.capture.clone(),
         };
+        if let Some(project)=&selection.project {
+            if capture.config["kind"]!="remote" && capture.config["working_directory"].is_null(){capture.config["working_directory"]=json!(project.folder_path);}
+        }
         let server_id=opaque("server"); let installation=opaque("package");
         let mut config=capture.config.clone(); let kind=capture.row["type"].as_str().ok_or(())?;
         let prepared=match kind {
@@ -137,6 +154,7 @@ impl Installer {
         };
         let prepared=match prepared {Ok(config)=>config,Err(())=>{let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}};
         config=prepared;
+        config["scope"]=json!({"project_id":selection.project.as_ref().map(|project|project.id.as_str())});
         if self.stopping.load(Ordering::SeqCst){let _=fs::remove_dir_all(self.root.join("packages/servers").join(&installation));return Err(());}
         let protected_args=if kind=="npm" {1} else if kind=="local_script" {config["args"].as_array().map_or(0,Vec::len)} else {0};
         let mut association=json!({"source_name":selection.name,"installation_id":installation,"protected_args":protected_args});

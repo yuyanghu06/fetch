@@ -1,3 +1,18 @@
+## November 12 — project operations
+
+`project_scope.rs` supplies caller-bound installation/progress and native idle-only
+scope assignment. `config.scope.project_id` identifies a registered project;
+missing scope remains Shared. Assignment uses the existing installation,
+per-server and runner admission guards, preserving power, cwd and logins.
+Caller-aware operations retain per-server scope guards and check current saved
+membership. HTTP/MCP and native controls now use the approved wiring. Metadata
+reads recheck after awaited snapshots and suppress moved rows plus guidance.
+Focused checks/signed build pass; actual native/client acceptance remains manual.
+
+## November 12 — persistent server on/off implementation
+
+power.rs owns the durable enabled preference and admission-safe stop worker. Explicit restart can turn a server on; internal startup/installation/renewal paths only connect if enabled. Stop precedes provider renewal and preserves saved data/terminal state. Locked library compilation, 30 focused checks, final signed build and independent Evaluator acceptance pass; live user/provider acceptance remains separate.
+
 ## Native terminal environment — November 4
 
 terminal_action reuses the normal transport builder for assigned settings, private HOME/XDG, helper PATH and saved working directory, then delegates shell/process IO to TerminalService. Reopening a live session reuses it. No login command is inferred. Deletion closes the owned terminal before unregistering; Quit awaits cleanup before Runner shutdown. Native Settings route authority is separate from ordinary management permission.
@@ -126,3 +141,7 @@ responses or next_steps. This reports an actual spawn, rather than imposing inpu
 requirements. Native UI consumes lines/status without executing instructions.
 
 November 4: process_environment.rs adapts the pinned Apache-2.0 Codex MCP environment builder. It inherits the upstream allowed host variables/certificate paths, applies assigned settings plus Fetch's protected HOME/XDG/helper PATH, then removes upstream internal token variables. Native setup and normal startup use the same transport. No provider credential file is opened. Source attribution and the full upstream license/NOTICE are in the repository root. Independent verification is recorded under milestones/codex-startup-environment/.
+
+## November 12 — final reload, copy, startup status and resize UI
+
+Live.starting marks the existing automatic startup work before renewal/connection and clears after its result; the existing GET runtime.status reads starting while in progress. This is a truthful projection of work already running, not a new start-on-read behavior or a new field/route. Startup fixture holds its connection gate and checks GET without running any MCP/network/process.

@@ -1,0 +1,5 @@
+ACCEPT — independent Evaluator
+
+No material defect found in the scoped implementation. Inspected stop-before-renewal, admission/count guards, saved Off, retained-child timeout/retry ownership, detached worker, explicit-vs-internal start behavior, HTTP/MCP permissions/forwarding and native pending/error state. Thirty focused checks and final signed build (24.59s)/strict verification pass. Minimum-window layout inspected.
+
+Live providers/macOS approval not tested. Failed-close and caller-disconnect reviewed in source rather than fault injected. No changes requested.

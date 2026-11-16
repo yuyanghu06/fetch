@@ -1,0 +1,10 @@
+# Separate and refine logo PNGs
+
+- Local timestamp / acting role / milestone: 2026-11-12T13:18:32.290343-05:00 / designer-orchestrator / logo-mockups.
+- Requested scope: separate dog/background PNGs; soften frame inward; preserve white; strengthen blue/white contrast; black eyes; preserve current dog size; critique after edits.
+- Starting repository state: prior layered mockup edits, unrelated source/docs changes preserved; PNG exports pending. Initial cutouts had stray edge flecks.
+- Work performed / changed files: used built-in imagegen for transparent extraction and color/eyes; native Figma silhouette mask cleans cutout boundary. Frame267:800 contains bg283:799 and dog group285:801/image283:800/mask285:799. Exported current two PNGs; updated logo/milestone guides, docs/FIGMA, NOTES, snapshot and to-do.
+- Decisions: target blue #7DBFE2, black highlighted eyes, white #F7F6F1 unchanged;114px corners retained. Local inward shadow radii44/56px, tight outer shadow softened12px. No shared app style edits. Current user geometry preserved at final swap:1024×1024 at0,0, identity transform.
+- Checks and evidence: final PNG upload hash912a408de9b4379d3018514212de19ee9d1035c2; whiteUnchanged true and geometry readback. Final composition and both local PNGs inspected. sips confirms alpha and dimensions dog1024×1024/background1094×1098. PNG background includes effect bounds. Earlier mask assembly produced bad alignment; corrected and visually rechecked before export. Large base64 filesystem write rejected by tool's64k input limit; completed safely using Figma PNG download URLs instead.
+- Resulting state / acceptance: requested edits and separate files complete; subjective logo approval remains with user. Direct review, not independent. No app code/tests/build/launch or subagents.
+- Remaining work and handoff: critique recommends simplifying heavy face shading for small-size readability; recommendation only. Preserve current geometry on future PNG replacements. Existing product tasks retained.

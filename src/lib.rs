@@ -18,5 +18,8 @@ pub mod manager;
 pub mod remote_oauth;
 pub mod application;
 pub mod ui;
+pub mod workspace;
+pub mod projects;
 
 pub mod terminal;
+pub mod connector;

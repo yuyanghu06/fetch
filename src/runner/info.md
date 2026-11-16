@@ -1,3 +1,20 @@
+## November 12 — persistent server on/off implementation
+
+The non-removing IdleStop guard fences new work while an idle server closes. It reuses the retained-child close implementation, preserves retry ownership on failure, invalidates old catalog/continuations and sends existing list-change notices. Locked library compilation, 30 focused checks, final signed build and independent Evaluator acceptance pass; live user/provider acceptance remains separate.
+
+## Batched stable tool aliases
+
+Runner assigns requested aliases together, retaining the existing names and raw
+Tool definitions. It stages changes in a cloned alias map, writes aliases.json
+once only when new mappings were added, and publishes the staged map only after
+that write succeeds. Existing-only batches perform no disk write. Single-alias
+and tool-definition callers use the same batch method. No catalog cache, process,
+authentication, timeout or stopped-server behavior changes in this optimization.
+
+The connector also reuses the existing diagnostic text sanitizer via crate-local visibility, preserving credential redaction in renewal failures. This changes no upstream runner policy or storage format.
+
+The connector reuses only the existing SseDecoder through a crate-local reexport; it does not take ownership of upstream server processes or replace runner execution rules.
+
 ## Saved console history — November 4
 
 log_store.rs saves only already sanitized service-console lines and observed exit facts to private console-log.json beside the server config. Runner::persistent lazily reloads it for native reads/startup. Saves are coalesced off startup and flushed on Quit. Current retention keeps the latest 1 MiB / 4096 lines, 64 KiB per line, with explicit omission notices; this supersedes the historical prefix-only and memory-only descriptions below. Terminal bytes and input never enter this store. Registration removal preserves the file. Independent current-feature checks pass; see milestones/server-console-terminal/evidence.md.

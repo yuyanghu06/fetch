@@ -195,7 +195,7 @@ fn sanitize_value(value: &Value, secrets: &[String]) -> Value {
         _ => value.clone(),
     }
 }
-fn sanitize_text(value: &str, secrets: &[String]) -> String {
+pub(crate) fn sanitize_text(value: &str, secrets: &[String]) -> String {
     if let Some(offset) = value.find('{') {
         if let Ok(embedded) = serde_json::from_str::<Value>(&value[offset..]) {
             let mut redactions = Zeroizing::new(secrets.to_vec());

@@ -1,0 +1,81 @@
+Project connections verification — November 12, 2026
+
+final-api: 19 named checks; test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s | test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s | test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s | test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s | test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+unit: 8 named checks; test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 238 filtered out; finished in 1.85s
+connector: 20 named checks; test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.41s
+oauth: 4 named checks; test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.16s
+browser: 1 named checks; test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.04s
+activation: 1 named checks; test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.03s
+popup: 6 named checks; test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 240 filtered out; finished in 2.06s
+navigation: 1 named checks; test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.83s
+scope-final: 4 named checks; test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+oauth-final: 1 named checks; test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.10s
+
+57 unique named passing checks across these final logs (repeated focused reruns counted once).
+
+Signed build: ./scripts/run-development.sh --build-only; PASS22.95s; strict signature verification passed.
+Library compile: cargo check --locked --lib; PASS7.00s before focused feature tests.
+git diff --check: PASS.
+Independent Evaluator: ACCEPT.
+Native widget PNGs were exported from actual Iced rendering; no app or personal-state task was executed.
+No live Fetch, coding-client, Keychain approval or provider/account acceptance.
+Project notification/completion boundaries reviewed in source; no dedicated runtime scenarios.
+
+Named checks:
+alias_batches_are_durable_skip_unchanged_writes_and_do_not_commit_failed_saves
+application::connector_activation_tests::connector_handoff_survives_the_requesting_process_without_granting_access
+canonical_projects_persist_and_shared_visibility_does_not_rewrite_legacy_servers
+choosing_a_project_reads_and_saves_its_native_files_without_global_copies
+connector::integration_tests::automatic_approval_cannot_claim_another_request_profile_or_private_proof
+connector::integration_tests::automatic_startup_coalesces_pending_request_and_app_finishes_after_waiter_is_killed
+connector::integration_tests::cancellation_and_catalog_notifications_leave_another_connector_usable
+connector::integration_tests::concurrent_profiles_and_same_profile_keep_equal_ids_progress_and_interaction_separate
+connector::integration_tests::connector_rejects_a_different_saved_certificate_without_trusting_the_system
+connector::integration_tests::denied_expired_or_restart_stale_pending_proof_clears_without_losing_an_existing_grant
+connector::integration_tests::foreign_nonnull_response_ids_remain_rejected_while_null_errors_keep_redacted_details
+connector::integration_tests::immediate_cancel_reaches_backend_before_waiting_for_progress_and_other_calls_work
+connector::integration_tests::maintained_modern_sdk_subscription_ack_changes_and_cancel_keep_other_calls_usable
+connector::integration_tests::modern_same_profile_subscriptions_restore_equal_ids_and_cancel_only_the_owned_stream
+connector::integration_tests::modern_startup_and_selected_tool_call_cross_stdio_and_verified_https
+connector::integration_tests::raw_catalog_arguments_results_and_tool_failures_cross_real_https_gateway
+connector::integration_tests::saved_profile_reconnects_after_fetch_restart_without_replaying_prior_calls
+connector::integration_tests::subscription_metadata_translation_leaves_nested_user_data_unchanged
+connector::integration_tests::unsupported_idless_notification_reports_the_actual_backend_error_without_cross_connection_claim
+connector::profile::tests::client_profiles_and_installations_have_separate_saved_grants
+connector::profile::tests::concurrent_profile_refresh_rereads_the_rotated_winner
+connector::profile::tests::pending_proof_survives_store_reopen_and_only_matching_clear_preserves_grant
+connector::profile::tests::project_profiles_keep_grants_separate_and_reject_a_different_binding
+connector::profile::tests::simultaneous_startups_create_one_durable_pending_request
+discovery::tests::explicit_missing_ambiguous_and_nested_projects_are_distinct
+file_operations_reject_unrelated_paths_and_links_outside_the_selected_project
+generic_calls_keep_raw_results_and_catalog_only_connections_cannot_invoke
+modern_input_required_retains_server_tool_arguments_and_continuation_fields
+native_projects_are_idempotent_and_idle_reassignment_preserves_off_state
+native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_session_chunks
+oauth::connections::tests::denied_or_expired_popup_requests_never_create_credentials
+oauth::connections::tests::native_popup_approval_issues_only_selected_access_to_the_request_owner
+oauth::connections::tests::project_history_approval_and_refresh_keep_the_exact_project_resource
+oauth::connections::tests::separate_client_grants_renew_revoke_and_survive_fetch_restart
+oauth::tests::browser_approval_preserves_its_origin_and_exchanges_the_approved_code
+oauth::tests::browser_project_approval_rejects_code_retargeting_and_returns_project_history_access
+ordinary_bearer_and_background_requests_cannot_access_workspace_files_history_or_models
+pasting_an_agent_converts_common_fields_and_flags_source_settings_before_explicit_save
+project_gateway_exposes_shared_and_own_servers_and_rejects_other_targets
+project_history_permission_reads_only_its_chunks_without_upstream_permissions
+project_preparation_keeps_reuse_cwd_discovery_and_progress_in_the_selected_scope
+remote_oauth::tests::renewal_uses_the_actual_same_https_authenticate_route_and_get_is_only_a_projection
+scoped_installations_reuse_within_one_project_and_keep_working_directories_and_progress_private
+server_power_busy_stop_preserves_active_and_waiting_calls
+server_power_http_stop_preserves_files_survives_restart_and_existing_post_turns_on
+server_power_mcp_schema_and_dispatch_share_the_real_stop_backend
+session_names_are_project_filtered_and_bounded_chunks_reconstruct_large_utf8_logs
+startup_lists_every_permitted_server_without_fetching_upstream_tools_then_selection_runs_in_parallel
+ui::connector_setup::tests::approval_expiring_while_window_is_closed_releases_setup_for_retry
+ui::connector_setup::tests::approved_reply_after_window_close_still_schedules_proof_claim_and_save
+ui::connector_setup::tests::automatic_requests_show_immediately_and_denial_schedules_exact_pending_cleanup
+ui::connector_setup::tests::closing_and_reopening_the_window_preserves_the_setup_claim_owner
+ui::connector_setup::tests::denied_confirmation_releases_ui_setup_for_a_fresh_request
+ui::connector_setup::tests::project_popup_shows_its_folder_and_history_requires_an_explicit_click
+ui::neumorphic_tests::connect_commands_are_first_and_removed_copy_stays_absent
+ui::project_scope_tests::registering_a_workspace_folder_keeps_server_install_and_connection_choices_independent
+ui::workspace_tests::workspace_folder_and_app_controls_keep_global_and_project_views_separate

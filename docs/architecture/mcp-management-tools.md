@@ -1,3 +1,7 @@
+## November12 — selected server-first amendment
+
+The native MCP tools/list default is now being replaced by the accepted fixed Fetch list-servers/list-selected-tools/call-tool flow. Full permitted server names/IDs are included in startup instructions. The old native aggregated upstream export and earlier absence of a generic caller below are historical for this surface. Direct HTTP catalog output/view/error rules remain, with concurrent selected reads; upstream raw definitions/results and existing permissions still apply. No per-connection catalog expansion. See [complete selected contract](server-first-tools.md). Source integrated; focused verification and final build/review underway.
+
 # Fetch-owned MCP management tools
 
 November 3 deletion: fetch__delete_server accepts only server_id and invokes

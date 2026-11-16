@@ -3,6 +3,9 @@ mod authentication;
 pub(crate) mod network;
 mod bindings;
 mod deletion;
+mod power;
+mod project_scope;
+#[cfg(test)] mod power_tests;
 mod native_state;
 mod process_environment;
 mod local_auth;
@@ -28,8 +31,8 @@ impl ManagementError {
 impl From<crate::installation::InstallError> for ManagementError {fn from(e:crate::installation::InstallError)->Self{let mut error=Self::new(e.http_status,e.code,e.message);if let Some(id)=e.installation_id{error.extra=json!({"installation_id":id});error.next_steps=vec![json!({"actor":"agent","action":"check_installation_status","instructions":format!("After one second GET /api/v1/setup/installations/{id}.")})];}error}}
 impl From<crate::runner::RunError> for ManagementError {fn from(e:crate::runner::RunError)->Self{Self::new(e.http_status,e.code,e.message)}}
 #[derive(Clone)]
-struct Live { access_expires_at:Option<u64>,last_verified_at:Option<u64>,auth:Value, runtime_error:Option<Value>, applied:Option<Value>, oauth_restart_pending:bool, revision:u64, authenticating:bool, auth_deadline:u64, auth_attempt:Option<String>, restart:Option<String>, native_sign_in:Option<local_auth::SignIn> }
-impl Default for Live {fn default()->Self{Self{access_expires_at:None,last_verified_at:None,auth:json!({"status":"unknown","error":null}),runtime_error:None,applied:None,oauth_restart_pending:false,revision:0,authenticating:false,auth_deadline:0,auth_attempt:None,restart:None,native_sign_in:None}}}
+struct Live { starting:bool,access_expires_at:Option<u64>,last_verified_at:Option<u64>,auth:Value, runtime_error:Option<Value>, applied:Option<Value>, oauth_restart_pending:bool, revision:u64, authenticating:bool, auth_deadline:u64, auth_attempt:Option<String>, restart:Option<String>, native_sign_in:Option<local_auth::SignIn> }
+impl Default for Live {fn default()->Self{Self{starting:false,access_expires_at:None,last_verified_at:None,auth:json!({"status":"unknown","error":null}),runtime_error:None,applied:None,oauth_restart_pending:false,revision:0,authenticating:false,auth_deadline:0,auth_attempt:None,restart:None,native_sign_in:None}}}
 struct CallbackGuard{manager:std::sync::Weak<Manager>,server:String,attempt:String,armed:bool}
 impl Drop for CallbackGuard{fn drop(&mut self){if !self.armed{return;}let manager=self.manager.clone();let server=self.server.clone();let attempt=self.attempt.clone();if let Ok(runtime)=tokio::runtime::Handle::try_current(){runtime.spawn(async move{if let Some(manager)=manager.upgrade(){manager.end_auth_failure(&server,&attempt,"AUTHENTICATION_FAILED","The sign-in callback was interrupted. Use Authenticate explicitly for a fresh login.").await;}});}}}
 struct ProviderFlow {server:String,attempt:String,session:rmcp::transport::auth::AuthorizationSession,store:sdk::Store,revision:u64,expires:u64,diagnostics:Arc<StartupDiagnostics>,callback_close:remote_callback::Close}
@@ -43,20 +46,21 @@ pub struct Manager {
     #[cfg(test)] browser_opener:RwLock<Option<AuthenticateSender>>,
     #[cfg(test)] oauth_http:RwLock<Option<Arc<dyn rmcp::transport::auth::OAuthHttpClient>>>,
     #[cfg(test)] authentication_verifier:RwLock<Option<AuthenticationVerifier>>,
-    locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>,live:Arc<Mutex<BTreeMap<String,Live>>>,attempts:Mutex<BTreeMap<(String,String),Value>>,flows:Mutex<BTreeMap<String,ProviderFlow>>,origin:RwLock<String>,sender:RwLock<Option<AuthenticateSender>>,background_token:String,scheduled:Mutex<BTreeSet<String>>,restart_auth:Mutex<BTreeMap<String,String>>,stopping:AtomicBool,stop:Arc<Notify>,local_tasks:Mutex<Vec<tokio::task::JoinHandle<()>>>,
+    locks:Mutex<BTreeMap<String,Arc<Mutex<()>>>>,scope_locks:Mutex<BTreeMap<String,Arc<tokio::sync::RwLock<()>>>>,live:Arc<Mutex<BTreeMap<String,Live>>>,attempts:Mutex<BTreeMap<(String,String),Value>>,flows:Mutex<BTreeMap<String,ProviderFlow>>,origin:RwLock<String>,sender:RwLock<Option<AuthenticateSender>>,background_token:String,scheduled:Mutex<BTreeSet<String>>,restart_auth:Mutex<BTreeMap<String,String>>,stopping:AtomicBool,stop:Arc<Notify>,local_tasks:Mutex<Vec<tokio::task::JoinHandle<()>>>,
 }
 #[cfg(test)]
 pub(crate) type AuthenticationVerifier=Arc<dyn Fn(TransportConfig)->Pin<Box<dyn Future<Output=Result<(),ManagementError>>+Send>>+Send+Sync>;
 pub type AuthenticateSender=Arc<dyn Fn(String)->Pin<Box<dyn Future<Output=Result<Value,ManagementError>>+Send>>+Send+Sync>;
 impl Manager {
     pub fn new(repository:ServerRepository,_application_store:Arc<CredentialStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{let grants=Arc::new(GrantStore::new(repository.root().to_owned()));Self::with_grant_store(repository,grants,runner,installer)}
-    pub fn with_grant_store(repository:ServerRepository,grants:Arc<GrantStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,grants,runner,installer,terminals:crate::terminal::TerminalService::new(),#[cfg(test)]browser_opener:RwLock::new(None),#[cfg(test)]oauth_http:RwLock::new(None),#[cfg(test)]authentication_verifier:RwLock::new(None),locks:Mutex::new(BTreeMap::new()),live:Arc::new(Mutex::new(BTreeMap::new())),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),sender:RwLock::new(None),background_token:URL_SAFE_NO_PAD.encode(rand::random::<[u8;32]>()),scheduled:Mutex::new(BTreeSet::new()),restart_auth:Mutex::new(BTreeMap::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),local_tasks:Mutex::new(vec![])})}
+    pub fn with_grant_store(repository:ServerRepository,grants:Arc<GrantStore>,runner:Arc<Runner>,installer:Arc<Installer>)->Arc<Self>{Arc::new(Self{repository,grants,runner,installer,terminals:crate::terminal::TerminalService::new(),#[cfg(test)]browser_opener:RwLock::new(None),#[cfg(test)]oauth_http:RwLock::new(None),#[cfg(test)]authentication_verifier:RwLock::new(None),locks:Mutex::new(BTreeMap::new()),scope_locks:Mutex::new(BTreeMap::new()),live:Arc::new(Mutex::new(BTreeMap::new())),attempts:Mutex::new(BTreeMap::new()),flows:Mutex::new(BTreeMap::new()),origin:RwLock::new(String::new()),sender:RwLock::new(None),background_token:URL_SAFE_NO_PAD.encode(rand::random::<[u8;32]>()),scheduled:Mutex::new(BTreeSet::new()),restart_auth:Mutex::new(BTreeMap::new()),stopping:AtomicBool::new(false),stop:Arc::new(Notify::new()),local_tasks:Mutex::new(vec![])})}
     pub fn set_origin(&self,origin:String){if let Ok(mut value)=self.origin.write(){*value=origin;}}
     pub fn set_authenticate_sender(&self,sender:AuthenticateSender){if let Ok(mut value)=self.sender.write(){*value=Some(sender);}}
     pub(crate) fn background_token(&self)->String{self.background_token.clone()}
     pub(crate) fn accepts_background_token(&self,token:&str)->bool{!self.stopping.load(Ordering::SeqCst)&&token.len()==self.background_token.len()&&token.bytes().zip(self.background_token.bytes()).fold(0u8,|acc,(left,right)|acc|(left^right))==0}
-    async fn request_background_authenticate(&self,id:&str)->Result<Value,ManagementError>{let sender=self.sender.read().map_err(|_|auth_required())?.clone().ok_or_else(auth_required)?;sender(id.to_owned()).await}
+    async fn request_background_authenticate(&self,id:&str)->Result<Value,ManagementError>{self.require_enabled(id).await?;let sender=self.sender.read().map_err(|_|auth_required())?.clone().ok_or_else(auth_required)?;sender(id.to_owned()).await}
     pub async fn before_remote_use(&self,id:&str)->Result<(),ManagementError>{
+        self.require_enabled(id).await?;
         let record=self.record(id)?;if record["config"]["kind"]!="remote"{return Ok(());}
         let due=self.live.lock().await.get(id).and_then(|value|value.access_expires_at).is_some_and(|expiry|expiry<=now()+29);
         if due{self.request_background_authenticate(id).await?;}
@@ -89,18 +93,21 @@ impl Manager {
         self.runner.verify_remote_transport_with_diagnostics(transport,diagnostics).await.map_err(ManagementError::from)
     }
     async fn lock(&self,id:&str)->Arc<Mutex<()>>{self.locks.lock().await.entry(id.to_owned()).or_insert_with(||Arc::new(Mutex::new(()))).clone()}
-    fn record(&self,id:&str)->Result<Value,ManagementError>{self.repository.get_saved(id).map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.ok_or_else(||ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."))}
+    fn record(&self,id:&str)->Result<Value,ManagementError>{let mut record=self.repository.get_saved(id).map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.ok_or_else(||ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."))?;if record["config"].get("enabled").is_none(){record["config"]["enabled"]=json!(true);}if record["config"].get("scope").is_none(){record["config"]["scope"]=json!({"project_id":null});}Ok(record)}
     pub async fn install(self:&Arc<Self>,body:Value)->Result<Value,ManagementError>{
+        self.install_project(body,None).await
+    }
+    async fn install_project(self:&Arc<Self>,body:Value,project:Option<crate::projects::Project>)->Result<Value,ManagementError>{
         let weak=Arc::downgrade(self);
         let hook:crate::installation::PreparedHook=Arc::new(move|id|{
             let weak=weak.clone();Box::pin(async move{if let Some(manager)=weak.upgrade(){manager.connect_installed(id).await;}})
         });
-        Ok(self.installer.submit_with_connect(body,hook).await?)
+        Ok(self.installer.submit_scoped_with_connect(body,project,hook).await?)
     }
     async fn connect_installed(self:Arc<Self>,id:String){
         if self.stopping.load(Ordering::SeqCst){return;}
         let gate=self.lock(&id).await;let guard=gate.lock().await;
-        if self.stopping.load(Ordering::SeqCst)||self.record(&id).is_err(){return;}
+        if self.stopping.load(Ordering::SeqCst)||!self.record(&id).is_ok_and(|record|power::enabled(&record)){return;}
         // Reused ready imports must not interrupt existing calls or repeat login.
         if self.runner.snapshot(&id).await["runtime"]["status"]=="ready"{return;}
         let live=self.live.lock().await.get(&id).cloned().unwrap_or_default();
@@ -108,10 +115,10 @@ impl Manager {
         let active=if self.active_restart(&id,&live).await{live.restart.clone()}else{None};
         drop(guard);
         let attempt=if let Some(attempt)=active{Some(attempt)}else{
-            match self.restart(&id,json!({})).await{
+            match self.restart_if_enabled(&id,json!({})).await{
                 Ok(value)=>value["restart_id"].as_str().map(str::to_owned),
                 Err(error) if error.code=="RESTART_IN_PROGRESS"=>error.extra["restart_id"].as_str().map(str::to_owned),
-                Err(error) if error.code=="SERVER_BUSY"=>None,
+                Err(error) if matches!(error.code,"SERVER_BUSY"|"SERVER_DISABLED")=>None,
                 Err(error)=>{self.connection_failed(&id,error.code,error.message).await;None},
             }
         };
@@ -142,9 +149,11 @@ impl Manager {
     pub async fn installation(&self,id:&str)->Result<Value,ManagementError>{Ok(self.installer.progress(id).await?)}
     pub async fn servers_for(&self,caller:&Caller,ids:Vec<String>,restart:Option<String>)->Result<Value,ManagementError>{
         if !caller.can_manage(){return Err(ManagementError::new(403,"FORBIDDEN","Server-management permission is required."));}
-        let requested=if ids.is_empty(){self.repository.list_saved().map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?.iter().filter_map(|v|v["server_id"].as_str().map(str::to_owned)).collect()}else{ids};
-        let visible:Vec<String>=requested.iter().filter(|id|caller.permits("fetch:manage",id,None)).cloned().collect();
-        let hidden:Vec<String>=requested.iter().filter(|id|!caller.permits("fetch:manage",id,None)).cloned().collect();
+        let explicit_ids=!ids.is_empty();
+        let records=self.repository.list_saved().map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?;
+        let requested=if ids.is_empty(){records.iter().filter_map(|record|record["server_id"].as_str().map(str::to_owned)).collect()}else{ids};
+        let visible:Vec<String>=requested.iter().filter(|id|records.iter().find(|record|record["server_id"].as_str()==Some(id.as_str())).is_some_and(|record|self.permitted_record(caller,"fetch:manage",record,None))).cloned().collect();
+        let hidden:Vec<String>=requested.iter().filter(|id|explicit_ids&&!visible.contains(id)).cloned().collect();
         if restart.is_some() && visible.len()!=1{return Err(ManagementError::new(404,"SERVER_NOT_FOUND","The selected server was not found."));}
         let mut result=if visible.is_empty(){json!({"status":"ok","servers":[],"not_found_ids":[],"next_steps":[]})}else{self.servers(visible,restart).await?};
         if let Some(missing)=result["not_found_ids"].as_array_mut(){missing.extend(hidden.into_iter().map(Value::String));}
@@ -160,6 +169,21 @@ impl Manager {
             if let Some(timeouts)=record["config"]["execution"]["tool_timeouts_ms"].as_object_mut(){timeouts.retain(|name,_|caller.permits("fetch:catalog",&id,Some(name)));}
             if !caller.permits("fetch:catalog",&id,None){record["config"]["tool_features"]=json!({"status":"unavailable","tools":[]});}
             else if let Some(tools)=record["config"]["tool_features"]["tools"].as_array_mut(){tools.retain(|tool|tool["name"].as_str().is_some_and(|name|caller.permits("fetch:catalog",&id,Some(name))));}
+        }}
+        // Snapshot/diagnostic reads above can yield while the native person moves
+        // an idle server. Recheck saved membership after the final await before
+        // returning either its record or server-specific guidance.
+        let current=self.repository.list_saved().map_err(|_|ManagementError::new(500,"SERVER_INFO_UNAVAILABLE","Saved server information is unavailable."))?;
+        let permitted:BTreeSet<String>=current.iter().filter(|record|self.permitted_record(caller,"fetch:manage",record,None))
+            .filter_map(|record|record["server_id"].as_str().map(str::to_owned)).collect();
+        let mut moved=Vec::new();
+        if let Some(servers)=result["servers"].as_array_mut(){servers.retain(|record|{
+            let Some(id)=record["server_id"].as_str() else{return false;};
+            if permitted.contains(id){true}else{moved.push(id.to_owned());false}
+        });}
+        if let Some(steps)=result["next_steps"].as_array_mut(){steps.retain(|step|step["server_id"].as_str().is_none_or(|id|permitted.contains(id)));}
+        if explicit_ids {if let Some(missing)=result["not_found_ids"].as_array_mut(){
+            for id in moved {if !missing.iter().any(|value|value.as_str()==Some(id.as_str())){missing.push(Value::String(id));}}
         }}
         Ok(result)
     }
@@ -179,6 +203,7 @@ impl Manager {
             if !self.runner.server_ids().await.iter().any(|known|known==&id){record["tool_execution"]["max_concurrent_calls"]=json!(record["config"]["execution"]["max_concurrent_calls"].as_u64().unwrap_or(1));}
             if record["config"]["kind"]=="remote" {record["unresolved_prior_calls"]=snapshot.get("unresolved_prior_calls").cloned().unwrap_or(json!(0));}
             let mut live=self.live.lock().await.get(&id).cloned().unwrap_or_default();
+            if live.starting&&live.runtime_error.is_none(){record["runtime"]=json!({"status":"starting","error":null});}
             if snapshot["provider_auth_required"]==true&&!live.authenticating&&!(live.auth["status"]=="authenticated"&&live.oauth_restart_pending){
                 live.auth=json!({"status":"required","error":{"code":"PROVIDER_AUTH_REQUIRED","message":"The upstream requires provider authentication. Use this server's supported native setup, or Authenticate for supported remote OAuth."}});
             }
@@ -190,21 +215,31 @@ impl Manager {
             if record["runtime"]["status"]!="ready"{if let Some(error)=&live.runtime_error{record["runtime"]=json!({"status":"failed","error":error});}}
             if let Some(applied)=&live.applied{record["restart_required"]=json!(launch_config(applied)!=launch_config(&record["config"])||live.oauth_restart_pending);}
             let attempt_id=restart.as_ref().or(live.restart.as_ref());record["restart"]=if let Some(attempt)=attempt_id{self.attempts.lock().await.get(&(id.clone(),attempt.clone())).cloned().unwrap_or(Value::Null)}else{Value::Null};
+            if power::enabled(&record){
             if record["restart"]["status"]=="restarting"{next.push(restart_step(&id,attempt_id.unwrap()));}
             else if live.auth["status"]=="authenticating" || record["runtime"]["status"]=="starting"{next.push(server_step(&id));}
             else if live.auth["status"]=="required"{next.push(json!({"actor":"agent","action":"restart_server","server_id":id,"instructions":"For an explicit user sign-in, POST this server's restart route with interactive:true, or use fetch__restart_server with the same option. Relay its setup instructions and ask the user before opening an offered sign-in host. This read has not started authentication."}));}
             else if record["restart_required"]==true || matches!(live.auth["status"].as_str(),Some("failed"|"unknown")) || matches!(record["runtime"]["status"].as_str(),Some("stopped"|"failed")){let mut step=settings_step("Review the server's native configuration and login requirements. Use Connect or Restart explicitly after changing its files. Readiness alone does not prove provider account access.");step["server_id"]=json!(id);next.push(step);}
+            }
             servers.push(record);
         }
         Ok(json!({"status":"ok","servers":servers,"not_found_ids":missing,"next_steps":next}))
     }
     pub async fn config(&self,id:&str,patch:Value,caller:&Caller)->Result<Value,ManagementError>{
         if !caller.permits("fetch:manage",id,None){return Err(ManagementError::new(403,"FORBIDDEN","Server-management permission is required."));}
-        let object=patch.as_object().ok_or_else(invalid)?;if object.keys().any(|k|!["execution"].contains(&k.as_str())){return Err(invalid());}
-        let gate=self.lock(id).await;let _guard=gate.lock().await;let mut record=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
+        let object=patch.as_object().ok_or_else(invalid)?;if object.keys().any(|k|!["execution","scope"].contains(&k.as_str())){return Err(invalid());}
+        let scope=object.get("scope").map(|value|self.normalized_scope(caller,value)).transpose()?;
+        let scope_gate=self.scope_lock(id).await;
+        let _scope_read=if scope.is_none(){Some(scope_gate.clone().read_owned().await)}else{None};
+        let _scope_write=if scope.is_some(){Some(scope_gate.try_write_owned().map_err(|_|busy("A server operation is in progress. Finish it before changing the project."))?)}else{None};
+        let _installation=if scope.is_some(){Some(self.installer.idle_for_delete().await.map_err(|_|busy("Finish the active installation before changing a server's project."))?)}else{None};
+        let gate=self.lock(id).await;let _guard=if scope.is_some(){gate.try_lock().map_err(|_|busy("This server is changing state. Finish that operation before changing its project."))?}else{gate.lock().await};let mut record=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
+        self.require_current_management(caller,&record)?;
         if let Some(applied)=&live.applied{record["restart_required"]=json!(launch_config(applied)!=launch_config(&record["config"])||live.oauth_restart_pending);}
         if live.authenticating{return Err(busy("Authentication is active. Monitor server status before editing."));}
+        let _scope_admission=if scope.is_some(){Some(self.scope_admission(id,&live).await?)}else{None};
         let mut next=record["config"].clone();let old=next.clone();
+        if let Some(scope)=scope{next["scope"]=scope;}
         if let Some(execution)=object.get("execution"){
             let changes=execution.as_object().ok_or_else(invalid)?;if changes.keys().any(|k|!["max_concurrent_calls","default_timeout_ms","tool_timeouts_ms"].contains(&k.as_str())){return Err(invalid());}
             if next.get("execution").is_none(){next["execution"]=json!({"max_concurrent_calls":1,"default_timeout_ms":120000,"tool_timeouts_ms":{}});}
@@ -216,14 +251,21 @@ impl Manager {
         policy(&next)?.validate().map_err(ManagementError::from)?;
         let changed=old!=next;
         if changed{record["config"]=next.clone();self.repository.save(id,&record).map_err(|_|ManagementError::new(500,"CONFIG_WRITE_FAILED","Fetch execution settings could not be saved."))?;let _=self.runner.update_execution(id,policy(&next)?).await;}
-        Ok(json!({"server_id":id,"status":"ok","changed":changed,"restart_required":record["restart_required"],"next_steps":[]}))
+        if changed && object.contains_key("scope"){for method in ["notifications/tools/list_changed","notifications/resources/list_changed","notifications/prompts/list_changed"]{let _=self.runner.changes.send((id.to_owned(),method.into()));}}
+        Ok(json!({"server_id":id,"status":"ok","changed":changed,"scope":next["scope"],"restart_required":record["restart_required"],"next_steps":[]}))
     }
-    pub async fn restart(self:&Arc<Self>,id:&str,body:Value)->Result<Value,ManagementError>{
+    pub async fn restart(self:&Arc<Self>,id:&str,body:Value)->Result<Value,ManagementError>{self.restart_mode(id,body,true).await}
+    async fn restart_if_enabled(self:&Arc<Self>,id:&str,body:Value)->Result<Value,ManagementError>{self.restart_mode(id,body,false).await}
+    async fn restart_mode(self:&Arc<Self>,id:&str,body:Value,explicit:bool)->Result<Value,ManagementError>{
         if self.stopping.load(Ordering::SeqCst){return Err(ManagementError::new(503,"SERVER_NOT_READY","Fetch is shutting down."));}
-        let object=body.as_object().ok_or_else(invalid)?;if object.keys().any(|k|!matches!(k.as_str(),"force_restart"|"interactive")){return Err(invalid());}let interactive=match object.get("interactive"){None=>false,Some(Value::Bool(value))=>*value,_=>return Err(invalid())};let force=match object.get("force_restart"){None=>false,Some(Value::Bool(b))=>*b,_=>return Err(invalid())};
-        if interactive {if force{return Err(invalid());}return self.authenticate_inner(id,true,false).await;}
+        let object=body.as_object().ok_or_else(invalid)?;if object.keys().any(|k|!matches!(k.as_str(),"force_restart"|"interactive"|"action")){return Err(invalid());}let interactive=match object.get("interactive"){None=>false,Some(Value::Bool(value))=>*value,_=>return Err(invalid())};let force=match object.get("force_restart"){None=>false,Some(Value::Bool(b))=>*b,_=>return Err(invalid())};
+        let action=match object.get("action"){None=>"restart",Some(Value::String(action)) if matches!(action.as_str(),"restart"|"stop")=>action,_=>return Err(invalid())};
+        if action=="stop"{if interactive||force{return Err(invalid());}return self.stop_server(id).await;}
+        if interactive&&force{return Err(invalid());}
+        {let gate=self.lock(id).await;let _guard=gate.lock().await;let mut record=self.record(id)?;if explicit{self.save_enabled(id,&mut record,true)?;}else if !power::enabled(&record){return Err(power::disabled());}}
+        if interactive{return self.authenticate_inner(id,true,false).await;}
         let initial=self.record(id)?;let _=self.renew_saved_remote(&initial).await;
-        let gate=self.lock(id).await;let _guard=gate.lock().await;let captured=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
+        let gate=self.lock(id).await;let _guard=gate.lock().await;let captured=self.record(id)?;if !power::enabled(&captured){return Err(power::disabled());}let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
         if live.authenticating{return Err(busy("Authentication is active. Monitor server status first."));}
         if let Some(existing)=live.restart{if self.attempts.lock().await.get(&(id.to_owned(),existing.clone())).is_some_and(|v|v["status"]=="restarting"){let mut error=ManagementError::new(409,"RESTART_IN_PROGRESS","A restart or reconnect is already active.");error.extra=json!({"restart_id":existing});error.next_steps=vec![restart_step(id,&existing)];return Err(error);}}
         let (route,route_error)=match self.route(&captured).await{
@@ -240,7 +282,7 @@ impl Manager {
         self.phase(id,&attempt,"waiting_for_calls",remote).await;
         let manager=self.clone();let server=id.to_owned();let restart=attempt.clone();
         tokio::spawn(async move{if let Some(route)=route{manager.perform_restart(server,restart,captured,route,force,remote).await;}else if let Some(error)=route_error{manager.failed_restart(&server,&restart,error.code,error.message,remote).await;manager.runner.reopen_admission(&server).await;}});
-        let mut response=json!({"server_id":id,"restart_id":attempt,"status":"restarting","next_steps":[restart_step(id,&attempt)]});if remote{response["operation"]=json!("reconnect");}Ok(response)
+        let mut response=json!({"server_id":id,"enabled":true,"restart_id":attempt,"status":"restarting","next_steps":[restart_step(id,&attempt)]});if remote{response["operation"]=json!("reconnect");}Ok(response)
     }
     async fn perform_restart(self:Arc<Self>,id:String,attempt:String,mut captured:Value,mut route:ServerRoute,force:bool,remote:bool){
         if self.stopping.load(Ordering::SeqCst){self.failed_restart(&id,&attempt,"SERVER_START_FAILED","Fetch is shutting down; no replacement was started.",remote).await;return;}
@@ -297,10 +339,11 @@ impl Manager {
         if let Ok(records)=self.repository.list_saved(){
             // A slow connection must not hold up startup of the other saved servers.
             futures_util::future::join_all(records.into_iter().map(|candidate|async move{
-            if self.stopping.load(Ordering::SeqCst){return;}let Some(id)=candidate["server_id"].as_str()else{return};
+            if self.stopping.load(Ordering::SeqCst)||!power::enabled(&candidate){return;}let Some(id)=candidate["server_id"].as_str()else{return};
+            self.live.lock().await.entry(id.to_owned()).or_default().starting=true;
             let _=self.renew_saved_remote(&candidate).await;
             let gate=self.lock(id).await;let guard=gate.lock().await;
-            let record=match self.record(id){Ok(record)=>record,Err(_)=>return};
+            let record=match self.record(id){Ok(record) if power::enabled(&record)=>record,_=>{self.live.lock().await.entry(id.to_owned()).or_default().starting=false;return;}};
             let mut connected=false;
             match self.route(&record).await{
                 Ok(route)=>match self.runner.configure(route).await{
@@ -315,6 +358,7 @@ impl Manager {
                 },
                 Err(error)=>self.connection_failed(id,error.code,error.message).await,
             }
+            self.live.lock().await.entry(id.to_owned()).or_default().starting=false;
             if self.live.lock().await.get(id).is_some_and(|state|state.auth["status"]=="required"){let _=self.remember_live_authentication(id).await;}
             drop(guard);
             if connected {self.observe_features(id).await;}
@@ -324,9 +368,11 @@ impl Manager {
     }
     pub async fn shutdown(&self){self.stopping.store(true,Ordering::SeqCst);self.stop.notify_waiters();self.installer.shutdown();let tasks={let mut owned_tasks=self.local_tasks.lock().await;self.flows.lock().await.clear();for state in self.live.lock().await.values_mut(){state.native_sign_in=None;}std::mem::take(&mut *owned_tasks)};for task in tasks{let _=task.await;}let terminals=self.terminals.clone();if let Ok(Err(error))=tokio::task::spawn_blocking(move||terminals.shutdown()).await{crate::diagnostics::application_failure(error.code);}self.runner.shutdown().await;}
     async fn renew_saved_remote(&self,record:&Value)->Result<(),ManagementError>{
-        if record["config"]["kind"]!="remote"{return Ok(());}
         let id=record["server_id"].as_str().ok_or_else(invalid)?;
+        let gate=self.lock(id).await;let guard=gate.lock().await;let current=self.record(id)?;
+        if !power::enabled(&current)||current["config"]["kind"]!="remote"{return Ok(());}
         let document=self.grants.read_json(id).await.map_err(|_|store_error())?.unwrap_or_else(||json!({}));
+        drop(guard);
         if document["sdk"].is_object(){self.request_background_authenticate(id).await?;}
         Ok(())
     }
@@ -341,7 +387,7 @@ impl Manager {
     pub(crate) async fn authenticate_background(self:&Arc<Self>,id:&str)->Result<Value,ManagementError>{self.authenticate_inner(id,false,true).await}
     async fn authenticate_inner(self:&Arc<Self>,id:&str,interactive:bool,background:bool)->Result<Value,ManagementError>{
         if self.stopping.load(Ordering::SeqCst){return Err(auth_required());}
-        let gate=self.lock(id).await;let guard=gate.lock().await;let record=self.record(id)?;let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
+        let gate=self.lock(id).await;let guard=gate.lock().await;let record=self.record(id)?;if !power::enabled(&record){return Err(power::disabled());}let live=self.live.lock().await.get(id).cloned().unwrap_or_default();
         if self.active_restart(id,&live).await{
             let permitted=background&&self.restart_auth.lock().await.get(id).is_some_and(|attempt|live.restart.as_deref()==Some(attempt.as_str()));
             if !permitted{return Err(busy("Monitor the active restart before authenticating."));}
@@ -449,7 +495,7 @@ impl Manager {
         if !self.scheduled.lock().await.insert(id.clone()){return;}
         let manager=self.clone();tokio::spawn(async move{
             loop{
-                if manager.stopping.load(Ordering::SeqCst)||manager.record(&id).is_err(){break;}
+                if manager.stopping.load(Ordering::SeqCst)||!manager.record(&id).is_ok_and(|record|power::enabled(&record)){break;}
                 let expiry=manager.live.lock().await.get(&id).and_then(|value|value.access_expires_at);
                 let Some(expiry)=expiry else{break;};
                 tokio::select!{_=tokio::time::sleep(Duration::from_secs(expiry.saturating_sub(now()+29).max(1)))=>{},_=manager.stop.notified()=>break};
@@ -496,7 +542,7 @@ fn server_step(id:&str)->Value{json!({"actor":"agent","action":"check_server_sta
 fn restart_step(id:&str,attempt:&str)->Value{json!({"actor":"agent","action":"check_restart_status","server_id":id,"instructions":format!("After one second GET /api/v1/servers?id={id}&restart_id={attempt}; acceptance is not completion.")})}
 fn auth_response(id:&str,status:&str,steps:Vec<Value>)->Value{json!({"server_id":id,"status":status,"next_steps":steps})}
 fn string_array(value:&Value)->Result<Vec<String>,ManagementError>{value.as_array().ok_or_else(invalid)?.iter().map(|value|value.as_str().filter(|value|!value.contains(['\0','\r','\n'])).map(str::to_owned).ok_or_else(invalid)).collect()}
-fn launch_config(config:&Value)->Value{let mut value=config.clone();if let Some(object)=value.as_object_mut(){object.remove("execution");object.remove("tool_features");}value}
+fn launch_config(config:&Value)->Value{let mut value=config.clone();if let Some(object)=value.as_object_mut(){object.remove("execution");object.remove("tool_features");object.remove("enabled");object.remove("scope");}value}
 fn policy(config:&Value)->Result<ExecutionPolicy,ManagementError>{if config.get("execution").is_none(){return Ok(ExecutionPolicy::default());}serde_json::from_value(config["execution"].clone()).map_err(|_|invalid_config())}
 fn now()->u64{sdk::now()}
 fn sdk_error(error:rmcp::transport::auth::AuthError)->ManagementError{sdk_error_ref(&error)}

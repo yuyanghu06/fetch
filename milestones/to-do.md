@@ -1,3 +1,618 @@
+## November 16 — Escape popups complete
+
+- [x] Captured-key-safe topmost Escape dismissal implemented through existing Close actions.
+- [x]2focused keyboard flows, state preservation, signed build/strict verification and independent Evaluator ACCEPT.
+- [ ] User explicitly Quit/reopen signed Fetch and observe physical keyboard behavior. Earlier unfinished acceptance remains below.
+
+## November 16 — Escape closes Fetch popups
+
+- [x] Inventory existing popups and captured keyboard behavior; accept bounded common dispatch plan.
+- [x] Implement main-window/topmost Escape using existing Close actions.
+- [x] Verify all popup kinds/focused editor/preserved state, signed build and independent evaluation.
+
+## November 16 — default window/light code/combined Copy complete
+
+- [x]1058x789opening size, matching light inline/fenced code and name+result tool Copy implemented.
+- [x]21unique focused checks, default/minimum captures, final signed build/strict verification and independent Evaluator ACCEPT.
+- [ ] User explicitly Quit/reopen signed Fetch and observe actual saved histories/native behavior. Earlier unfinished tasks preserved.
+
+## November 16 — window/Markdown/combined Copy
+
+- [x] Measure current Fetch1058x789bounds and accept shared-renderer plan; user confirms name+result Copy.
+- [x] Implement larger default, light shared Markdown code and combined tool Copy.
+- [x] Focused realistic checks/captures at default/minimum, adjust affected pixel fixtures to actual width, signed build and independent evaluation.
+
+## November 16 — compact path/tool follow-up complete
+
+- [x] Shared compact path Copy/boxes, gray tools/code names, readable wrapping JSON and visible arrows complete; independent Evaluator ACCEPT.
+- [x]12Workspace cases plus affected tool rerun, normal/minimum captures and final signed build/strict verification pass.
+- [ ] User explicitly Quit/reopen signed Fetch and observe actual saved histories/Finder. Earlier unfinished work remains below.
+
+## November 16 — tool/path rendering follow-up
+
+- [x] Inspect concrete clipping and confirm bounded shared-component plan.
+- [x] Implement gray tool cards/code names/readable wrapping output and smaller bare path Copy/shorter box.
+- [x] Focused widget checks, normal/minimum captures, signed build and independent review.
+
+## November 16 — Workspace fixes accepted
+
+- [x] Independent Evaluator ACCEPT; error and selected rendering fixes complete. Final evidence in workspace-session-error/evidence/.
+- [ ] User explicitly Quit/reopen via signed launcher and observe actual histories/Finder. Other unfinished work remains below.
+
+## November 16 — focused verification complete
+
+- [x] Missing native current rollout skips only its thread;8native checks pass; installed helper rebuilt.
+- [x] All requested rendering changes, exact source/Copy preservation and12Workspace tests pass.
+- [x] Inspect normal/minimum captures; final signed build/strict verification passes.
+- [x] Record final independent Evaluator decision.
+- [ ] User explicitly Quit/reopen signed Fetch and observe actual saved histories/native Finder. Synthetic evidence does not replace that observation.
+
+## November 16 — expanded Workspace fixes
+
+- [x] Implement session error separation; independent editor/tab regression passes.
+- [x] User selects rendering-only changes; definition files must remain untouched (supersedes pending formatting choice below).
+- [x] Rebuild/verify missing-native-current-file reader repair on disposable fixtures.
+- [x] Complete blue subagent names, shared content style/code paths/adjacent Finder, session Markdown and corrected User white/Assistant gray colors.
+- [x] Independent focused UI tests/capture review, signed build and final evaluation.
+
+## November 16 — Workspace error separation
+
+- [x] Trace unrelated session error appearing above AGENTS.md; accept bounded plan.
+- [x] Separate session-list errors, verify real editor/tab flow, review and build/sign.
+- [x] Formatting choice resolved: user rejects personal-file changes and selects rendering-only fixes.
+
+## November 13 — active official-reader follow-up
+
+- [x] Receive complete reader/API/dependency approval and separate Finder route approval.
+- [x] Create and validate five global Codex specialist definitions.
+- [x] Integrate official complete-history helpers and native source selection.
+- [x] Finish rendered subagent popup, Finder controls and removal of Saved feedback.
+- [x] Independently test/review final flows, inspect visuals and build/sign; Evaluator ACCEPT.
+- [ ] User explicitly Quit/reopen for actual personal-history and Finder observation.
+Preserve all unfinished work recorded below.
+
+[Pass record](history/2026-11-13_16-13-12-607689-orchestrator-approved-readers-and-finder.md).
+
+## November 13 — global specialists and full official history
+
+- [x] Create/register the five global Codex specialists and referenced shared workflow; verify native config loading and preserve other settings.
+- [x] Research official Codex/Claude full-history readers and identify existing custom-parser/partial-loading faults.
+- [x] Finish bounded API/runtime proposal and obtain explicit approval; completed by the official-reader approval.
+- [x] Replace reconstruction with official reader output, complete all native pages and display selected conversation items.
+- [x] Collapse named tool results with independent expansion/Copy.
+- [x] Focused independent verification/evaluation and signed build; ACCEPT.
+
+## November 13 — Workspace editor and history follow-ups
+
+- [x] Keep continuous scroll gestures in their initial area; use native finger/momentum phases and retain nested boundary capture.
+- [x] Add Cmd/Ctrl+Z undo, white Save text and shared raised blue-SVG editor/subagent Copy.
+- [x] Remove Paste agent/manual registration controls; auto-register successfully opened folders through the existing API.
+- [x] Show only manual user input, assistant output and tool results; keep full message text together and within card width.
+- [x] Leave popup clearance around native controls; stagger first-load server rows downward.
+- [x] Focused UI/parser/native-phase checks, screenshots and signed build pass.
+- [ ] User explicitly Quit/reopen for actual trackpad/native observation and real history acceptance.
+- [x] Restore or recreate the missing global Codex role files/registrations after the user selects their contents. Completed by the later explicit global-team creation request. Existing global instructions reference the absent ~/.codex/agents/ directory; current config/backups contain no role registrations. Project roles were found and preserved.
+
+## November 12 — raised dropdowns and session commands
+
+- [x] Give project dropdowns the shared outward raised surface.
+- [x] Make session-name buttons blue using the shared primary control.
+- [x] Render native commands/output and tool data as code blocks with Copy; remove command wrapper tags from displayed bodies.
+- [x] Continue existing chunk reads through a complete assistant reply, including large split records; preserve Read more and cached history.
+- [x] Focused widget/parser checks, inspected screenshots and final signed build pass.
+- [ ] User explicitly Quit/reopen Fetch and observe actual saved histories. Fixture checks do not establish every real session format. Other pending work remains below.
+
+## November 12 — Workspace presentation and picker response
+
+- [x] Open selected instructions directly and reuse app selection across sections.
+- [x] File-style session cards open role-labeled conversation popups; retain chunk caching and Read more.
+- [x] Dim the existing session list during loading; remove loading text/disabled footer.
+- [x] Align Installed servers; use shared rounded menu style and clarify the Shared label.
+- [x] Prepare/reuse hidden native file picker; verify hidden construction/reuse, focused UI/parser tests and signed build.
+- [ ] User explicitly Quit/reopen Fetch to observe changes and check actual folder-dialog click response and real session history. Fixture evidence does not establish those live observations.
+
+## November 12 — Workspace logo controls
+
+- [x] Remove Global/Open folder and separate Claude Code/Codex text controls; move content up.
+- [x] Add shared40px circular app choices to the right of all section tabs, with raised/inset states.
+- [x] Use the same app choice for Instructions, Subagents and Sessions.
+- [x] Four Workspace checks plus final selection retest, inspected normal/minimum views, and final signed build/strict verification pass.
+- [ ] User explicitly Quit/reopen Fetch for live observation. Other unfinished work is preserved below.
+
+## November 12 — project connections
+
+- [x] Inspect current code and complete source/research plan.
+- [x] User explicitly approves complete new route/auth contract.
+- [x] Registry/server scope and scoped discovery/install/reuse/cwd/progress.
+- [x] Reusable backend core and trusted Caller context integrated and verified.
+- [x] Fix implicit inventory hidden IDs and recheck current target membership after metadata waits/at dispatch.
+- [x] Project-bound approval/grants/refresh/profile/connector and browser resource validation.
+- [x] Common HTTP/MCP visibility, session-only tools and safe notification/continuation boundaries.
+- [x] API-backed native project registration/filter/install/scope/connect/approval controls.
+- [x] 57unique focused checks, signed build/strict verification and independent Evaluator ACCEPT.
+- [ ] Manual acceptance: user Quit/reopen signed development Fetch, register a chosen project, apply each client's shown snippet and approve access. No personal clients were changed automatically.
+- [ ] User security follow-up: rotate the existing v0 MCP token accidentally printed by a process diagnostic in conversation tool output; no credential/client change was performed automatically.
+
+Workspace’s earlier session-MCP deferral is superseded by this completed project-bound slice; native-only file restrictions remain. Project notification/completion behavior is source-reviewed, without dedicated runtime scenarios.
+
+## November 12 — shared approval and refresh hover
+
+- [x] Use shared blue Allow on both Claude Code/Codex approval.
+- [x] Show request code in shared copyable code block; copy digits only.
+- [x] Remove the requested explanatory sentence.
+- [x] Restore idle Install refresh hover glow/rotation for an empty path; preserve no blank discovery.
+- [x] Pass25 widget checks, inspect both popup variants and pass signed build/strict verification.
+- [ ] User Quit/reopen Fetch to observe the rebuilt UI. Other pending work remains below.
+
+## November 12 — Workspace delivery
+
+- [x] Approved native routes, shared backend, frontend API wrappers and Workspace page.
+- [x] Existing-file editing, converted drafts/model choices and bounded plain/compressed session reads.
+- [x] Fourteen focused checks, five inspected real-widget captures, signed build/strict verification and independent Evaluator ACCEPT.
+- [ ] User explicitly Quit/reopen signed Fetch development app and check native files/clipboard/real Claude model list.
+- [ ] Deliberately deferred: project-bound session MCP; user chooses Workspace-first delivery. No unbound history or instruction/subagent MCP tools.
+
+## November 12 — Workspace implementation checkpoint
+
+- [x] User approves native route contract and chooses Workspace-first delivery.
+- [x] Implement shared backend, Fetch-only HTTP handlers and frontend API wrappers.
+- [x] Implement native file editor, conversion/model drafts and bounded expandable sessions.
+- [x] Add and run focused core/API/catalog/widget checks; fix material path/editor findings.
+- [x] Independent source evaluation ACCEPT, subject to final verification.
+- [ ] Final shared editor/picker styling check, signed build-only and evidence integration.
+- [ ] User manually checks native files/clipboard and real Claude model catalog.
+- [ ] Deferred by explicit user choice: session MCP until project-bound connection feature. Earlier inclusion as part of this build is superseded, not silently completed.
+
+## November 12 — server on/off and black app-auth handoff
+
+- [x] Persistent server toggle and existing-POST action:stop implementation.
+- [x] Thirty focused checks and final signed development build/strict verification.
+- [x] Independent Evaluator ACCEPT; canonical docs/source guides/evidence integrated.
+- [x] Compact Connect authentication faces black, white keys,22px.
+- [ ] User explicitly Quit/reopen Fetch to observe the rebuilt app. Actual account/client/macOS acceptance remains manual.
+
+Other unfinished work remains below.
+
+## November 12 — Workspace
+
+- [x] Record selected behavior; inspect native API/UI seams and research formats/model catalogs/history readers.
+- [ ] Review exact new private HTTP contracts and whether project MCP connection work belongs in this build.
+- [ ] Implement shared backend file/conversion/session/catalog services and frontend API wrappers.
+- [ ] Implement Workspace page, draft editing and bounded session expansion.
+- [ ] Project-bound session MCP only after connection/permission review; never expose history on unbound grants.
+- [ ] Focused disposable fixtures, UI checks, signed build-only and independent evaluation.
+
+## November 12 — black Connect authentication
+
+- [x] Make only compact Connect app key faces black, with white glyphs.
+- [x] Pass existing actual-click check, inspect screenshot and build/sign successfully.
+- [ ] User Quit/reopen to observe the new build. Server on/off implementation remains pending below.
+
+## November 12 — persistent server Off
+
+- [x] Inspect existing restart, disconnect, scheduler and automatic connection paths.
+- [x] User approves the shown action:stop extension and selects Off surviving restart.
+- [x] Planner: bounded implementation plan, complete selected contract and exclusive ownership.
+- [x] Coder: implement common API/backend/MCP tool and native toggle; locked library check passes.
+- [x] Tester: prepare focused disposable tests without production edits.
+- [x] Tester: 30 focused checks pass (3 confined HTTP/MCP, 2 private, 25 UI).
+- [x] Final signed build/strict verification and independent Evaluator ACCEPT (24.59s build).
+- [x] Independent review found no material fix required; integrated source/docs/evidence. No personal/live MCP or release actions.
+
+## November 12 — first manual Claude connector failure and walkthrough
+
+User changed the project-local Claude Fetch registration to the bundled stdio command. Read-only inspection confirms a valid seven-argument command with one complete data-directory argument, claude-code profile and port53672. Existing Fetch started after the signed build, owns activation.sock and responds200 to certificate-verified public authorization metadata. Do not reinstall or alter client settings as a guessed fix.
+
+Initial screenshot shows connecting; subsequent screenshot shows connected, tools fetch failed, protocol2026-07-28, capabilities none and connection closed. Real Claude tool/catalog acceptance therefore remains failed, despite54 prior isolated checks. User suspects slow loading of the full catalog. Source list_tools visits server catalogs sequentially, so latency is plausible but unmeasured; do not present it as established cause or change discovery/timeout behavior without evidence.
+
+User manually clicked Reconnect while root performed read-only process inspection. Existing connector sample reached stdin reading and had an established HTTPS connection; no sampled Keychain or profile-lock wait was observed. This is consistent with leaving initial approval and entering forwarding, not proof of complete MCP/tool discovery. No additional client was launched by agent, no saved credentials were read/exported and no app/services were restarted. Task-owned raw stack reports were removed after recording this nonsecret summary.
+
+UI explanation confirmed from source: the Connect-apps key itself creates a request with client_name claude-code, even if Claude is closed. After explicit permission/Mac approval, native UI claims and saves that profile. Later normal connector startup reuses it and skips the popup. Approval belongs to a saved installation/client profile, not a running process or verified application identity. Pending requests use existing four routes; direct browser HTTPS auth is unchanged. User asks for an exact step-by-step route/file explanation before further implementation; no application source changed in this diagnostic pass.
+
+Next action: explain current implementation, then inspect the failing discovery/catalog exchange and elapsed time. Do not treat the manual failure as accepted completion or silently change permission/identity/catalog architecture.
+
+- [ ] Diagnose actual Claude tools-fetch failure; distinguish catalog latency from protocol/connection closure.
+- [ ] Observe successful real client tool listing/call before native acceptance.
+
+## November 12 — automatic connector approval follow-up
+
+The user requires normal Claude/Codex connection startup to open Fetch's permission popup without a separate setup/login command. Missing-profile startup now sends a nonsecret client label to the native app, launches it if needed, creates the existing approval request and persists its private proof in the separate connector Keychain record. Fetch alone claims/saves after selected permissions and Mac confirmation; client timeout does not discard the proof. Existing approved profiles retain ordinary attach behavior. No new API, permission scope, automatic grant or browser-trust change is introduced.
+
+Research confirms client startup limits can end the first connection before human approval (Claude current default about30seconds, Codex10seconds). After approval users may need the client's Reconnect action. No fake MCP initialization is used. Previous mandatory setup/no-app-launch statements are superseded for first missing-profile connection. Personal configs, credentials, trust and existing services remain protected. Actual client/Mac checks remain deferred to the user's manual testing.
+
+Source integration and isolated fixture verification are in progress; final review/build still pending. Existing inline key/popup-dismissal UI work is preserved.
+
+- [x] Research client startup behavior and plan automatic first approval using existing routes.
+- [x] Implement durable pending proof, native completion and cold/warm app handoff.
+- [x] Finish54 isolated checks, independent review ACCEPT and signed build/strict verification.
+- [ ] User manually checks actual Claude/Codex, native approval and Keychain.
+
+## November 12 — compact Connect authentication and title gap
+
+- [x] Match only Connect app key buttons to the 22px logos using the shared component.
+- [x] Halve Connect navigation/title spacing; preserve other page spacing.
+- [x] Pass 24 widget checks, inspect normal/minimum screenshots and pass signed build/strict verification.
+- [ ] User Quit/reopen Fetch for live observation. Other pending work remains below.
+
+## November 12 — inline app authentication and recessed Connect panel
+
+- [x] Replace the two Set up buttons with shared inline app keys that open the existing approval flow.
+- [x] Remove the complete address/certificate/explanation footer; retain command Copy controls.
+- [x] Add shared red Close and outside-click dismissal; keep hidden requests reopenable without polling reopening them.
+- [x] Reuse rounded modal shading for approval/discovery and the Servers recessed panel for Connect.
+- [x] Pass 24 actual-widget checks, inspect normal/minimum screenshots, and pass signed development build/strict verification.
+- [ ] User explicitly Quit/reopen Fetch and observe live UI. Mac Touch ID/password dialog remains OS-owned.
+
+Other unfinished product/connector work remains below. [Record](connect-inline-auth/info.md).
+
+## November 12 — connector implementation delivered
+
+- [x] Native request/popup/proof claim and separate client grant implementation.
+- [x] Raw stdio/pinned HTTPS, concurrency/cancel/refresh/lifetime implementation.
+- [x] Final focused46 checks, inspected popup, CLI help and signed build/strict verification.
+- [x] Independent Evaluator ACCEPT source/fixtures after requested fixes.
+- [x] Confined real-client attempt with file/network/Keychain denial canaries; no successful actual MCP request claimed.
+- [ ] User manual testing later: real popup/Mac confirmation/Keychain, actual Claude/Codex MCP use and reconnect. User explicitly deferred these on November12.
+- Milestone awaits manual acceptance; earlier automated/native items marked pending are superseded only by the scoped outcomes above. Existing unrelated tasks remain.
+
+## November 12 — inline refresh and shorter Servers feedback
+
+- [x] Shorten Installed servers minimum feedback to 1.5 seconds; keep pending-request spin.
+- [x] Move Install Refresh directly left of Choose file or folder… in the path row.
+- [x] Four focused existing UI checks, inspected normal/minimum screenshots and signed build/strict verification pass.
+- [ ] User Quit/reopen Fetch to observe the changes. Previous three-second Servers requirement is superseded; other pending work remains below.
+
+## November 12 — shared button behavior
+
+- [x] Use the shared refresh component/running-action guard on every native refresh control.
+- [x] Share Servers/discovery request and three-second minimum feedback without delaying results.
+- [x] Reuse text/primary button typography and styling across pages and repeated controls.
+- [x] Run actual-widget/UI checks (78 pass), inspect page PNGs and pass signed build/strict verification; direct review only.
+- [ ] User explicitly Quit/reopen Fetch and observe the live controls. No relaunch performed.
+
+Earlier unfinished work is preserved below. [Record](shared-button-behavior/info.md).
+
+## November 12 — connector verification and review
+
+- [x] Initial focused auth/renewal30 and bridge/profile7 pass.
+- [x] Implement requested dispatch-order and window-close ownership fixes.
+- [ ] Retest immediate cancellation and popup close/reopen/denial/expiry.
+- [ ] Finish confined real Claude/Codex protocol checks, CLI parsing and signed build-only.
+- [ ] Final independent evaluation; production native approval/Keychain evidence remains separate.
+
+## November 12 — visible Dock shadow
+
+- [x] Diagnose export/native preservation at96px and strengthen only app-icon export shadows.
+- [x] Inspect96px preview, regenerate PNG/ICNS, pass existing fixture and signed rebuild.
+- [ ] User Quit/reopen and judge actual Dock shadow.
+
+## November 12 — Apple Development signing setup
+
+- [x] User authorizes setup; inspect public identities/build tools and open Xcode.
+- [x] User creates fresh Apple Development certificate; valid identity confirmed.
+- [x] Select its public fingerprint; signed launcher build and strict verification pass; Apple team identity confirmed.
+- [ ] User checks actual prompt behavior across Quit/relaunch and rebuild. No success claimed yet.
+
+## November 12 — current app icon refresh
+
+- [x] Refresh actual app assets from current Figma and rebuild signed development executable.
+- [ ] Open rebuilt Fetch to observe its Dock icon; no launch performed.
+
+## November 12 — rounded outward tile rim
+
+- [x] Correct edge interpretation: soft outward curved rim, preserve corner geometry and Dock footprint.
+- [x] Refresh PNG/ICNS, inspect native preview and pass fixture/signed build.
+- [ ] User Quit/reopen to observe live icon. Earlier recessed rim superseded by user clarification.
+
+## November 12 — connector popup setup
+
+- [x] Record user-selected install/setup launch, OS focus and native approval popup.
+- [ ] Consolidate/review exact setup trigger and amended enrollment API before auth code.
+- Earlier browser/native presentation choice is superseded by selected native popup; no auto-grant or client config edits authorized.
+
+## November 12 — connector setup clarification
+
+- [x] Explain UI-first setup and website limits; separate login command is optional proposal.
+- [ ] Resolve native setup flow and amended approval APIs before implementation.
+- No client config writing or website/deep-link flow selected.
+
+## November 12 — round recessed Dock icon
+
+- [x] Round actual white background corners, make inward rim visibly recessed, reduce export tile footprint.
+- [x] Regenerate icon files; existing native/resource checks and signed build pass.
+- [ ] User Quit/reopen and compare live Dock size/appearance with neighboring app.
+
+## November 12 — local MCP connector
+
+- [x] Inspect current CLI, TLS, MCP gateway and client approval source.
+- [x] Dedicated research of maintained bridges and raw-message preservation.
+- [x] Read-only focused test/isolation inventory.
+- [x] Complete one bounded plan after research; independent Evaluator ACCEPT for user review.
+- [x] User selects native popup setup and says go ahead; reviewed four operations cover both setup entry points.
+- [ ] Implement approved transport/auth work; focused isolated tests and evaluation.
+- [ ] Actual Claude/Codex/native approval acceptance needs verified isolation and dedicated credentials.
+- Project scope, release/packaging/notarization/migration excluded; earlier tasks remain.
+
+## November 12 — final reload, copy, startup status and resize UI
+
+- [x] Three-second manual reload feedback/card entrance; red Remove glow.
+- [x] Connect layout, approved gray headings/logos and removed OpenCode/explanation.
+- [x] All shared copy feedback, icon-only blue/white hover and plain Copied!.
+- [x] Per-server startup animation/orange status, immediate returned states and pending reads.
+- [x] Native curved six-point resize ring; safe teardown/other-window checks.
+- [x] Precise identity/Keychain startup error reporting, without replacing data.
+- [x] Final scoped checks/signed build/direct review.
+- [ ] User Quit/reopen and live native resize feel.
+- [ ] Diagnose any recurring real HTTPS identity failure using its new precise code; not confirmed resolved.
+
+All older pending acceptance work is retained.
+
+## November 12 — app icon integrated
+
+- [x] Approved design exported and connected to development/Finder bundle source; independent checks/build/review pass.
+- [ ] User explicitly Quit/reopen Fetch to observe the new Dock icon. No bundle/DMG/release created.
+
+## November 12 — approved app icon
+
+- [x] Read-only plan for native icon and future bundle resource.
+- [x] Export PNG/ICNS and connect AppKit/bundle sources.
+- [x] Focused native assignment/resource checks, signed build-only and independent review.
+- [ ] User Quit/reopen for live Dock appearance.
+
+## November 12 — ears and larger shadow
+
+- [x] Clarify ear separation and enlarge soft shadow; preserve image geometry and background.
+- [x] Inspect composition and export v8 PNG.
+
+## November 12 — Codex add version check
+
+- [x] Check installed 0.167.1 and current official CLI reference; no project add flag established.
+- [ ] Single-command Fetch project setup remains a proposal; certificate/signing discussion remains open.
+
+## November 12 — project registration commands
+
+- [x] Check installed CLI help and explain Claude project flag / Codex project file.
+- No registrations performed; prior project feature and certificate tasks remain.
+
+## November 12 — client precedence clarification
+
+- [x] Verify Claude and Codex project-over-global connection selection from current official docs.
+- [ ] Project installation/connection behavior remains proposed; preserve prior pending work.
+
+## November 12 — subtle dog shadow
+
+- [x] Add soft silhouette shadow, preserve dog size/position and inspect composition.
+- [x] Save separate v7 shadowed PNG; retain unshadowed v6.
+
+## November 12 — midpoint blue
+
+- [x] Change dog blue to midpoint target #9DD3ED; preserve face, geometry and background.
+- [x] Inspect screenshot and export transparent v6 PNG.
+
+## November 12 — scope and folder follow-up
+
+- [x] Record user selection: scope belongs in each server's existing config.json.
+- [x] Research optional client workspace replies and their limits.
+- [ ] Decide project connection/detection and shared-server selection behavior before implementation.
+- Claude certificate issue remains unresolved; no client trust changes performed.
+
+## November 12 — light blue and tongue
+
+- [x] Restore light blue and add open smiling mouth/pink tongue; preserve size, position and background.
+- [x] Inspect Figma screenshot and save transparent v5 PNG.
+
+## November 12 — global storage follow-up
+
+- [x] Explain current saved records, package locations and credential ownership from source. Project support remains a proposal.
+
+## November 12 — simpler dog face
+
+- [x] Simplify muzzle/ear shading; preserve current793px PNG size/position and background.
+- [x] Inspect composition, verify geometry/background unchanged, save separate transparent v4 PNG.
+- Further visual refinements await user direction.
+
+## November 12 — project-scoped server proposal
+
+- [x] Inspect current import/connection/permission code and research current clients; independent Evaluator ACCEPTs source accuracy and proposal bounds.
+- [ ] User review of proposed project registration, connection and visibility behavior; no implementation approved.
+- [ ] After selection, review complete API/authentication contracts, implement and verify two disposable projects together.
+- Existing acceptance and unrelated tasks remain below.
+
+## November 12 — separated PNGs and stronger logo contrast
+
+- [x] Separate dog/background layers and save both PNGs with alpha.
+- [x] Keep white, strengthen dog blue, make eyes black, widen soft inward frame edge.
+- [x] Record/restore dog geometry on image swap and inspect final composition/assets.
+- Logo remains a proposal; further changes need user direction.
+
+## November 12 — inline restart failure
+
+- [x] Inline Restart failed warning for the affected server, including submission failure; real Console details retained.
+- [x] Retry/completion state checked;15 widget/4 visual checks and signed build pass.
+- [ ] User Quit/reopen for live appearance. Prior acceptance/Keychain work remains.
+
+## November 12 — lighter dog and brighter eyes
+
+- [x] Revise dog to lighter pastel blue with expressive highlighted eyes; update Figma and inspect.
+- Current logo remains a proposal awaiting feedback; prior appearance was rejected.
+
+## November 12 — contain internal scrolling and remove page banners
+
+- [x] Shared containment for all native internal scroll areas, including boundary gestures.
+- [x] Remove all under-navigation error/notice banners and inventory their messages.
+- [x]14 actual-widget/4 visual checks, signed build/strict verification and direct review ACCEPT.
+- [ ] User Quit/reopen for live inspection. Existing Keychain and other acceptance tasks remain.
+
+## November 12 — actual raised logo frame edge
+
+- [x] Correct corner-only interpretation: apply existing app Raised panel effects and shared32px corner variable to logo frame; screenshot inspected.
+
+## November 12 — rounded logo boundary
+
+- [x] Match logo background corners to app’s32px rounded boundary; Figma screenshot inspected.
+
+## November 12 — recommended next step for Keychain prompts
+
+- [x] Read-only check: no valid Apple-issued app-signing identity found; document recommendation.
+- [ ] User selection/setup for Apple Development identity, then explicit configuration and native verification; unchanged-binary prompt issue remains unresolved.
+
+## November 12 — gray key button
+
+- [x] Gray face, white key and hover glow; existing hover check, image inspection and signed build pass.
+- [ ] User Quit/reopen to view the updated executable.
+
+## November 11 — retriever logo mockup
+
+- [x] Generate blue retriever, remove exterior shadow and match the app’s warm white family.
+- [x] Place artwork on new logo mockups Figma page and inspect screenshot.
+- Further logo changes or adoption await user feedback; this is a raster concept.
+
+## November 11 — spin refresh through completion and glow key hover
+
+- [x] Keep clicked global refresh spinning until its matching success/error response.
+- [x] Keep each restart spinning through submission/status completion; remove success notice.
+- [x] Stronger key hover;12 widget/4 visual/2 refresh checks and signed build pass.
+- [ ] User Quit/reopen for live animation inspection; Keychain issue remains separate.
+
+## November 11 — direct launch is already correct
+
+- [x] Verify direct executable is correctly signed and starts without build/sign; launch script is not a prompt fix.
+- [ ] Resolve recurring native Keychain approvals, including the reported direct launches; no permissions/storage changes selected.
+
+## November 11 — remove Retina outline, fix all native hover and align resize
+
+- [x] Reproduce and fix Retina dark filtering outline; four visual checks pass.
+- [x] Refresh every native hover button; exact per-button hover/leave fixture passes.
+- [x] Align visible face with native edges while preserving content positions; ten widget checks and native geometry pass.
+- [x] Signed build/strict verification and direct review ACCEPT.
+- [ ] User explicit Quit/reopen: check live resize cursor, all traffic-light symbols and no outline.
+
+## November 11 — final scoped UI verification
+
+- [x] Nine widget, three visual and hidden native control checks; signed build/strict verification and direct review ACCEPT.
+- [ ] User explicit Quit/reopen for live macOS appearance/hover inspection.
+
+## November 11, 2026 — expansion, refresh hover, left window controls and right shadow
+
+- [x] Reduce first expansion drawing cost and check actual clicks.
+- [x] Stronger refresh hover glow and rotating arrow; existing click/disabled behavior checked.
+- [x] Move native controls left and check native hover in hidden fixture.
+- [x] Fade only right-side shadow cutoff; three visual/nine widget checks pass.
+- [ ] User explicit Quit/reopen and live native appearance/hover check.
+
+## Console on expansion
+
+- [x] Open Console whenever a server card is expanded.
+- [x] Put current Fetch errors alongside captured output and Copy; remove duplicate card error rows.
+- [x] Three focused fixture checks, inspected screenshot and signed build pass; independent Evaluator ACCEPT.
+- [ ] User Quits/reopens Fetch to use the updated development executable.
+
+## Native controls and compact panels
+
+- [x] Implement no outer shadows, native top-right controls and full unused-area drag.
+- [x] Move Installed servers heading outside list, compact Tools and share Terminal/Console frame.
+- [x] Hidden native control/resize/close check passes; initial UI/terminal regressions pass.
+- [ ] Inspect final renders, finish updated checks/build/sign and directly review.
+
+## Hover glow, smaller launch and output response
+
+- [x] Remove hover text; add shared cached150ms glow; default874×630.
+- [x] Profile/improve full-history Console drawing to79–89ms; Terminal selection14–17ms; logs/session behavior retained.
+- [x] Verify timed hover/no-overlay/idle state, default/minimum layout, controls and signed build — nine checks/direct ACCEPT.
+- [ ] User Quits/reopens for native hover/size/pane feel; shell-startup latency remains outside fixture claim.
+
+## Repeated Keychain prompts — current correction
+
+- [x] Confirm user already chooses Always Allow; verify actual saved app approvals and per-build permissions through metadata only.
+- [x] Verify unchanged development launcher keeps same code hash and signature identity; no app launch.
+- [ ] User runs the same existing signed executable twice with Quit between; report second-launch prompts/labels.
+- [ ] Diagnose actual live identity/permission mismatch and propose bounded correction; bug remains unresolved.
+- [ ] Earlier recommendation to select Always Allow is superseded by confirmed user behavior; storage consolidation/signing policy changes remain unselected.
+
+## Keychain launch-prompt follow-up
+
+- [x] Check existing signing/cache source and Apple permission guidance; explain Always Allow.
+- [ ] If user reports repeated prompts after Always Allow with signed launcher, scope nonsecret prompt/identity diagnosis. Shared unlock/storage migration remains unselected.
+
+## Tool and window edges
+
+- [x] Diagnose Grid clipping the rightmost card shadow.
+- [x] Reproduce/fix shadow cutoff while preserving layout/nested scrolling; seven checks, inspected renders and signed build pass.
+- [x] User selected whole window frameless; implement transparent undecorated boot/reopen and draggable navigation.
+- [ ] User relaunches to confirm actual macOS frameless appearance/drag/resize.
+
+## Fixed Installed servers section
+
+- [x] Fit panel into remaining window height and scroll cards below fixed title/Refresh.
+- [x] Verify card scrolling/expansion, normal/minimum-window appearance and existing nested panels — seven focused UI checks pass.
+- [x] Build/sign and directly review — ACCEPT; running app preserved.
+- [ ] User Quits/reopens Fetch to confirm the native-window result.
+
+## Ready server hover
+
+- [x] Remove Runtime: ready hover text; preserve status dot/actions.
+- [x] Existing server-panel interaction check and signed development build pass.
+
+## Navigation latency
+
+- [x] Trace tab handling and shared drawing; bound fix to rendering.
+- [x] Measure Retina tab clicks before/after; implement shadow reuse and smaller renders.
+- [x] Compare appearance, build/sign and directly review — ACCEPT; six focused checks pass.
+- [ ] User Quits/reopens Fetch and confirms the live-window result; signed executable is ready.
+
+## November 9 — requested merge
+
+- [x] Bring both incoming main commits into this checkout; preserve all local design notes/history.
+- [x] Verify source matches incoming HEAD and independently review merge integrity — ACCEPT.
+- [ ] Existing local design notes remain uncommitted; commit them when requested.
+
+- [x] Fill Save SVGs white with blue outlines/details; inspect enlarged button.
+
+## November 9 — inline actions and outlined information
+
+- [x] Inline44pxsquare blue Save/white SVG and red Remove/existing white × across four key states.
+- [x] Fix gray unsupported row on actual screens and change information i to gray circular outline; inspect screenshots.
+
+## November 9 — unsupported discovery row
+
+- [x] Gray Figma Remote checkbox/label and move exact approval explanation into information tooltip across three discovery states.
+
+## November 9 — key visibility control
+
+- [x] Add eye button to shared Figma key field with show/hide prototype states; inspect screenshots and links.
+- [ ] Implement actual entered-value reveal during the selected native UI port; Figma uses an example token.
+
+## November 9 — label emphasis
+
+- [x] Bold shared tool labels, credential name and colon; gray token placeholder; inspect screenshots.
+
+## November 9 — restart animation requirement
+
+- [ ] Make the restart button’s circular-arrow icon spin while the server is restarting. Recorded user requirement; not implemented in Figma or Rust.
+
+## November 9 — requested status hover
+
+- [x] Move restarting message from separate line to colored status icon hover; show information i.
+- [x] Inspect tooltip/default screen; remove temporary check frame.
+
+## November 9 — completed requested Figma edits
+
+- [x] Undo self-chosen copy/hover changes; preserve only user-selected changes.
+- [x] Rename active key forms to API keys/fixed tokens and remove description.
+- [x] Remove redundant key-selection buttons from active Settings variants.
+- [x] Enlarge Settings viewport so the full key form/actions fit.
+- [x] Correct current Settings authentication controls to key glyphs.
+- [x] Try pale-blue #EAF5FB tool fields.
+- [x] Share one inline entry-name : token field; keep filled values masked.
+- [x] Red Remove entry with bold white text; inspect Settings/tool screenshots.
+- [ ] Manual-install section background recommendation awaits user selection; no change applied.
+
+## November 9 — user-directed Figma editing
+
+- [x] Stop selecting independent UI/UX changes after the user's clarification.
+- [ ] Apply only the next specific edit the user requests, without subagents.
+- [ ] Resolve/review the earlier self-chosen Figma changes only as the user directs; final visual acceptance is not established.
+
 ## November 9 — UI delivery
 
 - [x] Review the accepted UI changes, local assets and related design records.
@@ -908,3 +1523,38 @@ Task recovery autostash removed after preservation/integration checks.
 - [x] Add prerequisite/signing checks and concrete missing-setup steps to AGENTS.md.
 - [x] Match launcher precedence/paths and preserve machine-local keys and user authority.
 - [x] Independent read-only review ACCEPT; documentation ready for delivery.
+
+- [ ] Measure sequential fresh catalog requests and per-tool aliases-file synchronization before selecting the Claude tool-loading repair; live closure cause remains unconfirmed.
+
+- [ ] Review server-first discovery invocation and host approval behavior before changing native tools/list or GET tools defaults. Parallel collection/grouped alias persistence remain a proposed smaller performance repair.
+
+## Server-first tools — active
+
+- [x] Research protocol restriction and obtain user choice of generic three-tool flow.
+- [x] Bound implementation/interfaces and startup inventory/model instructions.
+- [x] Implement fixed discovery/selected listing/raw calling and parallel/batched persistence.
+- [x] Independently author focused fixtures; root runs34passing startup/selection/call/interactions/permissions/performance checks.
+- [x] Independent Evaluator ACCEPT; fixes/retests and signed build-only/strict verification pass.
+- [ ] User observes actual Claude/Codex success before real-client acceptance.
+
+- [x] Implement parallel selected catalog acquisitions and transactional alias batches; isolated verification remains pending.
+
+- [x] Implement fixed discovery/explicit selected listing/raw generic calling, complete startup inventory and model instructions. Verification/review pending.
+
+- [x] Pass18 focused API/MVP/raw/new tests; migrated13 connector tests pass before final modern/diagnostic additions.
+- [x] Modern connector and null-error regressions pass in16-test connector suite; signed build and final ACCEPT pass.
+
+- [x] Preserve backend null-ID error details while keeping strict non-null response ownership; targeted regression run pending.
+
+## Connector subscriptions — active
+
+- [x] Inspect current manual failure and research maintained SDK/specification.
+- [x] Bound ID-reference/cancellation correction; preserve legacy/personal state.
+- [x] Reproduce with maintained modern SDK before applying fix: acknowledgement timeout3.03seconds.
+- [x] Correct owned subscription ID references and modern stream cancellation; final runtime acceptance pending.
+- [x] Focused SDK/concurrent/legacy19checks, independent ACCEPT and signed build-only/strict verification pass.
+- [ ] User manually checks actual Claude connection and tool listing.
+
+- [x] MaintainedSDK RED→GREEN and all19connectorchecks pass, including legacy paths and same-profile subscription isolation; build/finalACCEPT pending.
+
+- [x] Owner completes internal interfaces; connector signed build22.53seconds and integrated19checks pass. Separate project route/auth review preserved.

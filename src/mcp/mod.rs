@@ -9,10 +9,11 @@ use tokio::sync::{Mutex,mpsc,oneshot};
 use tokio_stream::wrappers::ReceiverStream;
 
 pub trait ManagementBackend:Send+Sync{
+    fn project_registered(&self,_id:&str)->Result<bool,RunError>{Ok(false)}
     fn invoke<'a>(&'a self,name:&'a str,arguments:Box<RawValue>,caller:Caller,view:&'a str)->Pin<Box<dyn Future<Output=Result<Value,RunError>>+Send+'a>>;
 }
-struct Session{owner:String,capabilities:Value,initialized:bool,cancel:CancelToken}
-struct ControlReply{owner:String,reply:oneshot::Sender<Result<Box<RawValue>,()>>}
+struct Session{owner:String,resource:String,capabilities:Value,initialized:bool,cancel:CancelToken}
+struct ControlReply{owner:String,resource:String,reply:oneshot::Sender<Result<Box<RawValue>,()>>}
 pub struct McpGateway{
     runner:Arc<Runner>,management:Arc<dyn ManagementBackend>,authority:Arc<dyn Authorizer>,origin:String,
     sessions:Mutex<BTreeMap<String,Session>>,
@@ -26,7 +27,7 @@ struct Message{jsonrpc:String,#[serde(default)]id:Option<Box<RawValue>>,#[serde(
 
 impl McpGateway{
     pub fn new(runner:Arc<Runner>,management:Arc<dyn ManagementBackend>,authority:Arc<dyn Authorizer>,origin:String)->Arc<Self>{Arc::new(Self{runner,management,authority,origin,sessions:Mutex::new(BTreeMap::new()),controls:Mutex::new(BTreeMap::new()),calls:Mutex::new(BTreeMap::new()),active_authority:Mutex::new(BTreeMap::new()),known_resources:Mutex::new(BTreeMap::new())})}
-    pub fn router(self:Arc<Self>)->Router{Router::new().route("/mcp",post(endpoint).get(endpoint).delete(endpoint)).with_state(self)}
+    pub fn router(self:Arc<Self>)->Router{Router::new().route("/mcp",post(endpoint).get(endpoint).delete(endpoint)).route("/mcp/projects/{project_id}",post(endpoint).get(endpoint).delete(endpoint)).with_state(self)}
     pub async fn revoke_owner(&self,owner:&str){
         let mut calls=self.calls.lock().await;calls.retain(|(caller,_),cancel|{if caller==owner{cancel.cancel();false}else{true}});drop(calls);
         self.active_authority.lock().await.retain(|(caller,_),_|caller!=owner);
@@ -62,13 +63,23 @@ impl McpGateway{
         let valid_host=if hosts==0&&parts.version==axum::http::Version::HTTP_2{parts.uri.authority().is_some_and(|value|value.as_str()==authority)}else{hosts==1&&parts.headers.get(header::HOST).and_then(|v|v.to_str().ok())==Some(authority)};
         if !valid_host||parts.uri.authority().is_some_and(|value|value.as_str()!=authority){return StatusCode::BAD_REQUEST.into_response();}
         if parts.headers.get_all(header::ORIGIN).iter().count()>1||parts.headers.get(header::ORIGIN).is_some_and(|v|v.to_str().ok()!=Some(self.origin.as_str())){return StatusCode::FORBIDDEN.into_response();}
-        let caller=match self.caller(&parts.headers){Ok(caller)=>caller,Err(response)=>return response};
+        let path=parts.uri.path();
+        if let Some(id)=path.strip_prefix("/mcp/projects/"){
+            if !crate::projects::valid_project_id(id){return StatusCode::NOT_FOUND.into_response();}
+            match self.management.project_registered(id){Ok(true)=>{},Ok(false)=>return StatusCode::NOT_FOUND.into_response(),Err(_)=>return StatusCode::SERVICE_UNAVAILABLE.into_response()}
+        }
+        let resource=format!("{}{path}",self.origin);
+        let caller=match self.caller(&parts.headers){Ok(caller)=>caller,Err(mut response)=>{
+            if response.status()==StatusCode::UNAUTHORIZED{let challenge=format!("Bearer resource_metadata=\"{}/.well-known/oauth-protected-resource{path}\"",self.origin);if let Ok(value)=HeaderValue::from_str(&challenge){response.headers_mut().insert(header::WWW_AUTHENTICATE,value);}}
+            return response;
+        }};
+        if caller.resource().unwrap_or(&format!("{}/mcp",self.origin))!=resource{return StatusCode::FORBIDDEN.into_response();}
         let version=headers_text(&parts.headers,"mcp-protocol-version");
         if parts.method!=axum::http::Method::POST{
             if version.as_deref()==Some(MODERN){return StatusCode::METHOD_NOT_ALLOWED.into_response();}
             let Some(session)=headers_text(&parts.headers,"mcp-session-id")else{return StatusCode::BAD_REQUEST.into_response();};
             let sessions=self.sessions.lock().await;
-            if !sessions.get(&session).is_some_and(|s|s.owner==caller.owner_id()&&s.initialized){return StatusCode::NOT_FOUND.into_response();}
+            if !sessions.get(&session).is_some_and(|s|s.owner==caller.owner_id()&&s.resource==resource&&s.initialized){return StatusCode::NOT_FOUND.into_response();}
             let session_cancel=sessions.get(&session).map(|session|session.cancel.clone());
             drop(sessions);
             if parts.method==axum::http::Method::DELETE{if let Some(session)=self.sessions.lock().await.remove(&session){session.cancel.cancel();}return StatusCode::NO_CONTENT.into_response();}
@@ -100,15 +111,17 @@ impl McpGateway{
             // Negotiate our supported handshake version; the client decides whether to continue.
             let caps=raw::field(&params,"capabilities").and_then(|v|raw::scalar(&v).ok()).unwrap_or_else(||json!({}));
             if !caps.is_object(){return protocol_error(StatusCode::BAD_REQUEST,message.id.as_deref(),-32602,"Capabilities must be an object.");}
+            let servers=match self.server_inventory(&caller,revision).await{Ok(servers)=>servers,Err(error)=>return protocol_error(StatusCode::SERVICE_UNAVAILABLE,message.id.as_deref(),-32603,error.message)};
+            let instructions=management::instructions(&servers);
             let mut sessions=self.sessions.lock().await;if sessions.len()>=256{return StatusCode::TOO_MANY_REQUESTS.into_response();}
             let session=format!("{:032x}{:032x}",rand::random::<u128>(),rand::random::<u128>());
-            sessions.insert(session.clone(),Session{owner:caller.owner_id().to_owned(),capabilities:caps,initialized:false,cancel:CancelToken::new()});
-            let mut response=json_response(message.id.as_deref().expect("id"),raw::raw(&json!({"protocolVersion":LEGACY,"capabilities":server_capabilities(),"serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}})));
+            sessions.insert(session.clone(),Session{owner:caller.owner_id().to_owned(),resource:resource.clone(),capabilities:caps,initialized:false,cancel:CancelToken::new()});
+            let mut response=json_response(message.id.as_deref().expect("id"),raw::raw(&json!({"protocolVersion":LEGACY,"capabilities":server_capabilities(),"serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")},"instructions":instructions})));
             response.headers_mut().insert("mcp-session-id",HeaderValue::from_str(&session).expect("portable ID"));return response;
         }
         let capabilities=if revision==LEGACY{
             let Some(session_id)=headers_text(&parts.headers,"mcp-session-id")else{return StatusCode::BAD_REQUEST.into_response();};
-            let mut sessions=self.sessions.lock().await;let Some(session)=sessions.get_mut(&session_id).filter(|session|session.owner==caller.owner_id())else{return StatusCode::NOT_FOUND.into_response();};
+            let mut sessions=self.sessions.lock().await;let Some(session)=sessions.get_mut(&session_id).filter(|session|session.owner==caller.owner_id()&&session.resource==resource)else{return StatusCode::NOT_FOUND.into_response();};
             if method=="notifications/initialized"&&message.id.is_none(){session.initialized=true;return StatusCode::ACCEPTED.into_response();}
             if !session.initialized{return protocol_error(StatusCode::BAD_REQUEST,message.id.as_deref(),-32600,"Complete initialization before invoking methods.");}
             session.capabilities.clone()
@@ -116,7 +129,7 @@ impl McpGateway{
         if message.method.is_none(){
             if let Some(id)=message.id{
                 let key=id.get().to_owned();let mut controls=self.controls.lock().await;
-                if controls.get(&key).is_some_and(|control|control.owner==caller.owner_id()){
+                if controls.get(&key).is_some_and(|control|control.owner==caller.owner_id()&&control.resource==resource){
                     if let Some(control)=controls.remove(&key){let _=control.reply.send(message.result.ok_or(()));return StatusCode::ACCEPTED.into_response();}
                 }
             }
@@ -141,49 +154,62 @@ impl McpGateway{
             let required=if method=="tools/call"{raw::text(&params,"name").and_then(|name|management::scope(&name)).unwrap_or("fetch:tools:call")}else{"fetch:content:read"};
             if !caller.has_scope(required){return StatusCode::FORBIDDEN.into_response();}
             if revision==MODERN&&method=="tools/call"{
-                if let Err(error)=self.validate_mirrored(&parts.headers,&params).await{return protocol_error(StatusCode::BAD_REQUEST,Some(&id),-32020,error.message);}
+                if let Err(error)=self.validate_mirrored(&caller,&parts.headers,&params).await{return protocol_error(StatusCode::BAD_REQUEST,Some(&id),-32020,error.message);}
             }
             return self.operation_stream(caller,parts.headers,id,method.to_owned(),params,capabilities,revision.to_owned()).await;
         }
         let value=match method{
             "ping"=>Ok(raw::raw(&json!({}))),
-            "server/discover" if revision==MODERN=>Ok(raw::raw(&json!({"resultType":"complete","ttlMs":0,"cacheScope":"private","supportedVersions":[LEGACY,MODERN],"capabilities":server_capabilities(),"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}}}))),
-            "tools/list"=>{if !caller.has_scope("fetch:catalog")&&!caller.has_scope("fetch:manage"){return StatusCode::FORBIDDEN.into_response();}self.list_tools(&caller,revision).await},
-            "resources/list"|"resources/templates/list"|"prompts/list"=>{if !caller.has_scope("fetch:catalog"){return StatusCode::FORBIDDEN.into_response();}self.list_content(&caller,method,revision).await},
+            "server/discover" if revision==MODERN=>match self.server_inventory(&caller,revision).await{
+                Ok(servers)=>Ok(raw::raw(&json!({"resultType":"complete","ttlMs":0,"cacheScope":"private","supportedVersions":[LEGACY,MODERN],"capabilities":server_capabilities(),"instructions":management::instructions(&servers),"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"Fetch","version":env!("CARGO_PKG_VERSION")}}}))),
+                Err(error)=>Err(error),
+            },
+            "tools/list"=>{if !caller.has_scope("fetch:catalog")&&!caller.has_scope("fetch:manage")&&!(caller.has_scope("fetch:sessions:read")&&caller.project_id().is_some()){return StatusCode::FORBIDDEN.into_response();}self.list_tools(&caller,revision).await},
+            "resources/list"|"resources/templates/list"|"prompts/list"=>{if !caller.has_scope("fetch:catalog"){return StatusCode::FORBIDDEN.into_response();}self.list_content(&caller,&parts.headers,method,revision).await},
             _=>return protocol_error(StatusCode::NOT_FOUND,Some(&id),-32601,"This MCP method is not implemented."),
         };
         match value{Ok(value)=>match frame(value,revision,method,false){Ok(value)=>json_response(&id,value),Err(error)=>protocol_error(StatusCode::BAD_GATEWAY,Some(&id),-32603,error.message)},Err(error)=>protocol_error(StatusCode::BAD_GATEWAY,Some(&id),-32603,error.message)}
     }
 
-    async fn list_tools(&self,caller:&Caller,revision:&str)->Result<Box<RawValue>,RunError>{
-        let mut definitions=vec![];let mut issues=vec![];
-        if caller.has_scope("fetch:manage"){definitions.extend(management::definitions().into_iter().filter(|d|management::scope(d["name"].as_str().unwrap_or("")).is_some_and(|scope|caller.has_scope(scope))).map(|d|raw::raw(&d)));}
-        else if caller.has_scope("fetch:catalog"){definitions.extend(management::definitions().into_iter().filter(|d|d["name"]=="fetch__list_tools").map(|d|raw::raw(&d)));}
-        if caller.has_scope("fetch:catalog"){
-            for server in self.runner.server_ids().await{
-                if !caller.permits("fetch:catalog",&server,None){continue;}
-                match self.runner.catalog(&server,revision).await{
-                    Ok(origin)=>{
-                        if origin["status"]!="available"{issues.push(json!({"server_id":server,"status":origin["status"],"error":origin["error"],"rejected_tools":origin["rejected_tools"]}));}
-                        for definition in origin["tools"].as_array().ok_or_else(RunError::catalog)?{
-                            let original=definition["name"].as_str().ok_or_else(RunError::catalog)?;
-                            if !caller.permits("fetch:catalog",&server,Some(original)){continue;}
-                            let alias=self.runner.alias(&server,original).await?;
-                            definitions.push(raw::change(&raw::raw(definition),"name",raw::raw(&json!(alias))).map_err(|_|RunError::catalog())?);
-                        }
-                    },
-                    Err(error)=>issues.push(json!({"server_id":server,"status":"unavailable","error":{"code":error.code,"message":error.message},"rejected_tools":[]})),
-                }
-            }
+    /// Local, permission-filtered installation metadata only; no upstream list request.
+    async fn server_inventory(&self,caller:&Caller,revision:&str)->Result<Vec<Value>,RunError>{
+        if !caller.has_scope("fetch:catalog"){return Ok(vec![]);}
+        let response=self.management.invoke("fetch__list_servers",raw::raw(&json!({})),caller.clone(),revision).await?;
+        if response["status"]!="ok"{return Err(server_list_error());}
+        let rows=response["servers"].as_array().ok_or_else(server_list_error)?;
+        let mut servers=vec![];
+        for row in rows{
+            let id=row["server_id"].as_str().filter(|id|!id.trim().is_empty()).ok_or_else(server_list_error)?;
+            if !caller.permits("fetch:catalog",id,None){continue;}
+            let name=row["name"].as_str().ok_or_else(server_list_error)?;
+            let status=row["status"].as_str().ok_or_else(server_list_error)?;
+            servers.push(json!({"server_id":id,"name":name,"status":status}));
         }
-        Ok(raw::raw(&json!({"tools":definitions,"_meta":{"fetch/catalog":{"view":revision,"complete":issues.is_empty(),"issues":issues}}})))
+        Ok(servers)
     }
-    async fn list_content(&self,caller:&Caller,method:&str,revision:&str)->Result<Box<RawValue>,RunError>{
+
+    async fn list_tools(&self,caller:&Caller,revision:&str)->Result<Box<RawValue>,RunError>{
+        let servers=self.server_inventory(caller,revision).await?;
+        let instructions=management::instructions(&servers);
+        let definitions=management::definitions().into_iter().filter(|definition|{
+            management::scope(definition["name"].as_str().unwrap_or("")).is_some_and(|scope|caller.has_scope(scope)&&(scope!="fetch:sessions:read"||caller.project_id().is_some()))
+        }).map(|mut definition|{
+            if definition["name"]=="fetch__list_servers"{
+                let description=definition["description"].as_str().unwrap_or("");
+                definition["description"]=json!(format!("{description} {instructions}"));
+            }
+            definition
+        }).collect::<Vec<_>>();
+        Ok(raw::raw(&json!({"tools":definitions,"_meta":{"fetch/catalog":{"view":revision,"complete":true,"issues":[]}}})))
+    }
+    async fn list_content(&self,caller:&Caller,headers:&HeaderMap,method:&str,revision:&str)->Result<Box<RawValue>,RunError>{
         let key=match method{"resources/list"=>"resources","resources/templates/list"=>"resourceTemplates",_=>"prompts"};
         let mut definitions=vec![];let mut issues=vec![];let mut ids=std::collections::BTreeSet::new();
         for server in self.runner.server_ids().await{
             if !caller.permits("fetch:catalog",&server,None){continue;}
-            match self.runner.list_native(&server,method,key).await{
+            let outcome=self.runner.list_native(&server,method,key).await;
+            if !self.authority.authorize(headers).is_ok_and(|current|current.owner_id()==caller.owner_id()&&current.resource()==caller.resource()&&current.permits("fetch:catalog",&server,None)){continue;}
+            match outcome{
                 Ok(items)=>{
                     let mut own=vec![];let mut valid=true;let mut observed=vec![];
                     for item in items{
@@ -210,10 +236,11 @@ impl McpGateway{
         if revision==MODERN{result["resultType"]=json!("complete");result["ttlMs"]=json!(0);result["cacheScope"]=json!("private");}
         Ok(raw::raw(&result))
     }
-    async fn validate_mirrored(&self,headers:&HeaderMap,params:&RawValue)->Result<(),RunError>{
+    async fn validate_mirrored(&self,caller:&Caller,headers:&HeaderMap,params:&RawValue)->Result<(),RunError>{
         let Some(name)=raw::text(params,"name")else{return Err(RunError::invalid());};
         if name.starts_with("fetch__"){return Ok(());}
         let Some((server,original))=self.runner.resolve_alias(&name).await else{return Ok(());};
+        if !caller.permits("fetch:tools:call",&server,Some(&original)){return Err(RunError::missing());}
         let args=raw::field(params,"arguments").unwrap_or_else(||raw::raw(&json!({})));
         // Uses already observed raw metadata; never performs tools/list on a call.
         for tool in self.runner.known_tools(&server).await?{
@@ -235,10 +262,11 @@ impl McpGateway{
         let session_cancel=if revision==LEGACY{if let Some(session)=headers_text(&headers,"mcp-session-id"){self.sessions.lock().await.get(&session).map(|session|session.cancel.clone()).unwrap_or_default()}else{CancelToken::new()}}else{CancelToken::new()};
         let gateway=self.clone();let owner=caller.owner_id().to_owned();let authority=self.authority.clone();let owner_check=owner.clone();let auth_headers=headers.clone();
         let required=if method=="tools/call"{raw::text(&params,"name").and_then(|name|management::scope(&name)).unwrap_or("fetch:tools:call")}else{"fetch:content:read"};
-        let context=InvocationContext{owner_id:owner.clone(),capabilities,client_revision:Some(revision.clone()),progress_token:raw::field(&params,"_meta").and_then(|meta|raw::field(&meta,"progressToken")),events:Some(events),cancel:cancel.clone(),still_authorized:Some(Arc::new(move||authority.authorize(&auth_headers).ok().is_some_and(|caller|caller.owner_id()==owner_check&&caller.has_scope(required))))};
+        let bound_resource=caller.resource().map(str::to_owned);let bound_project=caller.project_id().map(str::to_owned);
+        let context=InvocationContext{owner_id:owner.clone(),capabilities,client_revision:Some(revision.clone()),progress_token:raw::field(&params,"_meta").and_then(|meta|raw::field(&meta,"progressToken")),events:Some(events),cancel:cancel.clone(),still_authorized:Some(Arc::new(move||authority.authorize(&auth_headers).ok().is_some_and(|caller|caller.owner_id()==owner_check&&caller.resource()==bound_resource.as_deref()&&caller.project_id()==bound_project.as_deref()&&caller.has_scope(required))))};
         let authorization=context.still_authorized.clone();let authority_cancel=cancel.clone();let runner_for_revoke=self.runner.clone();let revoked_owner=context.owner_id.clone();
         let auth_monitor=tokio::spawn(async move{let mut interval=tokio::time::interval(Duration::from_secs(1));loop{tokio::select!{_=session_cancel.cancelled()=>{authority_cancel.cancel();break;},_=interval.tick()=>{if authorization.as_ref().is_some_and(|check|!check()){authority_cancel.cancel();runner_for_revoke.revoke_owner(&revoked_owner).await;break;}}}}});
-        let relay_gateway=self.clone();let relay_wire=wire.clone();let relay_cancel=cancel.clone();let relay_revision=revision.clone();
+        let relay_gateway=self.clone();let relay_wire=wire.clone();let relay_cancel=cancel.clone();let relay_revision=revision.clone();let operation_headers=headers.clone();let relay_resource=caller.resource().unwrap_or(&format!("{}/mcp",self.origin)).to_owned();
         let relay=tokio::spawn(async move{
             let mut events=event_rx;
             while let Some(event)=events.recv().await{
@@ -249,7 +277,7 @@ impl McpGateway{
                         if relay_revision!=LEGACY{let _=reply.send(Err(()));continue;}
                         let control_id=format!("fetch-client-{:032x}",rand::random::<u128>());let raw_id=raw::raw(&json!(control_id));
                         let mut controls=relay_gateway.controls.lock().await;if controls.len()>=256{let _=reply.send(Err(()));continue;}
-                        controls.insert(raw_id.get().to_owned(),ControlReply{owner:owner.clone(),reply});drop(controls);
+                        controls.insert(raw_id.get().to_owned(),ControlReply{owner:owner.clone(),resource:relay_resource.clone(),reply});drop(controls);
                         let message=format!("{{\"jsonrpc\":\"2.0\",\"id\":{},\"method\":{},\"params\":{}}}",raw_id.get(),serde_json::to_string(&method).expect("method"),params.get());
                         if relay_wire.send(Ok(Event::default().event("message").data(message))).await.is_err(){break;}
                     }
@@ -258,7 +286,7 @@ impl McpGateway{
         });
         let cancel_for_stream=cancel.clone();let modern=revision==MODERN;
         tokio::spawn(async move{
-            let result=gateway.operation(caller,&method,params,context,&revision).await;
+            let result=gateway.operation(caller,&operation_headers,&method,params,context,&revision).await;
             if !cancel.is_cancelled(){
                 let message=match result{
                     Ok(result)=>match frame(result,&revision,&method,true){Ok(result)=>format!("{{\"jsonrpc\":\"2.0\",\"id\":{},\"result\":{}}}",id.get(),result.get()),Err(error)=>rpc_error_text(Some(&id),-32603,error.message)},
@@ -280,13 +308,37 @@ impl McpGateway{
         let mut response=Sse::new(stream).keep_alive(KeepAlive::new().interval(Duration::from_secs(15))).into_response();
         response.headers_mut().insert("x-accel-buffering",HeaderValue::from_static("no"));response
     }
-    async fn operation(&self,caller:Caller,method:&str,params:Box<RawValue>,mut context:InvocationContext,revision:&str)->Result<Box<RawValue>,RunError>{
+    async fn operation(&self,caller:Caller,headers:&HeaderMap,method:&str,params:Box<RawValue>,mut context:InvocationContext,revision:&str)->Result<Box<RawValue>,RunError>{
         if method=="tools/call"{
             let name=raw::text(&params,"name").ok_or_else(RunError::invalid)?;
             let arguments=raw::field(&params,"arguments").unwrap_or_else(||raw::raw(&json!({})));
+            if name=="fetch__call_tool"{
+                let routing=raw::object(&arguments).map_err(|_|RunError::invalid())?;
+                if routing.len()!=3||routing.keys().any(|key|!matches!(key.as_str(),"server_id"|"tool_name"|"arguments")){return Err(RunError::invalid());}
+                let server=raw::text(&arguments,"server_id").filter(|value|!value.trim().is_empty()&&!value.contains('\0')).ok_or_else(RunError::invalid)?;
+                let original=raw::text(&arguments,"tool_name").filter(|value|!value.trim().is_empty()&&!value.contains('\0')).ok_or_else(RunError::invalid)?;
+                let inner=raw::field(&arguments,"arguments").ok_or_else(RunError::invalid)?;
+                if raw::object(&inner).is_err(){return Err(RunError::invalid());}
+                if !caller.permits("fetch:tools:call",&server,Some(&original)){return Err(RunError::missing());}
+                if !self.runner.native_tool_usable(&server,&original,revision).await?{return Err(RunError::missing());}
+                // Reconstruct the same upstream request on every continuation.
+                // Routing stays outside the raw arguments; outer MCP state and
+                // input responses remain available to Runner's bound continuation.
+                let mut fields=raw::object(&params).map_err(|_|RunError::invalid())?;
+                fields.insert("name".into(),raw::raw(&json!(original)));
+                fields.insert("arguments".into(),inner);
+                let context=self.target_context(context,headers,"fetch:tools:call",&server,&original);
+                let result=self.runner.invoke(&server,method,serde_json::value::to_raw_value(&fields).map_err(|_|RunError::invalid())?,context).await?;
+                return adapt_result(result,revision,&self.runner.source_revision(&server).await?,method);
+            }
             if let Some(scope)=management::scope(&name){
                 if !caller.has_scope(scope){return Err(RunError::missing());}
+                if scope=="fetch:sessions:read"&&caller.project_id().is_none(){return Err(RunError::missing());}
                 if raw::object(&arguments).is_err(){return Err(RunError::invalid());}
+                if name=="fetch__list_tools"{
+                    let selected=raw::field(&arguments,"server_id").and_then(|value|serde_json::from_str::<Vec<String>>(value.get()).ok()).ok_or_else(RunError::invalid)?;
+                    if selected.is_empty()||selected.iter().any(|id|id.trim().is_empty()||id.contains('\0')){return Err(RunError::invalid());}
+                }
                 let result=self.management.invoke(&name,arguments,caller,revision).await?;
                 return Ok(raw::raw(&json!({"content":[{"type":"text","text":serde_json::to_string(&result).map_err(|_|RunError::invalid())?}],"isError":result["status"]=="failed"})));
             }
@@ -294,6 +346,7 @@ impl McpGateway{
             if !caller.permits("fetch:tools:call",&server,Some(&original)){return Err(RunError::missing());}
             if !self.runner.native_tool_usable(&server,&original,revision).await?{return Err(RunError::missing());}
             let mut fields=raw::object(&params).map_err(|_|RunError::invalid())?;fields.insert("name".into(),raw::raw(&json!(original)));
+            let context=self.target_context(context,headers,"fetch:tools:call",&server,&original);
             let result=self.runner.invoke(&server,method,serde_json::value::to_raw_value(&fields).map_err(|_|RunError::invalid())?,context).await?;
             return adapt_result(result,revision,&self.runner.source_revision(&server).await?,method);
         }
@@ -322,6 +375,10 @@ impl McpGateway{
         // Content operations keep the server's configured duration. They share
         // the same finite admission controls and never borrow per-tool overrides.
         context.owner_id=caller.owner_id().to_owned();
+        let selector=if method=="completion/complete"{
+            fields.get("ref").and_then(|value|serde_json::from_str::<Value>(value.get()).ok()).and_then(|reference|reference.get("name").or_else(||reference.get("uri")).and_then(Value::as_str).map(str::to_owned))
+        }else{fields.get(if method=="prompts/get"{"name"}else{"uri"}).and_then(|value|serde_json::from_str::<String>(value.get()).ok())};
+        let context=self.target_context(context,headers,"fetch:content:read",&server,selector.as_deref().unwrap_or(""));
         let result=self.runner.invoke(&server,method,serde_json::value::to_raw_value(&fields).map_err(|_|RunError::invalid())?,context).await?;
         if method=="resources/read"{
             if let Some(contents)=raw::field(&result,"contents").and_then(|v|serde_json::from_str::<Vec<Value>>(v.get()).ok()){
@@ -329,6 +386,10 @@ impl McpGateway{
             }
         }
         adapt_result(result,revision,&self.runner.source_revision(&server).await?,method)
+    }
+    fn target_context(&self,mut context:InvocationContext,headers:&HeaderMap,scope:&'static str,server:&str,item:&str)->InvocationContext{
+        let previous=context.still_authorized.clone();let authority=self.authority.clone();let headers=headers.clone();let server=server.to_owned();let item=item.to_owned();
+        context.still_authorized=Some(Arc::new(move||previous.as_ref().is_none_or(|check|check())&&authority.authorize(&headers).is_ok_and(|caller|caller.permits(scope,&server,if item.is_empty(){None}else{Some(&item)}))));context
     }
     async fn resolve_resource(&self,caller:&Caller,uri:&str)->Result<(String,String),RunError>{
         for server in self.runner.server_ids().await{if let Some(original)=catalog::unqualify_uri(&server,uri){if caller.permits("fetch:content:read",&server,Some(original)){return Ok((server,original.to_owned()));}return Err(RunError::missing());}}
@@ -348,10 +409,12 @@ impl McpGateway{
                 tokio::select!{
                     _=wire.closed()=>break,
                     _=session_cancel.cancelled()=>break,
-                    _=authority_interval.tick()=>{if gateway.caller(&headers).ok().is_none_or(|current|current.owner_id()!=caller.owner_id()||!current.has_scope("fetch:catalog")){break;}},
+                    _=authority_interval.tick()=>{if gateway.caller(&headers).ok().is_none_or(|current|current.owner_id()!=caller.owner_id()||current.resource()!=caller.resource()||!current.has_scope("fetch:catalog")){break;}},
                     event=changes.recv()=>{
-                        let (_,method)=match event{Ok(event)=>event,Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=>continue,Err(_)=>break};
-                        if session_cancel.is_cancelled()||gateway.caller(&headers).ok().is_none_or(|current|current.owner_id()!=caller.owner_id()||!current.has_scope("fetch:catalog")){break;}
+                        let (server,method)=match event{Ok(event)=>event,Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=>continue,Err(_)=>break};
+                        if session_cancel.is_cancelled()||gateway.caller(&headers).ok().is_none_or(|current|current.owner_id()!=caller.owner_id()||current.resource()!=caller.resource()||!current.has_scope("fetch:catalog")){break;}
+                        let Some(current)=gateway.caller(&headers).ok().filter(|current|current.owner_id()==caller.owner_id()&&current.resource()==caller.resource())else{break;};
+                        if !current.permits("fetch:catalog",&server,None){continue;}
                         let key=match method.as_str(){"notifications/tools/list_changed"=>"toolsListChanged","notifications/resources/list_changed"=>"resourcesListChanged","notifications/prompts/list_changed"=>"promptsListChanged",_=>continue};
                         if accepted[key]!=true{continue;}
                         let params=if modern{json!({"_meta":{"io.modelcontextprotocol/subscriptionId":id.as_deref().and_then(|v|raw::scalar(v).ok())}})}else{json!({})};
@@ -369,6 +432,7 @@ async fn endpoint(State(gateway):State<Arc<McpGateway>>,request:Request)->Respon
     let mut response=gateway.handle(request).await;
     response.headers_mut().insert(header::CACHE_CONTROL,HeaderValue::from_static("no-store"));response.headers_mut().insert(header::X_CONTENT_TYPE_OPTIONS,HeaderValue::from_static("nosniff"));response
 }
+fn server_list_error()->RunError{RunError{http_status:503,code:"SERVER_LIST_UNAVAILABLE",message:"Fetch could not read the permitted installed-server list.",execution:"not_started"}}
 fn headers_text(headers:&HeaderMap,name:&str)->Option<String>{if headers.get_all(name).iter().count()!=1{return None;}headers.get(name)?.to_str().ok().map(str::to_owned)}
 fn accepts_json(headers:&HeaderMap)->bool{headers.get(header::ACCEPT).and_then(|v|v.to_str().ok()).is_some_and(|v|v.split(',').any(|item|item.trim().split(';').next()==Some("application/json")))}
 fn accepts_sse(headers:&HeaderMap)->bool{headers.get(header::ACCEPT).and_then(|v|v.to_str().ok()).is_some_and(|v|v.split(',').any(|item|item.trim().split(';').next()==Some("text/event-stream")))}

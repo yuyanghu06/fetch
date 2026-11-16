@@ -1,0 +1,14 @@
+Sampled only the task-owned synthetic UI test process. Relevant font-metrics frames before optimizing swash:
+
+swash::metrics::GlyphMetrics::advance_width::h38aa02d0d4ebb2e2
+swash::metrics::Metrics::from_font::h849c0dbdb9dc2061
+swash::metrics::MetricsProxy::from_font::haac7ab248e4acd58
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246
+swash::metrics::MetricsProxy::fill::h7390fad73b0b1246

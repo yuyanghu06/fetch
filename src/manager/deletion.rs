@@ -9,7 +9,10 @@ impl Manager {
         let manager=self.clone();let id=id.to_owned();let caller=caller.clone();
         // Once accepted by this worker, cleanup and its admission/installation
         // guards outlive a disconnected HTTP/MCP caller. No work is replayed.
-        tokio::spawn(async move{manager.delete_server_inner(&id,&caller).await}).await.map_err(|_|delete_error())?
+        tokio::spawn(async move{
+            let _scope=manager.scope_access_for(&caller,&id).await?;
+            manager.delete_server_inner(&id,&caller).await
+        }).await.map_err(|_|delete_error())?
     }
     async fn delete_server_inner(&self,id:&str,caller:&Caller)->Result<Value,ManagementError>{
         if !caller.can_manage(){return Err(ManagementError::new(403,"FORBIDDEN","Server-management permission is required."));}

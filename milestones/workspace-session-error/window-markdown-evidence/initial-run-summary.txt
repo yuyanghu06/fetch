@@ -1,0 +1,29 @@
+running 21 tests
+test ui::workspace_tests::closed_conversation_finishes_in_cache_and_partial_replies_are_rejected ... ok
+test ui::workspace_tests::continuous_outer_scroll_does_not_transfer_to_editor_until_a_new_gesture ... ok
+test ui::neumorphic_tests::copy_control_shines_and_confirms_to_its_left_then_clears ... ok
+test ui::workspace_tests::editor_undo_copy_and_save_text_use_actual_controls ... ok
+thread 'ui::neumorphic_tests::remove_button_hover_has_a_red_glow' (137649) panicked at src/ui/neumorphic_tests.rs:772:5:
+test ui::neumorphic_tests::remove_button_hover_has_a_red_glow ... FAILED
+test ui::neumorphic_tests::starting_servers_spin_without_unknown_warning_and_success_updates_the_card_immediately ... ok
+test ui::neumorphic_tests::instant_manual_reload_replays_every_card_and_keeps_brief_spin_feedback ... ok
+test ui::neumorphic_tests::white_console_copy_icon_shines_without_a_background ... ok
+thread 'ui::neumorphic_tests::refresh_hover_spins_without_invoking_refresh_and_stops_on_leave' (137648) panicked at src/ui/neumorphic_tests.rs:535:5:
+test ui::neumorphic_tests::refresh_hover_spins_without_invoking_refresh_and_stops_on_leave ... FAILED
+thread 'ui::neumorphic_tests::server_actions_fade_in_hover_glow_without_tooltip_text' (137650) panicked at src/ui/neumorphic_tests.rs:328:5:
+test ui::neumorphic_tests::server_actions_fade_in_hover_glow_without_tooltip_text ... FAILED
+test ui::workspace_tests::session_loading_dims_retained_rows_and_removes_loading_footer ... ok
+test ui::workspace_tests::session_list_failure_stays_in_sessions_while_codex_instructions_remain_editable ... ok
+test ui::workspace_tests::workspace_editor_and_paste_draft_keep_the_save_target_stable_during_model_changes ... ok
+test ui::workspace_tests::workspace_folder_and_app_controls_keep_global_and_project_views_separate ... ok
+test ui::workspace_tests::session_markdown_uses_white_user_and_gray_assistant_cards_without_changing_history ... ok
+test ui::workspace_tests::session_cards_show_complete_conversations_and_keep_them_when_closed ... ok
+test ui::workspace_tests::tool_results_start_collapsed_keep_their_names_and_copy_exact_output ... ok
+test ui::workspace_tests::workspace_logo_choices_filter_instructions_agents_and_sessions_in_one_row ... ok
+test ui::neumorphic_tests::neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes ... ok
+test ui::neumorphic_tests::console_and_terminal_switch_without_waiting_for_server_io ... ok
+test ui::workspace_tests::subagent_rows_open_rendered_popups_and_file_paths_offer_finder ... ok
+failures:
+failures:
+test result: FAILED. 18 passed; 3 failed; 0 ignored; 0 measured; 241 filtered out; finished in 3.49s
+Full original failed hover pixel-array log remains in /tmp/fetch-session-code-style-tester.x00ZyQ; it was not copied because the dump is about65MB.

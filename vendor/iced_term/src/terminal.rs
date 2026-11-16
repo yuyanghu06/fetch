@@ -88,6 +88,11 @@ impl Terminal {
         &self.widget_id
     }
 
+    /// The same selection text used by the terminal's existing Copy binding.
+    pub fn selected_text(&self) -> String {
+        self.backend.selectable_content()
+    }
+
     pub fn subscription(&self) -> Subscription<Event> {
         if self.external { return Subscription::none(); }
         let data = TerminalSubscriptionData {

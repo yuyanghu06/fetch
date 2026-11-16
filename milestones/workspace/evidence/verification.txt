@@ -1,0 +1,30 @@
+$ cargo test --test workspace
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.01s
+test file_operations_reject_unrelated_paths_and_links_outside_the_selected_project ... ok
+test choosing_a_project_reads_and_saves_its_native_files_without_global_copies ... ok
+test pasting_an_agent_converts_common_fields_and_flags_source_settings_before_explicit_save ... ok
+test ordinary_bearer_and_background_requests_cannot_access_workspace_files_history_or_models ... ok
+test native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_session_chunks ... ok
+test session_names_are_project_filtered_and_bounded_chunks_reconstruct_large_utf8_logs ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+$ env FETCH_UI_EVIDENCE_DIR=/tmp/fetch-workspace-ui-evidence cargo test --lib workspace
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.10s
+test workspace::models::tests::codex_picker_reads_updated_saved_models_without_private_cache_metadata ... ok
+test workspace::models::tests::catalog_response_limit_also_bounds_one_large_line ... ok
+test workspace::models::tests::catalog_failure_keeps_the_coding_apps_returned_error ... ok
+test workspace::models::tests::claude_picker_reads_initialization_models_without_sending_a_user_message ... ok
+test ui::workspace_tests::expanding_a_session_reads_one_chunk_and_read_more_appends_without_replaying_it ... ok
+test ui::workspace_tests::workspace_editor_and_paste_draft_keep_the_save_target_stable_during_model_changes ... ok
+test ui::workspace_tests::workspace_folder_and_app_controls_keep_global_and_project_views_separate ... ok
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 229 filtered out; finished in 1.91s
+
+$ cargo test --lib navbar_switches_pages_without_rebuilding_shadows_on_return
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
+test ui::neumorphic_tests::navbar_switches_pages_without_rebuilding_shadows_on_return ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 235 filtered out; finished in 2.23s
+
+$ ./scripts/run-development.sh --build-only
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.28s
+Signed Fetch development executable: /Users/yuyang/documents/fetch/target/debug/fetch-development
+

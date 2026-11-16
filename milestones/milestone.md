@@ -1,3 +1,827 @@
+## November 16 — Escape popup dismissal accepted
+
+Active follow-up complete after independent Evaluator ACCEPT. mod.rs routes Escape through the existing window-wide event subscription even when a control captures it; current-main-window handler dismisses one topmost visible popup in drawing order (connector approval, Workspace agent/session, Install discovery) using its existing Close action. Approval/draft/cache/discovery state is preserved, and no-popup Escape does nothing. Modifiers/rescale mapping remains unchanged; no component/backend/API or native OS-dialog changes.
+
+Two focused actual-widget keyboard flows pass1.79s, including focused unsaved editor, cached session and layered pending approval/install. Test helper forwards actual Shell status to the exact production mapper, with Captured explicitly verified. Signed build/strict verification26.11s and diff checks pass. [Testing](history/2026-11-16_14-25-57-646261-tester-popup-escape-keyboard-checks.md); [evaluation](history/2026-11-16_14-25-57-646750-evaluator-accept-popup-escape.md); [evidence](workspace-session-error/escape-evidence/info.md).
+
+Next action: user explicitly Quit/reopen via signed launcher for native Escape observation. Fetch was not relaunched; no personal/live-state changes. Earlier appearance/default-size/Copy features and broader unfinished work below remain preserved.
+
+## November 16 — Escape popup code ready
+
+The main-window event subscription now handles Escape even when a child captures it, then reuses the topmost visible popup's existing Close action. No-popup does nothing; drafts/cache/jobs/approvals retain existing close behavior. Focused testing, signed build and review are active. [Coding pass](history/2026-11-16_14-21-28-672877-coder-popup-escape.md).
+
+## November 16 — popup Escape dismissal planned
+
+User selects Escape to dismiss every Fetch popup. Accepted plan uses existing captured-key-capable event subscription and current Close actions, main-window-scoped/topmost only, retaining pending approvals, edits, logs and install work. Current popup inventory: connector approval, Workspace agent/session and install discovery. Implementation, focused checks/build/review remain. [Plan](history/2026-11-16_14-20-11-194686-planner-popup-escape.md).
+
+## November 16 — measured default and light code accepted
+
+Active follow-up complete after independent Evaluator ACCEPT. Opening size is1058x789from the user's actual on-screen Fetch bounds; min760x520remains. components.rs uses the supported Iced Viewer with cached Markdown: inline code has light background/normal14pxBODY_FONT, fences literally reuse the shared13px inset tool renderer and glyph wrapping. Other Markdown and inactive links remain. workspace.rs tool Copy now includes displayed name, blank line and original result, explicitly selected by the user; original history remains unchanged. mod.rs owns startup size; no backend/API/native-reader/definition changes.
+
+All21unique focused checks pass across the initial17unaffected cases and4affected reruns2.20s. Actual-width pixel fixtures and settled initial animation keep existing hover assertions meaningful. Default/minimum captures inspected. Final signed development build/strict verification33.70s; [testing](history/2026-11-16_13-51-31-633559-tester-window-markdown-copy-checks-complete.md); [evaluation](history/2026-11-16_13-51-31-633951-evaluator-accept-default-window-and-light-code.md); [evidence](workspace-session-error/window-markdown-evidence/info.md).
+
+Next action: user explicitly Quit/reopen via signed launcher to load the changes. Native relaunch/personal histories/Finder remain unobserved. No app launch, personal state/credential/trust changes, commit/push or release. Broader unfinished work below remains active.
+
+## November 16 — feature checks pass; final fixture corrections active
+
+All12Workspace cases pass, including the larger default/minimum captures, light code and combined name/result Copy. In the21case focused run,3existing hover comparisons need their initial server-list animation settled before whole-frame equality. Fenced code now literally reuses the13px tool renderer; inline stays14pxbody. Affected checks and final signed build are running. [Testing](history/2026-11-16_13-48-49-820148-tester-default-size-first-checks.md); [shared renderer correction](history/2026-11-16_13-48-49-820745-coder-reuse-exact-tool-code-renderer.md).
+
+## November 16 — opening size and light Markdown implemented
+
+Startup size is1058x789from actual native measurement. Cached session Markdown now uses shared light inset fenced code and light14px BODY_FONT inline spans. Tool Copy combines displayed name, blank line and original result. Backend/definition/history data unchanged. Independent checks, affected pixel-fixture updates, captures, signed build and review remain. [Coding pass](history/2026-11-16_13-46-31-645769-coder-default-window-light-markdown.md).
+
+## November 16 — default size and Markdown follow-up planned
+
+User selects pictured Fetch size as startup default; read-only native window metadata measures1058x789logical. Also selected: light shared fenced/inline code styling with inline text matching message font/size, plus tool Copy combining name and original result. Plan reuses cached Markdown/Iced Viewer and existing surfaces; no backend or source-file changes. Implementation/checks/review/build remain. [Plan](history/2026-11-16_13-44-33-742576-planner-default-window-and-markdown.md).
+
+## November 16 — compact paths and tool rendering accepted
+
+Active Workspace follow-up complete after independent Evaluator ACCEPT. Tool-result cards use assistant gray; names appear in inset code boxes with visible separate disclosure arrows. JSON object/array text is indented once for display, long values wrap, and Copy retains original bytes. The shared file_path covers instruction/subagent list/popup paths with a bare14px blue Copy SVG (30%smaller),28px transparent hit area,8px vertical padding and44px single-line box; Finder remains adjacent. src/ui/components.rs owns shared rendering; workspace.rs caches display text separately from raw history. No backend/API/reader/definition-file changes in this follow-up.
+
+Twelve Workspace checks pass3.09s; after a visually detected missing-arrow correction the affected tool case passes2.54s. Final-source signed build/strict verification passes16.77s. Normal/minimum captures inspected. [Testing](history/2026-11-16_13-40-04-359957-tester-compact-path-tool-checks-complete.md); [evaluation](history/2026-11-16_13-40-04-360232-evaluator-accept-compact-path-and-tool-rendering.md); [evidence](workspace-session-error/compact-followup-evidence/info.md).
+
+Next action: user explicitly Quit/reopen via signed launcher to observe the rebuilt UI. Actual personal/native Finder behavior remains unobserved. No app launch or personal-state changes; broader unfinished work below stays active.
+
+## November 16 — arrow moved outside the code name
+
+Explicit size alone did not restore the icon in the rendered check. The disclosure now puts its18px arrow outside the inset name box, keeping one clickable header. Affected visual test is running; no final acceptance yet. [Correction](history/2026-11-16_13-38-02-656240-coder-separate-chevron-from-name-box.md).
+
+## November 16 — tool chevron restored in source
+
+The scoped code-name disclosure now gives its arrow an explicit18px size. Prior12follow-up checks pass; affected arrow/tool case and final signed build are running before final review. [Correction](history/2026-11-16_13-36-12-084865-coder-restore-tool-chevron.md).
+
+## November 16 — compact rendering checks pass; arrow correction pending
+
+Twelve focused Workspace tests and signed build/strict verification pass for the compact path/tool follow-up. Normal/minimum captures confirm readable/wrapped JSON, gray tools and smaller bare path Copy/shorter boxes. Visual checks found a missing expand/collapse chevron; explicit sizing correction and affected retest/final build are pending before acceptance. [Testing pass](history/2026-11-16_13-35-29-660294-tester-compact-path-first-checks.md).
+
+## November 16 — compact path/tool changes implemented
+
+Tool cards now use assistant gray, inset code-name disclosure and cached pretty JSON object/array display with glyph wrapping. Copy retains raw output. Shared file_path uses a bare14px blue Copy glyph,28px transparent hit area and8px vertical padding; Finder remains adjacent. No definition/history/API changes. Focused independent tests, captures, signed build and final review remain. [Coding pass](history/2026-11-16_13-33-02-148870-coder-compact-path-and-gray-tools.md).
+
+## November 16 — compact paths and tool presentation follow-up
+
+User reports minified/clipped tool JSON and requests gray tool cards with code-box names, plus bare14px path Copy icons and shorter path boxes through the shared component. Plan accepted: display-only pretty JSON and glyph wrap, exact original Copy; existing gray card/code surfaces; compact shared file paths. Independent implementation/testing/review and signed build remain. [Plan](history/2026-11-16_13-31-23-890006-planner-compact-path-and-tool-output.md). Prior completed work and other unfinished tasks are preserved.
+
+## November 16 — Workspace session/file fixes complete
+
+Active milestone: Workspace session and rendering fixes, complete after independent Evaluator ACCEPT. Fetch's overall goal remains a working local MCP manager; other unfinished acceptance below is preserved.
+
+Codex listing skips only a missing native current rollout so available conversations still load; it never selects an older file. src/ui/workspace.rs keeps history errors in Sessions, renders cached Markdown, and uses white User/gray Assistant cards. Shared components/theme own blue subagent names, common12px monospace instruction content, compact code paths with adjacent Finder, and one frameless blue tool Copy at the card top right. Parsed previews reject edits; exact definition/history strings and Copy remain intact. readers/codex/src/main.rs retains official source selection/path checks and never writes source/index files. No API changes.
+
+Eight actual reader checks and12Workspace widget checks pass; normal/minimum synthetic captures inspected. Private helper rebuilt; final signed development build/strict verification passes25.17s. Independent Evaluator ACCEPT. [Evaluation](history/2026-11-16_13-19-19-095730-evaluator-accept-workspace-fixes.md); [evidence](workspace-session-error/evidence/info.md).
+
+Next action: user explicitly Quit/reopen signed Fetch to observe the new UI. Actual personal histories, physical Finder and native interaction remain untested. No app launch, personal definition/config/credential/trust edits, commit/push or release. Existing unrelated work preserved.
+
+## November 16 — all focused checks pass; final review pending
+
+Eight native-reader checks and12Workspace widget checks pass. Final signed development build/strict verification passes25.17s. Normal/minimum synthetic captures show compact wrapping paths/adjacent Finder, blue subagent names, shared file-content style, Markdown messages, white User/gray Assistant cards and one bare blue tool Copy. Exact source/history/Copy preservation checks pass. [Final testing](history/2026-11-16_13-18-41-787161-tester-workspace-final-checks.md); [evidence](workspace-session-error/evidence/info.md). Independent review remains; Fetch has not been relaunched and actual personal/native observation remains user-manual.
+
+## November 16 — reader passes; final path checks pending
+
+Eight actual Codex-reader fixture checks pass, including valid sessions beside a missing indexed current file and unchanged source/index bytes. Signed Fetch build/strict verification passes16.84s after a corrected syntax error. First12Workspace run has10passes and2failures requiring path layout evidence and a tool Copy fixture correction; Markdown and white/gray cards look correct. No final UI acceptance yet. [Verification pass](history/2026-11-16_13-16-25-895387-tester-workspace-first-verification.md).
+
+## November 16 — Workspace code ready for final checks
+
+Requested rendering changes are implemented and Codex's private reader is rebuilt. Shared file-content preview retains source text and rejects edits; paths have compact code boxes/adjacent Finder. Session Markdown is cached; User cards are white, Assistant cards gray; tool Copy is a single blue frameless header icon. Independent UI/native fixture checks, capture inspection, signed build and final evaluation remain. [Coding pass](history/2026-11-16_13-13-49-214245-coder-workspace-rendering.md).
+
+## November 16 — error isolation checked; reader and rendering fixes active
+
+Independent editor/tab regression passes. Expanded user scope now includes the actual Codex session-list failure, blue subagent buttons, shared instruction-content styling, compact code paths/Finder adjacency, session Markdown and white User/gray Assistant cards. Definition files remain untouched. Reader repair skips only missing saved current files without choosing older history; private helper rebuild and final UI/checks are ongoing.
+
+- [Pass](history/2026-11-16_13-11-56-768164-coder-separate-session-errors.md)
+- [Pass](history/2026-11-16_13-11-56-768164-tester-session-error-regression.md)
+- [Pass](history/2026-11-16_13-11-56-768164-planner-reader-and-rendering-followup.md)
+
+## November 16 — AGENTS.md error fix planned
+
+The missing-rollout error is returned by background session listing and incorrectly displayed above the instruction editor. Accepted bounded repair: store/display it only in Sessions while preserving its original text and existing reader behavior. Implementation, focused independent checks and signed build remain. [Planner pass](history/2026-11-16_13-07-58-701748-planner-workspace-session-error.md). Existing unrelated work is preserved.
+
+## November 13 — official session readers and file controls complete
+
+Workspace lists native main conversations and reads a complete selected history through pinned official Codex/Claude code. It displays manual user messages, assistant replies and named tool results with independent collapse/blue Copy; failed tool results show their actual error. Subagents open parsed settings and Markdown in a popup with Edit/Preview. Small Finder controls sit beside supported instruction/subagent paths; successful Save adds no Saved line. Five global Codex specialist roles were created and verified separately.
+
+Independent native/API checks,3confined backend cases, Finder seam,10actual-widget cases, tool-error presentation and inspected captures pass. Final signed development build/strict verification passes21.29s. Independent Evaluator ACCEPT. Old raw APIs/source hashes are preserved; dependencies are installed privately and never auto-installed by a read. [Final integration](history/2026-11-13_17-45-33-280817-orchestrator-official-readers-integrated.md); [evaluation](history/2026-11-13_17-45-33-280816-evaluator-official-readers-accept.md); [independent report](official-session-readers/evidence/tester-native-reader-report.md).
+
+Limits: user must explicitly Quit/reopen. Actual personal histories/Finder/app interaction were not observed; forced deadline/cancel cleanup and live SQLite sidecars remain source-reviewed/untested at runtime. Reading honors the selected immutable path; native current-source selection belongs to the list. Broader unfinished work below remains active.
+
+## November 13 — independent native/API and UI checks pass
+
+Complete official histories, raw/source preservation and native-only authority pass independent focused checks. Ten Workspace controls/capture checks and recorded tool-error presentation pass. Inspected rendered popup, collapsed tools and editor/Finder visuals. Final signed development build passes21.29s. Independent Evaluator decision remains pending. [Test pass](history/2026-11-13_17-42-56-325481-tester-native-reader-and-ui-acceptance.md); [independent evidence](official-session-readers/evidence/tester-native-reader-report.md).
+
+## November 13 — confined readers and Finder backend checked
+
+Three actual installed-reader/confinement cases pass, plus the harmless Finder process seam. Native conversation/list and reveal routes use existing permissions/path checks. Source files and raw reads are preserved. Independent router checks/review and final signed build remain. [Backend pass](history/2026-11-13_16-33-11-074284-coder-confined-conversations-and-finder.md).
+
+## November 13 — complete-history UI and subagent popup implemented
+
+Workspace now requests complete native conversation messages and the official conversation list view. Subagent rows open a formatted popup with shared editor/Copy/Finder controls; Save clears feedback. Initial9integrated widget checks pass. New popup test, independent API/backend checks, final review and signed build remain. [UI pass](history/2026-11-13_16-19-35-076662-coder-complete-history-and-subagent-popup-ui.md).
+
+## November 13 — native Codex reader ready for independent checks
+
+Installed the pinned official native helper. Seven disposable helper cases pass, including complete pages/lineage, current saved rollout/name, unchanged source hashes and missing ancestry failure. Confined backend/API checks and final UI integration remain. [Coder pass](history/2026-11-13_16-16-27-662759-coder-native-codex-reader.md).
+
+## November 13 — approved official reader implementation in progress
+
+User approved native conversation/list API and private reader setup, plus Finder reveal route. Codex native helper compiles and focused disposable fixtures are progressing; pinned Claude SDK is installed privately. Workspace is moving to complete API messages, a rendered subagent popup and shared Finder controls. Integration, independent testing/review and signed build remain.
+
+[Pass record](history/2026-11-13_16-13-12-607689-orchestrator-approved-readers-and-finder.md).
+
+## November13 — frontend complete; official-reader contract pending
+
+Current raw-session UI now reads through EOF while open, stops follow-up dispatch on close and resumes incomplete cache. Tool results are collapsed by associated name, expand independently, and Copy exact stored output.9widget cases pass4.54s; inspected PNGs and signed development build/strict verification pass17.26s. Independent Evaluator ACCEPT applies to this frontend scope only. [Implementation pass](history/2026-11-13_15-05-48-536108-orchestrator-full-history-ui-and-tool-disclosures.md); [review](history/2026-11-13_15-05-48-536109-evaluator-accept-history-frontend.md).
+
+The official reconstruction/backend is not implemented. [Proposed contract](../docs/architecture/session-reader-reuse.md) adds native conversation-view listing and a private complete-conversation read while preserving raw/project APIs. User input is required before route/dependency changes. [Planner pass](history/2026-11-13_15-05-48-536107-planner-official-session-reader-contract.md). Codex service startup failed configLoad under fixture confinement; pure storage libraries avoid that startup but initial standalone build hit official workspace patch requirements before compiler invocation. [Probe record](history/2026-11-13_15-05-48-536110-tester-confined-reader-and-library-feasibility.md). A patched probe is ongoing. Missing modern turns/subagent rows must not be described as fixed by merely reaching raw EOF. Global Codex definitions are created/validated in the previous entry.
+
+## November 13 — global team created; official history-reader research
+
+User explicitly authorized saving the shared global specialists. Five role files (Planner, Researcher, Coder, Tester, Evaluator), global registrations, shared workflow and guide are created. Session model/reasoning inherit; read-only roles use read-only sandbox. Installed Codex0.167.2 loads the configuration successfully; other config settings preserved and private backup saved. [Scope](global-codex-specialists/info.md); [setup pass](history/2026-11-13_14-37-19-122428-orchestrator-global-codex-specialists.md).
+
+User now asks to read whole sessions through official readers and collapse tool results by name. Read-only Researcher verified Codex thread/read plus paginated thread/turns/list, and pinned official Claude SDK chain helpers. Current custom parser loses modern Codex user/item_completed records; UI pauses after an early reply. Official readers can fix reconstruction, but Codex service startup reads normal config/auth/state, and Claude needs a currently absent SDK/Python helper. Exact API/runtime choice is being planned for user input before implementation; existing raw/project history APIs remain unchanged. [Research pass](history/2026-11-13_14-37-19-122429-researcher-official-session-readers.md). The named user-selected session was inspected for record types/counts only; conversation text was not printed.
+
+## November 13 — Workspace editor, gesture ownership and clean history
+
+Continuous wheel gestures remain in the scroll area where they began, even when scrolling moves the editor beneath the pointer. The root wrapper reads AppKit finger/momentum phases from the configured Fetch window and relatches only on a fresh finger gesture; ordinary phase-less wheels use a180ms idle boundary. Nested areas retain their existing boundary capture. Cmd+Z and Ctrl+Z undo local edits with cursor restoration; Save text stays white, including when disabled. Editors and subagent rows share the raised blue-SVG Copy action. Paste agent and manual project registration controls are removed. Successful folder discovery automatically submits the existing project registration API; current folder registration also resumes after project listing/in-flight registration returns. Selected server/install/connection scopes stay independent.
+
+History now displays manual user input, assistant text and tool results. Codex uses recorded user_message events for manual inputs and response records for assistant/tool outputs; Claude metadata/compact summaries and known injected context blocks are omitted. Tool-call inputs and local-command context/output are omitted; manually entered slash commands remain user code blocks. Multiple text blocks stay together in one message card, wrap to its width, and retain complete text across API chunks. Shared modal padding clears the native traffic lights. Server rows animate on first load and manual reload with45ms downward staggering and a240ms pop.
+
+Fourteen focused Rust cases pass across Workspace, parser, registration, gesture ownership, existing nested scroll and animation checks; three incidental cases also passed in the nested-name filter. A separate native phase-ordering fixture passes without installing an event monitor or opening a window. Screenshots inspected for white Save/Copy, both app choices, subagents without Paste, popup clearance, long-message tail and staggered first-load frames. Final signed build-only/strict verification passes17.00s; git diff --check passes. No Fetch relaunch, live account/MCP action, clipboard write, personal configuration edit, Figma, commit/push or release. Direct UI implementation and same-agent review; no independent evaluator.
+
+Global Codex investigation: global AGENTS.md describes the shared team and references ~/.codex/agents/, but that directory is absent. Current config.toml and four checked config backups have zero registered roles. Project-level role files exist; no global definitions were recreated or moved. Global subagents require the missing files/registrations to be restored or recreated with the user's selected content. Actual native trackpad behavior remains user observation after Quit/reopen. [Scope/evidence](workspace-editor-gestures/info.md); [pass](history/2026-11-13_14-21-08-138479-orchestrator-workspace-editor-gestures.md). Other unfinished work remains below.
+
+## November 12 — raised dropdowns and readable session commands
+
+Project dropdowns now reuse the shared raised surface with12px corners, including closed filter/install/connection/server-scope controls. Menus keep the previous shared styling and all existing actions. Session-name buttons use the shared blue primary style; subagent buttons retain their current style through the same entry_card layout.
+
+Session command wrappers now display as labeled Command/Command output code blocks with Copy, and command caveats as plain Note text. Tool calls/results also use code blocks. Raw API log content remains unchanged. The popup previously stopped after one32KB API chunk, which can contain only user messages or a partial assistant record. Open and Read more now continue through existing bounded API chunks until an additional assistant reply is complete or the log ends. Closing the popup stops follow-up reads; existing cached content and errors remain available.
+
+Five Workspace tests pass3.84s, including a40KB assistant record split across the32KB boundary and further Read more/cache/reopen. Three parser tests pass, including native command wrappers; the existing heading/menu interaction case passes4.43s. Inspected raised dropdown, blue row, normal/minimum views and code/user/assistant popup captures. Final signed development build-only and strict verification pass18.33s. An earlier build ran out of disk; preserved its log, removed only regenerable Fetch incremental/library archives under Cargo lock, and retried with incremental compilation disabled. Signed executables/source/user data were preserved. No new API, dependency, personal-file read, live provider action or app relaunch. Direct UI work and same-agent review. [Scope/evidence](raised-project-picker/info.md); [pass](history/2026-11-12_18-48-20-185845-orchestrator-raised-dropdown-session-commands.md). Other unfinished work remains below.
+
+## November 12 — Workspace direct instructions, session popups and loading state
+
+Instructions opens the selected app's instruction editor directly, without the redundant file-selection card. The same app logos still control all three sections. Codex project instructions include the existing shared AGENTS.md descriptor. Sessions reuse the full-width file card; opening one shows a dismissible popup with labeled user, assistant and tool records from the existing chunk-read API. Raw returned content stays intact; JSON is only projected for display. Parsed chunks are cached, partial lines wait for the next chunk, and Read more keeps the existing API pagination. The list remains visible and grays out while loading; the loading sentence and disabled pagination footer are removed. Refresh replaces the first page on success, while More appends.
+
+Installed servers now aligns with its filter/panel left edge. Shared menu styling uses the warm rounded surface, soft shadow and pale-blue selection. The display label Shared becomes Available in every project; stored scope and API query remain unchanged. The native file picker prepares its hidden panel after the window's first paint and reuses it on clicks, retaining selection/cancellation behavior.
+
+Nine focused Rust checks pass (five Workspace, two parser, one project-control, one heading/menu). Normal/minimum screenshots, direct editor, popup, dimmed list and open dropdown were inspected. A hidden AppKit fixture confirms one panel is reused without presentation: first construction988.46ms, cached retrieval0.0000ms. This establishes preparation cost, not real click-to-visible speed. Signed development build-only/strict verification passes25.65s; Fetch was not relaunched. Direct UI work and review by the same agent; no independent review. No personal files, accounts, credentials or client configurations were used. [Scope and evidence](workspace-session-popup/info.md); [latest pass](history/2026-11-12_17-44-36-603283-orchestrator-workspace-session-popup.md). Other unfinished work remains below.
+
+## November 12 — Workspace logo controls integrated
+
+Workspace removes the Global/Open folder button row and the separate Claude Code/Codex text-button row. The scope caption moves into the heading, allowing Instructions/Subagents/Sessions and their content to move up. The tabs row now has two circular app-logo choices on its right, each40px to match tab height. The shared app_logo_button uses existing logos and shared button/surface rendering: unselected raised, selected/pressed inset with the existing recessed fill. One workspace.app selection controls Instructions (CLAUDE.md versus AGENTS.md), Subagents and Sessions; existing session API app filtering is reused. Folder picker and typed-path Enter/global-empty behavior remain through their existing handlers.
+
+Four Workspace widget checks pass (3.67s), including real logo clicks and correct app-specific instructions/subagents/sessions. After strengthening selected-face contrast, the same complete selection case passes again (2.41s). Both selected states and normal/minimum screenshots were inspected. Final signed development build-only passes (16.05s), including strict signature verification; git diff --check passes. An initial new fixture case needed relayout after injected API replies; its original failing log is preserved and only the fixture was corrected.
+
+Direct UI work without subagents or independent review for this pass. Fixture API tasks are dropped: no personal files, native picker, clipboard, model process or live account/provider/MCP action is executed. No API/auth/permission/storage behavior changed, no Figma/commit/push/release, and Fetch was not relaunched. User must explicitly Quit/reopen to observe the rebuilt UI. Concurrent project-scoped/Workspace backend work is preserved. [Scope/evidence](workspace-logo-controls/info.md); [latest pass](history/2026-11-12_17-16-05-791441-orchestrator-workspace-logo-controls.md). Other pending project work remains below.
+
+## November 12 — project scoping built; Evaluator ACCEPT
+
+Diagnostic incident: a process search printed an existing v0 MCP credential in
+tool output; subsequent checks use executable names only. User rotation is
+recommended; value is not copied into repository records.
+[Incident record](history/2026-11-12_17-07-31-234032-orchestrator-process-output-disclosure.md).
+
+Latest integration: [delivery pass](history/2026-11-12_17-06-32-410129-orchestrator-project-connections-delivery.md).
+
+User asks to build project-scoped support now. Planner/research map one registered
+project binding across server visibility, install/config, OAuth/connector resource
+and read-only session APIs/MCP. Workspace instruction/agent routes remain native.
+The user explicitly approved the complete [contract](../docs/architecture/project-connections.md).
+Source is integrated across registry, server operations, OAuth/profiles, HTTP/MCP
+session reading and native API wrappers. Preserve accepted
+Workspace, server-first and Off behavior, unrelated edits and personal state.
+Reusable registry, server-scope storage, scoped discovery/installation and guarded
+native config assignment are integrated with exact resource-bound approvals and
+current membership checks.57unique named focused checks pass, preserving existing
+connector, server-first, Off and Workspace behavior. Signed development build-only
+and strict signature verification pass22.95s. Independent Evaluator ACCEPT;
+hidden-ID and post-await row/guidance findings are fixed. [Evidence](project-connections/evidence.md).
+
+This milestone is complete at the approved source/fixture/build scope. Fetch was
+not launched; real coding clients, personal projects, Keychain approvals and
+provider accounts remain manual acceptance. Notification/completion project
+boundaries were reviewed in source without dedicated runtime scenarios. No
+personal client/config/credential/trust, running-service, release or commit changes.
+Next: user Quit/reopen the signed development executable, register a Workspace
+folder, choose it in Connect apps and apply the displayed client snippet.
+
+[Core implementation pass](history/2026-11-12_16-39-23-668426-coder-project-registry-and-server-scope-core.md).
+
+Final passes: [server guards](history/2026-11-12_17-03-55-549191-01-coder-project-current-membership-guards.md), [auth/profiles](history/2026-11-12_17-03-55-549191-02-coder-project-authentication-and-profiles.md), [native controls](history/2026-11-12_17-03-55-549191-03-coder-project-native-api-controls.md), [initial tests](history/2026-11-12_17-03-55-549191-04-tester-project-initial-core-and-api.md), [metadata checks](history/2026-11-12_17-03-55-549191-05-coder-project-metadata-return-checks.md), [final verification](history/2026-11-12_17-03-55-549191-06-tester-project-final-verification.md), [Evaluator ACCEPT](history/2026-11-12_17-03-55-549191-07-evaluator-project-connections-accept.md).
+
+Passes: [2026-11-12_16-31-00-019910-planner-project-connections-source-plan.md](history/2026-11-12_16-31-00-019910-planner-project-connections-source-plan.md), [2026-11-12_16-31-00-020149-researcher-project-resource-and-grant-binding.md](history/2026-11-12_16-31-00-020149-researcher-project-resource-and-grant-binding.md).
+
+## November 12 — shared approval and refresh hover changes verified
+
+The single approval popup used by both Claude Code and Codex now uses the shared blue primary Allow button. Request code is labeled above the existing shared code block with its Copy control, which copies only the code. Removed the requested Match this code… sentence. Install refresh keeps the shared hover glow/rotation enabled when idle even with an empty path; its existing blank-path handler still performs no discovery and starts no request.
+
+25 existing actual-widget checks pass (9.38s), including request-code Copy, absence of the removed sentence, both app popup flows and empty-path hover animation/no-discovery. Inspected Claude and minimum-size Codex popup PNGs. Signed development build-only/strict signature verification passes (17.68s); git diff --check passes. No new test infrastructure or tests added; existing cases were extended for the requested behavior.
+
+Direct UI work; no subagents for this pass. Fetch was not relaunched. No live provider/MCP, credential/trust/config, API/authentication permission, Figma, commit/push or release changes. Explicit Quit/reopen is needed to see the new executable. [UI scope](connect-inline-auth/info.md); [pass](history/2026-11-12_16-24-23-913405-orchestrator-shared-approval-code-and-refresh-hover.md). Existing accepted server-on/off and Workspace work remains below.
+
+## November 12 — Workspace built and independently accepted
+
+Workspace now has explicit folder/global scope, native instruction/subagent file
+editing, converted cross-app drafts, dynamic app model choices and expandable
+read-only plain/compressed session logs. The frontend calls the approved private
+APIs; all reject ordinary agent/background grants. No MCP history tools were
+added, as the user selected Workspace-first delivery. Existing native files remain
+authoritative; no archive. Codex reads its labeled saved catalog; Claude uses a
+metadata-only initialization request when the user asks for model choices.
+
+Final14 unique focused checks pass (6API/core,7catalog/UI,1existing navigation),
+five real-widget captures inspected, independent Evaluator ACCEPT. Signed
+development build-only and strict signature verification pass13.28s; diff check
+passes. Existing warnings remain. No Fetch relaunch, live clients/models/providers,
+personal-file/config/credential/trust changes, commit/push or release. User must
+explicitly Quit/reopen to observe Workspace. Native personal-file/clipboard and
+real Claude catalog acceptance remain unobserved. Raw forks preserve parent refs;
+compressed later reads decode their prefixes again with bounded memory.
+
+[Evidence](workspace/evidence.md); [integration pass](history/2026-11-12_16-04-17-932776-orchestrator-workspace-integration.md).
+
+## November 12 — Workspace implementation and focused verification
+
+Private Workspace routes and frontend are implemented: explicit folder/global
+scope, existing-file editing, converted agent drafts, app-reported models and
+read-only plain/compressed log chunks. User explicitly defers session MCP until
+project connections exist. Six API/core checks, seven catalog/UI checks and one
+existing navigation check pass before final style verification/build. Independent
+Evaluator accepts scoped source subject to those final checks. Original personal
+files, clients, credentials and running Fetch remain untouched. Known limits:
+Claude catalog native behavior untested; Codex catalog is saved, not live access;
+fork streams preserve raw refs and compressed later reads decode prefixes again.
+[Plan](../docs/architecture/workspace.md). Final signed build/evidence pending.
+
+Passes: [2026-11-12_16-01-41-649760-coder-workspace-file-conversion-session-core.md](history/2026-11-12_16-01-41-649760-coder-workspace-file-conversion-session-core.md), [2026-11-12_16-01-41-650081-researcher-workspace-current-codex-storage.md](history/2026-11-12_16-01-41-650081-researcher-workspace-current-codex-storage.md), [2026-11-12_16-01-41-650197-coder-workspace-app-catalogs.md](history/2026-11-12_16-01-41-650197-coder-workspace-app-catalogs.md), [2026-11-12_16-01-41-650287-tester-workspace-native-api-and-widget-fixtures.md](history/2026-11-12_16-01-41-650287-tester-workspace-native-api-and-widget-fixtures.md), [2026-11-12_16-01-41-650391-evaluator-workspace-source-review-and-fixes.md](history/2026-11-12_16-01-41-650391-evaluator-workspace-source-review-and-fixes.md).
+
+## November 12 — persistent server on/off integrated; Evaluator ACCEPT
+
+Persistent server on/off is implemented. Each server card has the shared 44×22 toggle before its existing actions. Off uses POST /api/v1/servers/{id}/restart with action:stop, preserves files/logins, rejects busy work and stays off across startup/background connection attempts. Existing explicit start/restart turns it on. config.enabled is projected independently from runtime, with legacy records defaulting true. The MCP management action uses the same backend. The separate 22px Connect authentication buttons are black with white keys.
+
+30 focused checks pass: 3 confined HTTP/MCP product scenarios (0.90s), 2 private no-network/background/conflict checks (0.07s), and 25 actual widget checks (9.88s). Inspected minimum-window toggle and Off/On/busy Console PNGs. Final signed-development build-only passes (24.59s) and strict signature verification passes. Independent Evaluator ACCEPT; no source fixes requested. Existing compiler/deprecation warnings remain.
+
+Fetch was not relaunched. Actual personal/provider accounts, client connections and macOS approvals were not tested; those remain manual acceptance. Failed-close and caller-disconnect behavior were reviewed in source through the reused retained-child close path and detached worker, without fault injection. No personal config/credentials/trust, running services, Figma, commit/push or release changes. Explicit Quit/reopen is needed to see the rebuilt app.
+
+[Scope/contract](server-on-off/info.md); [evidence](server-on-off/evidence/info.md); [evaluation](history/2026-11-12_16-00-53-438679-evaluator-accept-persistent-server-off.md); [integration](history/2026-11-12_16-00-53-438680-orchestrator-integrate-server-off-and-black-auth.md). Earlier unrelated incomplete work is preserved below.
+
+## November 12 — server on/off focused checks pass; evaluation next
+
+Independent Tester passes 30 distinct checks: 3 confined HTTP/MCP product scenarios (0.90s), 2 private disabled/background/conflict checks (0.07s), and 25 actual native widget checks (9.88s). Confirms child exit, preserved files, durable Off across fresh startup, explicit On, busy active/queued work preserved, management action dispatch and toggle pending/error/Off/On behavior. Parent inspected the minimum-window toggle and affected-server busy Console screenshots.
+
+No live Fetch/provider accounts/macOS confirmation or personal MCP/settings/credentials were exercised. Failed-close and caller-disconnect code paths remain for evaluator source review. Initial fixture assumptions (ready vs completed restart, streamed MCP response) were corrected without production edits or stop/call retries; exact failure excerpts/counts remain, but the original full initial log was overwritten before preservation. A concurrent missing workspace test module temporarily blocked unit compilation and is documented; it appeared before the passing retry. [Evidence](server-on-off/evidence/info.md); [test pass](history/2026-11-12_15-55-48-049831-tester-persistent-server-off-pass.md). Final signed build and independent Evaluator decision remain pending. Parent removed only generated raw captures and 13 regenerable Fetch incremental cache directories while holding the Cargo output lock after tests filled the disk again; sources/executables/app data/services were preserved, restoring3.9GiB free.
+
+## November 12 — persistent server Off implemented; tests next
+
+Coder implements persistent server Off through the existing restart POST, before renewal, with an idle lifecycle/admission guard and retained-child close handling. Saved enabled defaults true for old records; startup/background/installation paths honor Off, while explicit start turns it on. MCP action forwarding and the shared native 44×22 toggle are wired; errors remain per-server and pending reads cannot overwrite newer state. The black 22px Connect controls are preserved.
+
+cargo check --locked --lib passes (8.88s), with existing warnings; git diff --check passes. Tester has not executed the prepared feature checks yet. Parent inspected stop persistence/guard/close, native message ownership and MCP action sites. Parent also made two compiler-only fixes in concurrent workspace code: explicit Option<String> cursor and the existing on_submit_maybe(Some(...)) call; no workspace behavior was redesigned. [Implementation pass](history/2026-11-12_15-46-42-065693-coder-persistent-server-off-implemented.md); [contract](../docs/architecture/server-on-off.md). No live Fetch/provider/MCP/personal-state or release work performed. Independent testing/evaluation remain.
+
+## November 12 — stop source/tests written; compile verification pending
+
+Coder reports production source written; Tester prepares 3 confined HTTP/MCP scenarios, 2 private guards and an actual toggle test. Parent inspected dedicated homes, canaries, no-network stubs and cleanup. No stop tests have run yet.
+
+A concurrent manifest change added serde-saphyr without its lock entries. Parent synchronized Cargo.lock with 9 added packages while retaining existing versions; selected-package downloads and Coder compile retry are next. No manifest rollback, live app/MCP or personal-state changes. [Test preparation](history/2026-11-12_15-43-52-349795-tester-server-off-tests-prepared.md); [lock synchronization](history/2026-11-12_15-43-52-349796-orchestrator-sync-concurrent-dependency-lock.md).
+
+## November 12 — Workspace implementation started
+
+User authorizes Workspace with frontend API wrappers. No folder shows global
+instructions/agents and all sessions; selected folder shows only that project.
+File/config reads and writes stay native Fetch-only. Agent copy/paste converts
+Claude Markdown/YAML and Codex TOML with unresolved settings flagged and models
+reported by installed apps. Session names and bounded original-log reads only;
+no archive or log writes. Current MCP has no project binding, so history tools
+must remain unavailable there until reviewed connection authority is built.
+
+Planner/research completed; reusable backend core is being written. Exact
+private HTTP contract and inclusion of project-connection work await user review.
+No tests/build/app relaunch or personal-state changes yet. Preserve unrelated
+server on/off and connector/UI work. [Plan](../docs/architecture/workspace.md).
+
+Passes: [2026-11-12_15-37-46-279769-planner-workspace-plan.md](history/2026-11-12_15-37-46-279769-planner-workspace-plan.md), [2026-11-12_15-37-46-280108-researcher-workspace-native-formats-and-paging.md](history/2026-11-12_15-37-46-280108-researcher-workspace-native-formats-and-paging.md).
+
+## November 12 — server on/off implementation and test preparation
+
+Tester independently selects the existing confined Sandbox + login_peer.py pattern for real HTTP/MCP stop/start fixtures; private power tests cover disabled background/conflict paths, and actual-widget tests cover native toggle pending/error/state. Coder now implements production files while Tester prepares its exclusive test files; test execution waits for the implementation checkpoint. [Scope](server-on-off/info.md); [test planning pass](history/2026-11-12_15-35-39-688343-tester-server-off-fixture-plan.md). No stop checks have run yet; user-approved contract is in docs/architecture/server-on-off.md. Black Connect auth UI has passed its separate focused check and signed build.
+
+## November 12 — server on/off plan accepted; implementation next
+
+Planner accepts the selected existing-POST action:stop design: optional config.enabled defaults true for legacy records; idle-only, admission-fenced stop saves Off before confirmed close; explicit current restart enables; automatic paths never clear Off. Same backend powers MCP action and native toggle. Exclusive production/test ownership is assigned. No material product choice remains. [Selected contract](../docs/architecture/server-on-off.md); [scope](server-on-off/info.md); [planner pass](history/2026-11-12_15-34-19-167821-planner-persistent-server-off.md). Research/planning are read-only source checks; no stop implementation or tests claimed yet. Black app-auth UI is separately built/verified below.
+
+## November 12 — black Connect auth complete; server on/off planning active
+
+The two compact Connect apps authentication buttons now have black faces and white key glyphs. They stay 22px, use the same shared icon-button behavior, and do not change the Servers-page key style.
+
+The existing real-widget inline key/dismiss/reopen check passes (1.86s); the normal-size black-button screenshot was inspected. Signed development build-only/strict signature verification passes (15.46s), and git diff --check passes. Fetch was not relaunched. Server on/off work continues separately through the selected specialist roles. [UI record](connect-inline-auth/info.md); [pass](history/2026-11-12_15-30-05-407415-orchestrator-black-connect-auth.md). The active backend milestone is [server on/off](server-on-off/info.md), whose persistent Off contract is user-selected; planner is preparing implementation scope.
+
+## November 12 — persistent server Off selected
+
+Research confirms no stop API. Existing disconnect/close code can be reused with an idle admission guard, and Stop must run before remote renewal. Durable Off needs guards across startup, installation follow-up, authentication, renewal/preflight and delayed restarts. User now explicitly selects durable Off and the presented action:stop extension with non-interrupting busy rejection. Planner will bound implementation; no stop source written. [Scope](server-on-off/info.md); [research pass](history/2026-11-12_15-28-48-946059-researcher-server-off-api.md). Other work below is preserved; compact auth-button black styling is independently in progress.
+
+## November 12 — first manual Claude connector failure and walkthrough
+
+User changed the project-local Claude Fetch registration to the bundled stdio command. Read-only inspection confirms a valid seven-argument command with one complete data-directory argument, claude-code profile and port53672. Existing Fetch started after the signed build, owns activation.sock and responds200 to certificate-verified public authorization metadata. Do not reinstall or alter client settings as a guessed fix.
+
+Initial screenshot shows connecting; subsequent screenshot shows connected, tools fetch failed, protocol2026-07-28, capabilities none and connection closed. Real Claude tool/catalog acceptance therefore remains failed, despite54 prior isolated checks. User suspects slow loading of the full catalog. Source list_tools visits server catalogs sequentially, so latency is plausible but unmeasured; do not present it as established cause or change discovery/timeout behavior without evidence.
+
+User manually clicked Reconnect while root performed read-only process inspection. Existing connector sample reached stdin reading and had an established HTTPS connection; no sampled Keychain or profile-lock wait was observed. This is consistent with leaving initial approval and entering forwarding, not proof of complete MCP/tool discovery. No additional client was launched by agent, no saved credentials were read/exported and no app/services were restarted. Task-owned raw stack reports were removed after recording this nonsecret summary.
+
+UI explanation confirmed from source: the Connect-apps key itself creates a request with client_name claude-code, even if Claude is closed. After explicit permission/Mac approval, native UI claims and saves that profile. Later normal connector startup reuses it and skips the popup. Approval belongs to a saved installation/client profile, not a running process or verified application identity. Pending requests use existing four routes; direct browser HTTPS auth is unchanged. User asks for an exact step-by-step route/file explanation before further implementation; no application source changed in this diagnostic pass.
+
+Next action: explain current implementation, then inspect the failing discovery/catalog exchange and elapsed time. Do not treat the manual failure as accepted completion or silently change permission/identity/catalog architecture.
+
+## November 12 — automatic connector approval follow-up
+
+The user requires normal Claude/Codex connection startup to open Fetch's permission popup without a separate setup/login command. Missing-profile startup now sends a nonsecret client label to the native app, launches it if needed, creates the existing approval request and persists its private proof in the separate connector Keychain record. Fetch alone claims/saves after selected permissions and Mac confirmation; client timeout does not discard the proof. Existing approved profiles retain ordinary attach behavior. No new API, permission scope, automatic grant or browser-trust change is introduced.
+
+Research confirms client startup limits can end the first connection before human approval (Claude current default about30seconds, Codex10seconds). After approval users may need the client's Reconnect action. No fake MCP initialization is used. Previous mandatory setup/no-app-launch statements are superseded for first missing-profile connection. Personal configs, credentials, trust and existing services remain protected. Actual client/Mac checks remain deferred to the user's manual testing.
+
+Source integration accepted:54 focused checks pass, independent Evaluator ACCEPT, signed build-only/strict signature verification pass (18.16s). Fetch was not relaunched. Existing inline key/popup-dismissal UI work is preserved.
+
+## November 12 — compact Connect authentication and title gap
+
+Connect apps authentication buttons now use the same 22px size as their logos, with proportionally scaled key glyphs. The shared app_auth_button reuses the standard icon-button rendering/behavior; other icon actions remain 44px. Logo and compact button size share theme::APP_LOGO_SIZE. On Connect only, navigation-to-title layout spacing is halved from 56px (32px gap + 24px title padding) to 28px (16px + 12px).
+
+24 actual-widget UI checks pass (9.39s), including clicks/reopening on both 22px app keys and existing server/popup controls. Normal/minimum Connect screenshots inspected. Signed development build-only passes (10.54s), with strict signature verification; git diff --check passes. Existing warnings remain. No new test was added; the existing inline-auth case now locates the 22px controls.
+
+Direct work without subagents. Fetch was not relaunched; explicit Quit/reopen is needed to observe the new build. No live provider/MCP, account, credential, personal settings, trust, Figma, commit/push or release changes. [Scope](connect-inline-auth/info.md); [latest pass](history/2026-11-12_14-47-55-853767-orchestrator-compact-connect-auth-and-title-gap.md).
+
+## November 12 — inline app authentication and recessed Connect panel
+
+Connect apps now uses the shared recessed Servers-style panel with internal scrolling and a fixed title/navigation. Claude Code and Codex each have the existing shared gray authentication key beside their heading/logo; the separate Set up buttons are removed. Their commands and Copy controls remain. The entire address/copy-address/certificate/explanation footer is removed. Approval has the shared red Close action at top right, and clicking the dimmed area hides the Fetch popup. Hiding preserves the request and selected permissions, polling leaves it hidden, and the matching app key reopens it without a new request. Shared modal framing gives approval and discovery the same 32px rounded dimming boundary and outside-click dismissal. A stable outer Stack preserves the underlying scroll state when approval appears or disappears.
+
+Final 24 real-widget UI checks pass (9.02s), including both inline key actions, actual close/outside clicks, inside-click preservation, reopening the same code after polling, transparent popup corners, discovery popup corners, copy controls, and normal/minimum screens. Inspected 874×630 and 760×520 Connect and approval PNGs. Final signed development build-only passes (10.90s), including strict signature verification; git diff --check passes. API tasks from these fixtures are not executed.
+
+Work and review were direct, without subagents. Fetch was not relaunched; live appearance requires explicit Quit/reopen. No provider/MCP call, client configuration, credentials, trust, signing selection, Figma, commit/push or release changes. The separate macOS Touch ID/password dialog remains OS-owned; these dismissal controls hide the Fetch dialog. Earlier product/connector acceptance limits remain.
+
+The first test attempt stopped with No space left on device. Removed 20 Fetch incremental compilation cache directories older than one day, preserving recent compilation caches, all executables, source, app data and services. This reclaimed space for the passing retry; no personal files were cleaned. [Scope/evidence](connect-inline-auth/info.md); [latest pass](history/2026-11-12_14-44-55-621062-orchestrator-connect-inline-auth-and-popup-layout.md).
+
+## November 12 — local MCP connector built; manual acceptance pending
+
+Native popup setup and raw stdio-to-pinned-HTTPS connector are implemented.
+Final independent Evaluator ACCEPT;46 focused checks, inspected actual-widget
+popup and signed development build/strict signature verification pass. The
+agent did not relaunch Fetch or change personal settings/credentials/trust.
+Real-client confined attempts did not reach MCP; user explicitly selects manual
+client/Mac approval testing later. Preserve that limitation and notification
+token expiry/reconnect behavior. Unrelated work retained; no release/package/
+project feature/migration. [Evidence/manual steps](local-mcp-connector/evidence.md); [11-12_14-43-00-193668-tester-connector-final-fixtures-and-client-limits.md](history/2026-11-12_14-43-00-193668-tester-connector-final-fixtures-and-client-limits.md), [11-12_14-43-00-195127-evaluator-connector-final-source-accept.md](history/2026-11-12_14-43-00-195127-evaluator-connector-final-source-accept.md), [11-12_14-43-00-195429-orchestrator-connector-signed-build-and-manual-handoff.md](history/2026-11-12_14-43-00-195429-orchestrator-connector-signed-build-and-manual-handoff.md).
+
+## November 12 — inline refresh and shorter Servers feedback
+
+Installed servers Refresh now uses a 1.5-second minimum indicator and continues spinning if the read takes longer. Install MCPs Refresh is now in the path-input row, immediately left of Choose file or folder…. Its three-second minimum is unchanged. Both use the same shared feedback implementation; the caller supplies the duration. Returned data still applies immediately.
+
+Four focused existing UI checks pass: manual refresh pending spin, instant reload/minimum feedback, discovery click/spin/retry, and normal/minimum-window screens. Inspected the 874×630 filled-path and 760×520 Install screenshots. Signed development build-only passes (15.03s), including strict signature verification; git diff --check passes. No new tests were added for this small adjustment.
+
+Direct work/review without subagents. No Fetch relaunch or live MCP/provider calls; running Fetch needs explicit Quit/reopen to show the changes. Unrelated edits, credentials, personal settings and services were preserved. [Scope](shared-button-behavior/info.md); [latest pass](history/2026-11-12_14-32-21-750278-orchestrator-inline-refresh-and-shorter-feedback.md).
+
+## November 12 — shared native button behavior
+
+Refresh controls on Servers and Install MCPs now use the same shared rendering and running-action guard: blue hover glow, clockwise hover rotation, continued rotation without hover while running, and no second click during activity. Server-list and discovery reads share RefreshFeedback for a three-second minimum indicator without delaying returned results. Server restart continues spinning through its real pending operation and now also uses the component-owned click guard. Text actions across pages, native connector setup/approval, credentials and Terminal reuse text_button; blue Install/Save actions reuse primary_button. Existing specialized copy/tab/disclosure controls retain their common implementations and purposes.
+
+78 UI checks pass (10.59s), including the new real-widget discovery success/failure/retry case and existing hover, server reload, restart, copy, Settings, connector-popup and terminal checks. Inspected Install idle/feedback and minimum-size Connect PNGs. Signed development build-only passes (20.85s) and the launcher’s strict signature verification passes. git diff --check passes. The first wider run found a stale Connect assertion expecting pre-existing HTTP commands; it now checks the current stdio connector command already implemented elsewhere in the working tree. Existing compiler/deprecation warnings remain.
+
+Checks/review were performed directly and sequentially, without subagents or independent review, as requested. No Fetch relaunch, MCP/provider call, client-config edit, credential/trust/signing-selection change, Figma edit, commit/push or release. Running Fetch retains its earlier executable; explicit Quit/reopen is needed for live observation.
+
+Current requested UI scope is implemented and directly checked; broader product and connector acceptance remains as recorded below. [Scope/evidence](shared-button-behavior/info.md); [latest pass](history/2026-11-12_14-29-26-789392-orchestrator-shared-button-behavior.md).
+
+## November 12 — Apple Development signing verified
+
+The user created a fresh Apple Development certificate in Xcode. macOS lists it as a valid signing identity; its public certificate expires November 12, 2027. Selected its public fingerprint in the existing Fetch development settings file (no environment override). The existing ./scripts/run-development.sh --build-only succeeded in 25.71 seconds after waiting for another Cargo build. The resulting fetch-development executable passes strict signature verification, uses com.fetch.local.development, chains through Apple WWDR/Apple Root, and has TeamIdentifier 557D6QNLJV. Existing compiler/deprecation warnings remain. No Fetch launch, credential read/migration, Keychain access-rule/trust changes or release work occurred. Certificate/signing setup is complete; actual Keychain prompt behavior is still untested. Next: user explicitly Quits Fetch and runs ./target/debug/fetch-development app, approves any native prompts themselves, then Quits/repeats to observe behavior. [Verification pass](history/2026-11-12_14-29-22-959448-orchestrator-verify-apple-development-signing.md).
+
+## November 12 — connector checks and independent review fixes
+
+Focused auth/renewal selection passes30; connector bridge/profile checks pass7.
+Independent review requested dispatch-order cancellation and window-close proof
+ownership fixes. Both are implemented with focused regressions pending. Real
+client harness stopped at confinement probe before either client ran; boundary
+remains strict. No actual native app/Keychain/trust/personal-client changes.
+[Current plan/evidence](../docs/architecture/local-mcp-connector.md); [11-12_14-28-48-771315-coder-connector-transport-and-profiles.md](history/2026-11-12_14-28-48-771315-coder-connector-transport-and-profiles.md), [11-12_14-28-48-798755-tester-connector-focused-route-and-bridge-checks.md](history/2026-11-12_14-28-48-798755-tester-connector-focused-route-and-bridge-checks.md), [11-12_14-28-48-803431-evaluator-connector-initial-review-request-changes.md](history/2026-11-12_14-28-48-803431-evaluator-connector-initial-review-request-changes.md), [11-12_14-28-48-808530-orchestrator-connector-review-fixes.md](history/2026-11-12_14-28-48-808530-orchestrator-connector-review-fixes.md). Earlier work retained.
+
+## November 12 — connector implementation underway after go-ahead
+
+User-approved native popup setup is being implemented. Planner confirms the
+reviewed four routes cover UI-first and optional setup-command entry points.
+Auth route/common issuance source, native popup/shared controls and CLI/raw
+bridge are integrating. Coordinated compile/test issues are being corrected;
+no passing runtime acceptance claimed yet. No personal client/account/Keychain/
+trust/service changes. Unrelated work preserved. [Current implementation](../docs/architecture/local-mcp-connector.md); [11-12_14-22-02-188486-planner-connector-setup-consolidation.md](history/2026-11-12_14-22-02-188486-planner-connector-setup-consolidation.md), [11-12_14-22-02-188927-coder-native-connector-approval.md](history/2026-11-12_14-22-02-188927-coder-native-connector-approval.md), [11-12_14-22-02-189034-orchestrator-connector-native-popup.md](history/2026-11-12_14-22-02-189034-orchestrator-connector-native-popup.md).
+
+## November 12 — shadow made visible at Dock size
+
+User’s Dock screenshot looked flat beside the large Figma reference. A96px native check preserves the exported image closely (mean0.156331/255,max6), so the available evidence points to faint shadows after reduction, not image loss in AppKit. Live Dock compositing was not independently captured. Kept large mockup267:800 unchanged and created canonical app-icon export310:799 with a wider/darker bevel and outer shadow for small-size readability. Same824px tile at100,100, white fill, dog and corners. PNG/ICNS regenerated72DPI.96px native after-preview inspected and fixture passes(mean0.162326/255,max6); signed build-only26.85s/strict verification passes. Existing running Fetch preserved; user Quit/reopen required.
+
+[Pass](history/2026-11-12_14-21-46-705156-designer-preserve-shadow-at-dock-size.md); current[app-icon](app-icon/info.md). Existing unfinished tasks remain below.
+
+## November 12 — Apple Development signing setup authorized
+
+User authorizes proceeding with Apple Development signing for Fetch. Read-only checks find the existing Apple Development identity expired; Fetch still selects its self-signed local identity, with no environment override. A valid Apple Distribution identity also exists but is not selected for this development setup. Rust 1.94.1 meets Cargo.toml minimum 1.89; full Xcode, clang and codesign are available. Xcode was opened successfully. Next: user creates a fresh Apple Development certificate through Xcode Settings → Accounts/Apple Accounts → team → Manage Certificates → + → Apple Development. Then inspect its public identity, save the selected public fingerprint, and run the existing build-only launcher with strict signature verification. Apple login/password approvals remain user-owned. No signing selection, Keychain access rules/trust, saved credentials, app source or running Fetch was changed; no build or Fetch launch performed. Repeated-launch prompt behavior remains unverified. [Setup pass](history/2026-11-12_14-20-46-223130-orchestrator-start-apple-development-signing.md).
+
+## November 12 — app icon refreshed from current Figma
+
+Refreshed canonical packaging/Fetch.png and Fetch.icns from the current source logo via export308:799, retaining rounded outward rim and824px visible tile on1024px canvas. PNG remains72DPI; source mockup unchanged. Signed development rebuild passes17.43s and strict verification passes. No Fetch process was found during the read-only precheck and no app was launched. Open the rebuilt target/debug/fetch-development to load the icon. Earlier native assignment checks remain applicable; no redundant fixture rerun for this unchanged design refresh.
+
+[Refresh pass](history/2026-11-12_14-16-50-522015-orchestrator-update-current-app-icon.md). Existing product tasks remain below.
+
+## November 12 — rounded outward edge clarified
+
+User clarified “rounder edges” means a curved outward rim across the tile surface, not deeper recessing or another corner-radius increase. Replaced the recessed lighting with a soft raised bevel: inner white highlight40px/20,24/spread10/88%, inner gray42px/-22,-26/spread12/25%, restrained outer shadow18px/6,8/18% and white lift16px/-6,-8/55%. Existing230px smoothed corner shape, white fill, dog793px size/position/artwork/shadow and824px Dock tile footprint retained. Latest export306:799; recessed export304:799 archived. Canonical PNG/ICNS updated72DPI. Composition/canonical/native preview inspected; existing native fixture passes (mean0.174911/255,max15); signed build-only6.89s/strict verification pass. Direct checks; no Fetch relaunch or packaging.
+
+[Pass](history/2026-11-12_14-13-54-197058-designer-round-outward-tile-edge.md); current[app-icon](app-icon/info.md). Previous recessed interpretation is superseded; existing unfinished product/live acceptance tasks remain below.
+
+## November 12 — connector setup popup selected
+
+User selects installation/setup launching/focusing Fetch and showing a native
+approval popup. Permission choices/Mac confirmation remain; no auto-grant.
+Presentation choice is resolved, but exact setup trigger and amended enrollment
+contract remain open. Do not claim client registration commands automatically
+execute the connector. No source/runtime/client/trust/credential changes.
+[Plan](../docs/architecture/local-mcp-connector.md); [pass](history/2026-11-12_14-11-16-533960-orchestrator-native-connector-setup-popup-selected.md).
+
+## November 12 — connector UI-first setup option
+
+User asks to perform setup in Fetch UI or a website. Proposal now explains native
+Connect apps approval without a required login command, while preserving explicit
+permissions/Mac confirmation and separate credentials. This revises the earlier
+connector-initiated enrollment proposal and still needs exact backend contract
+review; no code or personal settings changed. Website handoff is not selected and
+local browser HTTPS still has separate certificate trust. [Proposal](../docs/architecture/local-mcp-connector.md); [pass](history/2026-11-12_14-10-05-932178-orchestrator-connector-ui-first-setup-option.md). Existing work preserved.
+
+## November 12 — rounder recessed icon and corrected Dock footprint
+
+User requested corners like the neighboring Dock icon, clearer inward indentation, and comparable visible size. Source logo267:800/background283:799 now use230px corners with0.6smoothing. Background has only two inward effects: dark upper-left36px blur/10px spread at16,20 with32%opacity, and white lower-right30px blur/8px spread at-16,-20 with90%opacity. White fill, dog artwork, dog793px size/position and dog shadow retained. Latest export304:799 is1024px with an824px tile at100,100, reducing the previous roughly910px visible face. Previous export297:799 archived. Canonical PNG/ICNS regenerated at72DPI; native fixture/resource checks and signed build6.55s pass. Native preview inspected; direct/sequential checks, no independent new review. Fetch not relaunched; actual neighboring Dock comparison awaits user Quit/reopen.
+
+[Pass](history/2026-11-12_14-09-24-246547-designer-recessed-round-dock-icon.md); current[icon scope/evidence](app-icon/info.md). Prior unrelated unfinished work remains below.
+
+## November 12 — connector plan independently accepted for user review
+
+Evaluator ACCEPT confirms the bounded transport/credential/lifetime/test plan.
+No connector source exists yet; user must choose native Fetch approval or existing
+browser approval before new auth/API implementation. The proposed four native
+operations preserve explicit scopes and fresh Mac confirmation; credentials stay
+separate and no Settings authority reaches the connector. Documentation local
+links and scoped git diff --check pass; no app/client/Keychain/trust or execution
+changes. Actual isolated client/native acceptance remains unrun. Unrelated work
+preserved. [Plan](../docs/architecture/local-mcp-connector.md); [evaluation](history/2026-11-12_14-07-10-322969-evaluator-local-mcp-connector-plan.md).
+
+## November 12 — local MCP connector bounded plan
+
+Dedicated Planner completed the plan after research. Proposed fetch connect uses
+raw messages over pinned existing HTTPS, per-client approved credentials,
+per-process request IDs and cross-process refresh serialization. Recommended
+native Fetch approval needs user selection before new auth/API code; existing
+browser approval retains browser trust. Full proposed four-operation contract and
+focused tests are documented. No source implementation/tests/runtime/personal
+changes. [Plan](../docs/architecture/local-mcp-connector.md); [pass](history/2026-11-12_14-05-49-112522-planner-local-mcp-connector.md).
+Independent evaluation is next; unrelated work and prior acceptance retained.
+
+## November 12 — local MCP connector inspection and research
+
+User authorizes scoped connector work subject to new API/auth review. Existing
+CLI has app/dev; fetch connect fits. Research recommends raw transport reuse,
+not typed Tool/result serialization. Browser OAuth approval retains its own
+certificate issue. Native-window approval remains a proposal needing user input.
+Focused fixture/isolation inventory complete; no tests, actual client connections,
+Keychain/trust changes, server execution or source edits. Unrelated work preserved.
+[Plan/research](../docs/architecture/local-mcp-connector.md); [scope](local-mcp-connector/info.md); [11-12_14-03-55-816987-researcher-local-mcp-connector.md](history/2026-11-12_14-03-55-816987-researcher-local-mcp-connector.md); [11-12_14-03-55-817270-tester-connector-test-inventory.md](history/2026-11-12_14-03-55-817270-tester-connector-test-inventory.md).
+
+## November 12 — final reload, copy, startup status and resize UI
+
+Installed servers reload feedback lasts three seconds and successful manual reloads pop every card back in; returned data is applied immediately. Remove hover is red. Connect apps starts with bold gray Claude Code/Codex headings and small official-source marks; OpenCode and the long explanatory paragraph are removed. Shared copy controls use icon-only hover brightening/white shine plus plain left-side Copied! for1.4seconds. Starting servers show orange dots and spinning arrows, hide unknown-sign-in warnings while pending, and keep automatic status checks active even collapsed. Returned status/auth successes apply immediately; no new route or push stream. Native resizing uses a six-point ring inside the visible curved edge with AppKit handling the actual resize. Precise HTTPS/Keychain failure reporting is added, but the user's underlying startup access issue is not confirmed fixed.
+
+Verification:21 UI checks,4 visual checks,1 blocked-startup manager fixture,2 identity and11 credential/fake-Keychain tests pass; native resize/hover/close/teardown fixture passes; inspected PNGs; final signed-development build/strict verification and git diff --check pass. Existing compiler/deprecation warnings remain. No subagents, live Fetch/MCP/provider execution, personal configuration/credential/trust changes, commit/push, release or Figma writes. Live resize feel remains unobserved because CUA could not attach to the unbundled app. Running Fetch is preserved; user must explicitly Quit/reopen the built executable.
+
+[reload-pop-and-connect-layout](history/2026-11-12_14-03-52-556757-orchestrator-reload-pop-connect-layout.md) [https-identity-startup-error](history/2026-11-12_14-03-52-556758-orchestrator-https-identity-diagnostics.md) [copy-feedback-and-startup-status](history/2026-11-12_14-03-52-556759-orchestrator-copy-feedback-startup-state.md) [window-resize-edge-ring](history/2026-11-12_14-03-52-556760-orchestrator-native-resize-edge-ring.md)
+
+## November 12 — approved retriever is the app icon
+
+User approved the defined-ear, midpoint-blue retriever with pink tongue and larger dog shadow on the warm-white tile. Canonical exports are packaging/Fetch.png (1024px,72DPI,alpha) and Fetch.icns (ten standard sizes), from Figma export297:799; original mockup267:800 unchanged. Native development embeds the PNG and assigns AppKit’s applicationIconImage on the main queue. Existing future-bundle source names/copies the ICNS. Focused independent native/resource checks, final signed build-only and strict verification pass; independent Evaluator ACCEPT. No Fetch relaunch or bundle/DMG/release run. Explicitly Quit/reopen Fetch to observe the Dock icon; live Dock/Finder appearance remains unobserved.
+
+App-icon implementation/check milestone complete. [Evaluation](history/2026-11-12_13-55-29-383164-evaluator-accept-app-icon.md); [integration](history/2026-11-12_13-55-29-383165-orchestrator-integrate-approved-app-icon.md); [scope/evidence](app-icon/info.md). Existing unfinished product work and live acceptance items remain below.
+
+## November 12 — app icon checks pass
+
+Independent native Tester verifies actual AppKit assignment, normalized1024pt size, close rendered match (mean0.206970/255), and queued assignment after caller bytes overwritten/released. No windows created. Canonical PNG alpha/72DPI, all ten ICNS sizes, plist/resource names and shell syntax pass. Final signed build-only passes6.72s; strict verification and diff check pass. Independent Evaluator final decision pending. No Fetch relaunch/packaging run. [Test pass](history/2026-11-12_13-54-29-983373-tester-approved-app-icon.md); evidence[app-icon/evidence](app-icon/evidence/resource-checks.json).
+
+## November 12 — app icon export metadata corrected
+
+Independent native testing found Figma PNG’s low DPI caused AppKit to interpret1024px as2949points and create an oversized snapshot. Normalized Fetch.png metadata to72DPI and regenerated ICNS without changing the design. Final native check and signed rebuild in progress. [Correction pass](history/2026-11-12_13-52-34-605227-coder-normalize-app-icon-resolution.md).
+
+## November 12 — approved app icon wired in source
+
+Approved Figma logo exported from square copy297:799 to packaging/Fetch.png (1024px); standard ten-size Fetch.icns generated with macOS tools. Native menu setup now passes embedded PNG bytes to AppKit’s applicationIconImage setter on the main queue. Future bundle source names/copies Fetch.icns. Original Figma logo geometry unchanged. Assets visually inspected; native assignment/format/build checks pending. No Fetch relaunch or packaging run. [Implementation pass](history/2026-11-12_13-48-21-118647-coder-approved-app-icon.md); milestone[app-icon](app-icon/info.md). Existing unfinished work retained below.
+
+## November 12 — approved app icon implementation
+
+User approved the current retriever logo and asked to export/use it as the app icon. Read-only Planner recommends embedded PNG assigned through existing AppKit menu setup, plus Fetch.icns/CFBundleIconFile for existing packaging source. Iced/winit window icon is ignored on macOS. Export copy297:799 keeps original logo267:800 unchanged; square1152px container includes shadow margins. Shared role files absent; available explicitly assigned Planner used. No launch/release authorized or performed. [Plan pass](history/2026-11-12_13-47-40-901288-planner-approved-app-icon.md); active milestone[app-icon](app-icon/info.md). Other unfinished product work retained below.
+
+## November 12 — clearer ears and larger dog shadow
+
+Dog ears now have deeper blue tone and clearer curved attachment shading. Midpoint-blue face, black eyes and smiling mouth/tongue retained. Figma dog group285:801 shadow expanded from14px blur/6px offset to28px blur/10px offset,2px spread and18% opacity. Image283:800 geometry compares unchanged (793×793, absolute237,235); white/background compare unchanged. Screenshot inspected; saved docs/logo-mockups/fetch-dog-defined-ears-shadow-v8.png (821×821 exported bounds). Prior variants retained.
+
+[Pass](history/2026-11-12_13-43-04-820270-designer-defined-ears-larger-shadow.md). Existing unfinished work remains below.
+
+## November 12 — Codex version clarification
+
+Installed Codex 0.167.1 and current official CLI reference provide no project
+output flag for mcp add; no supported version with one was established. Project
+config support is separate. A Fetch helper could provide one pasteable setup
+command but is not built or selected. No config/runtime/trust changes.
+[Pass](history/2026-11-12_13-42-46-483958-orchestrator-codex-project-add-version-clarification.md). Prior pending work remains.
+
+## November 12 — project registration commands checked
+
+Installed CLI help confirms Claude --scope project; installed Codex add has no
+project output flag, although trusted-project config is supported. No server was
+registered or connected. Current Fetch URL can be saved per project but does not
+filter upstream servers by project yet. [Pass](history/2026-11-12_13-41-20-273932-orchestrator-project-mcp-add-commands.md); [details](../docs/architecture/project-scoped-servers.md).
+
+## November 12 — client override rules checked
+
+Official docs confirm Claude project entries override same-name user entries,
+with private local entries above project. Codex supports trusted-project MCP
+settings above user config, including a same-name Fetch URL override. Proposed
+install flow distinguishes Fetch server records from the project's Fetch client
+connection. No new behavior selected or actual client files changed.
+[Pass](history/2026-11-12_13-39-23-406923-orchestrator-project-install-records-and-client-precedence.md); [details](../docs/architecture/project-scoped-servers.md).
+
+## November 12 — subtle dog drop shadow
+
+Added one soft shadow to dog cutout group285:801:14px blur,6px downward offset,16% blue-gray opacity. Dog PNG/color/expression and793×793 absolute237,235 image bounds retained; white/background treatment unchanged. Composition screenshot inspected. Saved docs/logo-mockups/fetch-dog-midblue-shadow-v7.png (821×821 including shadow bounds). Unshadowed v6 remains available. Effect remains separately editable in Figma.
+
+[Pass](history/2026-11-12_13-32-47-401064-designer-subtle-dog-shadow.md). Existing unfinished work remains below.
+
+## November 12 — midpoint blue logo
+
+Dog PNG now targets #9DD3ED, midway between prior #7DBFE2 and #BCE7F8. Existing simplified face, black highlighted eyes and pink tongue retained. Updated Figma283:800; before/after size and position compare unchanged (793×793, absolute237,235), as do white background/effects/corners. Screenshot inspected. Saved docs/logo-mockups/fetch-dog-midblue-tongue-v6.png,793×793 transparent cutout; earlier variants retained. Generated color target is approximate.
+
+[Pass](history/2026-11-12_13-31-26-217613-designer-midpoint-blue-logo.md). Existing unfinished work remains below.
+
+## November 12 — scope storage selected; folder detection researched
+
+User selects recording scope in each server's config.json; schema and connection design remain open. Dedicated read-only research confirms optional workspace roots are not a universal active folder. Proposal explains per-connection project selection and filtering on lists/calls. No implementation or personal config/trust change. [Pass](history/2026-11-12_13-30-58-794608-researcher-project-folder-detection-and-scope-storage.md); [proposal](../docs/architecture/project-scoped-servers.md). Prior tasks preserved.
+
+## November 12 — light blue dog with tongue
+
+Returned the simplified retriever to pale baby blue (target #BCE7F8) and added a compact open smile with a pink tongue. Black highlighted eyes retained. Updated Figma image283:800; exact793×793 size and absolute237,235 position restored/verified. White background fill, effects and114px corners compare unchanged. Composition screenshot inspected; transparent cutout saved as docs/logo-mockups/fetch-dog-light-tongue-v5.png (793×793). Prior variants retained; this is a proposal awaiting feedback.
+
+[Pass](history/2026-11-12_13-27-13-629730-designer-light-blue-tongue-logo.md). Existing unfinished work remains below.
+
+## November 12 — current global storage explained
+
+Source inspection confirms one installation-wide collection, with each server in
+`servers/<hash-of-server-id>/config.json` and installed packages separate under
+`packages/servers/<installation-id>/`. No explicit project/global field exists.
+Credential ownership remains unchanged. Added current layout to the
+[proposal](../docs/architecture/project-scoped-servers.md); no implementation or
+personal state inspection. [Pass](history/2026-11-12_13-26-15-509558-orchestrator-explain-current-global-server-storage.md). Existing work remains below.
+
+## November 12 — simplified retriever shading
+
+Reduced the heavy muzzle and ear shadows into shallow broad shading and a simple mouth curve; stronger blue and black highlighted eyes retained. Updated Figma image283:800 in logo267:800. Before upload the current dog rectangle was793×793 at117,115 inside group285:801; restored that exact size/position after upload and checked absolute bounds237,235,793×793. Aligned the native silhouette mask to the smaller image. White background, effects and114px corners compare unchanged. Composition screenshot inspected. Saved new transparent PNG docs/logo-mockups/fetch-dog-simplified-v4.png (793×793, alpha); previous PNGs retained. Proposal awaiting visual feedback.
+
+[Pass](history/2026-11-12_13-22-42-133642-designer-simplified-retriever-shading.md). Existing unfinished work remains below.
+
+## November 12 — project-scoped server research
+
+Dedicated read-only research and source inspection support project-specific Fetch connections, shared-plus-project visibility and common backend permission enforcement. Existing explicit-file parsing does not supply project membership. OpenCode V2 schema differs from Fetch's current reader. No implementation or new contract approved; no runtime tests, app/account/client changes. Independent Evaluator ACCEPTs the proposal's source accuracy and limits; this is not user approval. [Evaluation](history/2026-11-12_13-20-56-286138-evaluator-project-scoped-server-proposal.md). Existing unfinished work preserved. [Proposal](../docs/architecture/project-scoped-servers.md); [scope](project-scoped-servers/info.md); [research pass](history/2026-11-12_13-20-35-618689-researcher-project-scoped-server-support.md).
+
+## November 12 — separate PNGs and revised logo contrast
+
+Logo267:800 now contains a separate native warm-white background283:799 and transparent dog group285:801 (image283:800 plus silhouette mask285:799). Exported fetch-dog-transparent.png (1024×1024) and fetch-logo-background.png (1094×1098 including external shadow) under docs/logo-mockups; both have alpha and were visually inspected. Dog recolored to stronger sky blue (target #7DBFE2), with black eyes and tiny white highlights. White fill #F7F6F1 retained. Background retains114px corners; local inner effects broadened to44/56px and close shadow softened to12px. Shared app styles unchanged. Before/after dog rectangle is1024×1024 at0,0 with identity transform; mask and group geometry retained on the final swap. No automatic logo adoption.
+
+[Pass](history/2026-11-12_13-18-32-290343-designer-separated-refined-logo-pngs.md). Unfinished product work remains below.
+
+## November 12 — inline restart failure
+
+Restart failure now appears as a gold warning icon and Restart failed text beside the affected server name, using the existing sign-in-warning style, including collapsed cards. It takes precedence over the sign-in label for that failed attempt; ordinary sign-in labels remain otherwise. Failed restart records and rejected restart submissions both drive the header. Retry hides/clears the previous local failure while its arrow spins; terminal status updates the matching server record immediately so completion clears/restores the correct inline label without waiting for a later list read. Actual returned restart errors are included in the existing per-server Console/Copy text. The old global restart-failure notice is removed; no page banner is restored.
+
+Fifteen real-widget UI checks and four visual checks pass. New scoped fixture verifies header placement and one-server ownership, saved failed status, rejected submission, full returned Console error, retry progress, immediate success/failure status and no global notice. Inspected restart-failed-inline.png; signed development build/strict signature verification and git diff --check pass. Direct primary-agent review ACCEPT; no subagents. No fixture HTTP tasks or real servers executed.
+
+Existing running Fetch, personal accounts/Keychain/client settings, backend API behavior and Figma remain unchanged. Built executable requires explicit user Quit/reopen. Earlier unrelated source/doc changes and unfinished acceptance work are preserved; Keychain prompt issue remains separate. [Pass](history/2026-11-12_13-10-26-823312-orchestrator-inline-restart-failure.md); [scope](inline-restart-failure/info.md).
+
+## November 12 — lighter retriever and brighter eyes
+
+Revised the rejected logo concept using built-in imagegen: lighter pastel-blue dog (target #BCE7F8), deep-blue eyes with small white catchlights, same silhouette and warm-white background. Updated image fill on Figma267:800 and inspected the composition screenshot. Current frame has114px rounded corners and the existing Raised panel effect style; preserved as found during final readback. New source saved as docs/logo-mockups/retriever-pastel-blue-bright-eyes-v2.png; v1 retained. This is a revised raster proposal, not user acceptance of the logo.
+
+[Pass](history/2026-11-12_13-07-52-032231-designer-lighter-retriever-bright-eyes.md). Existing product work remains below.
+
+## November 12 — contain internal scrolling and remove page banners
+
+All native scroll areas now use the shared contain_scroll wrapper: the child receives wheel input first, then any unhandled wheel input inside its visible bounds is consumed, including at top/bottom or when content fits. Shared Console/Terminal frames contain wheel input over their header/padding as well. Tools, Settings, discovery, installed servers and the outer scrolling page use the same rule. Pointer movement outside an internal pane leaves the surrounding list usable. Removed both error and notice rendering directly below navigation on every native page; retained existing contextual Console/installation-dialog messages and underlying response/error state. Exact removed text/categories are inventoried in removed-messages.md. Recorded both user rules in project AGENTS.md.
+
+Fourteen actual-widget UI tests and four visual tests pass; final signed development build/strict signature verification and git diff --check pass. New fixture checks Console/Tools/Settings at both boundaries, repeated new gestures and outside-pane outer scrolling. New three-page fixture verifies global error/notice text is absent. The existing fixed-list test initially failed because it tried to scroll the outer list over the newly contained Console; corrected its pointer to the list gutter, matching the requested behavior, then all14 pass. No new live server, account or native Fetch session was started. Direct sequential review ACCEPT, without subagents.
+
+Running Fetch is unchanged until the user explicitly Quits/reopens the built executable. No API/backend transport/error content, account/Keychain, personal settings, Figma, release or unrelated source changes. This removes the page-wide display rather than relocating all messages; contextual errors remain only where they already existed. Prior unfinished acceptance and Keychain prompt diagnosis remain. [Pass](history/2026-11-12_13-05-39-517579-orchestrator-contain-nested-scroll-and-remove-page-banners.md); [scope](nested-scroll-and-page-messages/info.md).
+
+## November 12 — corrected raised logo frame edge
+
+The earlier corner-only edit missed the requested soft raised boundary. Logo frame267:800 now uses the app window’s existing **Neumorphic / Raised panel** effect style (two inner shadows and three outer shadows), plus shared neo/radius/32 corner bindings. Image fill and dog remain unchanged: the shadows belong to the surrounding frame. Figma screenshot inspected. This supersedes the previous zero-frame-effects state; original local PNG remains unchanged.
+
+[Correction pass](history/2026-11-12_12-59-30-563617-designer-match-logo-raised-frame-edge.md). Existing unfinished product work remains below.
+
+## November 12 — rounded logo boundary
+
+Logo mockup267:800 now uses32px rounded corners and clips the image to that boundary, matching the current Figma app shell/window surface97:2015 and90:1605. The1024px image, blue retriever and no-shadow treatment are retained. Readback and screenshot inspected; direct visual check, no subagents. Figma only; original PNG and application source unchanged.
+
+[Pass](history/2026-11-12_12-57-43-040330-designer-rounded-logo-boundary.md). Existing unfinished product work remains below.
+
+## November 12 — recommended next step for Keychain prompts
+
+User asks how to stop recurring Keychain password prompts. Read-only valid code-signing identity check finds no valid Apple Development/Mac Developer/Developer ID Application identity. Recommend an Apple-issued development identity for rebuild-related approvals: user creates it through Xcode account certificate management; then select its public fingerprint for the existing Fetch launcher and verify actual repeated launches. This is a recommendation, not an approved signing change or guaranteed fix for unchanged-binary prompts. Apple securityd source distinguishes qualifying team identities from per-build code hashes; prior self-signed approval assumption was insufficient. No certificate creation, private-key access, Keychain permission/storage change, app launch or rebuild. [Pass](history/2026-11-12_12-48-57-478885-orchestrator-recommend-apple-development-signing.md).
+
+## November 12 — gray key button
+
+Shared native authentication key buttons now use gray #B8BDC3 instead of black, retaining the white key icon, blue hover glow and existing action availability. One existing actual-widget hover check passes; gray hover screenshot inspected. Signed development build/strict verification and git diff --check pass. No subagents, app relaunch, Figma or Keychain changes; existing unrelated work preserved. [Pass](history/2026-11-12_12-45-42-118673-orchestrator-gray-key-button.md).
+
+## November 11 — retriever logo mockup
+
+Created the requested **logo mockups** Figma page267:799 with square1024px artwork267:800: a light-blue retriever head, warm off-white background and no exterior shadow. The face keeps its soft sculpted shading. Imported generated raster artwork, not editable dog paths or a final adopted logo. Figma image fill/effect readback and composition screenshot inspected. Built-in imagegen used; target palette #95D4F1 / #F7F6F1, with generated shading rather than a pixel-exact color guarantee. [Figma](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=267-800); [saved asset](../docs/logo-mockups/retriever-blue-warm-white-v1.png). App source and existing Figma screens unchanged. Direct design work; no subagents.
+
+Latest design pass: [history](history/2026-11-11_15-01-36-028718-designer-retriever-logo-mockup.md). Existing product work and unfinished acceptance remain below.
+
+## November 11 — spin refresh through completion and glow key hover
+
+The Installed servers Refresh button spins from the user's click until its matching list response finishes, including errors, without requiring hover. Its own request sequence keeps ordinary polling separate. A per-server restart button spins from initial submission through the existing restart-status polling until the restart reaches succeeded/failed; other servers do not inherit its animation. Shared glyph state keeps request rotation independent of hover, including when the button is temporarily disabled. Removed the server-restart success notice and its generic Saved acknowledgement; restart failures remain visible. Enabled key buttons now share the stronger blue hover glow already used for refresh. Existing hover spin and key authentication actions remain unchanged.
+
+Twelve real-widget UI checks, four visual checks and two automatic-refresh checks pass. New actual-click fixtures verify global refresh spins without a pointer, stops on success/error, and individual restart continues through submission/status then stops without the success notice. Existing timed key-hover screenshot was inspected. Signed development build and strict signature verification pass; git diff --check passes. No task/HTTP/real server is executed by UI fixtures. Direct sequential review ACCEPT; no subagents.
+
+Running Fetch was preserved and not relaunched. No account, Keychain, personal client, backend API or Figma changes. Actual native animation still needs user Quit/reopen into the new binary. Prior Keychain prompt investigation remains unresolved; this rebuild does not claim a prompt fix. Existing unrelated UI/console/native/docs work and unfinished acceptance remain. [Pass](history/2026-11-11_15-01-17-998464-orchestrator-refresh-request-spin-and-key-glow.md); [scope](refresh-request-animation/info.md).
+
+## November 11 — direct launch is already correct
+
+User reports the Fetch encrypted local state dialog still appears on each direct ./target/debug/fetch-development app run. That command already starts the signed executable without building or re-signing; switching to scripts/run-development.sh invokes build/sign and does not fix access permission. Current on-disk executable passes strict signature verification, uses Fetch Development Local Signing and com.fetch.local.development, has no Apple TeamIdentifier, and was signed November11 at14:50:32. Multiple recent UI fixes rebuilt/replaced this executable, so the same path does not mean unchanged program bytes between those attempts. Existing metadata/source evidence supports build-specific approvals with the self-signed identity. Repeated prompts for a truly unchanged binary remain unresolved; the user's report is not dismissed as a wrong command or forgotten Always Allow. No new Keychain inspection, password/key read, permission/trust/storage change, rebuild or app launch. [Pass](history/2026-11-11_14-56-32-968897-orchestrator-explain-direct-launch-keychain-prompt.md). UI fixes remain built/checked as below.
+
+## November 11 — remove Retina outline, fix all native hover and align resize
+
+Corrected the dark rounded outlines caused by linear filtering between face pixels and transparent black texture pixels. Fully transparent texels now retain the face RGB at zero opacity; no stroke or shadow stack was removed. Retina edge regression fails before the fix (192/191/187) and passes after (238/237/232). Removed the8px transparent outer page margin and moved it into existing content padding, preserving control/card positions while the visible face reaches the real window bounds. AppKit group hover now refreshes the native theme widgets' cached state using mouseEnteredOrExited instead of forwarding cell enter/exit events, so red/yellow/green update together and clear together.
+
+Ten actual-widget UI checks and four visual checks pass. The native hidden fixture independently compares each of the three button captures on hover and exact restoration on exit, verifies content/frame edge equality, left/top anchors through resizing and close delegation; passes. Inspected the Retina no-outline face, default Servers and native hover/leave PNGs. Signed development build and strict signature verification pass; git diff --check passes. First expansion in this final run67ms, returns3–4ms (fixture, not live-window timing). Existing compiler/deprecation warnings retained. Review is direct and sequential, without subagents.
+
+Fetch was not relaunched, and no personal credentials/settings/services were changed. Native screenshots use a task-owned hidden window; real cursor movement/resize behavior and live macOS appearance remain for explicit user Quit/reopen. Native theme refresh/group-hover queries are undocumented AppKit behavior, isolated to the presentation bridge. Prior broad completion claims did not establish live acceptance; this pass strengthens the old native hover test from any group pixel difference to every button plus exact restoration. Earlier unrelated changes and remaining acceptance tasks are preserved. No Figma writes, commit, push or release. [Pass](history/2026-11-11_14-51-37-487186-orchestrator-fix-retina-outline-and-native-hover.md); [scope](window-outline-hover/info.md).
+
+## November 11 — final UI checks and signed build pass
+
+Final nine widget checks, three visual checks, hidden AppKit fixture and signed development build/strict signature verification pass. git diff --check passes. Direct sequential review ACCEPT; no independent reviewer/subagents. First expansion measured97ms in final run versus199–201ms baseline (earlier optimized72ms); returns8–16ms. Offscreen/native-fixture limits remain; user must explicitly Quit/reopen for live Fetch inspection. Existing application process and personal state preserved. [Final review](history/2026-11-11_14-41-05-352135-evaluator-accept-requested-ui-response-fixes.md).
+
+## November 11 — Console expansion complete
+
+Active completed milestone: [Console on expansion](console-on-expansion/info.md). Every native card expansion opens Console. Current Fetch auth/runtime/request/read errors appear alongside unchanged server lines, including returned codes/details; Copy uses the same text. Duplicate card error rows removed. UI-only change; auth history/backend/API and terminal session ownership retained. Three focused independent checks pass, [fixture image](console-on-expansion/evidence/expanded-error-console.png) inspected, development build/sign/strict verification pass. Independent Evaluator **ACCEPT**. App not relaunched; user must Quit/reopen to load it. Existing dirty work and unfinished tasks below remain. [Review/integration](history/2026-11-11_14-40-48-499768-evaluator-accept-console-expansion.md).
+
+## November 11 — Console checks pass
+
+Three independent focused actual-widget/session checks pass; root and Tester inspected [error Console capture](console-on-expansion/evidence/expanded-error-console.png). Copy matches both sources, repeated status does not duplicate lines, expansion stays passive and terminal survives collapse/reopen. Signed build passes. Independent final review pending; app not relaunched. [Testing](history/2026-11-11_14-40-25-932450-tester-console-expansion.md).
+
+## November 11, 2026 — expansion, refresh hover, left window controls and right shadow
+
+Implemented the requested native UI changes directly, without subagents. First server expansion draws without server I/O; logical-density soft shadow textures with linear sampling reduce the measured Retina fixture from199–201ms to72–97ms, with8–16ms repeat expansions. Text/icons keep full display resolution. Enabled shared refresh buttons gain a stronger blue glow and a1.2-second clockwise hover rotation; leaving/disabled state stops rotation and existing actions remain. Actual AppKit window buttons move from top-right to top-left24px/top18px. A tracking area and AppKit group-hover hook expose native symbols. Only clipped right-side Panel shadows fade through the existing gutter; left shadows, card bounds and scrolling stay unchanged.
+
+Nine ui::neumorphic_tests pass, including actual first-expansion clicks, timed refresh hover/leave/disabled behavior and original restart action; three ui::fidelity_tests pass, including right-edge fade pixels. Hidden Objective-C fixture verifies left/top anchors, resize, native hover rendering/state transitions and close delegation. Inspected default Servers/Tools, refresh-hover and native control captures. Signed development build/strict verification passes (final refresh pending at journal creation; evidence log is authoritative). Existing compiler/deprecation warnings remain.
+
+No running Fetch relaunch, live provider/MCP/account calls, personal configuration changes or Figma writes. UI screenshots use the real widgets offscreen. Native controls were checked in a task-owned hidden AppKit window, not the live Fetch window; live macOS appearance still requires explicit Quit/reopen. The group-hover hook is undocumented AppKit behavior, also used in Chromium's custom control container; future macOS changes may need rechecking. Review was direct/sequential, not independent. Existing unrelated edits and unfinished acceptance work remain. [Pass](history/2026-11-11_14-40-22-905402-orchestrator-server-expansion-refresh-window-shadow.md); [scope](server-expansion-response/info.md).
+
+## November 11 — signed Console build ready
+
+Development build/sign/strict verification pass (7.95s). Initial new UI test confirmed both output lines, then exposed a test-only icon-click mistake; corrected and independent rerun pending. No app launch. [Correction/build](history/2026-11-11_14-39-33-358986-coder-fix-console-copy-test.md).
+
+## November 11 — Console expansion implemented
+
+Expansion directly opens Console. It combines server output and current Fetch errors (including returned codes/details), with matching Copy; duplicate card messages removed. Auth/backend behavior retained. Actual-widget regression added; independent testing in progress. [Implementation](history/2026-11-11_14-38-35-384633-coder-console-expansion.md).
+
+## November 11 — Console plan accepted
+
+Independent Planner confirms a native presentation change is sufficient. Expansion will select Console directly; it will combine existing log and current Fetch errors, and Copy will match. Auth/backend behavior stays unchanged. [Plan](history/2026-11-11_14-37-11-941376-planner-console-expansion.md). Implementation in progress.
+
+## November 11 — Console on expansion
+
+Active: [Console on expansion](console-on-expansion/info.md). User requests automatic Console selection and Fetch errors alongside server output. Native-only change being planned; existing dirty changes preserved. [Plan](history/2026-11-11_14-36-40-284398-orchestrator-plan-console-expansion.md).
+
+## November 9 — native window and compact panels
+
+Active: [native window/panel polish](native-window-compact-panels/info.md). Exact-window native Apple buttons/top-right, no external shadows, full unused-area drag, heading above recess, compact Tools and shared Console/Terminal frame implemented. Hidden native-window control/resize/close fixture passes; initial7UI/11terminal checks pass. Final geometry checks/render/build pending. [Pass](history/2026-11-09_19-58-18-704135-coder-native-window-and-compact-panels.md). Keychain/auth/API scopes unchanged.
+
+## November 9 — hover/default size/output response complete
+
+Native hover text removed; enabled filled controls get a subtle cached150ms blue fade-in glow, absent at idle. Shared boot/reopen default is874×630 (30percent smaller per dimension); minimum760×520 retained. Existing text/font library debug optimization cuts full4096-line Console draw from587–653ms to79–89ms, without changing/trimming logs. Terminal selection14–17ms before server response; no shell-startup guarantee. Seven widget/two fidelity checks, inspected screenshots and signed development build/strict verification pass. Direct review ACCEPT, not independent. Running app preserved; explicit Quit/reopen needed. [Scope](hover-glow-pane-response/info.md), [evidence](hover-glow-pane-response/evidence/info.md), [pass](history/2026-11-09_18-22-32-322798-orchestrator-accept-hover-and-pane-response.md). Keychain diagnosis remains unresolved.
+
+## November 9 — Console delay profiled
+
+A full retained4096-line Console reproduces0.59–0.65s drawing stalls; Terminal selection12–17ms. Sampling the disposable UI test identifies existing text/font metrics work. Final debug optimization is restricted to cosmic-text/swash; original Console widgets/spacing remain. Hover/default-size changes are implemented; final check/build pending. [Profile pass](history/2026-11-09_18-19-11-792068-tester-profile-console-text-delay.md); [scope](hover-glow-pane-response/info.md). Keychain remains separate/unresolved.
+
+## November 9 — hover glow, output response and smaller launch
+
+Active: [hover/output response](hover-glow-pane-response/info.md). Tooltip wrappers removed; cached150ms blue hover glow and874×630 launch/reopen settings implemented. Pane selection already precedes server I/O; full retained-log drawing is being measured. Existing Keychain diagnosis remains unresolved; no auth/store changes. [Pass](history/2026-11-09_18-14-24-324430-coder-hover-glow-small-window-and-pane-timing.md).
+
+## November 9 — repeated Keychain prompts remain unresolved
+
+User already selects Always Allow; repeating that advice was insufficient. Read-only permission metadata shows saved Fetch approvals but build-specific allow lists. An unchanged launcher build/sign keeps the same code hash/identity, so that alone does not explain an unchanged launch. Actual Fetch exited before dynamic identity inspection. User-owned direct same-binary twice check is pending; no app source, Keychain access/store/trust or credential changes. [Current findings](../docs/architecture/keychain-prompts.md), [aggregate metadata](keychain-prompts/repeated-launch-metadata.json), [pass](history/2026-11-09_18-07-17-341602-researcher-repeated-keychain-approval-diagnosis.md). Latest visual fixes remain built/signed separately.
+
+## November 9 — Keychain launch-prompt guidance
+
+User reports three prompts each launch; exact item accesses are untraced. Stable signing and successful-key caching already exist. Apple documents Always Allow as remembered app/item permission; several initial per-item approvals may be needed. Guaranteed single-unlock storage remains unselected. No Keychain/credential/access-rule changes. [Guidance](../docs/architecture/keychain-prompts.md), [pass](history/2026-11-09_17-57-01-370148-orchestrator-keychain-prompt-guidance.md). Current visual fixes and signed build are complete as recorded below.
+
+## November 9 — tool shadows fixed; frameless window selected
+
+Corrected the hard tool-grid shadow cutoff using ordinary three-column row layout. User explicitly chose a fully frameless window; startup/reopen now use transparent undecorated settings and background. Unused navigation/title space drags the window; tab clicks stay normal. Observed shadow regression fails before/passes after; seven focused UI checks, three inspected screenshots and signed development strict verification pass. Direct review ACCEPT, not independent. Actual native-window behavior awaits Quit/reopen; running app preserved. [Scope](tool-shadow-boundary/info.md), [pass](history/2026-11-09_17-55-57-425926-orchestrator-accept-tool-edge-and-frameless-window.md).
+
+## November 9 — tool right-edge clipping
+
+Active: [tool shadow boundary](tool-shadow-boundary/info.md). Source identifies Grid viewport clipping as the hard inner right edge. Existing tool interaction/render test now includes an observed-bug pixel check; baseline in progress. Outer native-window framing is a separate user choice pending response. [Plan](history/2026-11-09_17-51-34-376925-planner-tool-shadow-boundary.md).
+
+## November 9 — fixed Installed servers list complete
+
+The Servers section now stays within available window height. Navigation and Installed servers title/Refresh remain fixed; padded server cards scroll inside the section. Five focused actual-widget checks and two fidelity checks pass, including normal/minimum sizes, scrolled-card expansion and existing nested Tools scrolling. Screenshots inspected; signed development build/strict verification pass. Direct primary-agent review ACCEPT (not independent). Running Fetch preserved; explicit Quit/reopen needed. [Scope](fixed-installed-server-list/info.md), [evidence](fixed-installed-server-list/evidence/info.md), [pass](history/2026-11-09_17-48-45-353735-orchestrator-accept-fixed-installed-server-list.md). Other unfinished work retained.
+
+## November 9 — fixed Installed servers section
+
+Active milestone: [fixed server list](fixed-installed-server-list/info.md). The native page now keeps navigation, Installed servers title/Refresh and section bounds fixed while cards scroll inside the remaining space. Implementation and focused real-widget regression added; checks in progress. Other pages, backend operations and Figma retained. [Pass](history/2026-11-09_17-47-33-112036-coder-fixed-installed-server-list.md).
+
+## November 9 — ready hover text removed
+
+Ready server headers no longer show “Runtime: ready” on hover. Colored status dots and existing other-status/action behavior remain. One existing actual-widget server-panel check and the signed development build/strict verification pass; direct review ACCEPT (not independent). Running Fetch was not relaunched. [Pass](history/2026-11-09_17-39-09-327774-orchestrator-remove-ready-runtime-tooltip.md); [scope](server-header-auth-status/info.md).
+
+## November 9 — navigation latency fixed
+
+The native app now reuses shadow images across tab changes and draws large surfaces from compact corners/edges, preserving the selected design and native controls. Final actual-widget Retina-decoration checks measure 16–74ms first switches and 10–20ms returning, versus 492–1406ms before. Six focused UI tests, image inspection, native build and signed-development strict verification pass. Direct primary-agent review ACCEPT (not independent). Existing running Fetch was preserved and needs explicit Quit/reopen to use the new executable. Live-window timing remains unmeasured. [Scope](navbar-latency/info.md), [evidence](navbar-latency/evidence/info.md), [review](history/2026-11-09_17-22-31-792533-evaluator-accept-navbar-latency.md). Existing Figma notes and unfinished work retained.
+
+## November 9 — navigation checks and signed build pass
+
+The real-tab-click regression plus five existing focused UI checks pass. Final Retina-decoration fixture switches take 16–74ms initially and 10–20ms returning, compared with 0.49–1.41s before. First/return page pixels match exactly. Native build and signed-development strict verification pass. Current running Fetch remains untouched; it needs an explicit Quit/reopen to load the new executable. No account/MCP/client changes. Final direct review remains. [Testing](history/2026-11-09_17-21-58-792307-tester-navbar-ui-and-build.md); [evidence](navbar-latency/evidence/info.md).
+
+## November 9 — navigation fix implemented
+
+Shared shadow images now survive tab changes, and large surfaces reuse compact corner/edge images. Measured Retina tab switches fell from 0.49–1.41s to 0.01–0.07s. Two visual fidelity checks pass; final widget checks/build/review remain in progress. Existing raw data/APIs and local Figma notes preserved. [Implementation](history/2026-11-09_17-20-28-704931-coder-navbar-shadow-reuse.md); [scope](navbar-latency/info.md).
+
+## November 9 — navigation latency
+
+Active milestone: [responsive navigation](navbar-latency/info.md). Tab changes already update synchronously; shared shadow rendering is being measured and optimized. Preserve existing Figma edits and runtime limits. [Plan](history/2026-11-09_17-18-10-443265-planner-navbar-latency.md).
+
+## November 9 — incoming main merged
+
+Local main now matches origin/main at **6a5b402**, including native UI commit **0c4ace6**. All eight existing local document additions and nine Figma histories are preserved and remain uncommitted. Application source/dependencies match incoming HEAD; no unresolved conflicts. Independent merge-integrity review **ACCEPT**. Later Figma-only edits remain separate from the imported native UI implementation. No new app tests or launch in this pass. [Integration](history/2026-11-09_16-41-05-200419-orchestrator-merge-incoming-main.md); [review](history/2026-11-09_16-41-05-200419-evaluator-accept-incoming-main-merge.md).
+
+## November 9 — filled Save icons
+
+Save vectors in shared credential actions now use white fills and blue #95D4F1 outlines/details in both enabled and disabled variants. The enlarged enabled-button screenshot was inspected. Figma only; Remove × and app source unchanged.
+
+[Pass](history/2026-11-09_16-38-25-563367-designer-filled-save-icon.md).
+
+## November 9 — inline square key actions and outlined information
+
+Save and Remove are now44×44 square icon buttons alongside the credential field: blue with a white Save vector, red with the existing white ×. Shared action set246:2464 covers enabled/disabled states, retaining prior0.58disabled opacity. All four active key editors use one44px row, with916pxfield plus two actions. Figma Remote rows are gray in all three actual discovery screens; screen overrides were corrected using resolved gray RGB values rather than black fallback colors. The information control is now an unfilled gray circular outline with a gray i, including hover state; its exact tooltip message is retained. Current key-row and discovery-dialog screenshots were inspected. Figma only; no Rust changes or subagents.
+
+[Pass](history/2026-11-09_16-30-07-848885-designer-inline-square-key-actions-outline-info.md).
+
+## November 9 — gray unsupported row with information tooltip
+
+Figma Remote · remote is now gray in the Results, Installing and Failed discovery dialogs, including its unchecked checkbox and label. Its exact approval explanation moved from the separate line into a shared information i hover tooltip (set234:2431; Default234:2421, Hovered234:2426). The row remains unsupported/disabled. Results dialog and tooltip screenshots were inspected. Figma-only, with no Rust changes or subagents.
+
+[Pass](history/2026-11-09_14-39-49-635152-designer-unsupported-row-info-tooltip.md).
+
+## November 9 — key visibility eye control
+
+The shared API key entry now includes a small right-aligned eye button. Click switches between Hidden and Visible variants; the visible state uses a crossed-out eye to hide again. Existing name/colon emphasis and placeholder colors remain. Component set231:2987 retains original hidden master226:2385; visible master231:2978. Figma uses the disposable example-token-1234 value for the filled-key reveal demonstration. Empty/named/busy forms retain their placeholder when switched. This specifies the requested UI behavior; native reveal implementation is unchanged.
+
+Shared-state and filled-key specimen screenshots were inspected; reciprocal ON_CLICK → CHANGE_TO links were read back. No actual user credentials were read. No subagents or application source changes.
+
+[Pass](history/2026-11-09_14-28-15-181038-designer-key-eye-toggle.md).
+
+## November 9 — requested label emphasis
+
+Shared tool-card labels Name and Required fields are now Inter Bold. Shared key-entry name and colon are Inter Bold; the API key or token placeholder is grayer (#8F9499), using neo/credential-placeholder. Filled masked-key text retains its previous color. Tool-card and key-entry screenshots were inspected. Figma only; no source changes or subagents.
+
+[Pass](history/2026-11-09_14-14-21-711351-designer-bold-tool-key-labels.md).
+
+## November 9, 2026 — restart button animation
+
+User requirement: while a server is restarting, its restart button's circular-arrow icon should spin. Recorded only in this pass; no Figma animation or Rust implementation was changed or verified.
+
+[Pass](history/2026-11-09_14-12-45-771328-orchestrator-note-spinning-restart-button.md).
+
+## November 9 — restarting status on hover
+
+The separate Restarting message below the server card is removed in Figma. Starting/restarting headers retain the compact yellow dot normally; hover shows an information i and the exact message in a dark tooltip. Shared set228:2391 (default228:2384, hover228:2386) is used in both Starting header variants. Restarting master77:1507 supplies “Restarting… waiting for this attempt to finish.” through its Status message property. Current app specimens inherit it. The tooltip and Restarting screen78:1782 were visually inspected; the temporary hover check frame was removed. This is Figma-only, performed directly without subagents. Other runtime-color headers were not changed. The manual-install background remains only a recommendation.
+
+[Pass](history/2026-11-09_14-12-17-992414-designer-restarting-status-hover.md).
+
+## November 9 — requested Settings and tool-field edits
+
+User-directed Figma edits only, performed by the root agent without subagents. Reverted the earlier self-chosen wording/layout/hover additions: original Install/Connect/settings wording restored; six new hover variants, bold close glyph, seven hover styles and seven hover links removed; earlier control effects restored. The removed key-selection buttons were recreated for rollback, then explicitly removed again at the user's request.
+
+Current requested design: four active Settings credential states say **API keys/fixed tokens** and have no description. Shared API key entry component226:2385 places entry name, colon and token in one44px row; filled keys stay masked. Remove entry is red with bold white text. Search Settings viewport height is498px so the full form/actions fit. Twelve authentication-control instances on current Settings screens explicitly use key glyph132:1667, correcting the gear overrides. Shared read-only tool fields182:3991 and the two fields in tool card146:2456 use **#EAF5FB**, through neo/tool-field variable226:2384. Original reference pages and Rust code were not changed.
+
+Visual checks: current filled-key app specimen78:1875 shows full form/actions, requested title, paired field, red Remove and key icon; tool card146:2456 shows pale-blue fields. Both screenshots were inspected. Checks were direct, not independent. This is Figma-only; it does not establish native implementation or runtime behavior.
+
+Latest design recommendation, not applied: distinguish the manual-install section using the same recessed warm-gray section background as Installed servers, retaining a light command field and dark console. Wait for the user's selection before changing it. Continue applying only the user's specific edits.
+
+[Pass record](history/2026-11-09_14-09-58-195297-designer-user-directed-figma-settings-tool-fields.md).
+
+## November 9 — Figma edits are user-directed
+
+The user clarified that they will specify each Figma change. Apply only those requested edits, quickly and without subagents; do not choose additional UX changes independently.
+
+Before this clarification, the root agent changed shared Install/manual-key instructions, timeout/simultaneous-call labels, discovery hint layout, and Connect wording; added six hover variants, a bold close glyph and seven hover transitions; removed four redundant Search key-selection buttons after the user's question. Selected/active effects were made inset without drop shadows. The current Figma canvas is newer than the November 8 repository descriptions (server Settings are already inside server cards). These changes have structural tool evidence but final visual review was interrupted by the user's clarification. No Rust source, running app, credentials or client settings changed. No independent agents were used. Do not describe this pass as visually accepted or continue its self-chosen edits.
+
+[Pass record](history/2026-11-09_14-03-40-465318-orchestrator-stop-autonomous-figma-edits.md).
+
 ## November 9 — native Figma update pushed
 
 Code commit [0c4ace6](https://github.com/yuyanghu06/fetch/commit/0c4ace66c82bdaae8b1c71fa9d24d60f8e60a3bc) is on GitHub main. Local and remote commit IDs match; independent delivery review ACCEPTs the scope. Existing visual/native-launch limits remain unchanged. [Push confirmation](history/2026-11-09_16-28-10-603611-orchestrator-confirm-figma-ui-push.md).
@@ -1843,3 +2667,125 @@ First command: `cargo build --bin fetch --message-format short`, exit101 at src/
 ## Prior source and future acceptance
 
 [Source milestone](mcp-mvp-implementation/info.md), [source handoff](../docs/testing/HANDOFF.md), [earlier snapshot](milestone-before-d77-source.md), [deferred tasks](to-do-before-d77-source.md) and [isolated testing](isolated-mcp-testing/info.md) retain prior records. D78 custom GitHub CLI deferral and all earlier scope deferrals remain. The five-server roster is still not run and the isolation boundary unprovisioned.
+
+Automatic approval researcher pass: [record](history/2026-11-12_15-07-01-984800-researcher-automatic-connector-client-startup.md).
+
+Automatic approval planner pass: [record](history/2026-11-12_15-07-01-985921-planner-automatic-connector-approval-plan.md).
+
+Automatic approval coder pass: [record](history/2026-11-12_15-07-01-986922-coder-automatic-connector-proof-and-app-handoff.md).
+
+Automatic approval tester pass: [record](history/2026-11-12_15-07-01-987662-tester-automatic-connector-focused-fixtures.md).
+
+Automatic approval evaluator follow-up: [record](history/2026-11-12_15-11-35-625075-evaluator-automatic-approval-request-changes.md).
+
+Automatic approval orchestrator follow-up: [record](history/2026-11-12_15-11-35-626618-orchestrator-automatic-approval-review-fixes.md).
+
+Automatic approval tester follow-up: [record](history/2026-11-12_15-11-35-627089-tester-automatic-approval-final-checks.md).
+
+Automatic approval evaluator follow-up: [record](history/2026-11-12_15-11-35-627659-evaluator-automatic-approval-accept.md).
+
+Latest automatic approval handoff: [record](history/2026-11-12_15-12-16-844717-orchestrator-automatic-approval-signed-handoff.md).
+
+Latest planner diagnosis: [record](history/2026-11-12_15-28-18-783526-planner-claude-connector-source-diagnosis.md).
+
+Latest orchestrator diagnosis: [record](history/2026-11-12_15-28-18-784529-orchestrator-claude-live-diagnosis-and-profile-explanation.md).
+
+## November12 — why tool loading can be slow
+
+Source inspection confirms three avoidable costs in tools/list: gateway list_tools awaits each server catalog sequentially; Runner.catalog re-requests upstream tools/list rather than using cached_catalog; each exported tool calls Runner.alias, which rewrites and synchronizes the full aliases file and containing directory even for existing mappings. collect gives its response wait a ten-second overall deadline per server (preflight/start can add further wait), so multiple slow servers can accumulate. This establishes a latency-prone code path, not measured attribution of the user's live connection closure. No source/timeout/catalog/auth behavior changed. Next: measure per-server collection and alias persistence using disposable fixtures, then review a bounded repair. Live client failure remains unresolved.
+
+[Source inspection record](history/2026-11-12_15-34-40-718087-orchestrator-connector-catalog-latency-source-findings.md).
+
+## November12 — parallel loading and server-first follow-up
+
+User asks whether tool loading can run in parallel or instead return permitted servers first and list tools only for selected server IDs. Read-only Researcher confirms both HTTP GET /api/v1/tools and native MCP tools/list serially acquire live catalogs; native export persists aliases per tool. Parallel collection and grouped alias writes preserve the existing catalog while reducing avoidable waiting. Existing fetch__list_tools already filters by server_id. Server-first remains a product proposal: standard MCP tools/list returns callable Tool definitions, so schemas inside a discovery result do not automatically register tools. Invocation needs either a fixed generic caller (changes host per-tool display/approval) or connection-local selected catalogs plus client refresh (Claude documents list_changed; Codex compatibility unproven). Ordinary catalog-only server discovery must not require existing fetch__get_servers management authority. No new routes/tools/cache/default/permissions selected or implemented. Actual Claude tools-fetch failure cause still unmeasured.
+
+Sources: [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), [Claude dynamic updates](https://code.claude.com/docs/en/mcp#dynamic-tool-updates), [Claude tool search](https://code.claude.com/docs/en/mcp#configure-tool-search). The schema-registration limitation is an inference from specified discovery/call flow; client runtime behavior still needs evidence.
+
+[Research pass](history/2026-11-12_15-38-13-500453-researcher-server-first-tool-discovery-followup.md).
+
+## November12 — server first protocol correction
+
+Read-only Researcher verified modern specification prohibition, legacy distinction, modern subscriptions and generic raw-call/continuation path. Root corrected recommendation and user accepted fixed three-tool flow. See [contract](../docs/architecture/server-first-tools.md) and [pass](history/2026-11-12_15-47-07-742394-researcher-server-first-protocol-correction.md). Source implementation/tests under way; no runtime success claimed.
+
+## November12 — server first tools plan
+
+Read-only Planner bounded fixed catalog, safe repository inventory, explicit MCP server filters, direct raw generic dispatch, continuation field retention, parallel collection, transactional aliases and focused acceptance. Ownership split into nonoverlapping source hunks; tests owned independently. See [contract](../docs/architecture/server-first-tools.md) and [pass](history/2026-11-12_15-47-07-743022-planner-server-first-tools-plan.md). Source implementation/tests under way; no runtime success claimed.
+
+## Server-first performance source pass
+
+Performance coder implemented up to8 concurrent selected catalog acquisitions with futures_util buffered, preserving request order, missing IDs, permissions, partial status, raw definitions and live-read semantics. Runner::aliases batch stages a cloned map, assigns ordered mappings, persists once only if changed, then commits. Single alias/tool_definitions delegate to it. Narrow edits inspected in src/api/runtime.rs::list_tools, src/runner/mod.rs alias methods and src/runner/catalog.rs. Concurrent Off/metadata-admission guards preserved. Scoped whitespace checks pass; no Cargo or runtime tests by coder. [Pass](history/2026-11-12_15-48-24-804563-coder-selected-catalog-performance.md).
+
+## Server-first fixed MCP source pass
+
+Fixed-flow coder implemented permitted Fetch-owned catalog helpers, safe local installed inventory, complete startup server names/IDs in legacy initialize.instructions and modern DiscoverResult.instructions, and explicit model guidance repeated in the list-server tool description. MCP selected tool listing rejects omitted/empty IDs; direct HTTP defaults are retained. Generic call dispatch runs before the management text wrapper, checks original target permissions/usability, forwards raw inner arguments and retains outer continuation/meta fields through existing Runner/adapt_result. Existing management tools remain scoped; no connection-local catalog state or new route/header/auth behavior. Root inspected actual source. No new runtime checks yet; independent fixture authoring and source review are in progress. [Pass](history/2026-11-12_15-49-23-897444-coder-fixed-server-first-mcp.md).
+
+## server first focused verification
+
+Tester added4 isolated gateway/API/alias cases and migrated existing fixtures to server-list/selected-list/generic-call. Added1modernstdio/verifiedHTTPS case for the protocol observed in user screenshot. Root initial4run caught an empty403body parsing assumption; corrected fixture while retaining actual403/no-dispatch assertions. Final API run now18passed:13localMVP,1rawJSON,4newserverfirst. Earlier migrated connector13passed; final modern/diagnostic connector additions pending. [Pass](history/2026-11-12_15-58-24-890208-tester-server-first-focused-verification.md).
+
+## server first preliminary source review
+
+Independent source Evaluator found no material blockers in fixedcatalog/startupinventory, raw generic dispatch/continuations, permissions, parallel ordering or transactional alias persistence. Reviewed actual4newfixtures; final ACCEPT awaits actual final test/build evidence. [Pass](history/2026-11-12_15-58-24-893804-evaluator-server-first-preliminary-source-review.md).
+
+## connector null error reproducer
+
+User provided exact otherconnection/endedrequest error. Planner source reproducer: idless roots/list_changed notification gets backend400JSONRPC id:null -32601 unsupported; connector mistakes null for a foreign active ID. This is a reproducible explanation of the misleading message, not proof the live Claude request was that notification. Minimal correction retains actualcode/message/details/context and strict nonnull ownership, without inventingIDs or silently adding notification support. [Pass](history/2026-11-12_15-58-24-894427-planner-connector-null-error-reproducer.md).
+
+## Connector backend error reporting
+
+Coder changed only src/connector/mod.rs so backend JSON-RPC error responses with null/absent IDs retain their actual code/message/details and available HTTP status/originating method. Both JSON and SSE paths classify before response correlation; receive has a defensive context-free check. Existing sanitization protects saved credential values. Unknown non-null IDs still fail strict ownership checks. No new notification support, invented response IDs, suppressed errors or replay. Independent read-only reviewer found no source blockers. Regression fixtures and signed build underway. [Pass](history/2026-11-12_16-00-02-282499-coder-connector-uncorrelated-error-details.md).
+
+## server first final modern and diagnostics
+
+Added2targeted diagnostic regressions after the1modern stdio case; final connector suite16passed. API/MVP/raw/new suite18passed. Total34focused checks. No real client/native/Keychain tests. [Pass](history/2026-11-12_16-04-59-522658-tester-server-first-final-modern-and-diagnostics.md); [evidence](server-first-tools/evidence.md).
+
+## server first final accept
+
+Independent Evaluator inspected source, actual34test results and signed build evidence; explicit ACCEPT. Fixed catalog, selected parallel acquisition, raw generic dispatch, continuation bindings and transactional aliases match selected contract. Null error diagnostics preserve actual refusal; unsupported notification remains unsupported. [Pass](history/2026-11-12_16-04-59-523014-evaluator-server-first-final-accept.md); [evidence](server-first-tools/evidence.md).
+
+## server first signed manual handoff
+
+Integrated accepted fixed3flow, complete permitted startup IDs, model guidance and selected-server optimizations.34focused checks pass. Signed development build-only15.08seconds and repeated strict verification pass. No Fetch/client relaunch, personal config/credential/trust change, migration, project scope, commit/push or release. Actual user-manual client failure remains unconfirmed until recheck. [Pass](history/2026-11-12_16-04-59-523158-orchestrator-server-first-signed-manual-handoff.md); [evidence](server-first-tools/evidence.md).
+
+## modern subscription transport findings
+
+Read-only Researcher verifies official specification, TypeScript client ack correlation and local maintained rmcp3.8.0 validation. Identifies missed reserved subscription references and mismatched stdio→HTTP cancellation. Crate Apache-2.0, existing dependency reused. User reports slow reconnect and tools fetch connection closed even after server-first build. Read-only sampling of their existing connector shows Runtime::block_on and a stdin read, not runtime shutdown; backend public metadata responds200 in0.003289seconds. The connector later exits. No agent-launched coding client or credential access occurred. The original tool-count attribution remains unproven.
+
+Research identifies two actual source bugs: outgoing subscription listen IDs are rewritten but protocol-owned subscriptionId metadata is not restored, so maintained SDK acknowledgement validation fails; modern stdio cancellations are incorrectly POSTed as notifications to HTTP, where they are rejected, instead of dropping only the matching stream. This provides a concrete possible chain (ack mismatch→timeout→cancel→fatal rejection), not a captured exact Claude trace.
+
+Bounded repair restores only protocol subscription-ID references from this connector's active subscription map and adds separate per-request modern cancellation tokens; existing legacy dispatch receipt/POST, permissions, raw tool payloads, progress tokens and global connector shutdown remain. No new route/auth/policy or speculative runtime shutdown fix. Independent real-rmcp-client fixture precedes implementation; actual installed clients remain manual. [Pass](history/2026-11-12_16-23-52-303652-researcher-modern-subscription-transport-findings.md); [scope](connector-subscriptions/info.md).
+
+## modern subscription bounded fix
+
+Read-only Planner specifies narrow protocol-field mapping before terminalIDremoval and perrequestcancel tokens insertedbefore dispatch. Keepslegacy/global close and strictownership separate; three focused testgroups and no new API/auth/policy/timeouts. Root adds test-only rmcp async-rw feature; Coder waits for red SDK fixture. User reports slow reconnect and tools fetch connection closed even after server-first build. Read-only sampling of their existing connector shows Runtime::block_on and a stdin read, not runtime shutdown; backend public metadata responds200 in0.003289seconds. The connector later exits. No agent-launched coding client or credential access occurred. The original tool-count attribution remains unproven.
+
+Research identifies two actual source bugs: outgoing subscription listen IDs are rewritten but protocol-owned subscriptionId metadata is not restored, so maintained SDK acknowledgement validation fails; modern stdio cancellations are incorrectly POSTed as notifications to HTTP, where they are rejected, instead of dropping only the matching stream. This provides a concrete possible chain (ack mismatch→timeout→cancel→fatal rejection), not a captured exact Claude trace.
+
+Bounded repair restores only protocol subscription-ID references from this connector's active subscription map and adds separate per-request modern cancellation tokens; existing legacy dispatch receipt/POST, permissions, raw tool payloads, progress tokens and global connector shutdown remain. No new route/auth/policy or speculative runtime shutdown fix. Independent real-rmcp-client fixture precedes implementation; actual installed clients remain manual. [Pass](history/2026-11-12_16-23-52-304710-planner-modern-subscription-bounded-fix.md); [scope](connector-subscriptions/info.md).
+
+## maintained sdk subscription red
+
+Tester added3focused groups: actual official rmcp modern SDK session through productionstdio/pinnedHTTPS; equal original ID7 across two same-profile connectors with isolated cancellation; protocol-field-only metadata translation/raw nested data retention. Root first ran the maintainedSDK target before code change: compiled successfully then failed in3.03seconds with subscription acknowledgement timed out. Owned SDK/connector/fixture cleanup is bounded. No installed clients/personal state used. [Pass](history/2026-11-12_16-28-27-696370-tester-maintained-sdk-subscription-red.md).
+
+## subscription id and owned stream cancellation
+
+Coder changed only src/connector/mod.rs and guide. New per-request cancellation tokens are separate from dispatch receipts/globalclose. Modern stdio cancel closes only matching owned HTTPsend/stream without POST. SubscriptionId references in protocol notification params metadata and registeredsubscription terminalresult metadata restore original client IDs; ACK retains mapping. Strictforeign checks and raw tool/userdata preservation remain. Source inspection/whitespace pass; SDK GREEN and final19checks pending. [Pass](history/2026-11-12_16-28-27-697267-coder-subscription-id-and-owned-stream-cancellation.md).
+
+## Modern subscription SDK GREEN
+
+The maintained rmcp modern SDK regression that timed out3.03seconds before the fix now passes the entire startup/listen/change/genericcall/cancel/list/call sequence in0.03seconds on isolated loopback fixtures. Final connector filter passes all19tests in0.39seconds, including two same-profile connections with original subscriptionID7 and isolated cancellation, nested user-data preservation, legacy immediate cancellation/progress/interactions, raw errors, restart/reconnect and approval-state tests. This measures the fixture, not the user's actual Claude startup. Source/whitespace clean; signed build-only and final independent ACCEPT pending. [Pass](history/2026-11-12_16-30-40-697673-tester-modern-subscription-green.md).
+
+## Connector signed build coordination
+
+The SDK GREEN/.03second and all19connectorchecks pass. Signed build attempt then caught concurrent project-support source mid-edit: storage references unexported crate::projects; root added only the mechanical pub mod projects declaration for the already-authored data registry. No routes or auth were added. Retry exposed manager/project_scope.rs calls to missing Caller::project_id. Root inspected that task's explicit user-authorized-core/route-review-pending notes and sent a build coordination message to the existing Workspace/project task, preserving their source rather than inventing project authority or reverting work. Connector source remains independently clear; final signed build/evaluation pending coherent shared source. [Pass](history/2026-11-12_16-34-18-609410-orchestrator-coordinate-project-build-dependency.md).
+
+## subscription transport final accept
+
+Independent Evaluator verifies RED→GREEN actualSDK evidence, all19integratedchecks, narrow reserved-field/cancel source and final signedbuild; explicit ACCEPT. Does not approve project APIs or claim live clients. [Pass](history/2026-11-12_16-42-56-849849-evaluator-subscription-transport-final-accept.md); [evidence](connector-subscriptions/evidence.md).
+
+## subscription fix signed handoff
+
+Confirmed modern subscription correlation and cancellation defects are fixed. Maintained rmcp SDK reproduces acknowledgement timeout before the fix (3.03seconds), then completes the isolated startup/subscribe/change/call/cancel/list/call sequence in0.03seconds. Final integrated19connectorchecks pass0.30seconds. Signed development build-only22.53seconds, repeated strict signature verification, scoped whitespace and independent Evaluator ACCEPT pass. Actual installed Claude/Codex use remains manual and is not claimed successful yet. Fetch and clients were not relaunched; user should explicitly Quit/reopen Fetch and Reconnect Claude. No personal settings/credentials/trust/services or project API/auth decisions changed.
+
+The build briefly caught concurrent project core changes before their Caller interfaces were complete. Root added only the missing projects data-module declaration; its owning task completed internal Caller wiring and then froze interfaces for the successful build. No unrelated code was reverted and no project route/auth contract was approved by this pass. [Pass](history/2026-11-12_16-42-56-850296-orchestrator-subscription-fix-signed-handoff.md); [evidence](connector-subscriptions/evidence.md).

@@ -145,6 +145,10 @@ impl Scheduler {
         self.changed.notify_waiters();
         Ok(())
     }
+    pub(super) fn idle_for_stop(self:&Arc<Self>)->Result<StopAdmission,RunError>{
+        self.begin_authentication()?;
+        Ok(StopAdmission(self.clone()))
+    }
     pub fn reopen(&self) {
         let mut state = self.state.lock().expect("scheduler lock");
         state.restarting = false;
@@ -233,3 +237,7 @@ mod authentication_tests {
         scheduler.admit(1, CancelToken::new()).await.unwrap().complete();
     }
 }
+
+/// Temporary idle fence; unlike deletion this never removes the server.
+pub(super) struct StopAdmission(Arc<Scheduler>);
+impl Drop for StopAdmission{fn drop(&mut self){self.0.reopen();}}

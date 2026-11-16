@@ -1,0 +1,29 @@
+{
+  "diagnostic_scope": "Exact two Fetch internal item references/permission metadata only; no secret data requested. Interaction disabled/restored in disposable probe process.",
+  "items": [
+    {
+      "purpose": "tls_identity",
+      "approved_application_entries": 6,
+      "contains_signed_fetch_path": true,
+      "prompt_flags": 0,
+      "partition_entries": 21,
+      "all_partitions_are_build_hashes": true,
+      "latest_build_hash_present": false
+    },
+    {
+      "purpose": "app_authorization",
+      "approved_application_entries": 1,
+      "contains_signed_fetch_path": true,
+      "prompt_flags": 0,
+      "partition_entries": 8,
+      "all_partitions_are_build_hashes": true,
+      "latest_build_hash_present": false
+    }
+  ],
+  "unchanged_launcher": {
+    "exit_code": 0,
+    "same_code_hash": true,
+    "same_requirement": true
+  },
+  "runtime_limit": "Fetch exited before running-process identity lookup; no app launched by agent. Same-binary twice user test pending."
+}

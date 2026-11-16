@@ -1,3 +1,36 @@
+## November 13 — approved native conversation and Finder operations
+
+See the complete [approved reader contract](session-reader-reuse.md): native-only GET /api/v1/workspace/sessions?view=conversation and GET /api/v1/workspace/sessions/conversation return official source selection and complete user/assistant/tool messages. Existing raw reads stay unchanged. Separately approved POST /api/v1/workspace/file/reveal accepts file_path and optional folder_path, uses existing native permission/file checks, reveals in Finder without modifying files, and returns status revealed plus next_steps. Implementation and independent checks are in progress.
+
+## November 12 — approved project connections and history
+
+The user explicitly approved [the complete project contract](project-connections.md).
+Native GET/POST /api/v1/projects registers/lists folders; server filtering,
+installation and config assignment reuse the existing APIs. Separate project MCP
+resources bind approvals, refresh, connector profiles and Shared+own visibility.
+GET /api/v1/sessions and GET /api/v1/sessions/{session_id} expose bounded history
+only with separately selected project history permission. Their MCP mappings are
+fetch__list_sessions/fetch__read_session. Workspace instruction/subagent routes
+remain private. Source, focused checks, signed build and independent evaluation pass;
+actual native/client acceptance remains manual. [Evidence](../../milestones/project-connections/evidence.md).
+This approval supersedes the earlier session-MCP deferral only for this bound flow.
+
+## November 12 — approved native Workspace routes
+
+The user explicitly approves the complete [Workspace HTTP contract](workspace.md#approved-native-http-contracts): folder/file discovery and read/save, agent draft conversion/model choice and bounded session reads. Implementation and14focused checks/signed build pass; [evidence](../../milestones/workspace/evidence.md). All routes require Fetch native-window authority; ordinary agent grants are denied. No instruction/subagent MCP tools. User explicitly defers session MCP until project-bound connections exist, so these native routes have no MCP mappings in this slice.
+
+## November 12 — persistent server Off implemented
+
+The existing restart POST now accepts action:stop; omitted action retains explicit start/restart. Stop is idle-only and durable, with normalized config.enabled in server reads. HTTP/MCP authority and next_steps conventions remain. [Complete selected contract and acceptance](server-on-off.md). Thirty focused checks, signed build and independent review pass; live user acceptance remains separate.
+
+## November 12 — selected persistent server Off
+
+The existing POST /api/v1/servers/{server_id}/restart adds action:stop; omission keeps current start/restart behavior. User selects durable Off, existing management permission, preserved files/logins and busy rejection. [Complete selected contract](server-on-off.md). Implementation is next; do not claim a live stop API yet.
+
+## November 12 — connector approval operations
+
+User go-ahead selects the native popup connector. POST /api/v1/connections/requests, POST /api/v1/connections/requests/{id}/claim, native-only GET /api/v1/connections/requests and native-only POST /api/v1/connections/requests/{id}/decision are implemented as described in [the connector contract](local-mcp-connector.md). Starting setup grants nothing; proof claim follows explicit scope selection and fresh Mac confirmation. Existing OAuth refresh/revoke remains common. Source/fixture results do not prove native/client acceptance; manual testing remains pending.
+
 ## November 4 — Figma Remote import eligibility
 
 The user selected the official HTTPS mcp.figma.com/mcp endpoint as unsupported for fresh import/install (including the already admitted trailing slash). Existing discovery responses use status unsupported, selected_by_default false and error.message explaining Figma's app-approval restriction. The native install screen renders that row reason and disables selection. Shared capture rejects unsupported source/direct submissions using existing failure behavior; no route, fields or permissions are added. The local desktop endpoint and already saved runtime records remain unchanged. Implementation is tracked in milestones/figma-remote-unsupported/.
@@ -1223,3 +1256,11 @@ last_verified_at without side effects. Config edits execution only. Open-folder 
 native-only, empty request and actual recorded state directory. DELETE removes
 registration while preserving all native/legacy/package/grant state. Fetch's own
 OAuth/TLS/raw-MCP contracts remain. These supersede older conflicting rows above.
+
+## November 12 — native startup status display
+
+The existing GET /api/v1/servers runtime.status=starting covers actual automatic startup renewal/connection work before runner connection completes. GET still only reads state. Native clients apply returned named status records/auth success values immediately and keep the existing one-second reads active while starting, including collapsed cards. No new route, field, permission or event stream is introduced. Runtime readiness still does not establish provider-account authentication.
+
+## November12 — server-first tools selected
+
+User approves fixed server-first discovery, selected-server parallel tool listing, forwarding calls, model instructions and complete permitted server IDs at startup. After a standards correction, user accepts the three-tool generic caller and its client-approval display difference. Connection-specific dynamic catalog expansion is superseded; no new HTTP route/auth/connection scope is selected. [Complete selected contract](server-first-tools.md). Implementation underway; real client failure/acceptance remains unresolved.

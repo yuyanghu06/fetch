@@ -104,7 +104,7 @@ impl Backend for MemoryBackend {
         self.0.lock().map_err(|_|GrantError::StorageUnavailable)?.insert((service.to_owned(),account.to_owned()),Zeroizing::new(value.to_vec()));Ok(())
     }
 }
-struct NativeKeychain;
+pub(crate) struct NativeKeychain;
 impl Backend for NativeKeychain {
     fn read(&self,service:&str,account:&str)->Result<Option<Zeroizing<Vec<u8>>>,GrantError>{
         #[cfg(target_os="macos")]

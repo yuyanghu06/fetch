@@ -14,11 +14,17 @@ async fn console_switch_collapse_and_page_changes_keep_screen_session_and_output
     let (_directory,mut desktop)=ready().await;
     let model=desktop.terminals["github"].terminal.as_ref().unwrap().id;
     drop(desktop.update_terminal(Message::Console("github".into())));
-    desktop.expanded_servers.clear();desktop.page=Page::Settings;
+    drop(desktop.update(AppMessage::ToggleServer("github".into())));
+    assert!(!desktop.expanded_servers.contains("github"));desktop.page=Page::Settings;
     let bytes=b"fixture received while console is hidden\r\n";
     drop(desktop.update_terminal(Message::Output("github".into(),"terminal-fixture".into(),0,Ok(output(bytes,bytes.len() as u64)))));
     assert_eq!(desktop.terminals["github"].cursor,bytes.len() as u64);
     assert!(desktop.terminals["github"].pane==Pane::Console);
+    drop(desktop.update(AppMessage::ToggleServer("github".into())));
+    assert!(desktop.expanded_servers.contains("github"));
+    assert!(desktop.terminals["github"].pane==Pane::Console);
+    assert_eq!(desktop.terminals["github"].session.as_deref(),Some("terminal-fixture"));
+    assert_eq!(desktop.terminals["github"].terminal.as_ref().unwrap().id,model);
     drop(desktop.update_terminal(Message::Open("github".into())));
     assert!(desktop.terminals["github"].pane==Pane::Terminal);assert!(!desktop.terminals["github"].opening);
     assert_eq!(desktop.terminals["github"].terminal.as_ref().unwrap().id,model);
@@ -167,10 +173,13 @@ async fn terminal_selection_stops_after_mouse_release_outside_the_pane() {
     fixture.event(Mouse::ButtonPressed(Button::Left),Point::new(50.0,100.0));
     fixture.event(Mouse::CursorMoved{position:Point::new(160.0,100.0)},Point::new(160.0,100.0));
     let selected=fixture.pixels();assert_ne!(selected,initial,"deliberate drag must still visibly select text");
+    let copied=fixture.terminal.selected_text();
+    assert!(!copied.is_empty()&&"fixture selectable text remains readable".contains(&copied),"the shared Copy control gets the terminal's existing selected text");
     fixture.event(Mouse::ButtonReleased(Button::Left),Point::new(600.0,300.0));
     let (commands,_)=fixture.event(Mouse::CursorMoved{position:Point::new(220.0,120.0)},Point::new(220.0,120.0));
     assert!(!commands.iter().any(|command|matches!(command,iced_term::BackendCommand::SelectUpdate(_))),"moving back into the terminal after release must not extend gray selection");
     assert_eq!(fixture.pixels(),selected,"released selection must stay bounded when the mouse moves without a pressed button");
+    assert_eq!(fixture.terminal.selected_text(),copied);
 }
 
 #[tokio::test]

@@ -1,3 +1,17 @@
+[Project connections](project-connections.md) is the approved implemented registry/server-scope/resource/grant/session-tool contract. Focused tests, signed build and independent review pass; actual client/native acceptance remains manual. Workspace file APIs remain private.
+
+[Workspace](workspace.md) is implemented for native Fetch: file APIs, converted agents and bounded read-only sessions;14focused checks/signed build pass and independent review ACCEPT. [Evidence](../../milestones/workspace/evidence.md). User defers session MCP until project connections.
+
+[Workspace](workspace.md) records selected global/project files, native-only editing, converted agents and bounded read-only session access. Implementation authorized; exact new route/project authority contracts pending.
+
+server-on-off.md records the selected persistent server toggle/restart-POST extension, with a clear distinction between saved preference and actual runtime. Implementation/fixture acceptance remains in its milestone.
+
+The native connector in local-mcp-connector.md is implemented/fixture-reviewed and signed-built. Its real client/native acceptance is explicitly pending manual user testing; historical proposal text does not override that current status.
+
+[local-mcp-connector.md](local-mcp-connector.md) separates connector transport work from the unresolved browser/native connection-approval decision. Preserve raw MCP data and existing grant authority.
+
+[Project-scoped server proposal](project-scoped-servers.md) contains current source findings, client documentation and the suggested first version. Keep it distinct from approved contracts; no project support is implemented by this research.
+
 November 4: client-identity-adoption.md records the Figma registration403 diagnosis using staff statements, current public metadata and pinned rmcp/source inspection. Likely Fetch approval restriction; no callback mismatch found in source, no live registration or code change.
 
 November 4 discovery correction: the current API contract and decisions require selected `.codex` reads to stay at its own config.toml; the old parent expansion is superseded.
@@ -124,3 +138,5 @@ of the user's original installation or approval to import existing credentials.
 The November 4 Codex environment reuse decision is recorded in decisions.md and railway-codex-startup-research.md. It replaces environment assembly only and preserves Fetch account/helper folders and service credential ownership.
 
 native-server-storage.md records the proposed normal HOME inheritance change and shared-login consequence; current per-server HOME behavior remains until user choice.
+
+[Server-first tools](server-first-tools.md): selected fixed discovery/call helpers, complete startup inventory and selected-server optimizations; implementation underway.

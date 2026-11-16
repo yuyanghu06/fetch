@@ -1,0 +1,10 @@
+# Accept bounded navigation rendering fix
+
+- Local timestamp / acting role / milestone: 2026-11-09T17:22:31.792533-05:00 / Evaluator and Orchestrator (primary agent, not independent) / navbar-latency.
+- Requested scope: fix native navbar delay directly while preserving appearance and existing work.
+- Starting repository state: implementation, six focused actual-widget/render checks, comparisons, binary build and signed development build pass; app still runs previous code.
+- Work performed / changed files: directly reviewed final source diff and saved evidence, confirmed cache boundedness and immutable decorative-only content, per-widget renderer allocation, geometry/display-scale cache keys, retained shadow filter values, clipping and foreground drawing order. Confirmed Page handler/API behavior untouched. Refreshed project context/notes and milestone records. No specialists used.
+- Decisions: ACCEPT the bounded source/render/build change. Appearance comparison and observed fixture speedup support this fix; do not claim exact native/Figma pixel equality or live-window timing. Existing unrelated NOTES.md whitespace warning remains preserved.
+- Checks and evidence: 4 focused neumorphic tests and 2 fidelity tests PASS. Final page-switch fixture 16–74ms first visits, 10–20ms returns, versus 492–1406ms before. Revisited page pixels match first visit exactly. Visually inspected Servers screenshot and before/after pixel data. Native build PASS; signed launcher --build-only PASS; separate codesign --verify --strict target/debug/fetch-development PASS. Changed source/milestone whitespace checks PASS.
+- Resulting state / acceptance: completed scoped fix and signed executable ready at target/debug/fetch-development. Existing running Fetch process retained; no launches, provider/MCP/account/credential/client-setting changes, commits/pushes or release work.
+- Remaining work and handoff: user explicitly Quits Fetch, then runs ./scripts/run-development.sh to load the new build and confirm the live-window result. Other pending Figma implementation and unrelated milestones remain unchanged.

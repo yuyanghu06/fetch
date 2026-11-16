@@ -3,6 +3,7 @@ use super::*;
 use crate::{api::AppState, credentials::{CredentialError, KeyProvider}, discovery::DiscoveryService, storage::ServerRepository};
 use axum::body::{Body, to_bytes};
 use tower::ServiceExt;
+use std::os::unix::fs::PermissionsExt;
 
 const ORIGIN: &str = "https://localhost:53672";
 
@@ -27,10 +28,22 @@ fn hidden(html: &str, name: &str) -> String {
 
 #[tokio::test]
 async fn browser_approval_preserves_its_origin_and_exchanges_the_approved_code() {
+    browser_approval_flow(false).await;
+}
+#[tokio::test]
+async fn browser_project_approval_rejects_code_retargeting_and_returns_project_history_access() {
+    browser_approval_flow(true).await;
+}
+async fn browser_approval_flow(project_bound:bool) {
     let directory = tempfile::tempdir().unwrap();
+    std::fs::set_permissions(directory.path(),std::fs::Permissions::from_mode(0o700)).unwrap();
     let root = directory.path().to_owned();
     let credentials = Arc::new(CredentialStore::new(root.clone(), Arc::new(FixtureKeys)));
     let service = OAuthService::open(ORIGIN.into(), root.clone(), credentials, NativeAuthority::fixture()).unwrap();
+    let project=if project_bound {
+        let folder=root.join("project-folder");std::fs::create_dir_all(&folder).unwrap();
+        Some(service.projects.register(folder.to_str().unwrap(),Some("Disposable project")).unwrap().0)
+    }else{None};
     let mut state = AppState::new(ORIGIN.into(), ServerRepository::new(root.clone()), DiscoveryService::new(root.join("unused-home"), None), service.clone()).unwrap();
     state.oauth = Some(service.clone());
     let app = crate::api::router(Arc::new(state));
@@ -43,11 +56,12 @@ async fn browser_approval_preserves_its_origin_and_exchanges_the_approved_code()
     let client = registered["client_id"].as_str().unwrap();
     let verifier = "v".repeat(64);
     let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
-    let resource = format!("{ORIGIN}/mcp");
+    let resource = service.resource_for_project(project.as_ref().map(|project|project.id.as_str())).unwrap();
+    let scope=if project_bound {"fetch:sessions:read"}else{"fetch:catalog"};
     let query = url::form_urlencoded::Serializer::new(String::new()).extend_pairs([
         ("response_type", "code"), ("client_id", client), ("redirect_uri", redirect),
         ("code_challenge", &challenge), ("code_challenge_method", "S256"),
-        ("resource", &resource), ("scope", "fetch:catalog"), ("state", "fixture-state"),
+        ("resource", &resource), ("scope", scope), ("state", "fixture-state"),
     ]).finish();
     let response = app.clone().oneshot(request("GET", &format!("/oauth/authorize?{query}")).body(Body::empty()).unwrap()).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
@@ -59,9 +73,14 @@ async fn browser_approval_preserves_its_origin_and_exchanges_the_approved_code()
     assert_eq!(form_action, "form-action 'self' http://localhost:45678");
     let cookie = response.headers()[header::SET_COOKIE].to_str().unwrap().split(';').next().unwrap().to_owned();
     let html = document(response).await;
+    if let Some(project)=&project {
+        assert!(html.contains(&project.name));assert!(html.contains(&project.folder_path.to_string_lossy().to_string()));
+        assert!(html.contains("value=\"fetch:sessions:read\">"),"Session history must be explicitly selected by the person approving access.");
+        assert!(!html.contains("value=\"fetch:sessions:read\" checked"));
+    }
     let form = url::form_urlencoded::Serializer::new(String::new()).extend_pairs([
         ("request_id", hidden(&html, "request_id")), ("csrf", hidden(&html, "csrf")),
-        ("decision", "allow".into()), ("scope", "fetch:catalog".into()),
+        ("decision", "allow".into()), ("scope", scope.into()),
     ]).finish();
     for origin in ["null", "https://other.example"] {
         let response = app.clone().oneshot(request("POST", "/oauth/authorize")
@@ -79,6 +98,16 @@ async fn browser_approval_preserves_its_origin_and_exchanges_the_approved_code()
     let callback = Url::parse(response.headers()[header::LOCATION].to_str().unwrap()).unwrap();
     let params: BTreeMap<_,_> = callback.query_pairs().into_owned().collect();
     assert_eq!(params["state"], "fixture-state");
+    if project_bound {
+        let wrong_resource=format!("{ORIGIN}/mcp");
+        let wrong_form=url::form_urlencoded::Serializer::new(String::new()).extend_pairs([
+            ("grant_type","authorization_code"),("client_id",client),("code",params["code"].as_str()),
+            ("redirect_uri",redirect),("code_verifier",verifier.as_str()),("resource",wrong_resource.as_str()),
+        ]).finish();
+        let response=app.clone().oneshot(request("POST","/oauth/token").header(header::CONTENT_TYPE,"application/x-www-form-urlencoded").body(Body::from(wrong_form)).unwrap()).await.unwrap();
+        assert_eq!(response.status(),StatusCode::BAD_REQUEST);
+        assert!(document(response).await.contains("invalid_grant"));
+    }
     let form = url::form_urlencoded::Serializer::new(String::new()).extend_pairs([
         ("grant_type", "authorization_code"), ("client_id", client), ("code", &params["code"]),
         ("redirect_uri", redirect), ("code_verifier", &verifier), ("resource", &resource),
@@ -90,5 +119,8 @@ async fn browser_approval_preserves_its_origin_and_exchanges_the_approved_code()
     let token: Value = serde_json::from_str(&document(response).await).unwrap();
     let mut headers = HeaderMap::new();
     headers.insert(header::AUTHORIZATION, format!("Bearer {}", token["access_token"].as_str().unwrap()).parse().unwrap());
-    assert!(service.authorize(&headers).unwrap().has_scope("fetch:catalog"));
+    let caller=service.authorize(&headers).unwrap();
+    assert!(caller.has_scope(scope));
+    assert_eq!(caller.resource(),Some(resource.as_str()));
+    assert_eq!(caller.project_id(),project.as_ref().map(|project|project.id.as_str()));
 }

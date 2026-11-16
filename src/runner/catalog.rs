@@ -105,6 +105,25 @@ pub struct Aliases {
 impl Aliases {
     pub fn assign(&mut self,server:&str,original:&str)->Result<String,RunError> {
         if let Some((alias,_))=self.by_alias.iter().find(|(_,target)|target.0==server&&target.1==original) { return Ok(alias.clone()); }
+        self.assign_new(server,original)
+    }
+    /// Return aliases in input order, retaining existing mappings and reporting
+    /// whether this batch inserted anything. Persistence belongs to the Runner.
+    pub fn assign_batch(&mut self,targets:&[(String,String)])->Result<(Vec<String>,bool),RunError>{
+        let before=self.by_alias.len();
+        let mut by_target=BTreeMap::new();
+        for (alias,target) in &self.by_alias{by_target.entry(target.clone()).or_insert_with(||alias.clone());}
+        let mut result=Vec::with_capacity(targets.len());
+        for (server,original) in targets{
+            let target=(server.clone(),original.clone());
+            let alias=if let Some(alias)=by_target.get(&target){alias.clone()}else{
+                let alias=self.assign_new(server,original)?;by_target.insert(target,alias.clone());alias
+            };
+            result.push(alias);
+        }
+        Ok((result,self.by_alias.len()!=before))
+    }
+    fn assign_new(&mut self,server:&str,original:&str)->Result<String,RunError>{
         let server_hash=format!("{:x}",Sha256::digest(server.as_bytes()));
         let part=if !original.is_empty()&&original.len()<=88&&original.bytes().all(|b|b.is_ascii_alphanumeric()||b==b'_'||b==b'-') { original.to_owned() }
             else { format!("t_{:x}",Sha256::digest(original.as_bytes())) };

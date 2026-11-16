@@ -24,6 +24,7 @@ app_dir="$staging_dir/Fetch.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$fetch_binary" "$app_dir/Contents/MacOS/fetch"
 cp "$repo_dir/packaging/Info.plist" "$app_dir/Contents/Info.plist"
+cp "$repo_dir/packaging/Fetch.icns" "$app_dir/Contents/Resources/Fetch.icns"
 cp "$repo_dir/LICENSE" "$repo_dir/THIRD_PARTY_NOTICES.md" "$app_dir/Contents/Resources/"
 cp "$repo_dir/docs/testing/HANDOFF.md" "$app_dir/Contents/Resources/TESTING-HANDOFF.md"
 if [ -n "${FETCH_SIGNING_IDENTITY:-}" ]; then

@@ -1,3 +1,23 @@
+## November 13 — Workspace editor and gesture follow-up
+
+workspace-editor-gestures/ records shared scroll ownership, editor undo/Copy/Save, automatic folder registration, clean/full session rendering, popup clearance and staggered server entry. It includes focused source-real screenshots/logs plus the read-only missing-global-role finding.
+
+[Workspace circular app choices](workspace-logo-controls/info.md) records the compact header, shared raised/inset logo selectors and one app choice across all Workspace sections, with direct widget/build evidence.
+
+workspace/ records the native Workspace feature, its approved private API plan, independent acceptance and source/fixture/build evidence. Session MCP is separately deferred by user choice.
+
+[Persistent server on/off](server-on-off/info.md) records the implemented existing-POST stop extension, durable preference, shared native toggle, 30 checks, signed build and independent acceptance, with live user handoff limits.
+
+[Inline app authentication and recessed Connect](connect-inline-auth/info.md) records the requested inline keys, footer removal, dismissible rounded popups and shared recessed panel, with direct UI/build evidence.
+
+[Local MCP connector](local-mcp-connector/info.md) now has accepted source/fixture implementation and signed build, with actual native/client acceptance deferred by user to manual testing. [Evidence](local-mcp-connector/evidence.md) distinguishes all outcomes.
+
+[Shared button behavior](shared-button-behavior/info.md) records common native refresh/text actions, 78 UI checks, signed build and the pending live Quit/reopen observation.
+
+[Local MCP connector](local-mcp-connector/info.md) tracks the scoped command/HTTPS bridge, approval decision, raw forwarding and isolated client acceptance. It excludes project-scoped support and release work.
+
+[Project-scoped servers](project-scoped-servers/info.md) tracks a researched November 12 recommendation, awaiting behavior/contract decisions. No implementation or runtime acceptance is claimed.
+
 [Neumorphic fidelity](neumorphic-fidelity/info.md) supersedes the user's rejected glossy approximation with actual Figma fills/shadow layers, equal-size comparisons and corrected native rendering.
 
 [Neumorphic development sync](neumorphic-dev-sync/info.md) tracks the approved native Figma port, independent window-free interaction/render checks, compilation and the local signing setup still needed before launch.
@@ -171,3 +191,9 @@ the cleanup finding/fix, independent checks and remaining Google-runtime limits.
 `codex-startup-environment/` records the bounded adaptation of official Codex process environment code, its protected Fetch overrides and independent acceptance evidence.
 
 normal-system-home/ tracks the user-reported Keychain startup-context fix, shared-login choice, safe fixture plan and eventual verification.
+
+server-first-tools/ records accepted fixed discovery/call behavior, full startup inventory, selected-server optimizations and focused evidence; actual client acceptance remains manual.
+
+connector-subscriptions/ records maintainedSDK RED/GREEN, reserved subscriptionID restoration, ownedmodernstream cancellation,19checks, signedbuild and manualretry limits.
+
+[Workspace session and rendering fixes](workspace-session-error/info.md) tracks the November16 missing-rollout repair and requested file/session presentation changes.

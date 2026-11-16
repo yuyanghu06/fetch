@@ -31,6 +31,8 @@ pub struct AppState {
     pub native: Option<Arc<crate::native_auth::NativeAuthority>>,
     pub oauth: Option<Arc<crate::oauth::OAuthService>>,
     pub gateway: Option<Arc<crate::mcp::McpGateway>>,
+    pub workspace: Option<Arc<crate::workspace::WorkspaceService>>,
+    pub projects: Option<Arc<crate::projects::ProjectRegistry>>,
 }
 
 impl AppState {
@@ -52,12 +54,15 @@ impl AppState {
         {
             return Err("Fetch requires an explicit HTTPS localhost origin and port");
         }
+        let readers_root=repository.root().join("session-readers");
         Ok(Self {
             origin: origin.trim_end_matches('/').to_owned(),
+            projects: Some(Arc::new(crate::projects::ProjectRegistry::new(repository.root().to_path_buf()))),
             repository,
             discovery,
             authority,
             manager: None, native: None, oauth: None, gateway: None,
+            workspace: crate::workspace::WorkspaceService::from_environment().ok().map(|service|Arc::new(service.with_readers_root(readers_root))),
         })
     }
 }
@@ -65,6 +70,7 @@ impl AppState {
 pub fn router(state: Arc<AppState>) -> Router {
     let mut routes = Router::new()
         .route("/.well-known/oauth-protected-resource/mcp", get(resource_metadata))
+        .route("/.well-known/oauth-protected-resource/mcp/projects/{project_id}", get(project_resource_metadata))
         .route("/api/v1/servers", get(servers))
         .route("/api/v1/servers/{server_id}", axum::routing::delete(v1::servers::server_id::delete::handler))
         .route("/api/v1/setup/discovery", get(setup::discovery))
@@ -79,6 +85,9 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/v1/servers/{server_id}/tools/{tool_name}/call", axum::routing::post(runtime::call))
         .route("/api/v1/tools", get(runtime::tools))
         .route("/oauth/provider/callback", get(runtime::provider_callback))
+        .merge(v1::workspace::router())
+        .merge(v1::projects::router())
+        .merge(v1::sessions::router())
         .with_state(state.clone());
     if let Some(oauth) = &state.oauth { routes = routes.merge(crate::oauth::router(oauth.clone())); }
     else { routes = routes.route("/.well-known/oauth-authorization-server", get(authorization_metadata)); }
@@ -151,6 +160,15 @@ async fn resource_metadata(State(state): State<Arc<AppState>>) -> Json<Value> {
     Json(
         json!({"resource": format!("{}/mcp", state.origin), "authorization_servers": [state.origin], "scopes_supported": ["fetch:catalog", "fetch:tools:call", "fetch:content:read", "fetch:manage"], "bearer_methods_supported": ["header"]}),
     )
+}
+
+async fn project_resource_metadata(State(state):State<Arc<AppState>>,axum::extract::Path(id):axum::extract::Path<String>)->Response{
+    let Some(registry)=&state.projects else{return application_error(StatusCode::SERVICE_UNAVAILABLE,"PROJECT_STORAGE_UNAVAILABLE","Project records are unavailable.",None);};
+    match registry.get(&id){
+        Ok(Some(_))=>Json(json!({"resource":format!("{}/mcp/projects/{id}",state.origin),"authorization_servers":[state.origin],"scopes_supported":["fetch:catalog","fetch:tools:call","fetch:content:read","fetch:manage","fetch:sessions:read"],"bearer_methods_supported":["header"]})).into_response(),
+        Ok(None)=>application_error(StatusCode::NOT_FOUND,"PROJECT_NOT_FOUND","The project was not found.",None),
+        Err(error)=>(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response(),
+    }
 }
 
 async fn authorization_metadata() -> Response {
@@ -237,7 +255,7 @@ pub(super) async fn empty_body(request: Request) -> Result<HeaderMap, ()> {
 }
 
 async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Response {
-    let caller = match authorize_management(&state, request.headers(), Some("servers")) {
+    let mut caller = match authorize_management(&state, request.headers(), Some("servers")) {
         Ok(caller) => caller, Err(reply) => return *reply,
     };
     let query = request.uri().query().unwrap_or("").to_owned();
@@ -252,6 +270,7 @@ async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Respon
     let mut ids = Vec::new();
     let mut id_count = 0;
     let mut restart = None;
+    let mut project_id = None;
     let query = match parse_query(&query) {
         Ok(query) => query,
         Err(()) => {
@@ -272,6 +291,7 @@ async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Respon
                 }
             }
             "restart_id" if restart.is_none() && !value.trim().is_empty() => restart = Some(value),
+            "project_id" if project_id.is_none() && !value.is_empty() && caller.is_native_settings() => project_id=Some(value),
             _ => {
                 return application_error(
                     StatusCode::BAD_REQUEST,
@@ -281,6 +301,13 @@ async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Respon
                 );
             }
         }
+    }
+    if let Some(id)=project_id{
+        let selected=if id=="global"{None}else{
+            let Some(registry)=&state.projects else{return application_error(StatusCode::SERVICE_UNAVAILABLE,"PROJECT_STORAGE_UNAVAILABLE","Project records are unavailable.",None);};
+            match registry.get(&id){Ok(Some(_))=>Some(id.as_str()),Ok(None)=>return application_error(StatusCode::NOT_FOUND,"PROJECT_NOT_FOUND","The project was not found.",None),Err(error)=>return (StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
+        };
+        caller=match crate::projects::visible_server_ids(&state.repository,selected){Ok(ids)=>caller.restrict_visibility(ids),Err(error)=>return (StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()};
     }
     if restart.is_some() && id_count != 1 {
         return application_error(
@@ -310,7 +337,7 @@ async fn servers(State(state): State<Arc<AppState>>, request: Request) -> Respon
     })
     .await
     {
-        Ok(Ok(records)) => records,
+        Ok(Ok(records)) => records.into_iter().filter(|record|record["server_id"].as_str().is_some_and(|id|caller.permits("fetch:manage",id,None))).collect::<Vec<_>>(),
         _ => {
             return application_error(
                 StatusCode::INTERNAL_SERVER_ERROR,

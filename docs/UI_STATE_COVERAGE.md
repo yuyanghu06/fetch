@@ -1,3 +1,197 @@
+## November 16 — Escape keyboard flows
+
+[Focused keyboard evidence](../milestones/workspace-session-error/escape-evidence/info.md) covers a genuinely focused dirty agent editor, session/cache, no-popup state and layered pending approval/install. Tests deliver real widget events then the exact production subscription mapper with actual Shell status; Captured routing is checked explicitly. Two cases pass1.79s; Close state retention and zero-backend dismissal tasks pass. No new visual layout; native physical keyboard observation remains after Quit/reopen.
+
+## November 16 — measured default/light code/combined Copy
+
+[Final evidence](../milestones/workspace-session-error/window-markdown-evidence/info.md) includes1058x789default Servers and session views,760x520inline code and scrolled fence tail. Inline14pxbody/light highlight, literal shared13pxfenced/tool renderer, intact bold/list/quotes, long-line wrap and exact name+blankline+raw result Copy pass.21unique focused cases pass; pixel fixtures use actual dimensions and3observed hover comparisons settle entrance animation before comparison. No native app relaunch/personal history acceptance claimed.
+
+## November 16 — compact paths and gray tool follow-up
+
+[Final follow-up evidence](../milestones/workspace-session-error/compact-followup-evidence/info.md) covers gray tool cards, code-box names with visible separate arrows, readable JSON with a long unbroken value wrapping at760px, exact raw Copy, and shared compact instruction/subagent code paths with14px bare blue Copy/44px single-line height and adjacent Finder.12Workspace cases plus final affected tool rerun pass; normal/minimum captures inspected. Native personal/Finder use remains unobserved.
+
+## November 16 — Workspace file/session corrections
+
+[Focused evidence](../milestones/workspace-session-error/evidence/info.md) includes normal/minimum code paths with Copy/adjacent Finder, blue subagent names, shared monospace file-content previews, rendered session Markdown, white User/gray Assistant cards and single frameless blue tool Copy.12actual-widget checks pass;8native helper checks cover a missing indexed rollout among valid conversations and unchanged sources. Fresh headless views now run layout before operations/events/draw, matching Iced's lifecycle for size-dependent widgets. Actual personal/native observation remains separate.
+
+## November 13 — native conversation and subagent presentation
+
+Workspace consumes complete official messages; tools begin collapsed with name/blue Copy and expand independently. Subagents open a shared modal with parsed settings/Markdown instructions and Edit/Preview, Close and Copy. file_path/finder_button share a compact raised blue Finder control next to supported instruction/subagent paths. Saved success text is removed. Focused popup/API checks pass; actual-widget captures and independent ACCEPT are recorded under milestones/official-session-readers/evidence.
+
+## November 13 — Workspace editor/gesture and clean session fixtures
+
+milestones/workspace-editor-gestures/evidence includes editor blue Copy/white Save, subagents without Paste, no manual registration row, long reply wrapped inside one card with its ending visible after scrolling, popup clearance and first-load/reload stagger frames. Widget checks press actual Cmd/Ctrl+Z after deletion, click Copy without executing clipboard Tasks, and move a continuing outer gesture across the editor before starting a fresh gesture. Parser cases exclude injected context for Claude/Codex while preserving manual input, full replies and tool outputs. Native fixture covers phase ordering only; physical trackpad/traffic-light acceptance remains live user observation. No personal session text used.
+
+## November 12 — raised selectors, blue sessions and split replies
+
+milestones/raised-project-picker/evidence contains the raised closed project filter/open menu, blue session-name row, and popup with a command code block, user turn and assistant reply. Existing Workspace fixtures cover minimum layout, dimmed loading and both app choices. The realistic session case splits a40KB assistant JSON record at the32KB API boundary, verifies automatic continuation, then checks Read more, outside dismissal and cached reopen. Parser fixtures cover native command/output/note wrappers plus existing Claude/Codex formats. No personal histories were read.
+
+## November 12 — Workspace presentation fixtures
+
+milestones/workspace-session-popup/evidence covers Claude/Codex direct instruction editors, unified app choices, subagents, session cards, normal/minimum window sizes, a user/assistant history popup, idle versus gray loading list, Installed servers alignment and an open project menu. Tests cover chunk append/cache/reopen, popup outside dismissal, metadata/tool projection and Codex duplicate event suppression. Native hidden panel reuse is a separate fixture, not a live dialog screenshot or observed click response. Real files/providers were not used.
+
+## November 12 — Workspace unified circular app choices
+
+Workspace removes the Global/Open folder button row and the separate Claude Code/Codex text-button row. The scope caption moves into the heading, allowing Instructions/Subagents/Sessions and their content to move up. The tabs row now has two circular app-logo choices on its right, each40px to match tab height. The shared app_logo_button uses existing logos and shared button/surface rendering: unselected raised, selected/pressed inset with the existing recessed fill. One workspace.app selection controls Instructions (CLAUDE.md versus AGENTS.md), Subagents and Sessions; existing session API app filtering is reused. Folder picker and typed-path Enter/global-empty behavior remain through their existing handlers.
+
+Four Workspace widget checks pass (3.67s), including real logo clicks and correct app-specific instructions/subagents/sessions. After strengthening selected-face contrast, the same complete selection case passes again (2.41s). Both selected states and normal/minimum screenshots were inspected. Final signed development build-only passes (16.05s), including strict signature verification; git diff --check passes. An initial new fixture case needed relayout after injected API replies; its original failing log is preserved and only the fixture was corrected.
+
+Direct UI work without subagents or independent review for this pass. Fixture API tasks are dropped: no personal files, native picker, clipboard, model process or live account/provider/MCP action is executed. No API/auth/permission/storage behavior changed, no Figma/commit/push/release, and Fetch was not relaunched. User must explicitly Quit/reopen to observe the rebuilt UI. Concurrent project-scoped/Workspace backend work is preserved.
+
+## November 12 — project selections and explicit history approval
+
+Actual-widget checks cover explicit Workspace registration and independent
+server-filter/install/connection choices, project snippets and the project
+approval's actual folder with initially unchecked history access. The minimum
+760x520 approval scrolls permissions while keeping Close/Deny/Allow visible.
+Eight source-driven captures were exported; project Workspace, Shared filter,
+installation, connection and both popup sizes inspected. API/clipboard/Keychain
+Tasks were dropped in widget fixtures; actual clients and OS approvals remain
+manual acceptance. [Evidence](../milestones/project-connections/evidence.md).
+
+## November 12 — shared approval code, blue Allow and refresh hover
+
+The single approval popup used by both Claude Code and Codex now uses the shared blue primary Allow button. Request code is labeled above the existing shared code block with its Copy control, which copies only the code. Removed the requested Match this code… sentence. Install refresh keeps the shared hover glow/rotation enabled when idle even with an empty path; its existing blank-path handler still performs no discovery and starts no request.
+
+25 existing actual-widget checks pass (9.38s), including request-code Copy, absence of the removed sentence, both app popup flows and empty-path hover animation/no-discovery. Inspected Claude and minimum-size Codex popup PNGs. Signed development build-only/strict signature verification passes (17.68s); git diff --check passes. No new test infrastructure or tests added; existing cases were extended for the requested behavior.
+
+Direct UI work; no subagents for this pass. Fetch was not relaunched. No live provider/MCP, credential/trust/config, API/authentication permission, Figma, commit/push or release changes. Explicit Quit/reopen is needed to see the new executable.
+
+## November 12 — server toggle verified
+
+An actual-widget case covers pending request/disabled duplicate click, rejected Off staying On with real error text in the matching Console, successful Off, and explicit On waiting for named restart completion. Existing normal/minimum screens and action/copy/popup cases remain green (25 widget checks). Three confined HTTP/MCP and two private no-network checks establish backend persistence/busy/guard behavior. Signed build and independent review pass; no live Fetch/provider/macOS result is claimed.
+
+## November 12 — Workspace source fixtures
+
+workspace_tests.rs covers global/project selection, late-scope reply rejection,
+Claude/Codex tabs, session disclosure/Read more/collapse/reopen, file editing/save,
+converted drafts with unresolved issues, app-reported Codex model selection and
+pending-operation save-target stability. Offscreen real-widget captures cover
+normal global/project, minimum global controls, expanded session and pasted editor.
+Tasks do not execute against personal files or real apps. Native clipboard,
+Finder-launched account catalogs and actual user-file acceptance remain untested.
+Session MCP is intentionally unavailable in this slice.
+
+## November 12 — black Connect authentication buttons
+
+The two compact Connect apps authentication buttons now have black faces and white key glyphs. They stay 22px, use the same shared icon-button behavior, and do not change the Servers-page key style.
+
+The existing real-widget inline key/dismiss/reopen check passes (1.86s); the normal-size black-button screenshot was inspected. Signed development build-only/strict signature verification passes (15.46s), and git diff --check passes. Fetch was not relaunched. Server on/off work continues separately through the selected specialist roles.
+
+## November 12 — compact Connect authentication and title gap
+
+Connect apps authentication buttons now use the same 22px size as their logos, with proportionally scaled key glyphs. The shared app_auth_button reuses the standard icon-button rendering/behavior; other icon actions remain 44px. Logo and compact button size share theme::APP_LOGO_SIZE. On Connect only, navigation-to-title layout spacing is halved from 56px (32px gap + 24px title padding) to 28px (16px + 12px).
+
+24 actual-widget UI checks pass (9.39s), including clicks/reopening on both 22px app keys and existing server/popup controls. Normal/minimum Connect screenshots inspected. Signed development build-only passes (10.54s), with strict signature verification; git diff --check passes. Existing warnings remain. No new test was added; the existing inline-auth case now locates the 22px controls. Direct work without subagents. Fetch was not relaunched; explicit Quit/reopen is needed to observe the new build. No live provider/MCP, account, credential, personal settings, trust, Figma, commit/push or release changes.
+
+## November 12 — inline app authentication and recessed Connect panel
+
+Connect apps now uses the shared recessed Servers-style panel with internal scrolling and a fixed title/navigation. Claude Code and Codex each have the existing shared gray authentication key beside their heading/logo; the separate Set up buttons are removed. Their commands and Copy controls remain. The entire address/copy-address/certificate/explanation footer is removed. Approval has the shared red Close action at top right, and clicking the dimmed area hides the Fetch popup. Hiding preserves the request and selected permissions, polling leaves it hidden, and the matching app key reopens it without a new request. Shared modal framing gives approval and discovery the same 32px rounded dimming boundary and outside-click dismissal. A stable outer Stack preserves the underlying scroll state when approval appears or disappears.
+
+Final 24 real-widget UI checks pass (9.02s), including both inline key actions, actual close/outside clicks, inside-click preservation, reopening the same code after polling, transparent popup corners, discovery popup corners, copy controls, and normal/minimum screens. Inspected 874×630 and 760×520 Connect and approval PNGs. Final signed development build-only passes (10.90s), including strict signature verification; git diff --check passes. API tasks from these fixtures are not executed.
+
+Work and review were direct, without subagents. Fetch was not relaunched; live appearance requires explicit Quit/reopen. No provider/MCP call, client configuration, credentials, trust, signing selection, Figma, commit/push or release changes. The separate macOS Touch ID/password dialog remains OS-owned; these dismissal controls hide the Fetch dialog. Earlier product/connector acceptance limits remain.
+
+## November12 — connector popup checked
+
+Five focused UI checks pass for actual popup widgets, close/reopen ownership, delayed approved reply, denial and expiry retry. [Inspected actual-widget specimen](../milestones/local-mcp-connector/evidence/connector-approval-popup.png). No live Mac confirmation/Keychain screenshot or Figma state is claimed; user defers those to manual testing.
+
+## November 12 — inline refresh and shorter Servers feedback
+
+Installed servers Refresh now uses a 1.5-second minimum indicator and continues spinning if the read takes longer. Install MCPs Refresh is now in the path-input row, immediately left of Choose file or folder…. Its three-second minimum is unchanged. Both use the same shared feedback implementation; the caller supplies the duration. Returned data still applies immediately.
+
+Four focused existing UI checks pass: manual refresh pending spin, instant reload/minimum feedback, discovery click/spin/retry, and normal/minimum-window screens. Inspected the 874×630 filled-path and 760×520 Install screenshots. Signed development build-only passes (15.03s), including strict signature verification; git diff --check passes. No new tests were added for this small adjustment. Direct work/review without subagents. No Fetch relaunch or live MCP/provider calls; running Fetch needs explicit Quit/reopen to show the changes. Unrelated edits, credentials, personal settings and services were preserved.
+
+## November 12 — shared refresh and text actions
+
+New actual-widget discovery test clicks Refresh, closes/reopens the existing flow, checks rotation away from the pointer, blocks repeat clicks, applies fast data before feedback ends, and allows retry after fast success or slow failure. Existing Servers refresh/restart/hover and other page-control cases remain. 78 UI checks and signed build pass; three page screenshots inspected. One old Connect command expectation was aligned with the already-current stdio connector. Live Fetch was not relaunched; direct review only. [Evidence](../milestones/shared-button-behavior/evidence/info.md).
+
+## November 12 — connector popup source states
+
+New ui/connector_setup.rs covers pending permission selection, Mac confirmation in progress, approval/denial, saved profile and setup/save errors using shared controls. A focused actual-widget popup specimen is being added; no production screenshot or Figma state is claimed yet.
+
+## November 12 — final reload, copy, startup status and resize UI
+
+Final21 real-widget checks cover instant reload/card re-entry, red Remove halo, Connect order/removed content, all shared copy confirmation/timeout/no background and white shine, starting orange/spin/no unknown, collapsed automatic checks and immediate API-record application. Four visual checks pass; selected final PNGs inspected. Native fixture separately checks resize-ring hits/cursors/controls/teardown. User live resize feel and recurring Keychain access are not claimed passed.
+
+## November 12 — inline restart failure
+
+New actual-widget fixture covers collapsed failed restart header alignment, only the affected server, rejected POST, preserved Console detail, retry progress and immediate succeeded/failed terminal status without a global notice.15 UI/4 visual checks pass; inline failure screenshot inspected and signed build ready.
+
+## November 12 — contain internal scrolling and remove page banners
+
+New actual-widget fixtures verify Console/Tools/Settings wheel containment at top/bottom across new gestures, parent scrolling outside the pane, and absence of global error/notice text across Servers/Install/Connect. Fixed-list fixture now targets its gutter to scroll the outer list.14 widget/4 visual checks pass; shared containment applies to discovery and terminal frames as well. Live manual state remains distinct.
+
+## November 12 — gray key button
+
+Existing timed key-hover fixture passes with gray face; inspected screenshot and signed build pass. Actions/state coverage unchanged.
+
+## November 11 — spin refresh through completion and glow key hover
+
+New actual-click fixtures cover global refresh waiting without hover and terminal success/error, plus per-server restart submission, accepted operation and terminal success without notice. Existing hover/disabled/key halo tests remain.12 widget/4 visual/2 automatic-refresh cases and signed build pass; live animation remains for user relaunch.
+
+## November 11 — remove Retina outline, fix all native hover and align resize
+
+Four visual/ten actual-widget tests now cover the reproduced Retina rim, right shadow fade and visible face at each actual window edge. Hidden native fixture checks each of the three buttons differs on hover and exactly restores on leave, plus frame/content edge equality. Live native cursor/appearance still requires Quit/reopen. No Figma edits.
+
+## November 11, 2026 — expansion, refresh hover, left window controls and right shadow
+
+Native checks now cover first expansion before server I/O, refresh hover progression/rotation/leave/disabled and original restart click, and right-edge shadow fade. Nine actual-widget and three visual checks pass. AppKit native controls have a separate hidden fixture; live Fetch appearance remains unobserved. No Figma changes.
+
+## November 11 — automatic native Console and combined errors
+
+Native fixture coverage passes for failed remote server expansion, captured server output plus Fetch error code/message/details inside Console, Copy of those same lines, unchanged status polling without duplication, and collapse/re-expansion after Console/Tools. Existing panel coverage checks Settings ownership and terminal coverage checks retained sessions. Expansion must remain a display action without authentication or terminal startup. This changes the native expansion default; existing Figma specimens remain unchanged. Results are tracked in [the Console milestone](../milestones/console-on-expansion/info.md).
+
+## November 9 — hover fade, pane response and smaller default
+
+Added source-real timed hover checks on enabled black authentication key at0/75/150ms, no popup overlay and exact idle restoration after leaving. Console/Terminal test uses actual clicks plus full4096-line retained log and a reused fake terminal; pane state updates before HTTP response and measured draw budget is250ms. Native test handles only widget resize events, drops all HTTP tasks. Existing page render loop now captures874×630 default and760×520 minimum; design-sized Tools/Settings and1x/2x Button fidelity remain. Seven widget/two fidelity checks pass. Full-hover and default Console/Settings PNGs visually inspected; native live animation/shell startup remain unobserved. No Figma edit.
+
+## November 9 — tool edge and frameless state
+
+Existing actual Tools test now reproduces the missing right shadow before the fix and verifies the padding shadow after, alongside three-column geometry/nested scrolling. Navigation fixture verifies transparent corner alpha, native drag message from title space and no drag from tab clicks. Five widget/two fidelity checks pass; normal/scrolled Tools and minimum-window RGBA screenshots inspected. Both boot/reopen share transparent/undecorated settings. Actual macOS compositor/drag/resize remain unobserved until user relaunch. Figma unchanged.
+
+## November 9 — native server-list scrolling
+
+Servers has a bounded card scroller (fetch-installed-servers) beneath fixed title/Refresh; navigation remains fixed. An eight-server actual-widget fixture verifies normal/minimum sizes, stable bounds through expansion/scroll, later-card visibility and clicking a scrolled header. Existing nested Tools scroll and page/Settings first-frame checks pass. Normal/minimum scrolled-list and expanded Tools screenshots were inspected. Synthetic/offscreen evidence only; actual running-app behavior after relaunch remains unobserved. Earlier whole-page scrolled Servers specimens below describe the prior layout. Figma unchanged.
+
+## November 9 — ready server hover removed in code
+
+Native ready server identities have no Runtime: ready tooltip. Other runtime statuses retain the existing tooltip, and the shared status dot/disclosure/actions remain. The existing server-panel interaction check and signed build pass; this is source/fixture evidence, not a live hover observation or Figma change.
+
+## November 9 — inline square key actions and outlined information
+
+Save and Remove are now44×44 square icon buttons alongside the credential field: blue with a white Save vector, red with the existing white ×. Shared action set246:2464 covers enabled/disabled states, retaining prior0.58disabled opacity. All four active key editors use one44px row, with916pxfield plus two actions. Figma Remote rows are gray in all three actual discovery screens; screen overrides were corrected using resolved gray RGB values rather than black fallback colors. The information control is now an unfilled gray circular outline with a gray i, including hover state; its exact tooltip message is retained. Current key-row and discovery-dialog screenshots were inspected. Figma only; no Rust changes or subagents.
+
+## November 9 — gray unsupported row with information tooltip
+
+Figma Remote · remote is now gray in the Results, Installing and Failed discovery dialogs, including its unchecked checkbox and label. Its exact approval explanation moved from the separate line into a shared information i hover tooltip (set234:2431; Default234:2421, Hovered234:2426). The row remains unsupported/disabled. Results dialog and tooltip screenshots were inspected. Figma-only, with no Rust changes or subagents.
+
+## November 9 — key visibility eye control
+
+The shared API key entry now includes a small right-aligned eye button. Click switches between Hidden and Visible variants; the visible state uses a crossed-out eye to hide again. Existing name/colon emphasis and placeholder colors remain. Component set231:2987 retains original hidden master226:2385; visible master231:2978. Figma uses the disposable example-token-1234 value for the filled-key reveal demonstration. Empty/named/busy forms retain their placeholder when switched. This specifies the requested UI behavior; native reveal implementation is unchanged.
+
+Shared-state and filled-key specimen screenshots were inspected; reciprocal ON_CLICK → CHANGE_TO links were read back. No actual user credentials were read. No subagents or application source changes.
+
+## November 9 — restarting status on hover
+
+The separate Restarting message below the server card is removed in Figma. Starting/restarting headers retain the compact yellow dot normally; hover shows an information i and the exact message in a dark tooltip. Shared set228:2391 (default228:2384, hover228:2386) is used in both Starting header variants. Restarting master77:1507 supplies “Restarting… waiting for this attempt to finish.” through its Status message property. Current app specimens inherit it. The tooltip and Restarting screen78:1782 were visually inspected; the temporary hover check frame was removed. This is Figma-only, performed directly without subagents. Other runtime-color headers were not changed. The manual-install background remains only a recommendation.
+
+## November 9 — requested Settings and tool-field edits
+
+User-directed Figma edits only, performed by the root agent without subagents. Reverted the earlier self-chosen wording/layout/hover additions: original Install/Connect/settings wording restored; six new hover variants, bold close glyph, seven hover styles and seven hover links removed; earlier control effects restored. The removed key-selection buttons were recreated for rollback, then explicitly removed again at the user's request.
+
+Current requested design: four active Settings credential states say **API keys/fixed tokens** and have no description. Shared API key entry component226:2385 places entry name, colon and token in one44px row; filled keys stay masked. Remove entry is red with bold white text. Search Settings viewport height is498px so the full form/actions fit. Twelve authentication-control instances on current Settings screens explicitly use key glyph132:1667, correcting the gear overrides. Shared read-only tool fields182:3991 and the two fields in tool card146:2456 use **#EAF5FB**, through neo/tool-field variable226:2384. Original reference pages and Rust code were not changed.
+
+Visual checks: current filled-key app specimen78:1875 shows full form/actions, requested title, paired field, red Remove and key icon; tool card146:2456 shows pale-blue fields. Both screenshots were inspected. Checks were direct, not independent. This is Figma-only; it does not establish native implementation or runtime behavior.
+
+Latest design recommendation, not applied: distinguish the manual-install section using the same recessed warm-gray section background as Installed servers, retaining a light command field and dark console. Wait for the user's selection before changing it. Continue applying only the user's specific edits.
+
+## November 9 — Figma edits are user-directed
+
+The user clarified that they will specify each Figma change. Apply only those requested edits, quickly and without subagents; do not choose additional UX changes independently.
+
+Before this clarification, the root agent changed shared Install/manual-key instructions, timeout/simultaneous-call labels, discovery hint layout, and Connect wording; added six hover variants, a bold close glyph and seven hover transitions; removed four redundant Search key-selection buttons after the user's question. Selected/active effects were made inset without drop shadows. The current Figma canvas is newer than the November 8 repository descriptions (server Settings are already inside server cards). These changes have structural tool evidence but final visual review was interrupted by the user's clarification. No Rust source, running app, credentials or client settings changed. No independent agents were used. Do not describe this pass as visually accepted or continue its self-chosen edits.
+
 ## November 9 — equal-size visual verification
 
 The glossy port is superseded by the exact-fill/layered-shadow correction. New evidence compares Figma's524×208Button state board with native1xand2xrenders at the same logical bounds, and Figma native content with1248×1128Tools/Settings views using matching visible fixture values. Cold and cached images must both show every background/glyph. Additional observed defects receive pixel checks: white numeric arrow plates and blue/gray checkbox faces must paint above their backgrounds.

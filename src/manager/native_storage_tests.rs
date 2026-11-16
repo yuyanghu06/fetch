@@ -221,3 +221,18 @@ fn inherited_commands_work_in_server_terminal_and_private_programs_win(){
     }));
     service.shutdown().unwrap();if let Err(error)=result{std::panic::resume_unwind(error);}
 }
+
+#[tokio::test]
+async fn startup_reports_starting_before_connection_work_can_finish() {
+    let root=TempDir::new().unwrap();let(manager,_,_)=manager_fixture(root.path(),"https://mcp.fixture.example/mcp");
+    let gate=manager.lock("remote").await;let guard=gate.lock().await;
+    let owned=manager.clone();let startup=tokio::spawn(async move{owned.startup().await;});
+    tokio::time::timeout(Duration::from_secs(1),async{loop{
+        if manager.live.lock().await.get("remote").is_some_and(|state|state.starting){break;}
+        tokio::task::yield_now().await;
+    }}).await.unwrap();
+    let response=manager.servers(vec!["remote".into()],None).await.unwrap();
+    assert_eq!(response["servers"][0]["runtime"]["status"],"starting");
+    startup.abort();let _=startup.await;drop(guard);
+    // Connection work never passed the held gate: no MCP/network/process runs.
+}

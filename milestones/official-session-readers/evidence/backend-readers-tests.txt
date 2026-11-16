@@ -1,0 +1,83 @@
+Command: cargo test --lib workspace::conversations::tests --offline --message-format short -- --nocapture
+
+    Blocking waiting for file lock on artifact directory
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:15:59: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    15 |         (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail};
+warning: fetch-local@0.1.0:       |                                                           ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:44:18: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    44 |         status = SecTrustedApplicationCreateFromPath(NULL, &app);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:    61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:47:18: warning: 'SecAccessCreate' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    47 |         status = SecAccessCreate(CFSTR("Fetch remote MCP login"), (__bridge CFArrayRef)@[(__bridge id)app], &access);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:132:10: note: 'SecAccessCreate' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:   132 | OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: 3 warnings generated.
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:125:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:   125 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+warning: fetch-local@0.1.0:       |                                                               ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:139:27: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:   139 |         OSStatus status = SecTrustedApplicationCreateFromPath(NULL, &application);
+warning: fetch-local@0.1.0:       |                           ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:    61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:143:18: warning: 'SecAccessCreate' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:   143 |         status = SecAccessCreate(CFSTR("Fetch encrypted local state"), (__bridge CFArrayRef)trusted, &access);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:132:10: note: 'SecAccessCreate' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:   132 | OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:152:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:   152 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+warning: fetch-local@0.1.0:       |                                                               ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: 4 warnings generated.
+src/ui/mod.rs:660:13: warning: unused variable: `available`: help: if this is intentional, prefix it with an underscore: `_available`
+src/diagnostics.rs:24:21: warning: function `with_request_context` is never used
+src/diagnostics.rs:29:17: warning: enum `AuthenticationOutcome` is never used
+src/diagnostics.rs:36:5: warning: variants `ProviderMetadata`, `ProviderRegistration`, `ProviderTokenExchange`, `ProviderRefresh`, and `ProviderVerification` are never constructed
+src/diagnostics.rs:76:15: warning: function `authentication_outcome` is never used
+src/mcp/mod.rs:26:221: warning: field `error` is never read
+src/remote_oauth/sdk.rs:53:18: warning: associated function `new` is never used
+src/remote_oauth/sdk.rs:169:19: warning: struct `Network` is never constructed
+src/ui/mod.rs:52:52: warning: variants `AuthDismiss`, `AuthName`, `AuthValue`, and `ToggleTool` are never constructed
+src/ui/authentication.rs:77:12: warning: method `title` is never used
+src/ui/components.rs:154:15: warning: function `output_controls` is never used
+src/ui/components.rs:160:15: warning: function `tool_disclosure` is never used
+src/ui/components.rs:179:15: warning: function `server_header` is never used
+src/ui/workspace.rs:23:68: warning: variant `PasteAgent` is never constructed
+src/ui/theme.rs:18:18: warning: constant `PAGE_TITLE` is never used
+src/ui/theme.rs:19:18: warning: constant `SECTION_TITLE` is never used
+src/ui/theme.rs:27:18: warning: constant `CARD_GAP` is never used
+src/ui/theme.rs:28:18: warning: constant `SECTION_GAP` is never used
+src/ui/theme.rs:32:18: warning: constant `PANEL_PADDING` is never used
+src/ui/theme.rs:34:18: warning: constant `DELETE_BUTTON_PADDING` is never used
+src/ui/theme.rs:35:18: warning: constant `DELETE_ICON_SIZE` is never used
+src/ui/theme.rs:49:15: warning: function `muted_text` is never used
+src/ui/theme.rs:66:15: warning: function `output_button` is never used
+warning: `fetch-local` (lib test) generated 23 warnings (run `cargo fix --lib -p fetch-local --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.19s
+     Running unittests src/lib.rs (target/debug/deps/fetch_local-667dd101811eec3b)
+
+running 3 tests
+test workspace::conversations::tests::reader_confinement_denies_original_writes_network_and_unrelated_reads ... ok
+test workspace::conversations::tests::codex_confined_complete_modern_conversation_reads_every_native_page ... ok
+test workspace::conversations::tests::claude_complete_conversation_preserves_parallel_results_and_original_file ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 257 filtered out; finished in 1.24s
+
+
+Exit status: 0

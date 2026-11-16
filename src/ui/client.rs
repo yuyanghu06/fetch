@@ -70,14 +70,26 @@ impl NativeClient {
     pub async fn open_server_folder(&self, id: &str) -> Result<Value, String> {
         self.request(Method::POST, &format!("/api/v1/servers/{}/open-folder", component(id)), None).await
     }
-    pub async fn servers(&self) -> Result<Value, String> { self.request(Method::GET, "/api/v1/servers", None).await }
-    pub async fn discovery(&self, path: &str) -> Result<Value, String> {
-        let suffix = if path.is_empty() { String::new() } else { format!("?{}", url::form_urlencoded::Serializer::new(String::new()).append_pair("config_path", path).finish()) };
-        self.request(Method::GET, &format!("/api/v1/setup/discovery{suffix}"), None).await
+    pub async fn projects(&self) -> Result<Value,String> { self.request(Method::GET,"/api/v1/projects",None).await }
+    pub async fn register_project(&self, folder: &str) -> Result<Value,String> { self.request(Method::POST,"/api/v1/projects",Some(json!({"folder_path":folder}))).await }
+    pub async fn servers(&self) -> Result<Value, String> { self.servers_for(None).await }
+    pub async fn servers_for(&self, project: Option<&str>) -> Result<Value,String> {
+        let suffix=project.map(|id|format!("?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("project_id",id).finish())).unwrap_or_default();
+        self.request(Method::GET,&format!("/api/v1/servers{suffix}"),None).await
     }
-    pub async fn install(&self, selections: Vec<(String,String)>) -> Result<Value, String> {
-        let servers: Vec<Value> = selections.into_iter().map(|(config_path,server_name)| json!({"config_path":config_path,"server_name":server_name})).collect();
-        self.request(Method::POST, "/api/v1/setup/installations", Some(json!({"servers":servers}))).await
+    pub async fn discovery(&self,path:&str)->Result<Value,String>{self.discovery_for(path,None).await}
+    pub async fn discovery_for(&self,path:&str,project:Option<&str>)->Result<Value,String>{
+        let query={let mut query=url::form_urlencoded::Serializer::new(String::new());
+            if !path.is_empty(){query.append_pair("config_path",path);}
+            if let Some(id)=project{query.append_pair("project_id",id);}
+            query.finish()};let suffix=if query.is_empty(){String::new()}else{format!("?{query}")};
+        self.request(Method::GET,&format!("/api/v1/setup/discovery{suffix}"),None).await
     }
+    pub async fn install(&self,selections:Vec<(String,String)>)->Result<Value,String>{self.install_for(selections,None).await}
+    pub async fn install_for(&self,selections:Vec<(String,String)>,project:Option<&str>)->Result<Value,String>{
+        let servers:Vec<Value>=selections.into_iter().map(|(config_path,server_name)|json!({"config_path":config_path,"server_name":server_name})).collect();
+        self.request(Method::POST,"/api/v1/setup/installations",Some(json!({"servers":servers,"project_id":project}))).await
+    }
+
 }
 pub fn component(value: &str) -> String { crate::json::path_component(value) }

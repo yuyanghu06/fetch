@@ -92,12 +92,16 @@ fn platform_confirm(reason:CString,seconds:u32)->Result<(),NativeAuthError> {
 fn platform_confirm(_:CString,_:u32)->Result<(),NativeAuthError> { Err(NativeAuthError::Unavailable) }
 
 #[cfg(target_os="macos")]
-unsafe extern "C" { fn fetch_install_app_menu(); fn fetch_take_app_action()->i32; }
+unsafe extern "C" { fn fetch_set_app_icon(bytes:*const u8,length:usize); fn fetch_install_app_menu(); fn fetch_take_app_action()->i32; }
 /// Register native actions without taking over Iced's application delegate.
 pub fn install_app_menu() {
     #[cfg(target_os="macos")]
-    // SAFETY: the bridge dispatches UI setup onto the existing main queue.
-    unsafe { fetch_install_app_menu(); }
+    {
+        const ICON:&[u8]=include_bytes!("../../packaging/Fetch.png");
+        // SAFETY: the static image bytes stay valid; the bridge copies them and
+        // dispatches icon/menu setup onto the existing main queue.
+        unsafe { fetch_set_app_icon(ICON.as_ptr(),ICON.len()); fetch_install_app_menu(); }
+    }
 }
 pub fn take_app_action()->i32 {
     #[cfg(target_os="macos")]
@@ -106,3 +110,22 @@ pub fn take_app_action()->i32 {
     #[cfg(not(target_os="macos"))]
     { 0 }
 }
+
+/// Called by Iced on its window/event-loop thread; never searches other windows.
+pub(crate) fn configure_window(window:&dyn iced::window::Window){
+    #[cfg(target_os="macos")]
+    {
+        use iced::window::raw_window_handle::RawWindowHandle;
+        if let Ok(handle)=window.window_handle(){
+            if let RawWindowHandle::AppKit(handle)=handle.as_raw(){
+                // SAFETY: Iced keeps this exact AppKit content view alive for
+                // the synchronous event-loop callback and native bridge call.
+                unsafe{fetch_configure_window(handle.ns_view.as_ptr());}
+            }
+        }
+    }
+    #[cfg(not(target_os="macos"))]
+    {let _=window;}
+}
+#[cfg(target_os="macos")]
+unsafe extern "C"{fn fetch_configure_window(view:*mut std::ffi::c_void);}

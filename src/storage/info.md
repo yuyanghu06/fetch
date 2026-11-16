@@ -1,3 +1,15 @@
+## November 12 — project metadata
+
+Server records accept `scope.project_id` as a registered-style ID or null; older
+records project as Shared without rewriting their files. The project registry
+reuses the checked directory and atomic-write helpers. Membership does not move
+packages, credentials or native state. OAuth/manager/MCP enforce current project
+membership; storage metadata alone grants no access protection.
+
+## November 12 — persistent server on/off implementation
+
+Server config may store enabled as a boolean; absence preserves the legacy On default. Read projection exposes the normalized preference independently of the reset live runtime. The selected restart POST owns changes to this preference. Locked library compilation, 30 focused checks, final signed build and independent Evaluator acceptance pass; live user/provider acceptance remains separate.
+
 November 4: saved installation records may include private relative program_directories. The record validator rejects invalid folder entries; public projections continue removing all _installation metadata. Startup resolves and checks containment through the installer’s program_paths module.
 
 # Private Fetch server records

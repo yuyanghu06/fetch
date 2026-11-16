@@ -22,6 +22,7 @@ const MAX_SECRET_BYTES: usize = 1024 * 1024;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CredentialError {
     KeyUnavailable,
+    KeychainUnavailable(i32),
     IntegrityFailed,
     StorageUnavailable,
     TooLarge,
@@ -29,6 +30,10 @@ pub enum CredentialError {
 }
 impl std::fmt::Display for CredentialError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Self::KeychainUnavailable(status)=self {
+            let reason=match status{-25308=>"User interaction is not allowed.",-25293=>"Authorization or authentication failed.",-25291=>"No Keychain is available.",-128=>"The operation was cancelled.",_=>"The Keychain operation failed."};
+            return write!(f,"macOS Keychain returned OSStatus {status}: {reason}");
+        }
         f.write_str("Fetch cannot safely access its protected application identity or app authorizations.")
     }
 }

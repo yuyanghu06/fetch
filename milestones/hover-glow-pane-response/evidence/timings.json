@@ -1,0 +1,27 @@
+{
+  "scenario": "actual click/update/layout/draw at Retina decoration scale; 4096-line fixture Console and reused fixture terminal; no HTTP task executed",
+  "before_console_ms": [
+    653,
+    597,
+    587
+  ],
+  "final_console_ms": [
+    89,
+    80,
+    79
+  ],
+  "final_terminal_ms": [
+    17,
+    14,
+    15
+  ],
+  "hover_fade_ms": 150,
+  "default_window_logical_pixels": [
+    874,
+    630
+  ],
+  "minimum_window_logical_pixels": [
+    760,
+    520
+  ]
+}

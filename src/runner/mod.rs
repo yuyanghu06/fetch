@@ -3,6 +3,7 @@ pub mod raw;
 pub mod catalog;
 mod scheduler;
 mod transport;
+pub(crate) use transport::SseDecoder;
 pub(crate) mod local_setup;
 pub(crate) mod startup_diagnostics;
 mod log_store;
@@ -193,6 +194,31 @@ impl Drop for IdleDeletion {
         if let Ok(mut removed)=self.runner.deleted.lock(){removed.remove(&self.id);}
     }}
 }
+pub(crate) struct IdleStop {
+    runner:Runner,id:String,server:Option<Arc<Server>>,
+    _lifecycle:Option<tokio::sync::OwnedMutexGuard<()>>,
+    _admission:Option<scheduler::StopAdmission>,
+}
+impl IdleStop {
+    pub(crate) async fn stop(&mut self)->Result<bool,RunError>{
+        let mut changed=false;
+        if let Some(server)=&self.server{
+            changed=server.connection.read().await.is_some()||server.runtime.read().await.as_str()!="stopped";
+            server.scheduler.ready(false);server.catalog_observed.store(false,Ordering::Release);
+            if let Some(connection)=server.connection.read().await.clone(){
+                if !matches!(tokio::time::timeout(Duration::from_secs(5),connection.close_idle()).await,Ok(true)){
+                    *server.runtime.write().await="failed".into();*server.runtime_error.write().await=Some(RunError::unavailable());
+                    self.notify();return Err(RunError::unavailable());
+                }
+            }
+            *server.connection.write().await=None;server.generation.fetch_add(1,Ordering::AcqRel);
+            *server.runtime.write().await="stopped".into();*server.runtime_error.write().await=None;
+        }
+        self.runner.continuations.lock().await.retain(|_,flow|flow.server_id!=self.id);
+        self.notify();Ok(changed)
+    }
+    fn notify(&self){for method in ["notifications/tools/list_changed","notifications/resources/list_changed","notifications/prompts/list_changed"]{let _=self.runner.changes.send((self.id.clone(),method.into()));}}
+}
 struct Continuation {
     owner_id:String,server_id:String,generation:u64,method:String,
     original_params:Box<RawValue>,upstream_state:Option<Box<RawValue>>,
@@ -298,6 +324,17 @@ impl Runner {
         if let Some(server)=&server{server.removed.store(true,Ordering::Release);}
         drop(servers);
         Ok(IdleDeletion{runner:self.clone(),id:id.to_owned(),server,_lifecycle:lifecycle,admission,retired:retry})
+    }
+    pub(crate) async fn idle_for_stop(&self,id:&str)->Result<IdleStop,RunError>{
+        self.ensure_running()?;
+        if self.is_deleted(id){return Err(RunError::busy());}
+        let server=self.servers.read().await.get(id).cloned();
+        let(lifecycle,admission)=if let Some(server)=&server{
+            let lifecycle=server.lifecycle.clone().try_lock_owned().map_err(|_|RunError::busy())?;
+            if server.removed.load(Ordering::Acquire)||server.unresolved_prior.load(Ordering::Acquire)!=0||server.metadata_reads.load(Ordering::Acquire)!=0{return Err(RunError::busy());}
+            let admission=server.scheduler.idle_for_stop()?;(Some(lifecycle),Some(admission))
+        }else{(None,None)};
+        Ok(IdleStop{runner:self.clone(),id:id.to_owned(),server,_lifecycle:lifecycle,_admission:admission})
     }
     pub async fn connect(&self,id:&str)->Result<(),RunError>{
         self.connect_with_login_urls(id,None).await
@@ -481,11 +518,19 @@ impl Runner {
     pub async fn tool_definitions(&self,id:&str,view:&str)->Result<Vec<Box<RawValue>>,RunError>{
         let origin=self.catalog(id,view).await?;
         let tools=origin["tools"].as_array().ok_or_else(RunError::catalog)?;
-        let mut aliases=self.aliases.lock().await;let mut result=vec![];
-        for tool in tools{let name=tool["name"].as_str().ok_or_else(RunError::catalog)?;let alias=aliases.assign(id,name)?;let definition=raw::change(&raw::raw(tool),"name",raw::raw(&json!(alias))).map_err(|_|RunError::catalog())?;result.push(definition);}
-        self.persist_aliases(&aliases)?;Ok(result)
+        let targets=tools.iter().map(|tool|tool["name"].as_str().map(|name|(id.to_owned(),name.to_owned())).ok_or_else(RunError::catalog)).collect::<Result<Vec<_>,_>>()?;
+        let aliases=self.aliases(&targets).await?;
+        tools.iter().zip(aliases).map(|(tool,alias)|raw::change(&raw::raw(tool),"name",raw::raw(&json!(alias))).map_err(|_|RunError::catalog())).collect()
     }
-    pub async fn alias(&self,id:&str,name:&str)->Result<String,RunError>{let mut aliases=self.aliases.lock().await;let alias=aliases.assign(id,name)?;self.persist_aliases(&aliases)?;Ok(alias)}
+    /// Alias assignment is one transaction: failed persistence must not publish
+    /// new live mappings. Existing-only batches never rewrite aliases.json.
+    pub async fn aliases(&self,targets:&[(String,String)])->Result<Vec<String>,RunError>{
+        let mut current=self.aliases.lock().await;let mut proposed=current.clone();
+        let (result,changed)=proposed.assign_batch(targets)?;
+        if changed{self.persist_aliases(&proposed)?;*current=proposed;}
+        Ok(result)
+    }
+    pub async fn alias(&self,id:&str,name:&str)->Result<String,RunError>{let mut aliases=self.aliases(&[(id.to_owned(),name.to_owned())]).await?;aliases.pop().ok_or_else(RunError::catalog)}
     pub async fn resolve_alias(&self,alias:&str)->Option<(String,String)>{let resolved=self.aliases.lock().await.resolve(alias)?;if self.server(&resolved.0).await.is_err(){return None;}Some(resolved)}
     fn persist_aliases(&self,aliases:&Aliases)->Result<(),RunError>{
         let Some(path)=&self.alias_path else{return Ok(());};

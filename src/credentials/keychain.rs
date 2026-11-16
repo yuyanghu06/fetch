@@ -84,7 +84,7 @@ impl Backend for NativeBackend {
             let mut key = Zeroizing::new([0u8; 32]);
             // SAFETY: all pointers refer to valid buffers for the synchronous native call.
             let status = unsafe { fetch_keychain_read(service.as_ptr(), account.as_ptr(), key.as_mut_ptr(), 32) };
-            match status { 0 => Ok(Some(key)), -25300 => Ok(None), _ => Err(CredentialError::KeyUnavailable) }
+            match status { 0 => Ok(Some(key)), -25300 => Ok(None), status => Err(CredentialError::KeychainUnavailable(status)) }
         }
         #[cfg(not(target_os="macos"))]
         { let _ = (service, account); Err(CredentialError::KeyUnavailable) }
@@ -97,7 +97,7 @@ impl Backend for NativeBackend {
             let account = CString::new(account).map_err(|_| CredentialError::KeyUnavailable)?;
             // SAFETY: all pointers remain valid until the native call completes.
             let status = unsafe { fetch_keychain_create(service.as_ptr(), account.as_ptr(), key.as_ptr(), 32) };
-            match status { 0 => Ok(CreateResult::Created), -25299 => Ok(CreateResult::AlreadyExists), _ => Err(CredentialError::KeyUnavailable) }
+            match status { 0 => Ok(CreateResult::Created), -25299 => Ok(CreateResult::AlreadyExists), status => Err(CredentialError::KeychainUnavailable(status)) }
         }
         #[cfg(not(target_os="macos"))]
         { let _ = (service, account, key); Err(CredentialError::KeyUnavailable) }

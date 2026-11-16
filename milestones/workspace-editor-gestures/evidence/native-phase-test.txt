@@ -1,0 +1,1 @@
+PASS: phase ordering, finger restart, and unchanged ownership through momentum

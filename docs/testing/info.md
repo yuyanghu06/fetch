@@ -1,3 +1,5 @@
+Connector verification is recorded in ../../milestones/local-mcp-connector/evidence.md. Real-client confined attempts remain incomplete; user explicitly selected manual native/client acceptance later. Do not reuse personal credentials or weaken confinement to turn that result green.
+
 [PYTHON_MCP_SETUP.md](PYTHON_MCP_SETUP.md) is the cross-Mac setup guide for uv-owned Python package installations, private environment/runtime locations, explicit Python requests and current verification limits. Read it with DEVELOPMENT.md and the per-Mac signing checklist.
 
 # User-controlled verification

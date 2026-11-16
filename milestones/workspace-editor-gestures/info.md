@@ -1,0 +1,13 @@
+# Workspace editor, gestures and session display
+
+Goal: complete the user's editor/scroll/history/control follow-ups while preserving existing APIs and personal settings.
+
+Scope: shared native UI surfaces, AppKit phase forwarding for the configured Fetch window, Workspace edit state and read-only history presentation. Existing POST /api/v1/projects handles automatic registration after successful folder discovery; no route or permission changed. Global subagent investigation is read-only.
+
+Implemented: gesture owner remains stable through finger/momentum scrolling until a new gesture; undo restores local text/cursor; Save text is white; raised blue Copy is shared; Paste/manual registration rows removed; folder registration automated without changing page selections. Session projection retains manual inputs, assistant outputs and tool results, removes injected contexts/tool-call inputs, joins message text blocks and renders complete wrapped text. Popup gets48px top/32px other clearance. Server pop animation starts on first load and staggers45ms per row.
+
+Verification: seven Workspace widget cases (final group3.68s), including real Cmd/Ctrl+Z and continuous outer-scroll/no editor transfer; split full-message case strengthened and rerun1.15s with roughly42KB visible text and inspected tail. Three parser cases, one auto-registration case, one gesture phase case, one existing nested-pane case and one first-load/reload animation case pass:14focused Rust cases. Three additional unrelated cases matched the nested-name filter and passed. Native phase queue fixture passes with no active window/monitor. Signed build-only/strict verification passes17.00s. PNGs/logs under evidence/; test Tasks are dropped, so no personal files, clipboard, models, providers or API mutations run.
+
+Initial test findings retained: editor Copy row lacked centered alignment (fixed); animation fixture assumed an obsolete92px row height after prior scope labels, then sampled neighboring-row shadow during stagger assertion (fixture corrected to sample each row's scope text). Product first-load staggering is now checked through actual renderer frames.
+
+Status: source/fixture work complete; direct implementation/review, no independent evaluator. Actual physical trackpad/native behavior remains user observation. Global role files are missing in this environment: AGENTS.md references the absent agents directory; current config and four checked backups have zero roles. Project roles were found; none moved/recreated. Missing globals need user-selected restoration/creation. Read research.md for source references and display limits.

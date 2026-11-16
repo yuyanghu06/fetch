@@ -49,7 +49,13 @@ pub(super) struct State {
 impl State {
     pub(super) fn hide_settings(&mut self){if self.pane==Pane::Settings{self.pane=Pane::Hidden;}}
     fn emulator(&self) -> Terminal {
-        Terminal::new_external(NEXT_WIDGET.fetch_add(1, Ordering::Relaxed), Default::default(), self.columns.max(1), self.rows.max(1))
+        let hex=|color:iced::Color|format!("#{:02x}{:02x}{:02x}",(color.r*255.0).round() as u8,(color.g*255.0).round() as u8,(color.b*255.0).round() as u8);
+        let settings=iced_term::settings::Settings{
+            font:iced_term::settings::FontSettings{size:theme::CONSOLE_TEXT_SIZE,font_type:theme::MONO_FONT,..Default::default()},
+            theme:iced_term::settings::ThemeSettings::new(Box::new(iced_term::ColorPalette{background:hex(theme::CONSOLE_BACKGROUND),foreground:hex(theme::CONSOLE_FOREGROUND),..Default::default()})),
+            ..Default::default()
+        };
+        Terminal::new_external(NEXT_WIDGET.fetch_add(1, Ordering::Relaxed), settings, self.columns.max(1), self.rows.max(1))
     }
     fn collect_actions(&mut self, allow_write: bool) {
         let Some(terminal) = self.terminal.as_mut() else { return; };
@@ -81,6 +87,9 @@ impl State {
 impl Desktop {
     pub(super) fn server_panel(&self,id:&str)->Pane {
         self.terminals.get(id).map(|state|state.pane).unwrap_or_default()
+    }
+    pub(super) fn show_server_console(&mut self,id:&str) {
+        self.terminals.entry(id.to_owned()).or_default().pane=Pane::Console;
     }
     pub(super) fn select_server_panel(&mut self,id:&str,pane:Pane)->bool {
         let state=self.terminals.entry(id.to_owned()).or_default();
@@ -266,26 +275,27 @@ impl Desktop {
         }
     }
 
-    pub(super) fn server_output_view<'a>(&'a self, id: &str, _server: &Value) -> Element<'a, AppMessage> {
+    pub(super) fn server_output_view<'a>(&'a self, id: &str, server: &Value) -> Element<'a, AppMessage> {
         let state = self.terminals.get(id);
         let terminal_selected = state.is_some_and(|state| state.pane == Pane::Terminal);
         let mut pane = column![].spacing(theme::CONTROL_GAP).width(iced::Fill);
-        if !terminal_selected { return pane.push(self.authentication_view(id, self.authentication.get(id))).into(); }
+        if !terminal_selected { return pane.push(self.authentication_view(id, server)).into(); }
         if let Some(state) = state {
             if let Some(error) = &state.error { pane = pane.push(components::message(error.as_str())); }
             if state.gap { pane = pane.push(text("Some earlier terminal output is no longer available; this screen may be incomplete.").size(theme::SMALL_TEXT)); }
             if let Some(terminal) = &state.terminal {
+                let copy=AppMessage::Copy(terminal.selected_text());
                 let id = id.to_owned();
-                pane = pane.push(components::terminal_pane(TerminalView::show(terminal).map(move |event| AppMessage::Terminal(Message::Event(id.clone(), event)))));
-            } else { pane = pane.push(components::terminal_pane(column![])); }
+                pane = pane.push(components::terminal_pane(TerminalView::show(terminal).map(move |event| AppMessage::Terminal(Message::Event(id.clone(), event))),Some(copy)));
+            } else { pane = pane.push(components::terminal_pane(column![],None)); }
             if state.status == "running" {
-                pane = pane.push(row![components::button("Close terminal").on_press_maybe((!state.closing).then(|| AppMessage::Terminal(Message::Close(id.to_owned()))))]);
+                pane = pane.push(row![components::text_button("Close terminal").on_press_maybe((!state.closing).then(|| AppMessage::Terminal(Message::Close(id.to_owned()))))]);
             } else if !state.status.is_empty() {
                 let detail = state.exit_code.map(|code| format!(" (exit code {code})"))
                     .or_else(|| state.signal.as_ref().map(|signal| format!(" (signal {signal})"))).unwrap_or_default();
                 pane = pane.push(row![
                     text(format!("Shell {}{detail}", state.status)),
-                    components::button("Start terminal").on_press_maybe((!state.opening && !state.closing).then(|| AppMessage::Terminal(Message::Start(id.to_owned())))),
+                    components::text_button("Start terminal").on_press_maybe((!state.opening && !state.closing).then(|| AppMessage::Terminal(Message::Start(id.to_owned())))),
                 ].spacing(theme::CONTROL_GAP));
             }
         }

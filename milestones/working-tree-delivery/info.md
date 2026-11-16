@@ -1,3 +1,7 @@
+## November 9 — incoming changes merged
+
+Requested inbound integration is complete: local main fast-forwarded from 72a6a33 to 6a5b402. All local design additions and histories are retained, with no source conflict fixes. Independent merge review ACCEPT; current local documentation remains uncommitted. This is an inbound merge, with no new push, application implementation or launch. See [record](../history/2026-11-09_16-41-05-200419-orchestrator-merge-incoming-main.md).
+
 ## November6 full working-tree request
 
 User explicitly requests full current working tree pushed. Direct review covers compact copyable client commands/removal of cleanup UI, OAuth browser policies, initial protocol negotiation and all session notes/research/history. Three source commits created: cdae260,aac26e6,5375131. Documentation3d3d13dand all three source commits pushed; live origin/main confirmed at3d3d13dand pre-record working tree clean. Final documentation follow-up records delivery and is pushed/verified separately. Existing signed build and focused checks plus actual Codex405tool connection provide evidence; no new app launch, release or personal settings edits selected for delivery.

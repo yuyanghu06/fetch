@@ -72,7 +72,18 @@ impl DiscoveryService {
     }
     /// Add the same saved source associations that installation reuses.
     pub fn scan_with_installed(&self, config_path: Option<&Path>, repository: &crate::storage::ServerRepository) -> Result<Value, DiscoveryError> {
-        let mut value = self.scan(config_path)?;
+        self.scan_scoped(config_path,repository,None)
+    }
+    /// Source selection and installation destination are separate. Project
+    /// defaults inspect only the two existing supported project formats.
+    pub fn scan_scoped(&self, config_path: Option<&Path>, repository: &crate::storage::ServerRepository, project: Option<&crate::projects::Project>) -> Result<Value, DiscoveryError> {
+        let project_default=project.is_some_and(|project|config_path.is_none_or(|path|path.canonicalize().is_ok_and(|path|path==project.folder_path)));
+        let mut value = if project_default {
+            let project=project.expect("project default has a project");
+            let groups=read_known_candidates([(project.folder_path.join(".mcp.json"),"claude_code"),(project.folder_path.join(".codex/config.toml"),"codex")]);
+            json!({"status":"ok","configs":groups,"next_steps":[]})
+        } else {self.scan(config_path)?};
+        value["project_id"]=json!(project.map(|project|project.id.as_str()));
         let records = repository.list_saved().map_err(|_| DiscoveryError {
             code: "DISCOVERY_FAILED",
             message: "Fetch could not safely read its installed server records. Discovery was not completed.",
@@ -80,6 +91,7 @@ impl DiscoveryService {
         })?;
         let mut installed = BTreeMap::new();
         for record in &records {
+            if crate::projects::server_project_id(record)!=project.map(|project|project.id.as_str()){continue;}
             if let (Some(path), Some(name), Some(id)) = (
                 record["_installation"]["source_path"].as_str(),
                 record["_installation"]["source_name"].as_str(),

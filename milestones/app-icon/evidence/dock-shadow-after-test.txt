@@ -1,0 +1,4 @@
+Native raster comparison: mean channel delta 0.162326/255; max 6; changed 3380/36864.
+PASS: actual AppKit application icon matches the approved PNG within native rasterization tolerance, at 1024pt.
+Native raster comparison: mean channel delta 0.162326/255; max 6; changed 3380/36864.
+PASS: background-thread assignment survives overwritten/released source bytes and creates no windows.

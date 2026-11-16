@@ -4,6 +4,7 @@ use crate::{authority::Caller, manager::{Manager,ManagementError}, runner::{Invo
 use axum::{Json,body::to_bytes,extract::{Path,Request,State},http::{HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response}};
 use serde_json::{Value,json,value::RawValue};
 use std::sync::Arc;
+use futures_util::{stream,StreamExt};
 
 pub(super) fn manager(state:&AppState)->Result<Arc<Manager>,Response>{state.manager.clone().ok_or_else(||application_error(StatusCode::SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE","Start Fetch's native application to use this operation.",None))}
 pub(super) fn management_error(error:ManagementError)->Response{crate::diagnostics::application_failure(error.code);(StatusCode::from_u16(error.http_status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),Json(error.body())).into_response()}
@@ -24,14 +25,14 @@ fn invalid()->Response{application_error(StatusCode::BAD_REQUEST,"INVALID_REQUES
 pub(super) fn target(caller:&Caller,scope:&str,id:&str,item:Option<&str>)->Result<(),Response>{if id.is_empty()||id.contains('\0'){return Err(invalid());}if !caller.permits(scope,id,item){return Err(application_error(StatusCode::NOT_FOUND,"SERVER_NOT_FOUND","The selected server was not found.",None));}Ok(())}
 
 pub async fn install(State(state):State<Arc<AppState>>,request:Request)->Response{
-    if let Err(reply)=authorize_scope(&state,request.headers(),"fetch:manage",None){return *reply;}
+    let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(value)=>value,Err(reply)=>return *reply};
     let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match body(request).await{Ok(v)=>v,Err(r)=>return r};
-    match manager.install(input).await{Ok(value)=>{let location=value["installation_id"].as_str().map(|id|format!("/api/v1/setup/installations/{}",crate::json::path_component(id)));accepted(value,location)},Err(e)=>management_error(e)}
+    match manager.install_for(&caller,input).await{Ok(value)=>{let location=value["installation_id"].as_str().map(|id|format!("/api/v1/setup/installations/{}",crate::json::path_component(id)));accepted(value,location)},Err(e)=>management_error(e)}
 }
 pub async fn installation(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
-    if let Err(reply)=authorize_scope(&state,request.headers(),"fetch:manage",None){return *reply;}
+    let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(value)=>value,Err(reply)=>return *reply};
     if !no_query(&request)||id.is_empty()||id.contains('\0')||empty_body(request).await.is_err(){return invalid();}
-    match manager(&state){Ok(manager)=>match manager.installation(&id).await{Ok(v)=>Json(v).into_response(),Err(e)=>management_error(e)},Err(r)=>r}
+    match manager(&state){Ok(manager)=>match manager.installation_for(&caller,&id).await{Ok(v)=>Json(v).into_response(),Err(e)=>management_error(e)},Err(r)=>r}
 }
 pub async fn config(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
@@ -48,23 +49,23 @@ pub async fn authenticate(State(state):State<Arc<AppState>>,Path(id):Path<String
 // Kept for existing clients and the restricted background renewal sender.
 async fn authenticate_compatibility(state:Arc<AppState>,id:String,request:Request)->Response{
     let background=request.headers().contains_key("x-fetch-background-auth");
-    let manager=if background{
+    let (manager,caller)=if background{
         let tokens:Vec<_>=request.headers().get_all("x-fetch-background-auth").iter().collect();
         let valid=match tokens.as_slice(){[token]=>token.to_str().ok(),_=>None};
         let Some(manager)=state.manager.as_ref().filter(|manager|valid.is_some_and(|token|manager.accepts_background_token(token))) else{
             return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","This background authentication request is not authorized.",None);
         };
         if id.is_empty()||id.contains('\0'){return invalid();}
-        manager.clone()
+        (manager.clone(),None)
     }else{
         let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};
         if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
-        match manager(&state){Ok(v)=>v,Err(r)=>return r}
+        (match manager(&state){Ok(v)=>v,Err(r)=>return r},Some(caller))
     };
     let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};
     let interactive=match authentication_mode(&input){Ok(value)=>value,Err(reply)=>return reply};
     if background&&interactive{return application_error(StatusCode::FORBIDDEN,"FORBIDDEN","Background authentication can only renew existing remote access without opening sign-in.",None);}
-    let result=if background{manager.authenticate_background(&id).await}else{manager.authenticate_mode(&id,interactive).await};
+    let result=if let Some(caller)=caller{manager.authenticate_for(&caller,&id,interactive).await}else{manager.authenticate_background(&id).await};
     match result{Ok(v)=>{if v["status"]=="authenticating"{accepted(v,Some(format!("/api/v1/servers?{}",url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).finish())))}else{Json(v).into_response()}},Err(e)=>management_error(e)}
 }
 fn authentication_mode(input:&Value)->Result<bool,Response>{
@@ -75,7 +76,7 @@ fn authentication_mode(input:&Value)->Result<bool,Response>{
 pub async fn restart(State(state):State<Arc<AppState>>,Path(id):Path<String>,request:Request)->Response{
     let caller=match authorize_scope(&state,request.headers(),"fetch:manage",None){Ok(v)=>v,Err(r)=>return *r};if let Err(r)=target(&caller,"fetch:manage",&id,None){return r;}
     let manager=match manager(&state){Ok(v)=>v,Err(r)=>return r};let input=match optional_body(request).await{Ok(v)=>v,Err(r)=>return r};
-    match manager.restart(&id,input).await{Ok(v)=>{
+    match manager.restart_for(&caller,&id,input).await{Ok(v)=>{
         let mut query=url::form_urlencoded::Serializer::new(String::new());query.append_pair("id",&id);
         if let Some(attempt)=v["restart_id"].as_str(){query.append_pair("restart_id",attempt);}
         if matches!(v["status"].as_str(),Some("restarting"|"authenticating")){accepted(v,Some(format!("/api/v1/servers?{}",query.finish())))}else{Json(v).into_response()}
@@ -115,8 +116,16 @@ pub async fn list_tools(manager:&Manager,caller:&Caller,ids:Vec<String>,view:&st
     let installed=manager.repository.list().map_err(|_|ManagementError::new(500,"TOOL_LIST_UNAVAILABLE","Installed server information is unavailable."))?;
     let selected=if ids.is_empty(){installed.iter().filter_map(|r|r["server_id"].as_str()).filter(|id|caller.permits("fetch:catalog",id,None)).map(str::to_owned).collect()}else{ids};
     let(mut origins,mut missing,mut steps)=(Vec::new(),Vec::new(),Vec::new());
-    for id in selected{if !caller.permits("fetch:catalog",&id,None)||!installed.iter().any(|r|r["server_id"].as_str()==Some(id.as_str())){missing.push(id);continue;}
-        let mut origin=match manager.runner.catalog(&id,view).await{Ok(v)=>v,Err(e)=>crate::runner::catalog::unavailable_origin(&id,&e)};
+    let acquisitions=stream::iter(selected.into_iter().map(|id|{
+        let installed=&installed;
+        async move{
+            if !installed.iter().any(|record|record["server_id"].as_str()==Some(id.as_str())&&manager.permitted_record(caller,"fetch:catalog",record,None)){return (id,None);}
+            let origin=match manager.runner.catalog(&id,view).await{Ok(v)=>v,Err(e)=>crate::runner::catalog::unavailable_origin(&id,&e)};
+            if !manager.repository.get_saved(&id).ok().flatten().is_some_and(|record|manager.permitted_record(caller,"fetch:catalog",&record,None)){return (id,None);}
+            (id,Some(origin))
+        }
+    })).buffered(8).collect::<Vec<_>>().await;
+    for (id,origin) in acquisitions{let Some(mut origin)=origin else{missing.push(id);continue;};
         if let Some(tools)=origin["tools"].as_array_mut(){tools.retain(|tool|tool["name"].as_str().is_some_and(|name|caller.permits("fetch:catalog",&id,Some(name))));}
         if let Some(rejected)=origin["rejected_tools"].as_array_mut(){rejected.retain(|tool|tool["name"].as_str().is_some_and(|name|caller.permits("fetch:catalog",&id,Some(name))));}
         if origin["status"]=="partial"&&origin["rejected_tools"].as_array().is_some_and(Vec::is_empty){origin["status"]=json!("available");}
@@ -154,8 +163,9 @@ fn call_failure(mut response:Response)->Response{
     if let Some(value)=headers.get(header::WWW_AUTHENTICATE){response.headers_mut().insert(header::WWW_AUTHENTICATE,value.clone());}response
 }
 
-pub struct ManagementAdapter {pub manager:Arc<Manager>,pub discovery:crate::discovery::DiscoveryService}
+pub struct ManagementAdapter {pub manager:Arc<Manager>,pub discovery:crate::discovery::DiscoveryService,pub workspace:Option<Arc<crate::workspace::WorkspaceService>>}
 impl crate::mcp::ManagementBackend for ManagementAdapter {
+    fn project_registered(&self,id:&str)->Result<bool,RunError>{self.manager.projects().get(id).map(|project|project.is_some()).map_err(|_|RunError::catalog())}
     fn invoke<'a>(&'a self,name:&'a str,arguments:Box<RawValue>,caller:Caller,view:&'a str)->std::pin::Pin<Box<dyn std::future::Future<Output=Result<Value,RunError>>+Send+'a>>{
         Box::pin(async move{
             let input:Value=serde_json::from_str(arguments.get()).map_err(|_|RunError::invalid())?;
@@ -163,26 +173,55 @@ impl crate::mcp::ManagementBackend for ManagementAdapter {
             let allowed:&[&str]=match name {
                 "fetch__discover_servers"=>&["config_path"], "fetch__install_servers"=>&["servers"],
                 "fetch__get_installation"=>&["installation_id"], "fetch__get_servers"=>&["id","restart_id"],
-                "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id","interactive"],
-                "fetch__restart_server"=>&["server_id","force_restart","interactive"],
+                "fetch__list_servers"=>&[], "fetch__list_tools"=>&["server_id","view"], "fetch__authenticate_server"=>&["server_id","interactive"],
+                "fetch__restart_server"=>&["server_id","force_restart","interactive","action"],
                 "fetch__delete_server"=>&["server_id"],
                 "fetch__update_server_config"=>&["server_id","execution"],
+                "fetch__list_sessions"=>&["app","cursor","limit"],
+                "fetch__read_session"=>&["session_id","offset","limit"],
                 _=>return Err(RunError::invalid()),
             };
             if input.as_object().is_some_and(|object|object.keys().any(|key|!allowed.contains(&key.as_str()))){return Err(RunError::invalid());}
             let project=|result:Result<Value,ManagementError>|Ok(result.unwrap_or_else(|error|error.body()));
-            if name=="fetch__list_tools"{let ids=strings(&input,"server_id")?;let view=match input.get("view"){None=>view,Some(value)=>value.as_str().ok_or_else(RunError::invalid)?};return project(list_tools(&self.manager,&caller,ids,view).await);}
+            if matches!(name,"fetch__list_sessions"|"fetch__read_session"){
+                let Some(service)=self.workspace.clone()else{return Err(RunError{http_status:503,code:"WORKSPACE_UNAVAILABLE",message:"The coding-app history folders are unavailable.",execution:"not_started"});};
+                let registry=self.manager.projects();
+                let limit=input.get("limit").map(|value|value.as_u64().and_then(|value|usize::try_from(value).ok()).ok_or_else(RunError::invalid)).transpose()?;
+                let app=input.get("app").map(|value|value.as_str().map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?;
+                let cursor=input.get("cursor").map(|value|value.as_str().map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?;
+                let offset=input.get("offset").map(|value|value.as_u64().ok_or_else(RunError::invalid)).transpose()?.unwrap_or(0);
+                let id=if name=="fetch__read_session"{Some(input["session_id"].as_str().filter(|id|!id.is_empty()).ok_or_else(RunError::invalid)?.to_owned())}else{None};
+                return tokio::task::spawn_blocking(move||match id{
+                    Some(id)=>crate::workspace::project_sessions::read(&service,&registry,&caller,&id,offset,limit),
+                    None=>crate::workspace::project_sessions::list(&service,&registry,&caller,app.as_deref(),cursor.as_deref(),limit),
+                }).await.map_err(|_|RunError::catalog()).map(|result|result.unwrap_or_else(|error|error.body()));
+            }
+            if name=="fetch__list_servers"{
+                if !caller.has_scope("fetch:catalog"){return Err(RunError::missing());}
+                let installed=self.manager.repository.list().map_err(|_|RunError{http_status:503,code:"SERVER_LIST_UNAVAILABLE",message:"Fetch could not read the permitted installed-server list.",execution:"not_started"})?;
+                let mut servers=vec![];
+                for row in installed{
+                    let id=row["server_id"].as_str().ok_or_else(RunError::catalog)?;
+                    if !self.manager.permitted_record(&caller,"fetch:catalog",&row,None){continue;}
+                    let snapshot=self.manager.runner.snapshot(id).await;
+                    let current=self.manager.repository.get_saved(id).map_err(|_|RunError::catalog())?;
+                    if !current.is_some_and(|record|self.manager.permitted_record(&caller,"fetch:catalog",&record,None)){continue;}
+                    servers.push(json!({"server_id":id,"name":row["name"],"status":snapshot["runtime"]["status"]}));
+                }
+                return Ok(json!({"status":"ok","servers":servers,"next_steps":[]}));
+            }
+            if name=="fetch__list_tools"{let ids=strings(&input,"server_id")?;if ids.is_empty(){return Err(RunError::invalid());}let view=match input.get("view"){None=>view,Some(value)=>value.as_str().ok_or_else(RunError::invalid)?};return project(list_tools(&self.manager,&caller,ids,view).await);}
             if !caller.can_manage(){return Err(RunError{http_status:403,code:"FORBIDDEN",message:"Server-management permission is required.",execution:"not_started"});}
             let needs_server=matches!(name,"fetch__authenticate_server"|"fetch__restart_server"|"fetch__update_server_config"|"fetch__delete_server");
             let id=if needs_server{input["server_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?}else{""};
             if !id.is_empty()&&!caller.permits("fetch:manage",id,None){return Err(RunError::missing());}
             match name{
-                "fetch__discover_servers"=>{let path=input.get("config_path").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')&&std::path::Path::new(s).is_absolute()).map(std::path::PathBuf::from).ok_or_else(RunError::invalid)).transpose()?;let discovery=self.discovery.clone();let repository=self.manager.repository.clone();tokio::task::spawn_blocking(move||discovery.scan_with_installed(path.as_deref(),&repository)).await.map_err(|_|RunError::catalog())?.map_err(|e|RunError{http_status:e.http_status,code:e.code,message:e.message,execution:"not_started"})},
-                "fetch__install_servers"=>project(self.manager.install(input).await),
-                "fetch__get_installation"=>project(self.manager.installation(input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
+                "fetch__discover_servers"=>{let path=input.get("config_path").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')&&std::path::Path::new(s).is_absolute()).map(std::path::PathBuf::from).ok_or_else(RunError::invalid)).transpose()?;let selected=caller.project_id().map(|id|self.manager.projects().get(id)).transpose().map_err(|_|RunError::catalog())?.flatten();if caller.project_id().is_some()&&selected.is_none(){return Err(RunError::missing());}if let (Some(project),Some(path))=(&selected,&path){if !path.canonicalize().is_ok_and(|path|path.starts_with(&project.folder_path)){return Err(RunError::missing());}}let discovery=self.discovery.clone();let repository=self.manager.repository.clone();tokio::task::spawn_blocking(move||discovery.scan_scoped(path.as_deref(),&repository,selected.as_ref())).await.map_err(|_|RunError::catalog())?.map_err(|e|RunError{http_status:e.http_status,code:e.code,message:e.message,execution:"not_started"})},
+                "fetch__install_servers"=>project(self.manager.install_for(&caller,input).await),
+                "fetch__get_installation"=>project(self.manager.installation_for(&caller,input["installation_id"].as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).ok_or_else(RunError::invalid)?).await),
                 "fetch__get_servers"=>{if input.get("restart_id").is_some()&&input["id"].as_array().is_none_or(|ids|ids.len()!=1){return Err(RunError::invalid());}let ids=strings(&input,"id")?;project(self.manager.servers_for(&caller,ids,input.get("restart_id").map(|v|v.as_str().filter(|s|!s.trim().is_empty()&&!s.contains('\0')).map(str::to_owned).ok_or_else(RunError::invalid)).transpose()?).await)},
-                "fetch__authenticate_server"=>{let interactive=input.get("interactive").map(|value|value.as_bool().ok_or_else(RunError::invalid)).transpose()?.unwrap_or(true);project(self.manager.authenticate_mode(id,interactive).await)},
-                "fetch__restart_server"=>{let mut patch=json!({});for key in ["force_restart","interactive"]{if let Some(value)=input.get(key){patch[key]=value.clone();}}project(self.manager.restart(id,patch).await)},
+                "fetch__authenticate_server"=>{let interactive=input.get("interactive").map(|value|value.as_bool().ok_or_else(RunError::invalid)).transpose()?.unwrap_or(true);project(self.manager.authenticate_for(&caller,id,interactive).await)},
+                "fetch__restart_server"=>{let mut patch=json!({});for key in ["force_restart","interactive","action"]{if let Some(value)=input.get(key){patch[key]=value.clone();}}project(self.manager.restart_for(&caller,id,patch).await)},
                 "fetch__delete_server"=>project(self.manager.delete_server(id,&caller).await),
                 "fetch__update_server_config"=>{let id=id.to_owned();let mut patch=input;patch.as_object_mut().ok_or_else(RunError::invalid)?.remove("server_id");project(self.manager.config(&id,patch,&caller).await)},
                 _=>Err(RunError::invalid())

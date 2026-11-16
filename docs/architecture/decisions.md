@@ -1,3 +1,49 @@
+## November 12 — project connection contract approved
+
+User explicitly selected "Approve and build this contract" for
+[project-connections.md](project-connections.md). Register folders explicitly in
+native Workspace; keep server filtering, installation destination and connection
+selection separate. Packages stay central. Project connections see Shared+own
+servers; Shared connections see Shared only. Exact resource-bound grants and
+separate connector profiles prevent URL-based scope changes. Session reading is
+project-only and separately selected in native/browser approval; no agent access
+to instruction/subagent definitions. Source is implemented with focused disposable
+checks in progress; this decision does not claim actual client/native acceptance.
+
+## November 12 — selected server Off implementation accepted
+
+The approved existing-POST action:stop/durable preference now has source implementation, 30 passing focused checks, signed build/strict verification and independent Evaluator ACCEPT. No new route/force-stop/config PATCH control. [Contract](server-on-off.md); [evidence](../../milestones/server-on-off/evidence/info.md).
+
+## November 12 — Workspace approved; private APIs first
+
+User authorizes implementation with the frontend wrapping backend APIs and then
+explicitly approves the complete native-only route contract in [workspace.md](workspace.md).
+Global view shows global instruction/subagent files and all sessions; selecting a
+folder shows only that project. Native paths are supplied to backend APIs. Edit
+existing files in place; converted cross-app agent drafts flag incompatible
+settings and use app-reported model choices. Original logs are read-only and
+chunked, without a Fetch archive. No instruction/subagent MCP tools; this is an
+explicit exception to D48's earlier blanket coverage rule. User selects finishing
+Workspace first and keeping session MCP unavailable until the separate reviewed
+project-connection feature exists. No personal-state edits or running Fetch
+relaunch are selected by development fixture verification.
+
+## November 12 — persistent server Off approved
+
+User approves extending the existing start/restart POST with action:stop and explicitly selects staying off after Fetch restarts until turned on. The operation keeps the existing management permission, preserves files/logins and refuses busy tools/login/restart rather than interrupting them. Planner completes the failure/startup/MCP/UI scope in [server-on-off.md](server-on-off.md); Coder and Tester are implementing/preparing verification under exclusive ownership. No stop source/runtime acceptance is claimed at this decision checkpoint.
+
+## November 12 — automatic first connection opens Fetch approval
+
+User requires normal Claude/Codex startup to trigger Fetch's native popup without a separate setup/login command. Reuse the reviewed four routes, permission choices, fresh Mac confirmation and separate grants. Missing-profile startup can launch/focus Fetch. Persist the private pending proof in its own installation/profile Keychain record; native Fetch alone claims/saves so approval can finish after a client timeout. Existing approved connections attach normally. Starting a connector never grants access. A timed-out client may need its normal Reconnect action; do not fabricate initialization. Old direct browser HTTPS OAuth still has its independent certificate trust requirement. No project scope, personal config/trust edits, migration or release work. [Design and acceptance limits](local-mcp-connector.md).
+
+## November 12 — native connector implementation and manual acceptance
+
+User says go ahead on native setup launch/focus/popup, then explicitly chooses manual client/Mac approval testing later. The reviewed four enrollment operations, separate client grants and raw pinned-HTTPS bridge are implemented; source/fixture evaluation and signed build pass. Actual native Keychain/client MCP compatibility is not claimed. [Design/evidence](local-mcp-connector.md). No project scope, client config edits, trust installation, migration or release selected.
+
+## November 12 — connector setup opens a native approval popup
+
+User specifies that install/setup launches Fetch, focuses it in the OS and shows a popup screen. Reuse an existing Fetch instance. Preserve selected permissions, fresh Mac confirmation and separate client grants; starting a connector does not grant access. This selects native setup presentation, not unreviewed enrollment APIs/helper/client config changes. [Current connector plan](local-mcp-connector.md).
+
 # Confirmed architecture decisions
 
 ## D83 — Start installed servers and report when no login is needed
@@ -1080,3 +1126,11 @@ User explicitly selects marking Figma Remote unsupported in Fetch’s import/ins
 ## November 4 — Delegate Python package server environments to uv
 
 User requests implementing the recommended wrapper behavior after reviewing why Fetch forced Python3.13.18. For new Python package MCP installations, use uv's own compatible interpreter/dependency/environment handling rather than Fetch's global exact Python pin and separate metadata/venv/pip workflow. Keep persistent tool environments separate per installation and managed runtime/cache/account files in Fetch's private locations. Honor an explicitly requested Python in supported uvx launch instructions; retain imported package pins and supported server arguments. Reuse installed runtime files where compatible. Existing saved servers remain unchanged; no account or credential copying. No new API/UI/storage schema, provider-specific logic or automatic personal MCP run. Standalone local-script provisioning is outside this package-installation change. This supersedes the universal package Python pin, not D06's private tooling/environment separation.
+
+## November 9 — fully frameless native window
+
+User explicitly selected Make the whole window frameless after choosing between native titlebar controls and a frameless window. Native boot/reopen share undecorated transparent settings, with transparent application background and window dragging from unused navigation/title space. Existing tab controls capture clicks normally. This selects native window appearance only; no backend/API/credential change. Seven focused UI checks/screenshots/signed build pass; actual OS compositor/drag/resize after relaunch remain unobserved. See milestones/tool-shadow-boundary/info.md.
+
+## November12 — server-first tools selected
+
+User approves fixed server-first discovery, selected-server parallel tool listing, forwarding calls, model instructions and complete permitted server IDs at startup. After a standards correction, user accepts the three-tool generic caller and its client-approval display difference. Connection-specific dynamic catalog expansion is superseded; no new HTTP route/auth/connection scope is selected. [Complete selected contract](server-first-tools.md). Implementation underway; real client failure/acceptance remains unresolved.

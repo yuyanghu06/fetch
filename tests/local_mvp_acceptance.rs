@@ -50,11 +50,12 @@ struct FixtureManagement {
 impl ManagementBackend for FixtureManagement {
     fn invoke<'a>(
         &'a self,
-        _name: &'a str,
+        name: &'a str,
         _arguments: Box<RawValue>,
         _caller: Caller,
         _view: &'a str,
     ) -> Pin<Box<dyn Future<Output = Result<Value, RunError>> + Send + 'a>> {
+        if name == "fetch__list_servers" { return Box::pin(async { Ok(json!({"status":"ok","servers":[],"next_steps":[]})) }); }
         self.calls.fetch_add(1, Ordering::SeqCst);
         Box::pin(async { Ok(json!({"status":"ok","next_steps":[]})) })
     }
@@ -97,14 +98,15 @@ async fn json_body(response: Response) -> Value {
 }
 
 #[tokio::test]
-async fn catalog_grant_only_lists_the_catalog_management_tool() {
+async fn catalog_grant_only_lists_server_discovery_and_selected_tool_definitions() {
     let (_, management, app) = fixture(&["fetch:catalog"]);
     let response = app.oneshot(modern("tools/list", json!({}))).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let body = json_body(response).await;
     let tools = body["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 1);
-    assert_eq!(tools[0]["name"], "fetch__list_tools");
+    assert_eq!(tools.len(), 2);
+    assert!(tools.iter().any(|tool|tool["name"]=="fetch__list_servers"));
+    assert!(tools.iter().any(|tool|tool["name"]=="fetch__list_tools"));
     assert_eq!(body["result"]["resultType"], "complete");
     assert_eq!(body["result"]["_meta"]["fetch/catalog"]["complete"], true);
     assert!(body.get("next_steps").is_none(), "Native MCP retains its protocol envelope");
@@ -179,7 +181,7 @@ async fn codex_initial_version_offer_negotiates_fetch_legacy_and_lists_tools() {
     list.headers_mut().insert("mcp-session-id", session);
     let response = app.oneshot(list).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(json_body(response).await["result"]["tools"][0]["name"], "fetch__list_tools");
+    assert!(json_body(response).await["result"]["tools"].as_array().unwrap().iter().any(|tool|tool["name"]=="fetch__list_tools"));
 }
 
 #[tokio::test]
@@ -203,7 +205,7 @@ async fn legacy_session_requires_initialization_and_is_removed_on_revocation() {
     assert_eq!(app.clone().oneshot(initialized).await.unwrap().status(), StatusCode::ACCEPTED);
     let response = app.clone().oneshot(list()).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(json_body(response).await["result"]["tools"][0]["name"], "fetch__list_tools");
+    assert!(json_body(response).await["result"]["tools"].as_array().unwrap().iter().any(|tool|tool["name"]=="fetch__list_tools"));
 
     gateway.revoke_owner("trusted-injected-authority").await;
     assert_eq!(app.oneshot(list()).await.unwrap().status(), StatusCode::NOT_FOUND);

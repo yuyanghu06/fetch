@@ -1,0 +1,9 @@
+Command: cargo test --lib workspace::files::reveal_tests --offline --message-format short -- --nocapture
+
+Observed run after final backend implementation:
+Finished test profile; running src/lib.rs unit tests
+running 1 test
+test workspace::files::reveal_tests::reveal_selects_authorized_file_and_keeps_it_unchanged_without_finder ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 0.05s
+
+Uses a disposable shell script in place of /usr/bin/open. Validates -R and regular authorized file, status/revealed path, unchanged file, missing404 and out-of-scope403. No real Finder launch was performed.

@@ -1,3 +1,11 @@
+## November 12 — scoped discovery core
+
+`scan_scoped` reads a registered project's `.mcp.json` and `.codex/config.toml`
+through the existing parsers, or uses the existing explicit-source behavior.
+Installed markers match the destination project. HTTP/MCP wrappers derive agent
+scope from the verified project resource; native users select the destination
+explicitly. Agent-supplied sources must remain inside their project folder.
+
 ## November 4 — optional Python version in uvx imports
 
 One backend-only Python launch parser is shared by classification and capture. It preserves supported `uvx --python VERSION package` / `--python=VERSION` requests, package pins, existing Time `--from` syntax and supported server arguments. The request is forwarded to uv preparation without adding public saved-config fields or copying interpreter paths/credentials. Ordinary uvx imports carry no Fetch-imposed Python version. Other launch-option and server-argument boundaries are unchanged.

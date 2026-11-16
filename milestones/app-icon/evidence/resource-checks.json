@@ -1,0 +1,97 @@
+{
+  "checks": [
+    {
+      "command": [
+        "plutil",
+        "-lint",
+        "packaging/Info.plist"
+      ],
+      "exit_code": 0,
+      "output": "packaging/Info.plist: OK\n"
+    },
+    {
+      "command": [
+        "sh",
+        "-n",
+        "scripts/package-macos.sh"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "sips",
+        "-g",
+        "pixelWidth",
+        "-g",
+        "pixelHeight",
+        "-g",
+        "dpiWidth",
+        "-g",
+        "dpiHeight",
+        "-g",
+        "hasAlpha",
+        "packaging/Fetch.png"
+      ],
+      "exit_code": 0,
+      "output": "/Users/yuyang/Documents/fetch/packaging/Fetch.png\n  pixelWidth: 1024\n  pixelHeight: 1024\n  dpiWidth: 72.000\n  dpiHeight: 72.000\n  hasAlpha: yes\n"
+    },
+    {
+      "command": [
+        "iconutil",
+        "-c",
+        "iconset",
+        "packaging/Fetch.icns",
+        "-o",
+        "<temporary>/Fetch.iconset"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "bundle_icon": "Fetch.icns",
+  "bundle_resource_copy_present": true,
+  "icns_sizes": {
+    "icon_16x16.png": [
+      16,
+      16
+    ],
+    "icon_16x16@2x.png": [
+      32,
+      32
+    ],
+    "icon_32x32.png": [
+      32,
+      32
+    ],
+    "icon_32x32@2x.png": [
+      64,
+      64
+    ],
+    "icon_128x128.png": [
+      128,
+      128
+    ],
+    "icon_128x128@2x.png": [
+      256,
+      256
+    ],
+    "icon_256x256.png": [
+      256,
+      256
+    ],
+    "icon_256x256@2x.png": [
+      512,
+      512
+    ],
+    "icon_512x512.png": [
+      512,
+      512
+    ],
+    "icon_512x512@2x.png": [
+      1024,
+      1024
+    ]
+  },
+  "limitations": "No Fetch launch/live Dock or Finder observation/bundle or DMG creation/accounts/Keychain/MCPs. Native fixture uses Prohibited activation policy and no windows."
+}

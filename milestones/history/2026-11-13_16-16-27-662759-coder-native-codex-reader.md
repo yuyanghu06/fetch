@@ -1,0 +1,10 @@
+# Native Codex reader implemented and fixture checked
+
+- Local timestamp / acting role / milestone: 2026-11-13T16:16:27.662759-05:00 / Coder (serialized by Orchestrator) / official-session-readers.
+- Requested scope: Pinned official native Codex saved-history reader, full messages and exact native source selection, private setup only.
+- Starting repository state: Approved separate reader plan; feasibility probes identified native private projection/lineage access needs.
+- Work performed / changed files: readers/codex helper/source access entrypoints/fixtures/guides and scripts/setup-codex-session-reader.py. Root inspected helper mapping, private snapshot boundaries and deterministic setup patches. Installed actual executable under Fetch-Development/session-readers/codex.
+- Decisions: Reuse official legacy reader and paginated projector/item pages. Tiny documented source exposures preserve upstream algorithms. Exact native read-only state query plus official naming selects current rollout/title; native filesystem fallback is used without an index. No ConfigLoader, auth manager, app-server, model or MCP startup. include_archived:true matches official full item handlers and permits archived threads, not removed branches.
+- Checks and evidence: Coder reports 7 passing actual helper cases via python3 readers/codex/tests/fixtures.py <executable>: 210KB reply,281 modern messages across pages, exact named tool output, bounded parent lineage, child exclusion, current indexed rollout/name and unchanged index, explicit missing ancestry. Installed Rust1.94.1 compiled successfully. Independent confined/backend checks still pending.
+- Resulting state / acceptance: Native helper implementation ready; final integrated acceptance not claimed. Main app remains independent of SDK build dependencies.
+- Remaining work and handoff: Independent Tester to exercise routes/confinement and repeat native cases; backend/UI integration and evaluator/signed build remain. No personal transcript text was read during fixtures.

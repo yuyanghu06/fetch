@@ -1,0 +1,7 @@
+# Https identity diagnostics
+
+User reported protected HTTPS identity startup failure without any Keychain dialog. The old IdentityError collapsed missing keys, native access errors, file access/decryption and invalid identity format into one message. Native Keychain failures now retain their OSStatus; startup reports that safe reason or the distinct file/format stage. No secret values are logged. Existing key/storage/identity behavior is unchanged: inaccessible saved identity is never replaced. Current public executable signing remains Fetch Development Local Signing, not a newly selected Apple-issued identity. Metadata-only checks found private owned non-symlink application/TLS directories; no saved secret bytes or Keychain values were requested.
+
+Verification and limits: Two disposable identity tests pass for retained OSStatus, distinct invalid data and byte-for-byte saved-file preservation; eleven existing fake-Keychain/credential checks pass. Final signed build passes. Underlying real-Mac Keychain access failure remains UNRESOLVED: no actual OSStatus from a fresh failed user launch has been observed. No reset, migration, permission/trust change or agent-run Fetch launch. If it recurs, use the new precise error to select a repair.
+
+Status: Diagnostics implemented; actual Keychain startup failure unresolved. Existing unrelated work and broader pending acceptance are preserved. No release/commit/push requested.

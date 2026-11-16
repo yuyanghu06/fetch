@@ -1,0 +1,10 @@
+# Official readers and Workspace file controls integrated
+
+- Local timestamp / acting role / milestone: 2026-11-13T17:45:33.280817-05:00 / Orchestrator / official-session-readers.
+- Requested scope: Finish authorized official conversation readers, global Codex roles, collapsed tool results, formatted subagent popup, Finder controls and Saved removal.
+- Starting repository state: Broad unrelated dirty tree; explicit API/dependency/Finder approvals and independent specialist reports.
+- Work performed / changed files: Inspected actual implementations, fixture evidence and rendered PNGs; serialized research/planning/coder/tester/evaluator passes; refreshed canonical contract/status/guides and preserved unfinished to-do work. Renamed tester evidence .log files to .txt so they are not hidden by repository log ignores. No further application change after the final signed build.
+- Decisions: Scoped implementation complete with independent ACCEPT. Original sessions/settings and default raw APIs remain unchanged. Explicit private helper setup is installed for development, no model/MCP/login or normal Codex service launched. Global role creation was separately authorized/completed earlier.
+- Checks and evidence: Focused checks above pass, code diff whitespace check passes, final signed development build and strict signature verification pass21.29s. See independent tester-native-reader-report.md and final-ui-tests-and-captures.txt. Rendered popup/tool/editor and long-message ending inspected. Build warnings preexist/outside selected scope.
+- Resulting state / acceptance: Ready for user testing after explicit Quit/reopen. Implementation milestone complete; broader MVP/native-provider work remains as recorded below.
+- Remaining work and handoff: No real Finder or personal-history/app observation; forced deadline/cancel and live SQLite sidecars untested at runtime. Do not kill/relaunch existing Fetch automatically, change credentials/client state, release or claim those observations passed.

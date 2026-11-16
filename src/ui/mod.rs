@@ -4,15 +4,26 @@ mod file_picker;
 mod authentication;
 mod auth_requests;
 mod components;
+mod copy_feedback;
+mod refresh_feedback;
+mod connector_setup;
+mod workspace;
+mod session_history;
+mod project_scope;
+#[cfg(test)]
+mod project_scope_tests;
 mod server_terminal;
 mod theme;
 mod surface;
+mod scroll_gesture;
 #[cfg(test)]
 mod auth_tests;
 #[cfg(test)]
 mod neumorphic_tests;
 #[cfg(test)]
 mod fidelity_tests;
+#[cfg(test)]
+mod workspace_tests;
 use components::{button, checkbox, text_input};
 use authentication::{Flow as AuthFlow, Phase as AuthPhase};
 use crate::{application::ApplicationHost, native_auth::NativeSettingsSession};
@@ -24,20 +35,24 @@ use zeroize::Zeroize;
 use std::{collections::{BTreeMap,BTreeSet}, sync::Arc, time::Duration};
 
 #[derive(Clone,Copy,PartialEq,Eq)]
-enum Page { Servers, Install, Connect, Settings }
+enum Page { Servers, Install, Connect, Workspace, Settings }
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum Deletion { Pending(u64), Refreshing }
 fn installable(row:&Value)->bool { row["status"]=="supported" && row["installed"]!=true }
 #[derive(Clone)]
 enum Message {
+    Workspace(workspace::Event),
+    Projects(project_scope::Event),
     Terminal(server_terminal::Message),
-    Page(Page), Opened(window::Id), Closed(window::Id), Tick, Show, Quit, Stopped,
-    Refresh, AutomaticRefresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
+    Connector(connector_setup::Event),
+    Page(Page), Opened(window::Id), Closed(window::Id), Escape(window::Id), DragWindow, Tick, Show, Quit, Stopped,
+    Refresh, RefreshFeedbackDone(u64), DiscoveryFeedbackDone(u64), AutomaticRefresh, Servers(u64,u64,Option<window::Id>,Result<Value,String>), Discover, ConfigPath(String), ChooseConfigFile, ConfigFileChosen(window::Id,Result<Option<String>,String>), Discovery(Result<Value,String>),
     Select(String,String,bool), SelectAllServers, Install, Installed(Result<Value,String>), Progress(Result<Value,String>),
     Inspect(String), Tools(String,Option<window::Id>,Result<Value,String>), Authenticate(String), Restart(String,bool), Delete(String), Deleted(u64,String,Result<Value,String>),
     AuthFinished(u64,String,Result<Value,String>), AuthDismiss(String), AuthOpenSignIn(String),
     CredentialFinished(u64,String,bool,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String),
     OpenFolder(String), FolderOpened(String,Option<window::Id>,Result<Value,String>),
+    PowerClicked(String,bool), PowerFinished(String,bool,Result<Value,String>),
     Changed(String,Result<Value,String>), RestartStatus(String,Result<Value,String>),
     Choose(String), Timeout(String), Concurrency(String), StepTimeout(i64), StepConcurrency(i64), SaveExecution,
     ScaleFactor(window::Id,f32), Modifiers(iced::keyboard::Modifiers), RestartClicked(String), CloseDiscovery, OpenDiscovery,
@@ -45,13 +60,29 @@ enum Message {
     Copy(String), ToggleServer(String), ToggleTool(String),
 }
 impl std::fmt::Debug for Message { fn fmt(&self,f:&mut std::fmt::Formatter<'_>)->std::fmt::Result { f.write_str("FetchNativeMessage") } }
+fn window_settings()->window::Settings{
+    window::Settings{size:iced::Size::new(1058.0,789.0),min_size:Some(iced::Size::new(760.0,520.0)),decorations:false,transparent:true,..Default::default()}
+}
+/// Window-wide shortcuts also receive keys captured by an editor or control.
+fn subscription_event(event:iced::Event,_status:iced::event::Status,id:window::Id)->Option<Message>{
+    match event{
+        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed{key:iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape),..})=>Some(Message::Escape(id)),
+        iced::Event::Keyboard(iced::keyboard::Event::ModifiersChanged(value))=>Some(Message::Modifiers(value)),
+        iced::Event::Window(window::Event::Rescaled(value))=>Some(Message::ScaleFactor(id,value)),
+        _=>None,
+    }
+}
 struct Desktop {
+    workspace: workspace::State,
+    projects: project_scope::State,
+    connector: connector_setup::State,
     host: Arc<ApplicationHost>, client: Option<NativeClient>, session: Option<Arc<NativeSettingsSession>>, window:Option<window::Id>,
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
     config_path:String, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, timeout:String, concurrency:String, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
-    busy:bool, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
+    busy:bool, server_refresh:refresh_feedback::RefreshFeedback, discovery_refresh:refresh_feedback::RefreshFeedback, reload_generation:u64, restart_submitting:BTreeSet<String>, restart_failures:BTreeMap<String,String>, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
     authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
+    power_pending:BTreeMap<String,bool>, power_errors:BTreeMap<String,String>,
     deletions:BTreeMap<String,Deletion>, opening_folders:BTreeSet<String>,
     terminals:BTreeMap<String,server_terminal::State>,
     modifiers:iced::keyboard::Modifiers, scale_factor:f32,
@@ -60,19 +91,30 @@ impl Desktop {
     fn boot(host:Arc<ApplicationHost>)->(Self,Task<Message>) {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
-        let (id,open)=window::open(window::Settings { size:iced::Size::new(1248.0,900.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default() });
-        let mut state=Self {host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,polling:None,installation_polling:false,restart_polling:BTreeSet::new(),expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new(),modifiers:iced::keyboard::Modifiers::default(),scale_factor:1.0};
+        let (id,open)=window::open(window_settings());
+        let mut state=Self {projects:project_scope::State::default(),workspace:workspace::State::default(),connector:connector_setup::State::default(),host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,server_refresh:refresh_feedback::RefreshFeedback::default(),discovery_refresh:refresh_feedback::RefreshFeedback::default(),reload_generation:0,restart_submitting:BTreeSet::new(),restart_failures:BTreeMap::new(),polling:None,installation_polling:false,restart_polling:BTreeSet::new(),expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),power_pending:BTreeMap::new(),power_errors:BTreeMap::new(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new(),modifiers:iced::keyboard::Modifiers::default(),scale_factor:1.0};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
-        (state,Task::batch([open.map(Message::Opened),read]))
+        let projects=state.load_projects();
+        (state,Task::batch([open.map(Message::Opened),read,projects]))
     }
     fn refresh(&mut self)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
         let (revision,sequence)=self.auth_requests.begin_read();let window=self.window;
-        Task::perform(async move{client.servers().await},move|result|Message::Servers(revision,sequence,window,result))
+        let project=self.projects.server_filter.query().map(str::to_owned);
+        Task::perform(async move{client.servers_for(project.as_deref()).await},move|result|Message::Servers(revision,sequence,window,result))
+    }
+    fn apply_server_record(&mut self,id:&str,incoming:&Value){
+        if incoming["server_id"].as_str().is_some_and(|returned|returned!=id){return;}
+        if let Some(record)=self.servers["servers"].as_array_mut().and_then(|rows|rows.iter_mut().find(|row|row["server_id"].as_str()==Some(id))){
+            if let (Some(target),Some(fields))=(record.as_object_mut(),incoming.as_object()){target.extend(fields.iter().map(|(key,value)|(key.clone(),value.clone())));}
+        }
+        if incoming["authentication"].is_object(){
+            self.authentication.entry(id.to_owned()).and_modify(|flow|flow.observe(&incoming["authentication"])).or_insert_with(||AuthFlow::passive(&incoming["authentication"]));
+        }
     }
     fn subscription(&self)->Subscription<Message> {
-        Subscription::batch([iced::time::every(Duration::from_secs(1)).map(|_|Message::Tick),iced::time::every(Duration::from_secs(60)).map(|_|Message::AutomaticRefresh),window::close_events().map(Message::Closed),iced::event::listen_with(|event,_,id|match event{iced::Event::Keyboard(iced::keyboard::Event::ModifiersChanged(value))=>Some(Message::Modifiers(value)),iced::Event::Window(window::Event::Rescaled(value))=>Some(Message::ScaleFactor(id,value)),_=>None}),self.terminal_subscription()])
+        Subscription::batch([iced::time::every(Duration::from_secs(1)).map(|_|Message::Tick),iced::time::every(Duration::from_secs(60)).map(|_|Message::AutomaticRefresh),window::close_events().map(Message::Closed),iced::event::listen_with(subscription_event),self.terminal_subscription()])
     }
     fn operation(&mut self,id:String,method:Method,suffix:&str,body:Value)->Task<Message> {
         let Some(client)=self.client.clone() else{return Task::none();};
@@ -81,7 +123,7 @@ impl Desktop {
         Task::perform(async move{client.request(method,&path,Some(body)).await},move |result|Message::Changed(id.clone(),result))
     }
     fn auth_active(&self,id:&str)->bool {
-        self.deletions.contains_key(id) || self.auth_requests.contains(id) || self.authentication.get(id).is_some_and(|flow|flow.active()||flow.reconcile) || self.servers["servers"].as_array().into_iter().flatten()
+        self.deletions.contains_key(id) || self.power_pending.contains_key(id) || self.auth_requests.contains(id) || self.authentication.get(id).is_some_and(|flow|flow.active()||flow.reconcile) || self.servers["servers"].as_array().into_iter().flatten()
             .any(|server|server["server_id"].as_str()==Some(id)&&server["authentication"]["status"]=="authenticating")
     }
     fn can_delete(&self,id:&str)->bool {
@@ -109,7 +151,7 @@ impl Desktop {
         self.terminals.remove(id);
         self.opening_folders.remove(id);
         self.expanded_servers.remove(id);self.expanded_tools.retain(|key|!key.starts_with(&format!("{id}:")));
-        self.restarts.remove(id);self.restart_polling.remove(id);
+        self.power_pending.remove(id);self.power_errors.remove(id);self.restarts.remove(id);self.restart_failures.remove(id);self.restart_submitting.remove(id);self.restart_polling.remove(id);
         if self.selected_server==id{self.secret_value.zeroize();self.secret_name.clear();self.selected_server.clear();self.timeout="120".into();self.concurrency="1".into();}
         if let Some(groups)=self.discovery["configs"].as_array_mut(){for group in groups{
             let path=group["path"].as_str().unwrap_or("").to_owned();
@@ -190,17 +232,38 @@ impl Desktop {
     }
     fn update(&mut self,message:Message)->Task<Message> {
         match message {
+            Message::Workspace(event)=>return self.update_workspace(event),
+            Message::Projects(event)=>return self.update_projects(event),
             Message::Terminal(message)=>return self.update_terminal(message),
-            Message::Page(page)=>{if self.page!=page{self.clear_secrets();}self.page=page;self.error=None;}
-            Message::Opened(id)=>{self.window=Some(id);crate::native_auth::install_app_menu();return window::scale_factor(id).map(move|value|Message::ScaleFactor(id,value));}
-            Message::Closed(id)=>{if self.window==Some(id){self.window=None;self.picker_window=None;file_picker::cancel();self.host.native.invalidate_all();self.client=None;self.session=None;self.pause_terminals();self.close_authentication();}}
-            Message::Show=>{
-                if let Some(id)=self.window{return window::gain_focus(id);}
-                if self.window.is_none(){let session=Arc::new(self.host.native.open_settings());match NativeClient::new(self.host.state.origin.clone(),&self.host.certificate_pem,session.clone()){Ok(client)=>self.client=Some(client),Err(error)=>self.error=Some(error)}self.session=Some(session);let(id,open)=window::open(window::Settings{size:iced::Size::new(1248.0,900.0),min_size:Some(iced::Size::new(760.0,520.0)),..Default::default()});self.window=Some(id);self.resume_terminals();return Task::batch([open.map(Message::Opened),self.refresh()]);}
+            Message::Connector(event)=>return self.update_connector(event),
+            Message::Escape(id)=>{
+                if self.window!=Some(id){return Task::none();}
+                if self.connector.popup_visible(){return self.update_connector(connector_setup::Event::Dismiss);}
+                if self.page==Page::Workspace{
+                    if self.workspace.agent_popup{return self.update_workspace(workspace::Event::CloseAgentPopup);}
+                    if self.workspace.active_session.is_some(){return self.update_workspace(workspace::Event::CloseSession);}
+                }
+                if self.page==Page::Install&&self.discovery_started{return self.update(Message::CloseDiscovery);}
             }
-            Message::Quit=>{self.picker_window=None;file_picker::cancel();self.close_authentication();self.client=None;self.session=None;let host=self.host.clone();return Task::perform(async move{host.shutdown().await;},|_|Message::Stopped);}
+            Message::Page(page)=>{if self.page!=page{self.clear_secrets();}self.page=page;self.error=None;if page==Page::Workspace{return self.load_workspace();}}
+            Message::DragWindow=>{if let Some(id)=self.window{return window::drag(id);}}
+            Message::Opened(id)=>{file_picker::prepare();self.window=Some(id);crate::native_auth::install_app_menu();return Task::batch([window::run(id,crate::native_auth::configure_window).discard(),window::scale_factor(id).map(move|value|Message::ScaleFactor(id,value))]);}
+            Message::Closed(id)=>{if self.window==Some(id){self.server_refresh=refresh_feedback::RefreshFeedback::default();self.discovery_refresh=refresh_feedback::RefreshFeedback::default();self.restart_submitting.clear();self.power_pending.clear();self.window=None;self.picker_window=None;file_picker::cancel();self.host.native.invalidate_all();self.client=None;self.session=None;self.connector.window_closed();self.pause_terminals();self.close_authentication();}}
+            Message::Show=>{
+                self.connector.foreground_request();
+                if let Some(id)=self.window{return window::gain_focus(id);}
+                if self.window.is_none(){let session=Arc::new(self.host.native.open_settings());match NativeClient::new(self.host.state.origin.clone(),&self.host.certificate_pem,session.clone()){Ok(client)=>self.client=Some(client),Err(error)=>self.error=Some(error)}self.session=Some(session);let(id,open)=window::open(window_settings());self.window=Some(id);self.resume_terminals();return Task::batch([open.map(Message::Opened),self.refresh(),self.load_projects()]);}
+            }
+            Message::Quit=>{self.connector=connector_setup::State::default();self.picker_window=None;file_picker::cancel();self.close_authentication();self.client=None;self.session=None;let host=self.host.clone();return Task::perform(async move{host.shutdown().await;},|_|Message::Stopped);}
             Message::Stopped=>return iced::exit(),
-            Message::Refresh=>return self.refresh(),
+            Message::Refresh=>{
+                if self.client.is_none()||self.server_refresh.running(){return Task::none();}
+                let read=self.refresh();let sequence=self.auth_requests.latest_sequence();
+                let feedback=self.server_refresh.begin(sequence,Duration::from_millis(1500)).map(Message::RefreshFeedbackDone);
+                return Task::batch([read,feedback]);
+            },
+            Message::RefreshFeedbackDone(sequence)=>self.server_refresh.elapsed(sequence),
+            Message::DiscoveryFeedbackDone(sequence)=>self.discovery_refresh.elapsed(sequence),
             Message::ScaleFactor(id,value)=>{if self.window==Some(id){self.scale_factor=value;}},
             Message::Modifiers(value)=>self.modifiers=value,
             Message::RestartClicked(id)=>return self.update(Message::Restart(id,self.modifiers.shift())),
@@ -213,9 +276,14 @@ impl Desktop {
             Message::Servers(revision,sequence,window,result)=>{
                 if window!=self.window{return Task::none();}
                 if self.polling==Some(sequence){self.polling=None;}
-                if revision!=self.auth_requests.revision(){return self.refresh();}
+                let manual=self.server_refresh.pending==Some(sequence);
+                self.server_refresh.finish(sequence);
+                if revision!=self.auth_requests.revision(){
+                    let read=self.refresh();if manual{self.server_refresh.pending=Some(self.auth_requests.latest_sequence());}return read;
+                }
                 if !self.auth_requests.accept_read(revision,sequence){return Task::none();}
                 match result {Ok(value)=>{
+                    if manual{self.reload_generation+=1;}
                     if let Some(servers)=value["servers"].as_array(){for server in servers{
                         if let Some(id)=server["server_id"].as_str(){
                             // Every server has passive console state. A read can
@@ -246,10 +314,10 @@ impl Desktop {
             Message::ConfigFileChosen(id,result)=>{
                 if self.window!=Some(id)||self.picker_window!=Some(id){return Task::none();}
                 self.picker_window=None;
-                match result{Ok(Some(path))=>{self.config_path=path;return self.update(Message::Discover);},Ok(None)=>{},Err(error)=>self.error=Some(error)}
+                match result{Ok(Some(path))=>{self.config_path=path;self.discovery_refresh.minimum=None;return self.update(Message::Discover);},Ok(None)=>{},Err(error)=>self.error=Some(error)}
             }
-            Message::Discover=>{if self.config_path.trim().is_empty()||self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;self.discovery_started=true;let path=self.config_path.clone();return Task::perform(async move{client.discovery(&path).await},Message::Discovery);}}
-            Message::Discovery(result)=>{self.busy=false;match result {Ok(value)=>{
+            Message::Discover=>{if (self.config_path.trim().is_empty()&&self.projects.install.project_id().is_none())||self.busy||self.discovery_refresh.running()||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;self.discovery_started=true;let path=self.config_path.clone();let project=self.projects.install.project_id().map(str::to_owned);let feedback=self.discovery_refresh.begin(self.discovery_refresh.generation+1,Duration::from_secs(3)).map(Message::DiscoveryFeedbackDone);return Task::batch([Task::perform(async move{client.discovery_for(&path,project.as_deref()).await},Message::Discovery),feedback]);}}
+            Message::Discovery(result)=>{self.busy=false;self.discovery_refresh.pending=None;match result {Ok(value)=>{
                 self.discovery=value;
                 // A discovery read may finish after an in-flight installation succeeds.
                 self.mark_installed_from_progress(&self.progress.clone());
@@ -262,7 +330,7 @@ impl Desktop {
                 let eligible=self.supported_selections();
                 if eligible.is_subset(&self.selected){self.selected.clear();}else{self.selected=eligible;}
             }
-            Message::Install=>{let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.notice.clear();self.busy=true;return Task::perform(async move{client.install(rows).await},Message::Installed);}}
+            Message::Install=>{let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.notice.clear();self.busy=true;let project=self.projects.install.project_id().map(str::to_owned);return Task::perform(async move{client.install_for(rows,project.as_deref()).await},Message::Installed);}}
             Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{String::new()};},Err(error)=>self.error=Some(error)}}
             Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{self.mark_installed_from_progress(&value);let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
                     self.selected.clear();
@@ -299,6 +367,11 @@ impl Desktop {
             Message::AuthOpenSignIn(id)=>return self.open_sign_in(id),
             Message::AuthFinished(token,id,result)=>{
                 if !self.auth_requests.finish(&id,token){return Task::none();}
+                if let Ok(value)=&result{
+                    if matches!(value["status"].as_str(),Some("authenticated"|"not_required"|"required"|"unknown"|"authenticating")){
+                        if let Some(record)=self.servers["servers"].as_array_mut().and_then(|rows|rows.iter_mut().find(|row|row["server_id"].as_str()==Some(id.as_str()))){record["authentication"]["status"]=value["status"].clone();record["authentication"]["error"]=Value::Null;}
+                    }
+                }
                 if let Some(flow)=self.authentication.get_mut(&id){match result{
                     Ok(value)=>flow.result(&value),
                     Err(error)=>{flow.phase=AuthPhase::Failed;flow.error=Some(error);flow.reconcile=true;flow.record_state();}
@@ -323,9 +396,41 @@ impl Desktop {
             Message::AuthSave(id)=>return self.save_inline_key(id),
             Message::AuthDismiss(id)=>{if self.authentication.get(&id).is_some_and(|flow|flow.active()||flow.reconcile){return Task::none();}self.authentication.remove(&id);}
 
-            Message::Restart(id,force)=>return self.operation(id,Method::POST,"/restart",json!({"force_restart":force})),
-            Message::Changed(id,result)=>{self.busy=false;match result{Ok(value)=>{if let Some(restart)=value["restart_id"].as_str(){self.restarts.insert(id,restart.into());}self.notice=if value["status"]=="authenticating"{"Complete the provider's browser sign-in, then Fetch will show the result.".into()}else{"Saved. Review server state for any required next action.".into()};return self.refresh();},Err(error)=>{self.error=Some(error);return self.refresh();}}}
-            Message::RestartStatus(id,result)=>{self.restart_polling.remove(&id);match result{Ok(value)=>{let restart=value["servers"].as_array().and_then(|records|records.first()).map(|record|&record["restart"]);if let Some(restart)=restart{if matches!(restart["status"].as_str(),Some("succeeded"|"failed")){self.restarts.remove(&id);self.notice=if restart["status"]=="succeeded"{"Server restart completed.".into()}else{"Server restart failed. Review its state before retrying.".into()};return self.refresh();}}},Err(error)=>{self.error=Some(error);}}}
+            Message::PowerClicked(id,enabled)=>{
+                if self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
+                let Some(client)=self.client.clone()else{return Task::none();};
+                self.power_pending.insert(id.clone(),enabled);self.power_errors.remove(&id);self.auth_requests.invalidate_reads();
+                let path=format!("/api/v1/servers/{}/restart",component(&id));
+                return Task::perform(async move{client.request(Method::POST,&path,Some(if enabled{json!({})}else{json!({"action":"stop"})})).await},move|result|Message::PowerFinished(id.clone(),enabled,result));
+            }
+            Message::PowerFinished(id,enabled,result)=>{
+                if self.power_pending.get(&id)!=Some(&enabled){return Task::none();}
+                self.auth_requests.invalidate_reads();
+                match result{
+                    Ok(value)=>{
+                        if let Some(record)=self.servers["servers"].as_array_mut().and_then(|rows|rows.iter_mut().find(|row|row["server_id"].as_str()==Some(id.as_str()))){
+                            record["config"]["enabled"]=json!(enabled);
+                            if !enabled{record["runtime"]=json!({"status":"stopped","error":null});record["restart"]=Value::Null;}
+                        }
+                        if let Some(restart)=value["restart_id"].as_str(){self.restarts.insert(id.clone(),restart.into());}
+                        else{self.power_pending.remove(&id);}
+                    }
+                    Err(error)=>{self.power_pending.remove(&id);self.power_errors.insert(id.clone(),error);self.expanded_servers.insert(id.clone());self.select_server_panel(&id,server_terminal::Pane::Console);}
+                }
+                return self.refresh();
+            }
+            Message::Restart(id,force)=>{
+                if self.client.is_none()||self.busy||self.auth_active(&id)||self.restarts.contains_key(&id){return Task::none();}
+                self.restart_submitting.insert(id.clone());self.restart_failures.remove(&id);self.notice.clear();
+                return self.operation(id,Method::POST,"/restart",json!({"force_restart":force}));
+            },
+            Message::Changed(id,result)=>{self.busy=false;let restarting=self.restart_submitting.remove(&id);match result{Ok(value)=>{if let Some(restart)=value["restart_id"].as_str(){self.restarts.insert(id,restart.into());}self.notice=if restarting{String::new()}else if value["status"]=="authenticating"{"Complete the provider's browser sign-in, then Fetch will show the result.".into()}else{"Saved. Review server state for any required next action.".into()};return self.refresh();},Err(error)=>{if restarting{self.restart_failures.insert(id,error.clone());}self.error=Some(error);return self.refresh();}}}
+            Message::RestartStatus(id,result)=>{self.restart_polling.remove(&id);match result{Ok(value)=>{
+                if let Some(record)=value["servers"].as_array().and_then(|records|records.first()){self.apply_server_record(&id,record);}
+                let restart=value["servers"].as_array().and_then(|records|records.first()).map(|record|&record["restart"]);if let Some(restart)=restart{if matches!(restart["status"].as_str(),Some("succeeded"|"failed")){
+                    if let Some(record)=self.servers["servers"].as_array_mut().and_then(|rows|rows.iter_mut().find(|row|row["server_id"].as_str()==Some(id.as_str()))){record["restart"]=restart.clone();}
+                    if self.power_pending.remove(&id).is_some(){self.auth_requests.invalidate_reads();if restart["status"]=="failed"{self.expanded_servers.insert(id.clone());self.select_server_panel(&id,server_terminal::Pane::Console);}}
+                    self.restarts.remove(&id);self.notice.clear();return self.refresh();}}},Err(error)=>{self.error=Some(error);}}}
             Message::Choose(id)=>{if self.deletions.contains_key(&id){return Task::none();}self.clear_secrets();for (server,state) in self.terminals.iter_mut(){if server!=&id{state.hide_settings();}}self.selected_server=id;self.secret_name.clear();self.page=Page::Servers;self.expanded_servers.insert(self.selected_server.clone());self.select_server_panel(&self.selected_server.clone(),server_terminal::Pane::Settings);
                 if let Some(record)=self.servers["servers"].as_array().and_then(|rows|rows.iter().find(|row|row["server_id"].as_str()==Some(self.selected_server.as_str()))){self.timeout=(record["config"]["execution"]["default_timeout_ms"].as_u64().unwrap_or(120000)/1000).to_string();self.concurrency=record["config"]["execution"]["max_concurrent_calls"].as_u64().unwrap_or(1).to_string();}
             }
@@ -350,14 +455,17 @@ impl Desktop {
                 }
             }
             Message::Copy(value)=>return iced::clipboard::write(value),
-            Message::ToggleServer(id)=>{if self.expanded_servers.remove(&id){self.clear_secrets();}else{self.clear_secrets();self.expanded_servers.insert(id);}}
+            Message::ToggleServer(id)=>{self.clear_secrets();if !self.expanded_servers.remove(&id){self.show_server_console(&id);self.expanded_servers.insert(id);}}
             Message::ToggleTool(id)=>{if !self.expanded_tools.remove(&id){self.expanded_tools.insert(id);}}
             Message::Tick=>{
                 if self.host.is_stopped(){return iced::exit();}
                 match crate::native_auth::take_app_action(){1=>return self.update(Message::Show),2=>return self.update(Message::Quit),_=>{}}
+                if self.host.state.oauth.as_ref().is_some_and(|service| service.take_connection_request()) { return self.update(Message::Show); }
                 if self.host.take_show_request(){return self.update(Message::Show);}
+                if let Some(context)=self.host.take_connection_context(){return self.update_connector(connector_setup::Event::AutomaticContext(context));}
                 let Some(client)=self.client.clone() else{return Task::none();};
                 let mut reads=Vec::new();
+                if let Some(read)=self.poll_connector_requests(){reads.push(read);}
                 if !self.installation_polling{if let Some(id)=self.job.clone(){
                     self.installation_polling=true;let client=client.clone();
                     reads.push(Task::perform(async move{client.request(Method::GET,&format!("/api/v1/setup/installations/{}",component(&id)),None).await},Message::Progress));
@@ -368,46 +476,57 @@ impl Desktop {
                     self.restart_polling.insert(id.clone());
                     reads.push(Task::perform(async move{client.request(Method::GET,&format!("/api/v1/servers?{query}"),None).await},move|result|Message::RestartStatus(id.clone(),result)));
                 }}
-                if self.polling.is_none()&&((self.page==Page::Servers&&!self.expanded_servers.is_empty())||self.deletions.values().any(|state|*state==Deletion::Refreshing)||self.authentication.values().any(|flow|flow.reconcile)||self.servers["servers"].as_array().is_some_and(|records|records.iter().any(|record|record["authentication"]["status"]=="authenticating"))){let read=self.refresh();self.polling=Some(self.auth_requests.latest_sequence());reads.push(read);}
+                if self.polling.is_none()&&((self.page==Page::Servers&&!self.expanded_servers.is_empty())||self.deletions.values().any(|state|*state==Deletion::Refreshing)||self.authentication.values().any(|flow|flow.reconcile)||self.servers["servers"].as_array().is_some_and(|records|records.iter().any(|record|record["authentication"]["status"]=="authenticating"||matches!(record["runtime"]["status"].as_str(),Some("starting"|"restarting"))||record["restart"]["status"]=="restarting"))){let read=self.refresh();self.polling=Some(self.auth_requests.latest_sequence());reads.push(read);}
                 return Task::batch(reads);
             }
         }
         Task::none()
     }
     fn view(&self,_window:window::Id)->Element<'_,Message>{
-        surface::with_scale(self.view_content(),self.scale_factor)
+        let base=self.view_content();
+        let mut layers=iced::widget::stack![base];
+        if self.page==Page::Workspace&&self.workspace.active_session.is_some(){layers=layers.push(self.workspace_session_popup());}
+        if self.page==Page::Workspace&&self.workspace.agent_popup{layers=layers.push(self.workspace_agent_popup());}
+        if self.connector.popup_visible(){layers=layers.push(self.connector_popup());}
+        let content:Element<'_,Message>=layers.into();
+        surface::with_scale(iced::widget::mouse_area(content).on_press(Message::DragWindow),self.scale_factor)
     }
     fn view_content(&self)->Element<'_,Message>{
-        let active=match self.page{Page::Servers|Page::Settings=>0,Page::Install=>1,Page::Connect=>2};
-        let nav=components::navigation([Message::Page(Page::Servers),Message::Page(Page::Install),Message::Page(Page::Connect)],active);
-        let mut body=column![nav].spacing(32).padding(16);
-        if let Some(error)=&self.error{body=body.push(components::error_message(error.as_str()));}
-        if !self.notice.is_empty(){body=body.push(components::message(self.notice.as_str()));}
+        let active=match self.page{Page::Servers|Page::Settings=>0,Page::Install=>1,Page::Connect=>2,Page::Workspace=>3};
+        let nav=components::navigation([Message::Page(Page::Servers),Message::Page(Page::Install),Message::Page(Page::Connect),Message::Page(Page::Workspace)],active);
+        let mut body=column![nav].spacing(if self.page==Page::Connect{16}else{32}).padding(16);
         if self.page==Page::Install{
             let base=components::page(body.push(self.install_view()).height(iced::Fill));
             return if self.discovery_started{iced::widget::stack![base,self.install_popup_view()].into()}else{base.into()};
         }
-        body=body.push(match self.page{Page::Servers|Page::Settings=>self.servers_view(),Page::Install=>self.install_view(),Page::Connect=>self.connect_view()});
-        components::page(scrollable(body).style(theme::scrollable).width(iced::Fill)).into()
+        body=body.push(match self.page{Page::Servers|Page::Settings=>self.servers_view(),Page::Install=>self.install_view(),Page::Connect=>self.connect_view(),Page::Workspace=>self.workspace_view()});
+        components::page(body.height(iced::Fill)).into()
     }
     fn servers_view(&self)->Element<'_,Message>{
         use components::Icon;
-        let mut items=column![row![text("Installed servers").size(32).line_height(iced::Pixels(45.0)).font(theme::SEMIBOLD_FONT),components::icon_button(Icon::Refresh,Some(Message::Refresh))].spacing(20).align_y(iced::Center).height(45)].spacing(20).width(iced::Fill);
+        let heading=row![text("Installed servers").size(32).line_height(iced::Pixels(45.0)).font(theme::SEMIBOLD_FONT),components::refresh_button(self.client.is_some().then_some(Message::Refresh),self.server_refresh.running())].spacing(20).align_y(iced::Center).height(45);
+        let mut items=column![].spacing(20).width(iced::Fill);
         if let Some(servers)=self.servers["servers"].as_array(){
-            if servers.is_empty(){items=items.push(text("No servers installed yet. Open Install MCPs to discover your existing definitions."));}
-            for server in servers{
+            if servers.is_empty(){items=items.push(text(if self.projects.server_filter==project_scope::Choice::All{"No servers installed yet. Open Install MCPs to discover your existing definitions."}else{"No servers in this view. Choose another project or open Install MCPs."}));}
+            for (index,server) in servers.iter().enumerate(){
                 let id=server["server_id"].as_str().unwrap_or("").to_owned();
                 let runtime=server["runtime"]["status"].as_str().unwrap_or("unknown");
+                let starting=matches!(runtime,"starting"|"restarting")||server["authentication"]["status"]=="authenticating"||server["restart"]["status"]=="restarting"||self.restart_submitting.contains(&id)||self.restarts.contains_key(&id)||self.authentication.get(&id).is_some_and(|flow|flow.phase==AuthPhase::Starting);
+                let runtime=if starting{"starting"}else{runtime};
                 let auth=server["authentication"]["status"].as_str().unwrap_or("unknown");
                 let name=server["name"].as_str().unwrap_or(&id);
                 let can_change=!self.busy&&!self.auth_active(&id)&&!self.restarts.contains_key(&id);
                 let expanded=self.expanded_servers.contains(&id);
-                let delete_hint=match self.deletions.get(&id){Some(Deletion::Pending(_))=>"Deleting server…",Some(Deletion::Refreshing)=>"Refreshing server status…",None if !self.can_delete(&id)=>"Server is busy; wait before deleting",None=>"Delete server"};
-                let key=iced::widget::tooltip(components::icon_button(Icon::Key,(can_change&&matches!(auth,"required"|"failed"|"unknown")).then_some(Message::Authenticate(id.clone()))),text("Authenticate server"),iced::widget::tooltip::Position::Top);
-                let restart=iced::widget::tooltip(components::icon_button(Icon::Refresh,can_change.then_some(Message::RestartClicked(id.clone()))),text("Restart / Connect · Shift-click to force restart (may interrupt work)"),iced::widget::tooltip::Position::Top);
-                let remove=iced::widget::tooltip(components::icon_button(Icon::Close,self.can_delete(&id).then_some(Message::Delete(id.clone()))),text(delete_hint),iced::widget::tooltip::Position::Top);
-                let header=row![iced::widget::tooltip(components::server_identity(name,runtime,auth,expanded,Message::ToggleServer(id.clone())),text(format!("Runtime: {runtime}")),iced::widget::tooltip::Position::Top),key,restart,remove].spacing(10).align_y(iced::Center);
-                let mut card=column![header].spacing(14).width(iced::Fill);
+                let enabled=server["config"]["enabled"].as_bool().unwrap_or(true);
+                let toggle_id=id.clone();let power=components::server_toggle(enabled,(can_change&&!starting).then_some(move|enabled|Message::PowerClicked(toggle_id.clone(),enabled)));
+                let key=components::icon_button(Icon::Key,(can_change&&matches!(auth,"required"|"failed"|"unknown")).then_some(Message::Authenticate(id.clone())));
+                let restart=components::refresh_button(can_change.then_some(Message::RestartClicked(id.clone())),starting);
+                let remove=components::icon_button(Icon::Close,self.can_delete(&id).then_some(Message::Delete(id.clone())));
+                let restarting=starting;
+                let restart_failed=!restarting&&(self.restart_failures.contains_key(&id)||server["restart"]["status"]=="failed");
+                let identity=components::server_identity(name,runtime,auth,restart_failed,expanded,Message::ToggleServer(id.clone()));
+                let header=row![identity,power,key,restart,remove].spacing(10).align_y(iced::Center);
+                let mut card=column![header,text(self.server_scope_label(server)).size(12).color(theme::MUTED)].spacing(14).width(iced::Fill);
                 if expanded{
                     let pane=self.server_panel(&id);
                     let local=server["config"]["kind"]!="remote";
@@ -416,7 +535,7 @@ impl Desktop {
                         components::tab("Settings",pane==server_terminal::Pane::Settings,can_change.then_some(Message::Choose(id.clone()))),
                         iced::widget::Space::new().width(iced::Fill),
                         components::output_tab("Console",pane==server_terminal::Pane::Console,Some(Message::Terminal(server_terminal::Message::Console(id.clone())))),
-                        iced::widget::tooltip(components::output_tab("Terminal",pane==server_terminal::Pane::Terminal,(local&&self.client.is_some()&&!self.deletions.contains_key(&id)).then_some(Message::Terminal(server_terminal::Message::Open(id.clone())))),text(if local{"Open terminal"}else{"Terminal is unavailable for a URL-only remote server."}),iced::widget::tooltip::Position::Top),
+                        components::output_tab("Terminal",pane==server_terminal::Pane::Terminal,(local&&self.client.is_some()&&!self.deletions.contains_key(&id)).then_some(Message::Terminal(server_terminal::Message::Open(id.clone())))),
                     ].spacing(10).align_y(iced::Center);
                     card=card.push(controls);
                     match pane{
@@ -425,16 +544,15 @@ impl Desktop {
                         server_terminal::Pane::Console|server_terminal::Pane::Terminal=>card=card.push(self.server_output_view(&id,server)),
                         server_terminal::Pane::Hidden=>{},
                     }
-                    if !self.authentication.contains_key(&id){if let Some(error)=server["authentication"]["error"]["message"].as_str(){card=card.push(components::message(error));}}
-                    if let Some(error)=server["runtime"]["error"]["message"].as_str(){card=card.push(components::message(error));}
                     if self.restarts.contains_key(&id){card=card.push(text("Restarting… waiting for this attempt to finish."));}
                     let count=|key:&str|server["tool_execution"][key].as_u64().unwrap_or(0);
                     card=card.push(row![text(format!("Active: {}   Waiting: {}   Uncertain: {}",count("active_calls"),count("queued_calls"),count("uncertain_calls"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED),iced::widget::Space::new().width(iced::Fill),text(format!("Connection access expires: {}",server["authentication"]["access_expires_at"].as_str().unwrap_or("unknown"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED),text(format!("Last verified connection access: {}",server["authentication"]["last_verified_at"].as_str().unwrap_or("unknown"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED)].spacing(16).height(22).align_y(iced::Center));
                 }
-                items=items.push(components::server_card(card).width(iced::Fill));
+                items=items.push(surface::pop_in(components::server_card(card).width(iced::Fill),self.reload_generation.wrapping_add(1),index));
             }
         }
-        components::recessed(iced::widget::container(items).padding(24)).width(iced::Fill).into()
+        let cards=surface::contain_scroll(scrollable(iced::widget::container(items).padding(24)).id("fetch-installed-servers").style(theme::scrollable).width(iced::Fill).height(iced::Fill));
+        column![iced::widget::container(heading).padding(iced::Padding{top:24.0,right:0.0,bottom:0.0,left:0.0}),self.project_picker("Show servers",&self.projects.server_filter,true,true,project_scope::Event::Filter),components::recessed(cards).width(iced::Fill).height(iced::Fill)].spacing(20).height(iced::Fill).into()
     }
     fn server_tools_view<'a>(&'a self,id:&str)->Element<'a,Message>{
         let mut cards=Vec::new();
@@ -446,27 +564,59 @@ impl Desktop {
                 let name=tool["name"].as_str().unwrap_or("Unnamed tool");
                 let required=tool["inputSchema"]["required"].as_array().map(|values|values.iter().filter_map(Value::as_str).collect::<Vec<_>>().join(", ")).filter(|value|!value.is_empty()).unwrap_or_else(||"None".into());
                 let detail=column![
-                    column![text("Name").size(14).line_height(iced::Pixels(20.0)).font(theme::BOLD_FONT).color(theme::MUTED),components::read_only(name.to_owned(),52.0)].spacing(8),
-                    column![text("Required fields").size(14).line_height(iced::Pixels(20.0)).font(theme::BOLD_FONT).color(theme::MUTED),components::read_only(required,96.0)].spacing(8),
-                ].spacing(24);
-                cards.push(components::raised_with_radius(iced::widget::container(detail).padding(28).height(325.333).width(iced::Fill),32.0).width(iced::Fill).into());
+                    column![text("Name").size(12).line_height(iced::Pixels(16.0)).font(theme::BOLD_FONT).color(theme::MUTED),components::read_only(name.to_owned(),52.0)].spacing(6),
+                    column![text("Required fields").size(12).line_height(iced::Pixels(16.0)).font(theme::BOLD_FONT).color(theme::MUTED),components::read_only(required,64.0)].spacing(6),
+                ].spacing(12);
+                cards.push(components::raised_with_radius(iced::widget::container(detail).padding(14).height(200).width(iced::Fill),32.0).width(iced::Fill).into());
             }}
             if origin["status"]!="available"{notes=notes.push(text("This catalog is incomplete. Review its server state and rejected-tool details."));if let Some(rejected)=origin["rejected_tools"].as_array(){for rejection in rejected{notes=notes.push(text(format!("{}: {}",rejection["name"].as_str().unwrap_or("Tool"),rejection["message"].as_str().unwrap_or("Compatibility issue"))));}}}
         }}
         let mut content=column![].spacing(16).padding(24).width(iced::Fill);
-        if !found{content=content.push(text("Loading tools…"));}else if cards.is_empty(){content=content.push(text("No tools available."));}else{content=content.push(iced::widget::grid(cards).columns(3).spacing(24).height(iced::Shrink));}
+        if !found{content=content.push(text("Loading tools…"));}else if cards.is_empty(){content=content.push(text("No tools available."));}else{content=content.push(components::tool_grid(cards));}
         content=content.push(notes);
-        column![text("Available tools").size(22).line_height(iced::Pixels(31.0)).font(theme::SEMIBOLD_FONT),components::recessed(scrollable(content).style(theme::scrollable).id(format!("fetch-tools-{id}")).height(440)).width(iced::Fill)].spacing(14).into()
+        column![text("Available tools").size(22).line_height(iced::Pixels(31.0)).font(theme::SEMIBOLD_FONT),components::recessed(surface::contain_scroll(scrollable(content).style(theme::scrollable).id(format!("fetch-tools-{id}")).height(300))).width(iced::Fill).max_width(744)].spacing(14).into()
     }
     fn folder_button(&self,id:String)->Element<'_,Message>{
         let enabled=!self.deletions.contains_key(&id)&&!self.opening_folders.contains(&id);
-        button(text(if self.opening_folders.contains(&id){"Opening server folder…"}else{"Open server folder"}).font(theme::BODY_FONT).size(14).line_height(iced::Pixels(22.0)))
+        components::text_button(if self.opening_folders.contains(&id){"Opening server folder…"}else{"Open server folder"})
             .on_press_maybe(enabled.then_some(Message::OpenFolder(id))).into()
     }
-    fn authentication_view<'a>(&'a self,id:&str,flow:Option<&'a AuthFlow>)->Element<'a,Message>{
+    fn console_lines(&self,id:&str,server:&Value)->Vec<String>{
+        let flow=self.authentication.get(id);
+        let mut lines:Vec<_>=flow.into_iter().flat_map(|flow|&flow.log).map(|line|{
+            line.strip_prefix("[error] ").map(|error|format!("[Fetch] {error}")).unwrap_or_else(||line.clone())
+        }).collect();
+        let mut errors=Vec::new();
+        for error in [&server["authentication"]["error"],&server["runtime"]["error"],&server["restart"]["error"]]{
+            if let Some(message)=error["message"].as_str(){
+                let code=error["code"].as_str().map(|code|format!("{code}: ")).unwrap_or_default();
+                let mut line=format!("[Fetch] {code}{message}");
+                if let Some(fields)=error.as_object(){
+                    let details:serde_json::Map<_,_>=fields.iter().filter(|(key,_)|!matches!(key.as_str(),"code"|"message")).map(|(key,value)|(key.clone(),value.clone())).collect();
+                    if !details.is_empty(){line.push_str(&format!(" {}",Value::Object(details)));}
+                }
+                errors.push((message.to_owned(),line));
+            }
+        }
+        if let Some(flow)=flow{for message in [&flow.error,&flow.read_error].into_iter().flatten(){
+            if !errors.iter().any(|(existing,_)|existing==message){errors.push((message.clone(),format!("[Fetch] {message}")));}
+        }}
+        if let Some(message)=self.restart_failures.get(id){
+            if !errors.iter().any(|(existing,_)|existing==message){errors.push((message.clone(),format!("[Fetch] {message}")));}
+        }
+        if let Some(message)=self.power_errors.get(id){if !errors.iter().any(|(existing,_)|existing==message){errors.push((message.clone(),format!("[Fetch] {message}")));}}
+        for (message,line) in errors{
+            // Replace the message-only fallback with its complete returned error.
+            lines.retain(|existing|existing!=&format!("[Fetch] {message}"));
+            if !lines.contains(&line){lines.push(line);}
+        }
+        lines
+    }
+    fn authentication_view<'a>(&'a self,id:&str,server:&Value)->Element<'a,Message>{
+        let flow=self.authentication.get(id);
         let mut output=column![].spacing(theme::CONSOLE_LINE_GAP).width(iced::Fill);
-        let lines=flow.map(|flow|flow.log.as_slice()).unwrap_or(&[]);
-        for line in lines {output=output.push(components::console_line(line.as_str()));}
+        let lines=self.console_lines(id,server);
+        for line in &lines {output=output.push(components::console_line(line.clone()));}
         if let Some(sign_in)=flow.and_then(|flow|flow.sign_in.as_ref()){
             if !sign_in.opened{
                 output=output.push(button(components::console_line(format!("> Open sign-in at {}",sign_in.host)))
@@ -510,11 +660,15 @@ impl Desktop {
         let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
         let header=column![
             text("Discover and install").size(32).line_height(iced::Pixels(45.0)).font(iced::Font{weight:iced::font::Weight::Semibold,..iced::Font::with_name("Inter")}),
-            row![text_input("Folder or configuration file path",&self.config_path).on_input_maybe(available.then_some(Message::ConfigPath)).on_submit_maybe((available&&!self.config_path.trim().is_empty()).then_some(Message::Discover)),button(text("Choose file or folder…").font(theme::BODY_FONT).size(14).line_height(iced::Pixels(22.0))).on_press_maybe(available.then_some(Message::ChooseConfigFile))].spacing(16).align_y(iced::Center),
-            components::icon_button(components::Icon::Refresh,(available&&!self.config_path.trim().is_empty()).then_some(Message::Discover)),
+            self.project_picker("Install into",&self.projects.install,false,available&&!self.discovery_refresh.running(),project_scope::Event::Install),
+            row![
+                text_input("Folder or configuration file path",&self.config_path).on_input_maybe(available.then_some(Message::ConfigPath)).on_submit_maybe((available&&!self.discovery_refresh.running()&&(!self.config_path.trim().is_empty()||self.projects.install.project_id().is_some())).then_some(Message::Discover)),
+                components::refresh_button((self.client.is_some()&&available).then_some(Message::Discover),self.discovery_refresh.running()),
+                components::text_button("Choose file or folder…").on_press_maybe(available.then_some(Message::ChooseConfigFile)),
+            ].spacing(16).align_y(iced::Center),
         ].spacing(20);
         let mut base=column![header].spacing(24).width(iced::Fill).height(iced::Fill);
-        if !self.discovery.is_null()||self.job.is_some(){base=base.push(button(if self.job.is_some(){"View installation progress"}else{"View discovered MCPs"}).on_press(Message::OpenDiscovery));}
+        if !self.discovery.is_null()||self.job.is_some(){base=base.push(components::text_button(if self.job.is_some(){"View installation progress"}else{"View discovered MCPs"}).on_press(Message::OpenDiscovery));}
         base.into()
     }
     fn install_popup_view(&self)->Element<'_,Message>{
@@ -531,24 +685,31 @@ impl Desktop {
         if !self.progress.is_null(){items=items.push(text(format!("Installation: {}",self.progress["status"].as_str().unwrap_or("pending"))));if let Some(rows)=self.progress["servers"].as_array().or_else(||self.progress["items"].as_array()){for item in rows{items=items.push(text(format!("{} · {}",item["server_name"].as_str().unwrap_or("server"),item["status"].as_str().unwrap_or("pending"))));if let Some(error)=item["error"]["message"].as_str(){items=items.push(components::message(error));}}}}
         let selected_count=self.selected_for_install().len();
         let can_install=selected_count>0&&!self.busy&&self.picker_window.is_none()&&self.job.is_none();
-        let footer=row![button(text("Install selected servers").font(theme::BOLD_FONT).size(14).line_height(iced::Pixels(22.0))).style(theme::install_button).on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",selected_count))].spacing(theme::PAGE_GAP).align_y(iced::Center);
+        let footer=row![components::primary_button("Install selected servers").on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",selected_count))].spacing(theme::PAGE_GAP).align_y(iced::Center);
         let title=if self.busy&&self.discovery.is_null(){"Looking for MCP servers…"}else if self.job.is_some(){"Installing MCP servers"}else if self.progress["status"]=="failed"{"Installation needs attention"}else{"Choose MCPs to install"};
         let popup=components::raised(iced::widget::container(column![
             row![text(title).size(28).font(iced::Font{weight:iced::font::Weight::Semibold,..iced::Font::with_name("Inter")}),iced::widget::Space::new().width(iced::Fill),components::icon_button(components::Icon::Close,Some(Message::CloseDiscovery))].spacing(16).align_y(iced::Center),
-            button(text(if all_selected{"Unselect all"}else{"Select all"}).font(theme::BODY_FONT).size(14).line_height(iced::Pixels(22.0))).on_press_maybe(can_select_all.then_some(Message::SelectAllServers)),
-            scrollable(items).style(theme::scrollable).id("fetch-install-discovery").width(iced::Fill).height(iced::Fill),footer,
+            components::text_button(if all_selected{"Unselect all"}else{"Select all"}).on_press_maybe(can_select_all.then_some(Message::SelectAllServers)),
+            surface::contain_scroll(scrollable(items).style(theme::scrollable).id("fetch-install-discovery").width(iced::Fill).height(iced::Fill)),footer,
         ].spacing(24)).padding(32).width(iced::Fill).height(iced::Fill)).width(iced::Fill).max_width(900).height(iced::Fill).max_height(600);
-        let overlay=iced::widget::container(iced::widget::opaque(popup)).center_x(iced::Fill).center_y(iced::Fill)
-            .style(|_|iced::widget::container::Style{background:Some(iced::Color::from_rgba(0.15,0.17,0.18,0.14).into()),..Default::default()});
-        iced::widget::opaque(overlay).into()
+        components::modal(popup,Message::CloseDiscovery)
     }
     fn connect_view(&self)->Element<'_,Message>{
-        let endpoint=format!("{}/mcp",self.host.state.origin);
-        let items=column![text("Connect your coding apps").size(32).line_height(iced::Pixels(45.0)).font(iced::Font{weight:iced::font::Weight::Semibold,..iced::Font::with_name("Inter")}),text("Each app connects once to Fetch and keeps its own renewable token. Review and approve its access in your browser, then confirm on your Mac. Provider logins remain separate."),text(endpoint.clone()).size(theme::FIELD_TITLE),button(text("Copy Fetch MCP address").font(theme::BODY_FONT).size(14).line_height(iced::Pixels(22.0))).on_press(Message::Copy(endpoint.clone())),text(format!("Public certificate: {}",self.host.certificate_path.display())),text("The certificate must be explicitly trusted before the browser and clients can connect normally. Fetch never changes trust or client configurations automatically."),text("Claude Code"),components::code_block(format!("claude mcp add --transport http fetch {endpoint}"),Message::Copy),text("Codex"),components::code_block(format!("codex mcp add fetch --url {endpoint}\ncodex mcp login fetch"),Message::Copy),text("OpenCode"),text(format!("Configure a remote MCP named fetch with URL {endpoint}, then use its MCP authentication flow."))].spacing(20);
-        items.into()
+        let mut items=column![self.project_picker("Connection",&self.projects.connection,false,!self.connector.creating&&!self.connector.deciding,project_scope::Event::Connection)].spacing(20).width(iced::Fill);
+        if let Some(project)=self.selected_connection_project(){items=items.push(text(format!("Project folder: {}",project["folder_path"].as_str().unwrap_or(""))).size(12)).push(text("Run the Claude command from this folder. Add the Codex entry to this folder’s .codex/config.toml.").size(12).color(theme::MUTED));}
+        if let Some(feedback)=self.connector_feedback(){items=items.push(feedback);}
+        let items=items
+            .push(self.connector_heading("claude-code","Claude Code",include_bytes!("assets/claude-logo.svg")))
+            .push(components::code_block(self.connector_command("claude-code"),Message::Copy))
+            .push(self.connector_heading("codex","Codex",include_bytes!("assets/codex-logo.svg")))
+            .push(components::code_block(self.connector_command("codex"),Message::Copy));
+        let apps=surface::contain_scroll(scrollable(iced::widget::container(items).padding(24)).id("fetch-connect-apps").style(theme::scrollable).width(iced::Fill).height(iced::Fill));
+        let heading=text("Connect your coding apps").size(32).line_height(iced::Pixels(45.0)).font(theme::SEMIBOLD_FONT);
+        column![iced::widget::container(heading).padding(iced::Padding{top:12.0,right:24.0,bottom:0.0,left:24.0}),components::recessed(apps).width(iced::Fill).height(iced::Fill)].spacing(20).height(iced::Fill).into()
     }
+
     fn settings_view(&self)->Element<'_,Message>{
-        let mut items=column![self.folder_button(self.selected_server.clone())].spacing(20).padding(24).width(iced::Fill);
+        let mut items=column![self.folder_button(self.selected_server.clone()),self.server_scope_editor(&self.selected_server)].spacing(20).padding(24).width(iced::Fill);
         let enabled=!self.busy&&!self.auth_active(&self.selected_server);
         let number=|value:&str,placeholder:&str,on_input:fn(String)->Message,up:Message,down:Message|{
             let arrow=|kind,action|button(iced::widget::container(components::icon(kind)).center_x(24).center_y(18)).padding(0).style(theme::transparent).on_press_maybe(enabled.then_some(action));
@@ -559,15 +720,15 @@ impl Desktop {
         items=items.push(row![
             column![text("Time until timeout").font(bold).size(17).line_height(iced::Pixels(24.0)),number(&self.timeout,"120",Message::Timeout,Message::StepTimeout(1),Message::StepTimeout(-1))].spacing(20).width(iced::Fill),
             column![text("Max concurrent calls").font(bold).size(17).line_height(iced::Pixels(24.0)),number(&self.concurrency,"1",Message::Concurrency,Message::StepConcurrency(1),Message::StepConcurrency(-1))].spacing(20).width(iced::Fill),
-        ].spacing(24)).push(button(text("Save call limits").font(theme::BOLD_FONT).size(14).line_height(iced::Pixels(22.0))).style(theme::install_button).on_press_maybe(enabled.then_some(Message::SaveExecution)));
+        ].spacing(24)).push(components::primary_button("Save call limits").on_press_maybe(enabled.then_some(Message::SaveExecution)));
         if let Some(server)=self.servers["servers"].as_array().and_then(|rows|rows.iter().find(|server|server["server_id"].as_str()==Some(self.selected_server.as_str()))){
             let references=authentication::credential_references(server);
             if !references.is_empty(){
-                for (binding,reference) in references{items=items.push(button(text(format!("{binding} → {reference}"))).on_press_maybe(enabled.then_some(Message::SecretName(reference))));}
+                for (binding,reference) in references{items=items.push(components::text_button(format!("{binding} → {reference}")).on_press_maybe(enabled.then_some(Message::SecretName(reference))));}
                 items=items.push(authentication::credential_editor(&self.secret_name,&self.secret_value,enabled,Message::SecretName,Message::SecretValue,Message::SaveSecret,Some(Message::RemoveSecret)));
             }
         }
-        column![text("Server settings").size(22).line_height(iced::Pixels(31.0)).font(theme::SEMIBOLD_FONT),components::recessed(scrollable(items).style(theme::scrollable).id("fetch-inline-settings").height(440)).width(iced::Fill)].spacing(14).into()
+        column![text("Server settings").size(22).line_height(iced::Pixels(31.0)).font(theme::SEMIBOLD_FONT),components::recessed(surface::contain_scroll(scrollable(items).style(theme::scrollable).id("fetch-inline-settings").height(440))).width(iced::Fill)].spacing(14).into()
     }
 
 }
@@ -575,6 +736,7 @@ impl Desktop {
 pub fn run(host:Arc<ApplicationHost>)->iced::Result{
     iced::daemon(move||Desktop::boot(host.clone()),Desktop::update,Desktop::view)
         .title(|_:&Desktop,_:window::Id|"Fetch".to_owned()).theme(|_: &Desktop, _: window::Id| theme::light())
+        .style(|_,_|iced::theme::Style{background_color:iced::Color::TRANSPARENT,text_color:theme::INK})
         .settings(iced::Settings{default_font:iced::Font::with_name("Inter"),default_text_size:iced::Pixels(14.0),..Default::default()})
         .font(include_bytes!("assets/fonts/Inter.ttf").as_slice())
         .font(include_bytes!("assets/fonts/Inter-Medium.ttf").as_slice())

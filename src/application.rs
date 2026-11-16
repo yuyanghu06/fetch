@@ -4,15 +4,16 @@ use axum_server::{Handle,tls_rustls::RustlsConfig};
 use sha2::{Digest,Sha256};
 use std::{fs::{self,File,OpenOptions},io::{self,Write},net::{Ipv4Addr,TcpListener},os::unix::fs::{DirBuilderExt,FileTypeExt,MetadataExt,OpenOptionsExt,PermissionsExt},path::{Path,PathBuf},sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}},time::Duration};
 use tokio::io::{AsyncReadExt,AsyncWriteExt};
+use crate::connector::ConnectionContext;
 
 pub struct ApplicationHost {
     pub state:Arc<AppState>, pub native:Arc<NativeAuthority>,pub certificate_pem:String,pub certificate_path:PathBuf,
     manager:Arc<Manager>,oauth:Arc<OAuthService>,credentials:Arc<CredentialStore>,handle:Handle<std::net::SocketAddr>,
     listener:Mutex<Option<TcpListener>>,tls:RustlsConfig,_instance_lock:File,root:PathBuf,
-    show:AtomicBool,stopping:AtomicBool,stopped:AtomicBool,shutdown_done:tokio::sync::Notify,
+    show:AtomicBool,connection_setups:Mutex<Vec<ConnectionContext>>,stopping:AtomicBool,stopped:AtomicBool,shutdown_done:tokio::sync::Notify,
 }
 impl ApplicationHost {
-    /// This function is called only when the user explicitly launches the application.
+    /// Prepare the native app, including first-connection approval launches.
     pub async fn prepare(root:PathBuf,port:u16,discovery_home:PathBuf,inherit_codex_home:bool)->io::Result<Arc<Self>> {
         if !root.is_absolute()||port<1024{return Err(io::Error::other("Choose an absolute private data folder and an unprivileged fixed HTTPS port."));}
         private_directory(&root)?;let root=fs::canonicalize(root)?;
@@ -34,11 +35,12 @@ impl ApplicationHost {
         let discovery=DiscoveryService::new(discovery_home,codex_home);let repository=ServerRepository::new(root.clone());
         let runner=Runner::persistent(root.clone()).map_err(io::Error::other)?;let installer=Installer::new(root.clone(),discovery.clone());let manager=Manager::new(repository.clone(),credentials.clone(),runner.clone(),installer);manager.set_origin(origin.clone());
         configure_authenticate_sender(&manager,&origin,&certificate_pem)?;
-        let backend=Arc::new(ManagementAdapter{manager:manager.clone(),discovery:discovery.clone()});
+        let workspace=crate::workspace::WorkspaceService::from_environment().ok().map(|service|Arc::new(service.with_readers_root(root.join("session-readers"))));
+        let backend=Arc::new(ManagementAdapter{manager:manager.clone(),discovery:discovery.clone(),workspace:workspace.clone()});
         let gateway=McpGateway::new(runner.clone(),backend,oauth.clone(),origin.clone());
         let mut state=AppState::new(origin,repository,discovery,oauth.clone()).map_err(io::Error::other)?;
-        state.manager=Some(manager.clone());state.native=Some(native.clone());state.oauth=Some(oauth.clone());state.gateway=Some(gateway.clone());
-        let host=Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path,manager,oauth,credentials,handle:Handle::new(),listener:Mutex::new(Some(listener)),tls,_instance_lock:lock,root,show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()});
+        state.manager=Some(manager.clone());state.native=Some(native.clone());state.oauth=Some(oauth.clone());state.gateway=Some(gateway.clone());state.workspace=workspace;
+        let host=Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path,manager,oauth,credentials,handle:Handle::new(),listener:Mutex::new(Some(listener)),tls,_instance_lock:lock,root,show:AtomicBool::new(false),connection_setups:Mutex::new(Vec::new()),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()});
         let mut revocations=host.oauth.subscribe_revocations();let gateway_for_revoke=gateway.clone();
         tokio::spawn(async move{loop{match revocations.recv().await{Ok(owner)=>{runner.revoke_owner(&owner).await;gateway_for_revoke.revoke_owner(&owner).await;},Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=>{gateway_for_revoke.recheck_authority().await;},Err(_)=>break}}});
         Ok(host)
@@ -54,8 +56,40 @@ impl ApplicationHost {
         let path=self.root.join("activation.sock");
         if let Ok(metadata)=fs::symlink_metadata(&path){if !metadata.file_type().is_socket()||metadata.uid()!=unsafe{libc::geteuid()}{return Err(io::Error::other("Fetch's private activation socket is unsafe."));}fs::remove_file(&path)?;}
         let listener=tokio::net::UnixListener::bind(&path)?;fs::set_permissions(&path,fs::Permissions::from_mode(0o600))?;
-        let weak=Arc::downgrade(self);tokio::spawn(async move{while let Ok((mut stream,_))=listener.accept().await{let mut bytes=[0u8;4];if tokio::time::timeout(Duration::from_secs(1),stream.read_exact(&mut bytes)).await.is_ok_and(|r|r.is_ok())&&&bytes==b"show"{let Some(host)=weak.upgrade()else{break;};if host.stopping.load(Ordering::Acquire){break;}host.show.store(true,Ordering::Release);}}});Ok(())
+        let weak=Arc::downgrade(self);tokio::spawn(async move{while let Ok((mut stream,_))=listener.accept().await{
+            let action=tokio::time::timeout(Duration::from_secs(1),async{
+                let mut bytes=[0u8;4];stream.read_exact(&mut bytes).await?;
+                if &bytes==b"show"{return Ok::<_,io::Error>(Some(None));}
+                if &bytes==b"cprj" {
+                    let length=stream.read_u16().await? as usize;
+                    if length==0||length>1024 {return Ok(None);}
+                    let mut value=vec![0u8;length];stream.read_exact(&mut value).await?;
+                    let context:ConnectionContext=serde_json::from_slice(&value).map_err(io::Error::other)?;
+                    return Ok(context.validate().is_ok().then_some(Some(context)));
+                }
+                if &bytes!=b"conn"{return Ok(None);}
+                let length=stream.read_u16().await? as usize;
+                if length==0||length>128{return Ok(None);}
+                let mut name=vec![0u8;length];stream.read_exact(&mut name).await?;
+                let name=String::from_utf8(name).map_err(io::Error::other)?;
+                Ok(connection_name_valid(&name).then_some(Some(ConnectionContext::global(name))))
+            }).await;
+            if let Ok(Ok(Some(client)))=action{let Some(host)=weak.upgrade()else{break;};if host.stopping.load(Ordering::Acquire){break;}
+                if let Some(context)=client{host.request_connection_context(context);}else{host.show.store(true,Ordering::Release);}
+            }
+        }});Ok(())
     }
+    /// Native UI intent only. It creates no connection or grant until the UI uses the APIs.
+    pub fn request_connection_setup(&self,client:String){
+        self.request_connection_context(ConnectionContext::global(client));
+    }
+    pub fn request_connection_context(&self,context:ConnectionContext){
+        if context.validate().is_err(){return;}
+        if let Ok(mut pending)=self.connection_setups.lock(){if !pending.contains(&context)&&pending.len()<32{pending.push(context);}}
+        self.show.store(true,Ordering::Release);
+    }
+    pub fn take_connection_context(&self)->Option<ConnectionContext>{self.connection_setups.lock().ok().and_then(|mut pending|if pending.is_empty(){None}else{Some(pending.remove(0))})}
+    pub fn take_connection_setup(&self)->Option<String>{self.connection_setups.lock().ok().and_then(|mut pending|pending.iter().position(|context|context.project_id.is_none()).map(|index|pending.remove(index).client))}
     pub fn take_show_request(&self)->bool{self.show.swap(false,Ordering::AcqRel)}
     pub fn is_stopped(&self)->bool{self.stopped.load(Ordering::Acquire)}
     pub async fn shutdown(&self){
@@ -91,7 +125,7 @@ impl ApplicationHost {
         let lock=OpenOptions::new().read(true).write(true).create_new(true).mode(0o600).open(root.join("fixture.lock"))?;
         Ok(Arc::new(Self{state:Arc::new(state),native,certificate_pem,certificate_path:root.join("certificate.pem"),
             manager,oauth,credentials,handle:Handle::new(),listener:Mutex::new(None),tls,_instance_lock:lock,root,
-            show:AtomicBool::new(false),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()}))
+            show:AtomicBool::new(false),connection_setups:Mutex::new(Vec::new()),stopping:AtomicBool::new(false),stopped:AtomicBool::new(false),shutdown_done:tokio::sync::Notify::new()}))
     }
 }
 /// Resolve a build's data folder without reading the environment or creating state.
@@ -105,6 +139,57 @@ pub const fn default_app_port()->u16{app_port_for_build(cfg!(debug_assertions))}
 pub fn default_data_root()->io::Result<PathBuf>{data_root_for_home(&home_directory()?,cfg!(debug_assertions))}
 pub fn home_directory()->io::Result<PathBuf>{std::env::var_os("HOME").map(PathBuf::from).filter(|p|p.is_absolute()).ok_or_else(||io::Error::other("Fetch could not find the current user's home folder."))}
 pub async fn show_existing(root:&Path)->io::Result<()>{let mut stream=tokio::time::timeout(Duration::from_secs(2),tokio::net::UnixStream::connect(root.join("activation.sock"))).await.map_err(|_|io::Error::other("Fetch is already running; open it from its Dock or menu."))??;stream.write_all(b"show").await}
+fn connection_name_valid(client:&str)->bool{!client.trim().is_empty()&&client.len()<=128&&!client.chars().any(char::is_control)}
+/// Ask the running native app to own approval setup, even if this connector exits.
+pub async fn show_connection(root:&Path,client:&str)->io::Result<()>{
+    if !connection_name_valid(client){return Err(io::Error::other("Choose a nonempty client connection name."));}
+    let mut stream=tokio::time::timeout(Duration::from_secs(2),tokio::net::UnixStream::connect(root.join("activation.sock"))).await.map_err(|_|io::Error::other("Fetch is not ready for connection approval."))??;
+    stream.write_all(b"conn").await?;stream.write_u16(client.len() as u16).await?;stream.write_all(client.as_bytes()).await
+}
+/// Nonsecret typed activation; saved pending proof and native approval still own access.
+pub async fn show_connection_context(root:&Path,context:&ConnectionContext)->io::Result<()> {
+    context.validate().map_err(io::Error::other)?;
+    if context.project_id.is_none(){return show_connection(root,&context.client).await;}
+    let bytes=serde_json::to_vec(context).map_err(io::Error::other)?;
+    let mut stream=tokio::time::timeout(Duration::from_secs(2),tokio::net::UnixStream::connect(root.join("activation.sock"))).await.map_err(|_|io::Error::other("Fetch is not ready for connection approval."))??;
+    stream.write_all(b"cprj").await?;stream.write_u16(bytes.len() as u16).await?;stream.write_all(&bytes).await
+}
+
+#[cfg(test)]
+mod connector_activation_tests {
+    use super::*;
+    struct Keys;
+    impl crate::credentials::KeyProvider for Keys {
+        fn key_for_server(&self,_:&str)->Result<zeroize::Zeroizing<[u8;32]>,crate::credentials::CredentialError>{Ok(zeroize::Zeroizing::new([64;32]))}
+    }
+    #[tokio::test]
+    async fn connector_handoff_survives_the_requesting_process_without_granting_access(){
+        let directory=tempfile::tempdir().unwrap();
+        fs::set_permissions(directory.path(),fs::Permissions::from_mode(0o700)).unwrap();
+        let credentials=Arc::new(CredentialStore::new(directory.path().to_owned(),Arc::new(Keys)));
+        let host=ApplicationHost::fixture(directory.path().to_owned(),credentials).await.unwrap();
+        // Cold app startup keeps only the nonsecret client label for its UI.
+        host.request_connection_setup("claude-code".into());
+        assert!(host.take_show_request());
+        assert_eq!(host.take_connection_setup().as_deref(),Some("claude-code"));
+        // The existing private activation channel delivers the same warm-app intent.
+        host.start_local_activation().unwrap();
+        show_connection(directory.path(),"codex").await.unwrap();
+        tokio::time::timeout(Duration::from_secs(2),async {
+            loop {if let Some(client)=host.take_connection_setup(){assert_eq!(client,"codex");break;}tokio::task::yield_now().await;}
+        }).await.unwrap();
+        assert!(host.take_show_request());
+        assert!(!host.oauth.has_pending_connections(),"activation itself creates no authorization request or grant");
+        assert!(host.take_connection_setup().is_none());
+        let context=ConnectionContext {client:"codex".into(),project_id:Some("project-11111111111111111111111111111111".into())};
+        show_connection_context(directory.path(),&context).await.unwrap();
+        let observed=tokio::time::timeout(Duration::from_secs(2),async {
+            loop {if let Some(context)=host.take_connection_context(){break context;}tokio::task::yield_now().await;}
+        }).await.unwrap();
+        assert_eq!(observed,context);
+        assert!(!host.oauth.has_pending_connections(),"typed activation grants no project authority");
+    }
+}
 fn private_directory(path:&Path)->io::Result<()>{match fs::symlink_metadata(path){Ok(metadata)=>{if !metadata.is_dir()||metadata.file_type().is_symlink()||metadata.permissions().mode()&0o077!=0||metadata.uid()!=unsafe{libc::geteuid()}{return Err(io::Error::other("Fetch requires an owner-only data folder with mode 700."));}},Err(error)if error.kind()==io::ErrorKind::NotFound=>fs::DirBuilder::new().recursive(true).mode(0o700).create(path)?,Err(error)=>return Err(error)}Ok(())}
 fn write_public_certificate(root:&Path,path:&Path,bytes:&[u8])->io::Result<()>{if let Ok(metadata)=fs::symlink_metadata(path){if !metadata.is_file()||metadata.file_type().is_symlink()||metadata.nlink()!=1{return Err(io::Error::other("Fetch's public certificate path is unsafe."));}}let temporary=root.join(format!(".certificate-{:032x}",rand::random::<u128>()));let result=(||{let mut file=OpenOptions::new().write(true).create_new(true).mode(0o600).custom_flags(libc::O_NOFOLLOW).open(&temporary)?;file.write_all(bytes)?;file.sync_all()?;fs::rename(&temporary,path)?;File::open(root)?.sync_all()})();if result.is_err(){let _=fs::remove_file(temporary);}result}
 

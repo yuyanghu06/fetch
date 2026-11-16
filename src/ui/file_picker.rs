@@ -12,6 +12,7 @@ type PickerResult=Result<Option<String>,String>;
 unsafe extern "C" {
     fn fetch_choose_config_file(callback:unsafe extern "C" fn(*mut c_void,*const c_char,i32),context:*mut c_void);
     fn fetch_cancel_config_file_picker();
+    fn fetch_prepare_config_file_picker();
 }
 
 #[cfg(target_os="macos")]
@@ -58,3 +59,9 @@ pub async fn choose_config_file()->Result<Option<String>,String> {
 
 #[cfg(not(target_os="macos"))]
 pub fn cancel() {}
+
+/// Prepare the native dialog without presenting it or reading a selected file.
+#[cfg(target_os="macos")]
+pub fn prepare() { unsafe { fetch_prepare_config_file_picker(); } }
+#[cfg(not(target_os="macos"))]
+pub fn prepare() {}

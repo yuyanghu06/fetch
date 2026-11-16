@@ -8,11 +8,16 @@ pub(super) const SEMIBOLD_FONT: iced::Font = iced::Font {weight:iced::font::Weig
 pub(super) const BOLD_FONT: iced::Font = iced::Font {weight:iced::font::Weight::Bold,..BODY_FONT};
 pub(super) const SURFACE: Color = Color::from_rgb8(247,246,241);
 pub(super) const RECESSED: Color = Color::from_rgb8(234,230,223);
+pub(super) const CODE_BACKGROUND: Color = Color::from_rgb8(238,239,239);
+pub(super) const SESSION_USER_BACKGROUND: Color = Color::WHITE;
+pub(super) const SESSION_ASSISTANT_BACKGROUND: Color = Color::from_rgb8(230,230,230);
 pub(super) const ACCENT: Color = Color::from_rgb8(149,212,241);
 pub(super) const INK: Color = Color::from_rgb8(39,43,48);
 pub(super) const MUTED: Color = Color::from_rgb8(102,107,112);
 pub(super) const DANGER: Color = Color::from_rgb8(198,69,69);
 pub(super) const APP_TITLE: f32 = 28.0;
+pub(super) const APP_LOGO_SIZE: f32 = 22.0;
+pub(super) const WINDOW_RADIUS: f32 = 32.0;
 pub(super) const PAGE_TITLE: f32 = 32.0;
 pub(super) const SECTION_TITLE: f32 = 22.0;
 pub(super) const FIELD_TITLE: f32 = 17.0;
@@ -37,6 +42,8 @@ pub(super) const CHECKBOX_GAP: f32 = 8.0;
 pub(super) const INSTALLED_LABEL_ALPHA: f32 = 0.5;
 pub(super) const CONSOLE_HEIGHT: f32 = 240.0;
 pub(super) const CONSOLE_TEXT_SIZE: f32 = 13.0;
+pub(super) const CONSOLE_BACKGROUND:Color=Color::from_rgb8(36,43,48);
+pub(super) const CONSOLE_FOREGROUND:Color=Color::from_rgb8(222,226,232);
 pub(super) const CONSOLE_LINE_GAP: f32 = 4.0;
 
 pub(super) fn light() -> Theme {
@@ -63,6 +70,9 @@ pub(super) fn output_button(_: &Theme,status:widget::button::Status)->widget::bu
 pub(super) fn install_button(_: &Theme,status:widget::button::Status)->widget::button::Style {
     let mut style=control(ACCENT,false,status);style.text_color=if status==widget::button::Status::Disabled{MUTED}else{Color::WHITE};style
 }
+pub(super) fn save_button(_: &Theme,status:widget::button::Status)->widget::button::Style {
+    let mut style=control(ACCENT,false,status);style.text_color=Color::WHITE;style
+}
 pub(super) fn transparent(_: &Theme,status:widget::button::Status)->widget::button::Style {
     widget::button::Style{text_color:if status==widget::button::Status::Disabled{MUTED}else{INK},..Default::default()}
 }
@@ -72,6 +82,20 @@ pub(super) fn text_input(_: &Theme,status:widget::text_input::Status)->widget::t
     style.border=Border::default();
     style.value=INK;style.placeholder=MUTED;style
 }
+pub(super) fn text_editor(_: &Theme,status:widget::text_editor::Status)->widget::text_editor::Style {
+    let mut style=widget::text_editor::default(&light(),status);
+    style.background=Color::TRANSPARENT.into();style.border=Border::default();
+    style.value=INK;style.placeholder=MUTED;style.selection=ACCENT.scale_alpha(0.45);style
+}
+pub(super) fn model_picker(_: &Theme,status:widget::pick_list::Status)->widget::pick_list::Style {
+    let mut style=widget::pick_list::default(&light(),status);
+    style.background=Color::TRANSPARENT.into();style.border=Border::default();
+    style.text_color=INK;style.placeholder_color=MUTED;style.handle_color=MUTED;style
+}
+/// Warm rounded menu surface and the app's pale-blue selection.
+pub(super) fn picker_menu(_: &Theme)->widget::overlay::menu::Style {
+    widget::overlay::menu::Style{background:SURFACE.into(),border:Border{radius:12.0.into(),width:0.0,color:Color::TRANSPARENT},text_color:INK,selected_text_color:INK,selected_background:Color::from_rgb8(234,245,251).into(),shadow:iced::Shadow{color:Color::from_rgba(0.36,0.35,0.32,0.22),offset:iced::Vector::new(4.0,6.0),blur_radius:18.0}}
+}
 pub(super) fn checkbox(_: &Theme,status:widget::checkbox::Status)->widget::checkbox::Style {
     let mut style=widget::checkbox::primary(&light(),status);style.border.radius=5.0.into();style.border.width=0.0;style.icon_color=Color::WHITE;style
 }
@@ -79,7 +103,7 @@ pub(super) fn installed_checkbox(theme:&Theme,status:widget::checkbox::Status)->
     let mut style=checkbox(theme,status);style.background=Color::from_rgb8(227,230,233).into();style.icon_color=Color::from_rgb8(166,171,178);style.text_color=Some(MUTED.scale_alpha(INSTALLED_LABEL_ALPHA));style
 }
 pub(super) fn console(_: &Theme)->widget::container::Style {
-    widget::container::Style{background:Some(Color::from_rgb8(36,43,48).into()),text_color:Some(Color::from_rgb8(222,226,232)),border:Border{radius:16.0.into(),..Default::default()},..Default::default()}
+    widget::container::Style{background:Some(CONSOLE_BACKGROUND.into()),text_color:Some(CONSOLE_FOREGROUND),border:Border{radius:16.0.into(),..Default::default()},..Default::default()}
 }
 pub(super) fn console_action(_: &Theme,status:widget::button::Status)->widget::button::Style {
     widget::button::Style{text_color:if status==widget::button::Status::Disabled{MUTED}else{Color::WHITE},..Default::default()}
@@ -94,4 +118,12 @@ pub(super) fn scrollable(theme:&Theme,status:widget::scrollable::Status)->widget
         scroller:widget::scrollable::Scroller{background:color.into(),border:Border{radius:2.0.into(),..Default::default()}},
     };
     style.vertical_rail=rail;style.horizontal_rail=rail;style.gap=None;style
+}
+
+/// Shared native on/off control; the page supplies only state and callback.
+pub(super) fn server_toggle(_: &Theme,status:widget::toggler::Status)->widget::toggler::Style{
+    let mut style=widget::toggler::default(&light(),status);
+    let(on,disabled)=match status{widget::toggler::Status::Active{is_toggled}|widget::toggler::Status::Hovered{is_toggled}=>(is_toggled,false),widget::toggler::Status::Disabled{is_toggled}=>(is_toggled,true)};
+    let color=if on{ACCENT}else{Color::from_rgb8(184,189,195)};
+    style.background=if disabled{color.scale_alpha(0.58).into()}else{color.into()};style.foreground=Color::WHITE.into();style
 }

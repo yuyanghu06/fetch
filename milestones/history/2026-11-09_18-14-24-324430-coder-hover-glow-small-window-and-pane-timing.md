@@ -1,0 +1,10 @@
+# Implement hover treatment and smaller launch; measure output latency
+
+- Local timestamp / acting role / milestone: 2026-11-09T18:14:24.324430-05:00 / Primary agent, sequential plan/coding / hover-glow-pane-response.
+- Requested scope: remove hover text, small fading glows, reduce Console/Terminal delay, default window 30 percent smaller.
+- Starting repository state: prior UI fixes, signed frameless executable and unresolved Keychain investigation; other local notes preserved.
+- Work performed / changed files: mod.rs removes native Tooltip wrappers and uses 874x630 shared window settings. components.rs removes remaining legacy shared header tooltip. surface.rs adds cached Glow decoration and 150ms smooth fade using stock redraw events; input/click/session behavior retained. neumorphic_tests.rs extends fixture with timed cursor redraw and adds focused hover/output pane tests. Initial output test rejected legitimate stock-terminal resize events; fixture test now processes them while dropping HTTP tasks.
+- Decisions: reuse existing resvg renderer/cache and Iced input/redraw; no library/animation framework, global timer or backend change. Disabled controls don't glow; selected controls glow only when hovered. Keep all upstream output. Measure long Console before any rendering optimization.
+- Checks and evidence: first focused run passed six of seven checks including hover; pane test fixture needed legitimate resize handling. 200-line Console switch measured 34–43ms and Terminal initial selection13ms at Retina decoration scale; full4096-line retained-log timing now in progress. These are fixture timings, not a native window or shell-start guarantee.
+- Resulting state / acceptance: implementation partly verified; pane performance, final checks/build/review remain.
+- Remaining work and handoff: inspect full-log timing and apply only evidenced optimization; visually inspect hover sequence, run proportional checks and sign build. No app relaunch/credential changes. Preserve pending user-owned same-binary Keychain test; don't claim it completed.

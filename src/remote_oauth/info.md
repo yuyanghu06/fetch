@@ -1,3 +1,5 @@
+The native Keychain Backend is also reused by connector profiles under their own service namespace. Existing upstream SDK/manual grant records remain separate and are not migrated or copied.
+
 ## November 4 private auth error details
 
 sdk.rs attaches the shared startup capture to the existing HTTP/library path. Actual response status and failed body plus error kind/message reach the native console after sanitization; successful bodies and request payloads are never logged. Request-time nofollow/destination/size rules and library issuer validation remain; their failure reason is visible. Token/Keychain ownership and refresh behavior are unchanged.

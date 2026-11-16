@@ -1,7 +1,9 @@
 //! Account-free local OAuth. Provider tokens are never accepted as Fetch authority.
 #[cfg(test)]
 mod tests;
+mod connections;
 use crate::{authority::{AuthorizationError,Authorizer,Caller},credentials::{CredentialStore,SecretDocument},native_auth::{NativeAuthError,NativeAuthority}};
+use crate::{projects::{Project,ProjectError,ProjectRegistry,visible_server_ids,valid_project_id},storage::ServerRepository};
 use axum::{Router,body::to_bytes,extract::{Request,State},http::{HeaderMap,HeaderValue,StatusCode,header},response::{Html,IntoResponse,Response},routing::{get,post},Json};
 use base64::{Engine,engine::general_purpose::URL_SAFE_NO_PAD};
 use rand::{RngCore,rngs::OsRng};
@@ -12,7 +14,7 @@ use std::{collections::{BTreeMap,BTreeSet},path::PathBuf,sync::{Arc,Mutex,atomic
 use url::Url;
 use zeroize::Zeroizing;
 
-const SCOPES:[&str;4]=["fetch:catalog","fetch:tools:call","fetch:content:read","fetch:manage"];
+const SCOPES:[&str;5]=["fetch:catalog","fetch:tools:call","fetch:content:read","fetch:manage","fetch:sessions:read"];
 const DEFAULT_SCOPES:[&str;3]=["fetch:catalog","fetch:tools:call","fetch:content:read"];
 const BODY_LIMIT:usize=16*1024;
 const BROWSER_POLICY:&str="default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
@@ -42,10 +44,10 @@ struct ApprovalParameters { client:String,redirect:String,resource:String,challe
 struct Approval { id:String,browser_hash:String,csrf:String,parameters:ApprovalParameters,expires:u64,processing:bool }
 #[derive(Clone)]
 struct Code { parameters:ApprovalParameters,scopes:BTreeSet<String>,expires:u64 }
-struct LiveState { persistent:Persistent,approvals:BTreeMap<String,Approval>,codes:BTreeMap<String,Code> }
-pub struct OAuthService { origin:String,store:CredentialStore,native:Arc<NativeAuthority>,state:Mutex<LiveState>,available:AtomicBool,revocations:tokio::sync::broadcast::Sender<String> }
+struct LiveState { persistent:Persistent,approvals:BTreeMap<String,Approval>,codes:BTreeMap<String,Code>,connections:connections::Requests }
+pub struct OAuthService { origin:String,store:CredentialStore,native:Arc<NativeAuthority>,state:Mutex<LiveState>,available:AtomicBool,connection_requested:AtomicBool,revocations:tokio::sync::broadcast::Sender<String>,projects:ProjectRegistry,repository:ServerRepository }
 impl OAuthService {
-    pub fn open(origin:String,_root:PathBuf,credentials:Arc<CredentialStore>,native:Arc<NativeAuthority>)->Result<Arc<Self>,OAuthError> {
+    pub fn open(origin:String,root:PathBuf,credentials:Arc<CredentialStore>,native:Arc<NativeAuthority>)->Result<Arc<Self>,OAuthError> {
         let url=Url::parse(&origin).map_err(|_|OAuthError)?;
         if url.scheme()!="https" || url.host_str()!=Some("localhost") || url.port().is_none() || url.path()!="/" || url.query().is_some() || url.fragment().is_some() || !url.username().is_empty() || url.password().is_some() { return Err(OAuthError); }
         let origin=origin.trim_end_matches('/').to_owned();
@@ -55,9 +57,11 @@ impl OAuthService {
             None=>Persistent { version:1,issuer:origin.clone(),clients:BTreeMap::new(),families:BTreeMap::new() }
         };
         let (revocations,_)=tokio::sync::broadcast::channel(256);
-        Ok(Arc::new(Self { origin,store,native,state:Mutex::new(LiveState {persistent,approvals:BTreeMap::new(),codes:BTreeMap::new()}),available:AtomicBool::new(true),revocations }))
+        Ok(Arc::new(Self { origin,store,native,state:Mutex::new(LiveState {persistent,approvals:BTreeMap::new(),codes:BTreeMap::new(),connections:connections::Requests::default()}),available:AtomicBool::new(true),connection_requested:AtomicBool::new(false),revocations,projects:ProjectRegistry::new(root.clone()),repository:ServerRepository::new(root) }))
     }
     pub fn subscribe_revocations(&self)->tokio::sync::broadcast::Receiver<String> { self.revocations.subscribe() }
+    /// A new unapproved connection requests foreground UI; this grants no access.
+    pub fn take_connection_request(&self)->bool { self.connection_requested.swap(false,Ordering::AcqRel) }
     pub fn owner_is_active(&self,id:&str)->bool {
         if !self.available.load(Ordering::Acquire) { return false; }
         if id.starts_with("native:") { return self.native.owner_is_active(id); }
@@ -65,6 +69,23 @@ impl OAuthService {
     }
     pub fn origin(&self)->&str { &self.origin }
     fn resource(&self)->String { format!("{}/mcp",self.origin) }
+    pub fn resource_for_project(&self,project_id:Option<&str>)->Result<String,ProjectError> {
+        match project_id {
+            None=>Ok(self.resource()),
+            Some(id)=>{
+                self.projects.get(id)?.ok_or_else(||ProjectError::new(404,"PROJECT_NOT_FOUND","The project was not found."))?;
+                Ok(format!("{}/mcp/projects/{id}",self.origin))
+            }
+        }
+    }
+    /// Resolve only exact registered resource URLs. URL/body selectors add no authority.
+    pub fn project_for_resource(&self,resource:&str)->Result<Option<Project>,AuthorizationError> {
+        if resource==self.resource() { return Ok(None); }
+        let prefix=format!("{}/mcp/projects/",self.origin);
+        let id=resource.strip_prefix(&prefix).filter(|id|valid_project_id(id)).ok_or(AuthorizationError::Unauthenticated)?;
+        self.projects.get(id).map_err(|error|if error.http_status>=500 {AuthorizationError::Unavailable}else{AuthorizationError::Unauthenticated})?
+            .map(Some).ok_or(AuthorizationError::Unauthenticated)
+    }
     fn persist(&self,value:&Persistent)->Result<(),OAuthError> {
         let bytes=Zeroizing::new(serde_json::to_vec(value).map_err(|_|OAuthError)?);
         if self.store.save(APPLICATION_ID,&SecretDocument::new(bytes.to_vec())).is_err() {
@@ -73,7 +94,7 @@ impl OAuthService {
         } Ok(())
     }
     fn ready(&self)->bool { self.available.load(Ordering::Acquire) }
-    pub fn shutdown(&self) { if let Ok(mut state)=self.state.lock() { state.approvals.clear();state.codes.clear(); } self.native.invalidate_all(); }
+    pub fn shutdown(&self) { if let Ok(mut state)=self.state.lock() { state.approvals.clear();state.codes.clear();state.connections.clear(); } self.native.invalidate_all(); }
 }
 impl Authorizer for OAuthService {
     fn authorize(&self,headers:&HeaderMap)->Result<Caller,AuthorizationError> {
@@ -88,13 +109,16 @@ impl Authorizer for OAuthService {
         if !scheme.eq_ignore_ascii_case("Bearer") || !valid_token(token) { return Err(AuthorizationError::Unauthenticated); }
         let hash=digest(token);let timestamp=now();
         let state=self.state.lock().map_err(|_|AuthorizationError::Unavailable)?;
-        let (family,access)=state.persistent.families.values().filter(|f|!f.revoked && f.resource==self.resource()).find_map(|f|f.access.iter().find(|a|a.hash==hash && a.expires>timestamp).map(|a|(f,a))).ok_or(AuthorizationError::Unauthenticated)?;
-        Ok(Caller::from_grant(family.id.clone(),access.scopes.iter().cloned()))
+        let (family,access)=state.persistent.families.values().filter(|f|!f.revoked).find_map(|f|f.access.iter().find(|a|a.hash==hash && a.expires>timestamp).map(|a|(f,a))).ok_or(AuthorizationError::Unauthenticated)?;
+        let project=self.project_for_resource(&family.resource)?;
+        if project.is_none() && access.scopes.contains("fetch:sessions:read") { return Err(AuthorizationError::Unauthenticated); }
+        let visible=visible_server_ids(&self.repository,project.as_ref().map(|project|project.id.as_str())).map_err(|_|AuthorizationError::Unavailable)?;
+        Ok(Caller::from_grant(family.id.clone(),access.scopes.iter().cloned()).bind_project(family.resource.clone(),project).restrict_visibility(visible))
     }
 }
 /// The main router retains protected-resource metadata to avoid duplicate registration.
 pub fn router(service:Arc<OAuthService>)->Router {
-    Router::new().route("/.well-known/oauth-authorization-server",get(metadata)).route("/oauth/register",post(register)).route("/oauth/authorize",get(authorize_get).post(authorize_post)).route("/oauth/token",post(token)).route("/oauth/revoke",post(revoke)).with_state(service)
+    Router::new().route("/.well-known/oauth-authorization-server",get(metadata)).route("/oauth/register",post(register)).route("/oauth/authorize",get(authorize_get).post(authorize_post)).route("/oauth/token",post(token)).route("/oauth/revoke",post(revoke)).merge(connections::router()).with_state(service)
 }
 async fn metadata(State(service):State<Arc<OAuthService>>)->Response {
     standard_json(StatusCode::OK,json!({"issuer":service.origin,"authorization_endpoint":format!("{}/oauth/authorize",service.origin),"token_endpoint":format!("{}/oauth/token",service.origin),"registration_endpoint":format!("{}/oauth/register",service.origin),"revocation_endpoint":format!("{}/oauth/revoke",service.origin),"response_types_supported":["code"],"grant_types_supported":["authorization_code","refresh_token"],"token_endpoint_auth_methods_supported":["none"],"code_challenge_methods_supported":["S256"],"scopes_supported":SCOPES,"authorization_response_iss_parameter_supported":true}))
@@ -128,13 +152,15 @@ async fn authorize_get(State(service):State<Arc<OAuthService>>,request:Request)-
     let client_id=match params.get("client_id") {Some(v)=>v,None=>return page_error(StatusCode::BAD_REQUEST,"The requesting app is missing.")};
     let redirect=match params.get("redirect_uri") {Some(v)=>v,None=>return page_error(StatusCode::BAD_REQUEST,"The callback address is missing.")};
     let challenge=match params.get("code_challenge") {Some(v) if v.len()==43 && URL_SAFE_NO_PAD.decode(v).is_ok()=>v,None=>return page_error(StatusCode::BAD_REQUEST,"The PKCE challenge is missing."),_=>return page_error(StatusCode::BAD_REQUEST,"The PKCE challenge is invalid.")};
-    if params.get("resource").map(String::as_str)!=Some(service.resource().as_str()) { return page_error(StatusCode::BAD_REQUEST,"This request targets a different Fetch service."); }
+    let Some(resource)=params.get("resource") else{return page_error(StatusCode::BAD_REQUEST,"The Fetch resource is missing.");};
+    let project=match service.project_for_resource(resource) {Ok(project)=>project,Err(AuthorizationError::Unavailable)=>return page_error(StatusCode::SERVICE_UNAVAILABLE,"Fetch's project registry is unavailable."),Err(_)=>return page_error(StatusCode::BAD_REQUEST,"This request targets an unknown Fetch resource.")};
     let scopes=match parse_scopes(params.get("scope").map(String::as_str),true) {Ok(v)=>v,Err(_)=>return page_error(StatusCode::BAD_REQUEST,"The requested permissions are invalid.")};
+    if project.is_none() && scopes.contains("fetch:sessions:read") {return page_error(StatusCode::BAD_REQUEST,"Session history requires a project connection.");}
     let mut state=match service.state.lock(){Ok(v)=>v,Err(_)=>return page_error(StatusCode::SERVICE_UNAVAILABLE,"Fetch authorization is unavailable.")};
     let Some(client)=state.persistent.clients.get(client_id).cloned() else {return page_error(StatusCode::BAD_REQUEST,"The requesting app is not registered.");};
     if !client.redirect_uris.iter().any(|r|redirect_matches(r,redirect)) { return page_error(StatusCode::BAD_REQUEST,"The callback address does not match the app registration."); }
     let timestamp=now();state.approvals.retain(|_,a|a.expires>timestamp);state.codes.retain(|_,c|c.expires>timestamp);
-    let parameters=ApprovalParameters {client:client_id.clone(),redirect:redirect.clone(),resource:service.resource(),challenge:challenge.clone(),scopes,state:params.get("state").cloned()};
+    let parameters=ApprovalParameters {client:client_id.clone(),redirect:redirect.clone(),resource:resource.clone(),challenge:challenge.clone(),scopes,state:params.get("state").cloned()};
     let existing_cookie=browser_cookie(request.headers());
     let existing=existing_cookie.as_ref().and_then(|cookie|state.approvals.values().find(|a|a.browser_hash==digest(cookie) && a.parameters==parameters).cloned());
     let (approval,cookie)=if let Some(approval)=existing { (approval,existing_cookie.unwrap_or_default()) } else {
@@ -142,7 +168,7 @@ async fn authorize_get(State(service):State<Arc<OAuthService>>,request:Request)-
         let cookie=existing_cookie.filter(|cookie|state.approvals.values().any(|a|a.browser_hash==digest(cookie))).unwrap_or_else(random_token);
         let approval=Approval{id:random_token(),browser_hash:digest(&cookie),csrf:random_token(),parameters,expires:timestamp+APPROVAL_SECONDS,processing:false};state.approvals.insert(approval.id.clone(),approval.clone());(approval,cookie)
     };
-    let mut response=approval_page(&approval,&client,None);
+    let mut response=approval_page(&service,&approval,&client,None);
     if let Ok(value)=HeaderValue::from_str(&format!("fetch-browser={cookie}; Path=/oauth; Secure; HttpOnly; SameSite=Lax; Max-Age=600")) {response.headers_mut().insert(header::SET_COOKIE,value);}
     response
 }
@@ -173,7 +199,7 @@ async fn authorize_post(State(service):State<Arc<OAuthService>>,request:Request)
     if current.parameters!=approval.parameters || current.expires<=now() {state.approvals.remove(&id);return authorization_redirect(&service,&approval.parameters,None,Some("access_denied"));}
     match confirmation {
         Ok(Ok(()))=>{},
-        Ok(Err(NativeAuthError::Unavailable))=>{if let Some(current)=state.approvals.get_mut(&id){current.processing=false;}let Some(client)=state.persistent.clients.get(&approval.parameters.client) else {return page_error(StatusCode::BAD_REQUEST,"The app is no longer registered.");};return approval_page(&approval,client,Some("Bring Fetch forward and choose Allow again. No connection was approved."));},
+        Ok(Err(NativeAuthError::Unavailable))=>{if let Some(current)=state.approvals.get_mut(&id){current.processing=false;}let Some(client)=state.persistent.clients.get(&approval.parameters.client) else {return page_error(StatusCode::BAD_REQUEST,"The app is no longer registered.");};return approval_page(&service,&approval,client,Some("Bring Fetch forward and choose Allow again. No connection was approved."));},
         _=>{state.approvals.remove(&id);return authorization_redirect(&service,&approval.parameters,None,Some("access_denied"));}
     }
     if state.persistent.families.values().filter(|f|family_active(f,now())).count()>=256 {state.approvals.remove(&id);return busy();}
@@ -185,7 +211,8 @@ async fn token(State(service):State<Arc<OAuthService>>,request:Request)->Respons
     let input=match read_form(request).await {Ok(v)=>v,Err(r)=>return r};
     let params=match one_each(&input,&["grant_type","code","client_id","redirect_uri","code_verifier","resource","refresh_token","scope"]){Ok(v)=>v,Err(_)=>return oauth_error(StatusCode::BAD_REQUEST,"invalid_request")};
     let client_id=match params.get("client_id"){Some(v)=>v,None=>return oauth_error(StatusCode::BAD_REQUEST,"invalid_client")};
-    if params.get("resource").map(String::as_str)!=Some(service.resource().as_str()){return oauth_error(StatusCode::BAD_REQUEST,"invalid_target");}
+    let Some(resource)=params.get("resource") else{return oauth_error(StatusCode::BAD_REQUEST,"invalid_target");};
+    let project=match service.project_for_resource(resource){Ok(project)=>project,Err(AuthorizationError::Unavailable)=>return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable"),Err(_)=>return oauth_error(StatusCode::BAD_REQUEST,"invalid_target")};
     let mut state=match service.state.lock(){Ok(v)=>v,Err(_)=>return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable")};
     let Some(client)=state.persistent.clients.get(client_id).cloned() else {return oauth_error(StatusCode::BAD_REQUEST,"invalid_client");};
     match params.get("grant_type").map(String::as_str) {
@@ -193,15 +220,13 @@ async fn token(State(service):State<Arc<OAuthService>>,request:Request)->Respons
             let code=match params.get("code"){Some(v)=>v,None=>return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant")};
             let hash=digest(code);let Some(code)=state.codes.get(&hash).cloned() else {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");};
             let verifier=match params.get("code_verifier"){Some(v) if valid_verifier(v)=>v,_=>return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant")};
-            if code.expires<=now() || code.parameters.client!=*client_id || params.get("redirect_uri")!=Some(&code.parameters.redirect) || URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()))!=code.parameters.challenge {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");}
+            if code.expires<=now() || code.parameters.resource!=*resource || code.parameters.client!=*client_id || params.get("redirect_uri")!=Some(&code.parameters.redirect) || URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()))!=code.parameters.challenge {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");}
             if params.contains_key("scope") || params.contains_key("refresh_token") {return oauth_error(StatusCode::BAD_REQUEST,"invalid_request");}
             let timestamp=now();let mut staged=state.persistent.clone();prune(&mut staged,timestamp);
             if staged.families.values().filter(|f|family_active(f,timestamp)).count()>=256 || staged.families.len()>=4096 {return busy();}
-            let access=random_token();let refresh=client.grant_types.contains("refresh_token").then(random_token);
-            let family=Family {id:random_token(),client:client_id.clone(),resource:service.resource(),scopes:code.scopes.clone(),access:vec![AccessToken {hash:digest(&access),expires:timestamp+ACCESS_SECONDS,scopes:code.scopes.clone()}],refresh:refresh.as_ref().map(|r|vec![RefreshToken {hash:digest(r),expires:timestamp+REFRESH_SECONDS,spent:false}]).unwrap_or_default(),revoked:false,last_refresh:timestamp};
-            staged.families.insert(family.id.clone(),family);
+            let (access,refresh)=issue_family(&mut staged,client_id,resource,&code.scopes,client.grant_types.contains("refresh_token"),timestamp);
             if service.persist(&staged).is_err(){return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable");}state.persistent=staged;state.codes.remove(&hash);
-            token_response(access,refresh,&code.scopes)
+            token_response(access,refresh,&code.scopes,resource,project.as_ref())
         },
         Some("refresh_token")=>{
             if !client.grant_types.contains("refresh_token"){return oauth_error(StatusCode::BAD_REQUEST,"unauthorized_client");}
@@ -209,7 +234,7 @@ async fn token(State(service):State<Arc<OAuthService>>,request:Request)->Respons
             let hash=digest(refresh);let timestamp=now();
             let Some((id,index))=state.persistent.families.iter().find_map(|(id,f)|f.refresh.iter().position(|r|r.hash==hash).map(|i|(id.clone(),i))) else {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");};
             let family=&state.persistent.families[&id];
-            if family.client!=*client_id || family.resource!=service.resource() || family.revoked {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");}
+            if family.client!=*client_id || family.resource!=*resource || family.revoked {return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");}
             if family.refresh[index].spent {
                 let mut staged=state.persistent.clone();if let Some(family)=staged.families.get_mut(&id){family.revoked=true;}
                 if service.persist(&staged).is_err(){return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable");}state.persistent=staged;let _=service.revocations.send(id);return oauth_error(StatusCode::BAD_REQUEST,"invalid_grant");
@@ -223,7 +248,7 @@ async fn token(State(service):State<Arc<OAuthService>>,request:Request)->Respons
             // Scope narrowing is durable for the family; it never broadens previously approved access.
             family.scopes=scopes.clone();
             if service.persist(&staged).is_err(){return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable");}state.persistent=staged;
-            token_response(access,Some(new_refresh),&scopes)
+            token_response(access,Some(new_refresh),&scopes,resource,project.as_ref())
         },
         _=>oauth_error(StatusCode::BAD_REQUEST,"unsupported_grant_type")
     }
@@ -238,7 +263,14 @@ async fn revoke(State(service):State<Arc<OAuthService>>,request:Request)->Respon
     if let Some(id)=id {if !state.persistent.families[&id].revoked {let mut staged=state.persistent.clone();if let Some(f)=staged.families.get_mut(&id){f.revoked=true;}if service.persist(&staged).is_err(){return oauth_error(StatusCode::SERVICE_UNAVAILABLE,"temporarily_unavailable");}state.persistent=staged;let _=service.revocations.send(id);}}
     secure(StatusCode::OK.into_response())
 }
-fn token_response(access:String,refresh:Option<String>,scopes:&BTreeSet<String>)->Response {let mut body=json!({"access_token":access,"token_type":"Bearer","expires_in":ACCESS_SECONDS,"scope":scopes.iter().cloned().collect::<Vec<_>>().join(" ")});if let Some(refresh)=refresh{body["refresh_token"]=json!(refresh);}standard_json(StatusCode::OK,body)}
+fn token_response(access:String,refresh:Option<String>,scopes:&BTreeSet<String>,resource:&str,project:Option<&Project>)->Response {let mut body=json!({"access_token":access,"token_type":"Bearer","expires_in":ACCESS_SECONDS,"scope":scopes.iter().cloned().collect::<Vec<_>>().join(" "),"resource":resource,"project_id":project.map(|project|project.id.as_str())});if let Some(refresh)=refresh{body["refresh_token"]=json!(refresh);}standard_json(StatusCode::OK,body)}
+/// Common grant construction for browser PKCE and explicitly approved native connectors.
+/// The caller persists the staged client/family atomically before returning credentials.
+fn issue_family(state:&mut Persistent,client:&str,resource:&str,scopes:&BTreeSet<String>,renewable:bool,timestamp:u64)->(String,Option<String>){
+    let access=random_token();let refresh=renewable.then(random_token);
+    let family=Family {id:random_token(),client:client.to_owned(),resource:resource.to_owned(),scopes:scopes.clone(),access:vec![AccessToken {hash:digest(&access),expires:timestamp+ACCESS_SECONDS,scopes:scopes.clone()}],refresh:refresh.as_ref().map(|r|vec![RefreshToken {hash:digest(r),expires:timestamp+REFRESH_SECONDS,spent:false}]).unwrap_or_default(),revoked:false,last_refresh:timestamp};
+    state.families.insert(family.id.clone(),family);(access,refresh)
+}
 fn family_active(f:&Family,timestamp:u64)->bool { !f.revoked && (f.access.iter().any(|a|a.expires>timestamp) || f.refresh.iter().any(|r|!r.spent && r.expires>timestamp)) }
 fn prune(state:&mut Persistent,timestamp:u64){state.families.retain(|_,f|timestamp.saturating_sub(f.last_refresh)<REFRESH_SECONDS);for f in state.families.values_mut(){f.access.retain(|a|a.expires>timestamp);f.refresh.retain(|r|r.spent || r.expires>timestamp);}}
 fn parse_scopes(value:Option<&str>,default:bool)->Result<BTreeSet<String>,()> {let raw=match value {Some(v)=>v,None if default=>return Ok(DEFAULT_SCOPES.into_iter().map(str::to_owned).collect()),None=>return Err(())};let set:BTreeSet<_>=raw.split_ascii_whitespace().map(str::to_owned).collect();if set.is_empty() || set.iter().any(|s|!SCOPES.contains(&s.as_str())){Err(())}else{Ok(set)}}
@@ -255,20 +287,26 @@ fn form_pairs(input:&str)->Result<Vec<(String,String)>,()> {if input.len()>BODY_
 fn one_each(pairs:&[(String,String)],allowed:&[&str])->Result<BTreeMap<String,String>,()> {let mut result=BTreeMap::new();for(k,v)in pairs{if !allowed.contains(&k.as_str()) || result.insert(k.clone(),v.clone()).is_some(){return Err(());}}Ok(result)}
 fn browser_cookie(headers:&HeaderMap)->Option<String> {let values:Vec<_>=headers.get_all(header::COOKIE).iter().filter_map(|v|v.to_str().ok()).flat_map(|v|v.split(';')).filter_map(|v|{let(k,v)=v.trim().split_once('=')?;(k=="fetch-browser" && valid_token(v)).then(||v.to_owned())}).collect();match values.as_slice(){[v]=>Some(v.clone()),_=>None}}
 fn authorization_redirect(service:&OAuthService,parameters:&ApprovalParameters,code:Option<&str>,error:Option<&str>)->Response {let Ok(mut redirect)=Url::parse(&parameters.redirect)else{return page_error(StatusCode::BAD_REQUEST,"The callback is invalid.");};{let mut query=redirect.query_pairs_mut();if let Some(code)=code{query.append_pair("code",code);}if let Some(error)=error{query.append_pair("error",error);}if let Some(state)=&parameters.state{query.append_pair("state",state);}query.append_pair("iss",&service.origin);}let mut response=StatusCode::SEE_OTHER.into_response();match HeaderValue::from_str(redirect.as_str()){Ok(value)=>{response.headers_mut().insert(header::LOCATION,value);secure(response)},Err(_)=>page_error(StatusCode::BAD_REQUEST,"The callback is invalid.")}}
-fn approval_page(approval: &Approval, client: &Client, message: Option<&str>) -> Response {
+fn approval_page(service:&OAuthService,approval: &Approval, client: &Client, message: Option<&str>) -> Response {
     use crate::browser::{self, escape};
     let permissions = approval.parameters.scopes.iter().map(|scope| {
         let (label, description) = match scope.as_str() {
             "fetch:catalog" => ("See installed MCP catalogs", "Read permitted tool, resource and prompt descriptions."),
             "fetch:tools:call" => ("Use installed tools", "Call permitted provider tools. These calls can change data."),
             "fetch:content:read" => ("Read MCP content", "Read permitted resources and prompts."),
+            "fetch:sessions:read" => ("Read this project's coding sessions", "Read saved Claude Code and Codex conversations for this project only."),
             _ => ("Manage servers", "Discover, install, configure, authenticate and restart permitted servers."),
         };
-        browser::permission(scope, label, description, scope != "fetch:manage")
+        browser::permission(scope, label, description, !matches!(scope.as_str(),"fetch:manage"|"fetch:sessions:read"))
     }).collect::<String>();
     let notice = message.map(|m| format!("<p role=\"alert\">{}</p>", escape(m))).unwrap_or_default();
-    let body = format!("<h1>Connect {} to Fetch</h1><p>The app supplied this name. It is not proof of its identity.</p><p>Callback: <code>{}</code></p><p>This access covers permitted current and future installed servers, including tools added later.</p>{}<form method=\"post\" action=\"/oauth/authorize\">{}{}{}<p>Allow asks your Mac to confirm. Fetch does not receive your Mac password.</p>{}{}</form>",
-        escape(&client.name), escape(&approval.parameters.redirect), notice,
+    let project_notice=match service.project_for_resource(&approval.parameters.resource) {
+        Ok(Some(project))=>format!("<p>Project: <strong>{}</strong><br><code>{}</code></p><p>Server access covers Shared servers and this project's servers.</p>",escape(&project.name),escape(&project.folder_path.to_string_lossy())),
+        Ok(None)=>"<p>This connection covers Shared servers only. It has no session-history access.</p>".to_owned(),
+        Err(_)=>return page_error(StatusCode::SERVICE_UNAVAILABLE,"The selected project is no longer available."),
+    };
+    let body = format!("<h1>Connect {} to Fetch</h1><p>The app supplied this name. It is not proof of its identity.</p><p>Callback: <code>{}</code></p>{}{}<form method=\"post\" action=\"/oauth/authorize\">{}{}{}<p>Allow asks your Mac to confirm. Fetch does not receive your Mac password.</p>{}{}</form>",
+        escape(&client.name), escape(&approval.parameters.redirect), project_notice,notice,
         browser::hidden("request_id", &approval.id), browser::hidden("csrf", &approval.csrf), permissions,
         browser::decision_button("allow", "Allow"), browser::decision_button("deny", "Deny"));
     let mut response = secure(Html(browser::document("Connect to Fetch", &body, Some(browser::APPROVAL_STYLE))).into_response());

@@ -1,0 +1,10 @@
+# Record scope storage and research client folder detection
+
+- Local timestamp / acting role / milestone: 2026-11-12T13:30:58.794608-05:00 / Researcher and Orchestrator / project-scoped-servers.
+- Requested scope: User selects config.json for scope storage and asks how to select project servers and obtain the agent's folder. This steers the discussion back from the intervening Claude certificate report.
+- Starting repository state: Prior project support recommendation unapproved; extensive unrelated changes retained.
+- Work performed / changed files: Dedicated read-only Researcher checked official MCP/Claude documentation and current OpenCode client/shared-connection code. Orchestrator inspected current Fetch relay/authority source and updated proposal, project context, architecture checkpoint, scope guide and milestone records. One documentation patch failed on an unmatched line; corrected with exact text, no application changes.
+- Decisions: Confirmed server scope storage in existing config.json only. No exact schema, project-specific URL/header, roots-derived selection, bootstrap tool or implementation selected.
+- Checks and evidence: Optional roots/list can return client workspace folders, not universal current cwd; Claude includes launch plus added folders, OpenCode legacy uses connection directory and disables roots for shared connections. Modern roots deprecated. Sources linked in proposal. Fetch current sessions have no project selection. No runtime, app, personal client, credential or trust changes.
+- Resulting state / acceptance: Question researched, selected storage location recorded. Current project connection and filtering design still needs user input; independent research, no implementation test/evaluation claimed.
+- Remaining work and handoff: Explain per-connection project selection and filtering on both catalogs and calls. Claude certificate issue remains unresolved: public certificate exists; Connect page registers HTTP server without certificate guidance; official Claude docs support NODE_EXTRA_CA_CERTS at startup. No sign-in or trust-setting change performed before user steered back to project scope.

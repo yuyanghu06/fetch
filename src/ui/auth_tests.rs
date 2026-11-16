@@ -55,6 +55,9 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
     .unwrap();
     // No Desktop::boot, window::open, application start or task execution.
     let desktop = Desktop {
+        workspace: super::workspace::State::default(),
+        projects: super::project_scope::State::default(),
+        connector: super::connector_setup::State::default(),
         host,
         client: Some(client),
         session: Some(session),
@@ -81,6 +84,13 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
         error: None,
         notice: String::new(),
         busy: false,
+        server_refresh: super::refresh_feedback::RefreshFeedback::default(),
+        discovery_refresh: super::refresh_feedback::RefreshFeedback::default(),
+        reload_generation: 0,
+        restart_submitting: BTreeSet::new(),
+        restart_failures: BTreeMap::new(),
+        power_pending: BTreeMap::new(),
+        power_errors: BTreeMap::new(),
         polling: None,
         installation_polling: false,
         restart_polling: BTreeSet::new(),

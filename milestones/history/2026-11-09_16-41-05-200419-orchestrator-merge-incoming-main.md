@@ -1,0 +1,10 @@
+# Merge incoming main while preserving local design notes
+
+- Local timestamp / acting role / milestone: 2026-11-09T16:41:05.200419-05:00 / Orchestrator / working-tree-delivery.
+- Requested scope: User requested “merge in changes.” Bring the available upstream work into this checkout.
+- Starting repository state: main at 72a6a33; origin/main advanced to 6a5b402 through 0c4ace6 and 6a5b402. Eight modified documentation files and nine untracked Figma history entries were present; nothing staged.
+- Work performed / changed files: Fetched origin; backed up local documents; fast-forwarded main to 6a5b402; restored all local additions alongside upstream documentation. Updated PROJECT_CONTEXT.md, NOTES.md, milestones/milestone.md, milestones/to-do.md and working-tree-delivery/info.md with the merge outcome, plus these append-only histories.
+- Decisions: Retain incoming native UI work and subsequent local Figma-only records. This pass performs no additional design or application implementation. Local documentation stays uncommitted; no push is needed for the already-published upstream commits.
+- Checks and evidence: Byte comparisons preserve all original local additions and nine histories. git diff --exit-code HEAD -- Cargo.toml Cargo.lock src passes; git ls-files -u is empty; HEAD equals origin/main. Independent Evaluator ACCEPT: 2026-11-09_16-41-05-200419-evaluator-accept-incoming-main-merge.md. git diff --check reports only the original NOTES.md trailing blank line, intentionally preserved. Shared AGENT_WORKFLOW.md and ~/.codex/agents were not present; evaluator followed the supplied role requirements.
+- Resulting state / acceptance: Requested incoming commits integrated with no source conflicts and no lost local work. Temporary stash/backup removed only after preservation checks.
+- Remaining work and handoff: Existing local design documentation remains uncommitted. Later Figma edits are not made into new Rust changes by this merge. No fresh application tests, native launch, MCP connection, credential/client-setting change or release performed.

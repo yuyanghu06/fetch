@@ -1,3 +1,21 @@
+Project folder registration/listing is under v1/projects/ and requires native
+window authority. Separate v1/sessions/ routes expose only bounded project
+history reads to project-bound grants with explicit history permission. Existing
+server/discovery/install adapters reuse that verified project and current saved
+membership. Workspace handlers remain native-only, including their file editing
+and independent global/project browser; none is mapped to MCP.
+
+## November 12 — persistent server on/off implementation
+
+The existing server restart POST and fetch__restart_server management dispatch accept optional action:stop for persistent idle-only Off; omitted action retains start/restart. Existing authority and result wrappers remain. Locked library compilation, 30 focused checks, final signed build and independent Evaluator acceptance pass; live user/provider acceptance remains separate.
+
+## Parallel installed-tool acquisition
+
+runtime::list_tools acquires catalogs from selected permitted installed servers
+with at most eight requests in progress. It emits origins, missing IDs and action
+guidance in the original selected order, with the same per-tool permission
+filtering and live upstream reads. This adds no cache, startup or login behavior.
+
 ## November 6 — preserve approval page policy
 
 The HTTP boundary supplies no-referrer only when the route did not already supply a referrer policy. OAuth approval HTML needs same-origin for its own browser form submission. Exact Host/Origin checks remain unchanged; response policies come from Fetch handlers, not caller headers.
@@ -66,3 +84,12 @@ match before any pending flow is consumed. This helper adds no application API
 or permission; the temporary router contains only the callback path. Main HTTPS
 origin/certificate behavior is unchanged. Verification evidence is tracked in the
 active client-identity milestone.
+
+## Catalog-only server inventory — November 12
+
+runtime's ManagementAdapter dispatches fetch__list_servers without management
+permission: it projects only permitted installed server IDs, names and current
+runtime status from saved metadata and runner snapshots. It never returns launch
+configuration, credentials or upstream tool catalogs. MCP fetch__list_tools now
+requires explicit nonempty server IDs; direct HTTP GET /api/v1/tools keeps its
+existing optional filters and result envelope. No new HTTP route is introduced.

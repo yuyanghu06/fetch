@@ -506,7 +506,9 @@ impl Connection {
     }
     /// Delete only an idle context. Retain its Child until exit is confirmed so
     /// a bounded failed close remains retryable without guessing that it stopped.
-    pub(super) async fn close_for_delete(self:&Arc<Self>)->bool{
+    pub(super) async fn close_for_delete(self:&Arc<Self>)->bool{self.close_idle().await}
+    /// Shared confirmed close for idle Stop and Delete. Keep ownership on failure.
+    pub(super) async fn close_idle(self:&Arc<Self>)->bool{
         self.close.cancel();self.closed.store(true,Ordering::Release);
         if self.is_local()&&!self.child_exit_confirmed.load(Ordering::Acquire){
             let mut stored=self.child.lock().await;

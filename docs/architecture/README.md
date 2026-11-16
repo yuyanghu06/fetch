@@ -1,3 +1,23 @@
+## November 13 — official reader and Finder scope accepted
+
+[Approved native reader/Finder contract](session-reader-reuse.md) is implemented and independently ACCEPTed, with complete native fixture/API/widget checks and signed build. No API/dependency approval remains for this bounded scope. Personal-history/Finder interaction, forced deadline/cancel runtime cases and live SQLite sidecars remain the specific verification limits; no new feature or automatic personal-state action is selected.
+
+[Official session-reader reuse](session-reader-reuse.md) and instruction/subagent Finder reveal are approved. Native helper/backend/UI integration is active; final complete-history acceptance remains pending. Prior frontend-only checks do not establish final reader acceptance.
+
+[Project connections](project-connections.md) is explicitly approved and implemented: registered folders, Shared/project server scope, exact resource-bound approvals/profiles and project-only history APIs/tools.57unique focused checks, signed build and independent evaluation pass. Actual client/native acceptance remains manual. Workspace file APIs stay private.
+
+[Workspace](workspace.md) is implemented for native Fetch: file APIs, converted agents and bounded read-only sessions;14focused checks/signed build pass and independent review ACCEPT. [Evidence](../../milestones/workspace/evidence.md). User defers session MCP until project connections.
+
+[Persistent server on/off](server-on-off.md) is implemented and independently accepted after 30 focused checks and a signed development build. The current running app still needs user Quit/reopen; no live account/client acceptance is claimed.
+
+[Workspace](workspace.md) records selected global/project files, native-only editing, converted agents and bounded read-only session access. Implementation authorized; exact new route/project authority contracts pending.
+
+[Persistent server on/off](server-on-off.md) records the user-selected action:stop extension, durable preference, non-interrupting busy rejection and implementation/test scope. No stop source implemented at this planning checkpoint.
+
+[Local MCP connector](local-mcp-connector.md) records the scoped stdio bridge request, existing code/research and the required connection-approval decision. Scoped connector/native approval is implemented; automatic first popup follow-up is under verification. Actual client/Mac acceptance remains manual.
+
+[Project-scoped servers](project-scoped-servers.md) records the November 12 recommendation: register a project, import its servers, and use a project-specific Fetch connection with backend permission checks. Proposal only; no implementation selected.
+
 [Python package environments](../../milestones/python-server-environments/info.md) tracks the selected uv-owned private environment/Python preparation change. New package installs will stop forcing a single Python patch; existing server records remain unchanged.
 
 [Figma registration findings](client-identity-adoption.md#figma-registration-rejection--november-4-2026) explain the reported 403, approved-client policy and why the public Fetch identity file does not bypass it. Research only; callback rejection remains unproven.
@@ -51,3 +71,5 @@ Keep historical evidence, mark superseded requirements and distinguish source,
 fixture results and actual native/provider/client acceptance. No packaging/release,
 personal client edits, credential migration or broad live-account testing follows
 from recording an architecture decision.
+
+[Server-first tools](server-first-tools.md): selected fixed discovery/call helpers, complete startup inventory and selected-server optimizations; implementation underway.

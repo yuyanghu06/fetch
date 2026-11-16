@@ -1,3 +1,11 @@
+## November 12 — automatic first connection opens Fetch approval
+
+User requires normal Claude/Codex startup to trigger Fetch's native popup without a separate setup/login command. Reuse the reviewed four routes, permission choices, fresh Mac confirmation and separate grants. Missing-profile startup can launch/focus Fetch. Persist the private pending proof in its own installation/profile Keychain record; native Fetch alone claims/saves so approval can finish after a client timeout. Existing approved connections attach normally. Starting a connector never grants access. A timed-out client may need its normal Reconnect action; do not fabricate initialization. Old direct browser HTTPS OAuth still has its independent certificate trust requirement. No project scope, personal config/trust edits, migration or release work. [Design and acceptance limits](local-mcp-connector.md).
+
+## November 12 — native stdio connector approval
+
+The user-selected native popup flow adds the four request/list/decision/claim operations documented in [local-mcp-connector.md](local-mcp-connector.md). It reuses existing permission choices, Mac confirmation and grant issuance/refresh/revoke; connector credentials are separately stored. Browser OAuth remains available with its own certificate trust requirement. Source/fixture acceptance passes; production native/client acceptance is deferred by user to manual testing.
+
 # Connecting an app to local Fetch
 
 D73 clarification: each agent keeps its own Fetch credential/token for one `/mcp` connection covering permitted installed tools. Provider logins are separate user setup and reused; ordinary calls neither open login nor repeat provider credential verification. Preserve D71 renewal/permissions; no static-token alternative is introduced.

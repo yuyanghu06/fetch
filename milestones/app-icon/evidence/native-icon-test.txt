@@ -1,0 +1,5 @@
+Command: /Users/yuyang/Documents/fetch/milestones/app-icon/evidence/native-app-icon-fixture /Users/yuyang/Documents/fetch/packaging/Fetch.png /Users/yuyang/Documents/fetch/milestones/app-icon/evidence/native-icon-assigned.png
+Native raster comparison: mean channel delta 0.206970/255; max 16; changed 21084/262144.
+PASS: actual AppKit application icon matches the approved PNG within native rasterization tolerance, at 1024pt.
+Native raster comparison: mean channel delta 0.206970/255; max 16; changed 21084/262144.
+PASS: background-thread assignment survives overwritten/released source bytes and creates no windows.

@@ -1,3 +1,36 @@
+## November 13 — native scroll phases
+
+native_scroll_phases.m includes the Fetch bridge and verifies phase ordering, fresh finger starts and continued ownership through momentum. It never creates a window, installs the event monitor or opens accounts/Keychain. Compile with ARC/blocks and AppKit, Foundation, Security and LocalAuthentication. UI routing/undo/parser fixtures remain in src/ui; evidence is under milestones/workspace-editor-gestures/evidence.
+
+## November 12 — hidden file-picker reuse fixture
+
+native_file_picker.m constructs the bridge's hidden prepared panel twice, asserts object identity/no visible dialog/no active selection, and reports construction versus cache time. Compile with ARC/blocks and AppKit, Foundation, Security and LocalAuthentication. It never presents a chooser, selects a file or invokes Keychain/authentication functions. See milestones/workspace-session-popup/evidence/native-picker.txt.
+
+project_registry.rs checks canonical persistent registration and scoped preparation
+without any connection hook. project_scope.rs exercises two projects through
+native HTTP and MCP with synthetic in-process loopback peers: Shared+own servers,
+post-assignment denial, busy guards, histories, progress and legacy session replay.
+OAuth/profile/activation/UI fixtures remain in their source modules. All use
+disposable state and fake keys; actual clients/accounts remain manual acceptance.
+
+workspace.rs uses disposable projects/app roots to verify existing-file saves, cross-app conversion, project-specific plain/compressed chunks, native-only API access and private model-cache metadata exclusion. It never reads personal state or starts real coding apps. UI fixtures live in src/ui/workspace_tests.rs.
+
+## November 12 — server on/off product checks
+
+server_power.rs reuses the existing confinement Sandbox and synthetic login peer to exercise the actual restart POST and MCP management dispatch. It checks persistent Off, child exit, retained files, explicit On, and busy calls without touching everyday servers/accounts. The 3 cases pass; private Manager guards and actual widget checks are in their source modules.
+
+## Approved application icon
+
+native_app_icon.m runs in a disposable AppKit process with no windows or Fetch state. It checks the real bridge setter,72DPI/1024pt image size, close256px raster match, and queued assignment after caller bytes are overwritten/released. Uses a distinct sentinel and main-queue marker; AppKit may reuse getter objects. No account/Keychain/backend/MCP access. Evidence/commands live under milestones/app-icon.
+
+## November 11 — remove Retina outline, fix all native hover and align resize
+
+native_window_controls.m now compares all three buttons separately and exact exit restoration, and checks native frame/content edges match. This closes the older any-group-change assertion that could miss red/yellow hover failures. Uses a hidden disposable window only.
+
+## November 11, 2026 — expansion, refresh hover, left window controls and right shadow
+
+native_window_controls.m compiles with AppKit/LocalAuthentication/Security and checks a hidden disposable window using the actual bridge: top-left anchors, resize, group-hover rendering/state and close delegate routing. It does not launch Fetch or use account/state credentials.
+
 ## November 6 — Codex initialization offer
 
 local_mvp_acceptance.rs adds one realistic client flow: offer2025-06-18without a negotiated HTTP version header, receive Fetch's supported2025-11-25, send initialized with that header/session, then list the permitted Fetch tool. It failed with400before the negotiation correction and now passes along with12existing tests in that target. Injected authority/disposable files only; actual saved-client reconnect remains distinct.
@@ -223,3 +256,27 @@ helper Quit. It uses verified deny-default peers in native_state/login_peer.py.
 Results are recorded separately in the standard-authenticate milestone.
 
 November4 Codex startup-environment checks add eight synthetic-parent helper tests and one focused transport test; program_paths.rs now also asserts actual argv/cwd/HOME/XDG/PATH/LANG in confined normal/setup children. Scoped results:24integration +8standalone pure cases and native build pass, independent Evaluator ACCEPT. Full library execution awaits separate terminal test wiring. See milestones/codex-startup-environment/evidence.md.
+
+## November 12 — final native resize and UI checks
+
+native_window_controls.m now tests a six-point grip inside the visible rounded
+window, exclusion of outside/transparent/center areas, native resize-direction
+forwarding, untouched unconfigured windows, resizing, hover controls, close and
+teardown. It uses task-owned hidden windows only. Actual user-window cursor/drag
+feel remains a live check. New UI fixtures in neumorphic_tests.rs cover shared
+copy feedback without backgrounds, white icon shine, instant manual reload/card
+entrance, Connect ordering/marks and pending-start/immediate-result states.
+
+## Server-first tools — November 12
+
+`server_first_tools.rs` uses the actual gateway, API management adapter and runner
+with disposable in-process HTTP peers and memory credentials. Four focused flows
+cover startup server IDs without upstream tool loading, parallel selected-server
+catalogs with stable ordering and unavailable origins, unchanged direct HTTP
+defaults, generic native results and permission refusal, modern continuation
+routing, and transactional stable alias persistence. It never starts installed
+clients, native apps, provider logins or personal state. Root coordinates execution;
+fixture source alone is not evidence of a passing run.
+
+
+Workspace native conversation acceptance uses installed official helpers on disposable transcripts via actual native routes; it checks full long replies, named tools, project authority, unchanged source/raw reads and successful snapshot cleanup. The ordinary caller case covers conversation list/read and Finder reveal too. No real Finder launches or personal histories are used.

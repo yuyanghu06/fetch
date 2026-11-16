@@ -1,0 +1,18 @@
+Initial server_power run — failure excerpts preserved from tool output.
+The full log had already been overwritten for the fixture correction before the parent's preservation message arrived. This is a transcript excerpt, not the original complete log.
+
+Initial command: cargo test --locked --test server_power -- --test-threads=1
+Build: 20.49s. Test result: FAILED. 0 passed; 3 failed; finished in 3.68s.
+
+server_power_busy_stop_preserves_active_and_waiting_calls:
+  tests/server_power.rs:172:18: called Result::unwrap() on Err(Elapsed(())) while waiting for the held peer call to enter.
+server_power_http_stop_preserves_files_survives_restart_and_existing_post_turns_on:
+  tests/server_power.rs:124:9: status assertion left 409, right 200.
+  Actual route response logged SERVER_BUSY for POST /api/v1/servers/{server_id}/restart.
+server_power_mcp_schema_and_dispatch_share_the_real_stop_backend:
+  tests/server_power.rs:67:87: called Result::unwrap() on Err(Error("expected value", line:1,column:1)).
+
+Fixture corrections:
+- Wait for named restart status succeeded AND observed tool features, rather than treating runtime ready alone as completion.
+- Decode native MCP tool-call terminal JSON from its SSE data event; tools/list remains ordinary JSON.
+- No product source modified, no stop/call retry loops added.

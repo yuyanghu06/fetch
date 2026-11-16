@@ -1,0 +1,7 @@
+PASS: legacy full manual messages and full assistant text, injected context excluded
+PASS: modern native pagination reads all 281 messages and exact named tool result, including beyond first page
+PASS: native lineage includes inherited turns and respects fork cutoff
+PASS: native subagents excluded from main list and direct main conversation read
+PASS: native read-only index selects current rollout and leaves index bytes unchanged
+PASS: all original session hashes unchanged; no source-side databases created
+PASS: missing native ancestry returns an explicit error, never partial success

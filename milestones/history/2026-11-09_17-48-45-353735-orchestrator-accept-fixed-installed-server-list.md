@@ -1,0 +1,10 @@
+# Accept fixed Installed servers section
+
+- Local timestamp / acting role / milestone: 2026-11-09T17:48:45.353735-05:00 / Primary agent, sequential testing/evaluation/integration / fixed-installed-server-list.
+- Requested scope: keep Installed servers fixed and scroll its cards inside it.
+- Starting repository state: bounded layout and one realistic two-window-size regression implemented; previous fixes and unrelated notes retained.
+- Work performed / changed files: inspected final code and evidence; saved widget/fidelity/build logs and three screenshots; synchronized project/UI/milestone records. No agents or independent review used.
+- Decisions: ACCEPT. Navigation, title and Refresh are outside the dedicated card scroller; section height follows available window space rather than number or expansion of cards. Existing first-card spacing, card surfaces, inner panels, raw data and backend actions retained. The native request supersedes the previous whole-page scroll for Servers only; earlier reverted Figma trial remains untouched.
+- Checks and evidence: all 5 neumorphic widget tests PASS (including new actual wheel scrolling to Server 8, stable section/header bounds during expansion/scroll, and clickable scrolled card at 1248x900/760x520). Both fidelity tests PASS, including existing Tools/Settings first-frame pixel checks and 1x/2x buttons. Visually inspected normal/minimum scrolled lists and nested Tools screenshot: section remains in window, header stays fixed, later cards reachable, card content clips within viewport. Signed development build PASS (10.94s) and launcher strict signature verification PASS. Changed-source whitespace check PASS. Existing compiler warnings remain.
+- Resulting state / acceptance: requested layout complete and signed executable updated. Running Fetch preserved; live-window confirmation after relaunch remains unobserved.
+- Remaining work and handoff: user explicitly Quits Fetch and reopens through ./scripts/run-development.sh. Existing unrelated Figma, provider and other follow-ups retained. No API, account, credential, MCP, client config, commit/push or release changes.

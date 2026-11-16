@@ -1,5 +1,5 @@
 //! Card-local state for native server setup and standard remote OAuth.
-use super::{components::{button,text_input},theme};
+use super::{components::{text_button,text_input},theme};
 use iced::{Element,widget::{column,row,text}};
 use serde_json::Value;
 use zeroize::Zeroize;
@@ -225,10 +225,10 @@ pub(super) fn credential_editor<'a, M: Clone + 'a>(
     let mut name_input = text_input("Credential entry name", name);
     let mut secret_input = text_input("API key or token", value).secure(true);
     if enabled { name_input = name_input.on_input(on_name); secret_input = secret_input.on_input(on_value); }
-    let mut actions = row![button("Save manual key")
+    let mut actions = row![text_button("Save manual key")
         .on_press_maybe((enabled && !name.trim().is_empty() && !value.is_empty()).then_some(save))].spacing(SPACING);
     if let Some(remove) = remove {
-        actions = actions.push(button("Remove entry").on_press_maybe((enabled && !name.trim().is_empty()).then_some(remove)));
+        actions = actions.push(text_button("Remove entry").on_press_maybe((enabled && !name.trim().is_empty()).then_some(remove)));
     }
     column![text("Manual API key or fixed token").size(theme::FIELD_TITLE),
         text("Use the server’s own setup first. When it needs an environment or header key, save only an existing assigned entry. Mac confirmation saves it directly in Keychain; storage alone does not verify account access."),

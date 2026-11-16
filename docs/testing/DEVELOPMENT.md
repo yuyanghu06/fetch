@@ -64,7 +64,20 @@ or save only that public fingerprint in:
 ~/Library/Application Support/Fetch-Development/development-signing-identity
 ```
 
-The certificate and its private signing key are created separately in macOS
+Prefer an **Apple Development** certificate created through Xcode → Settings →
+Accounts/Apple Accounts → select your team → Manage Certificates → + → Apple
+Development. After the user completes account/native approvals, inspect the valid
+code-signing identity and select its public fingerprint using the file above.
+This Mac completed that setup on November 12, 2026; the signed development binary
+passes strict verification with an Apple team identity. Actual prompt behavior
+still needs user observation. Each Mac needs its own local setup.
+
+The earlier self-signed setup below remains historical context: Apple Keychain
+can identify that code by its individual build hash, so it did not solve the
+user's approvals across rebuilds. Do not recommend it as an equivalent prompt fix.
+See [the signing investigation](../architecture/keychain-prompts.md).
+
+For that earlier setup, the certificate and its private signing key were created separately in macOS
 Keychain Access: **Certificate Assistant → Create a Certificate…**, using a
 dedicated Fetch development name, **Self Signed Root**, and **Code Signing**.
 Keep the private key in Keychain and leave certificate trust settings unchanged.

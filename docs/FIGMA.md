@@ -1,3 +1,105 @@
+## November 12 — shadow made visible at Dock size
+
+User’s Dock screenshot looked flat beside the large Figma reference. A96px native check preserves the exported image closely (mean0.156331/255,max6), so the available evidence points to faint shadows after reduction, not image loss in AppKit. Live Dock compositing was not independently captured. Kept large mockup267:800 unchanged and created canonical app-icon export310:799 with a wider/darker bevel and outer shadow for small-size readability. Same824px tile at100,100, white fill, dog and corners. PNG/ICNS regenerated72DPI.96px native after-preview inspected and fixture passes(mean0.162326/255,max6); signed build-only26.85s/strict verification passes. Existing running Fetch preserved; user Quit/reopen required.
+
+## November 12 — app icon refreshed from current Figma
+
+Refreshed canonical packaging/Fetch.png and Fetch.icns from the current source logo via export308:799, retaining rounded outward rim and824px visible tile on1024px canvas. PNG remains72DPI; source mockup unchanged. Signed development rebuild passes17.43s and strict verification passes. No Fetch process was found during the read-only precheck and no app was launched. Open the rebuilt target/debug/fetch-development to load the icon. Earlier native assignment checks remain applicable; no redundant fixture rerun for this unchanged design refresh.
+
+## November 12 — rounded outward edge clarified
+
+User clarified “rounder edges” means a curved outward rim across the tile surface, not deeper recessing or another corner-radius increase. Replaced the recessed lighting with a soft raised bevel: inner white highlight40px/20,24/spread10/88%, inner gray42px/-22,-26/spread12/25%, restrained outer shadow18px/6,8/18% and white lift16px/-6,-8/55%. Existing230px smoothed corner shape, white fill, dog793px size/position/artwork/shadow and824px Dock tile footprint retained. Latest export306:799; recessed export304:799 archived. Canonical PNG/ICNS updated72DPI. Composition/canonical/native preview inspected; existing native fixture passes (mean0.174911/255,max15); signed build-only6.89s/strict verification pass. Direct checks; no Fetch relaunch or packaging.
+
+## November 12 — rounder recessed icon and corrected Dock footprint
+
+User requested corners like the neighboring Dock icon, clearer inward indentation, and comparable visible size. Source logo267:800/background283:799 now use230px corners with0.6smoothing. Background has only two inward effects: dark upper-left36px blur/10px spread at16,20 with32%opacity, and white lower-right30px blur/8px spread at-16,-20 with90%opacity. White fill, dog artwork, dog793px size/position and dog shadow retained. Latest export304:799 is1024px with an824px tile at100,100, reducing the previous roughly910px visible face. Previous export297:799 archived. Canonical PNG/ICNS regenerated at72DPI; native fixture/resource checks and signed build6.55s pass. Native preview inspected; direct/sequential checks, no independent new review. Fetch not relaunched; actual neighboring Dock comparison awaits user Quit/reopen.
+
+## November 12 — approved retriever is the app icon
+
+User approved the defined-ear, midpoint-blue retriever with pink tongue and larger dog shadow on the warm-white tile. Canonical exports are packaging/Fetch.png (1024px,72DPI,alpha) and Fetch.icns (ten standard sizes), from Figma export297:799; original mockup267:800 unchanged. Native development embeds the PNG and assigns AppKit’s applicationIconImage on the main queue. Existing future-bundle source names/copies the ICNS. Focused independent native/resource checks, final signed build-only and strict verification pass; independent Evaluator ACCEPT. No Fetch relaunch or bundle/DMG/release run. Explicitly Quit/reopen Fetch to observe the Dock icon; live Dock/Finder appearance remains unobserved.
+
+## November 12 — clearer ears and larger dog shadow
+
+Dog ears now have deeper blue tone and clearer curved attachment shading. Midpoint-blue face, black eyes and smiling mouth/tongue retained. Figma dog group285:801 shadow expanded from14px blur/6px offset to28px blur/10px offset,2px spread and18% opacity. Image283:800 geometry compares unchanged (793×793, absolute237,235); white/background compare unchanged. Screenshot inspected; saved docs/logo-mockups/fetch-dog-defined-ears-shadow-v8.png (821×821 exported bounds). Prior variants retained.
+
+## November 12 — subtle dog drop shadow
+
+Added one soft shadow to dog cutout group285:801:14px blur,6px downward offset,16% blue-gray opacity. Dog PNG/color/expression and793×793 absolute237,235 image bounds retained; white/background treatment unchanged. Composition screenshot inspected. Saved docs/logo-mockups/fetch-dog-midblue-shadow-v7.png (821×821 including shadow bounds). Unshadowed v6 remains available. Effect remains separately editable in Figma.
+
+## November 12 — midpoint blue logo
+
+Dog PNG now targets #9DD3ED, midway between prior #7DBFE2 and #BCE7F8. Existing simplified face, black highlighted eyes and pink tongue retained. Updated Figma283:800; before/after size and position compare unchanged (793×793, absolute237,235), as do white background/effects/corners. Screenshot inspected. Saved docs/logo-mockups/fetch-dog-midblue-tongue-v6.png,793×793 transparent cutout; earlier variants retained. Generated color target is approximate.
+
+## November 12 — light blue dog with tongue
+
+Returned the simplified retriever to pale baby blue (target #BCE7F8) and added a compact open smile with a pink tongue. Black highlighted eyes retained. Updated Figma image283:800; exact793×793 size and absolute237,235 position restored/verified. White background fill, effects and114px corners compare unchanged. Composition screenshot inspected; transparent cutout saved as docs/logo-mockups/fetch-dog-light-tongue-v5.png (793×793). Prior variants retained; this is a proposal awaiting feedback.
+
+## November 12 — simplified retriever shading
+
+Reduced the heavy muzzle and ear shadows into shallow broad shading and a simple mouth curve; stronger blue and black highlighted eyes retained. Updated Figma image283:800 in logo267:800. Before upload the current dog rectangle was793×793 at117,115 inside group285:801; restored that exact size/position after upload and checked absolute bounds237,235,793×793. Aligned the native silhouette mask to the smaller image. White background, effects and114px corners compare unchanged. Composition screenshot inspected. Saved new transparent PNG docs/logo-mockups/fetch-dog-simplified-v4.png (793×793, alpha); previous PNGs retained. Proposal awaiting visual feedback.
+
+## November 12 — separate PNGs and revised logo contrast
+
+Logo267:800 now contains a separate native warm-white background283:799 and transparent dog group285:801 (image283:800 plus silhouette mask285:799). Exported fetch-dog-transparent.png (1024×1024) and fetch-logo-background.png (1094×1098 including external shadow) under docs/logo-mockups; both have alpha and were visually inspected. Dog recolored to stronger sky blue (target #7DBFE2), with black eyes and tiny white highlights. White fill #F7F6F1 retained. Background retains114px corners; local inner effects broadened to44/56px and close shadow softened to12px. Shared app styles unchanged. Before/after dog rectangle is1024×1024 at0,0 with identity transform; mask and group geometry retained on the final swap. No automatic logo adoption.
+
+## November 12 — lighter retriever and brighter eyes
+
+Revised the rejected logo concept using built-in imagegen: lighter pastel-blue dog (target #BCE7F8), deep-blue eyes with small white catchlights, same silhouette and warm-white background. Updated image fill on Figma267:800 and inspected the composition screenshot. Current frame has114px rounded corners and the existing Raised panel effect style; preserved as found during final readback. New source saved as docs/logo-mockups/retriever-pastel-blue-bright-eyes-v2.png; v1 retained. This is a revised raster proposal, not user acceptance of the logo.
+
+## November 12 — corrected raised logo frame edge
+
+The earlier corner-only edit missed the requested soft raised boundary. Logo frame267:800 now uses the app window’s existing **Neumorphic / Raised panel** effect style (two inner shadows and three outer shadows), plus shared neo/radius/32 corner bindings. Image fill and dog remain unchanged: the shadows belong to the surrounding frame. Figma screenshot inspected. This supersedes the previous zero-frame-effects state; original local PNG remains unchanged.
+
+## November 12 — rounded logo boundary
+
+Logo mockup267:800 now uses32px rounded corners and clips the image to that boundary, matching the current Figma app shell/window surface97:2015 and90:1605. The1024px image, blue retriever and no-shadow treatment are retained. Readback and screenshot inspected; direct visual check, no subagents. Figma only; original PNG and application source unchanged.
+
+## November 11 — retriever logo mockup
+
+Created the requested **logo mockups** Figma page267:799 with square1024px artwork267:800: a light-blue retriever head, warm off-white background and no exterior shadow. The face keeps its soft sculpted shading. Imported generated raster artwork, not editable dog paths or a final adopted logo. Figma image fill/effect readback and composition screenshot inspected. Built-in imagegen used; target palette #95D4F1 / #F7F6F1, with generated shading rather than a pixel-exact color guarantee. [Figma](https://www.figma.com/design/OcgOlmfuoSTJMHTeN753TF/Fetch-App-Mockup?node-id=267-800); [saved asset](logo-mockups/retriever-blue-warm-white-v1.png). App source and existing Figma screens unchanged. Direct design work; no subagents.
+
+## November 9 — filled Save icons
+
+Save vectors in shared credential actions now use white fills and blue #95D4F1 outlines/details in both enabled and disabled variants. The enlarged enabled-button screenshot was inspected. Figma only; Remove × and app source unchanged.
+
+## November 9 — inline square key actions and outlined information
+
+Save and Remove are now44×44 square icon buttons alongside the credential field: blue with a white Save vector, red with the existing white ×. Shared action set246:2464 covers enabled/disabled states, retaining prior0.58disabled opacity. All four active key editors use one44px row, with916pxfield plus two actions. Figma Remote rows are gray in all three actual discovery screens; screen overrides were corrected using resolved gray RGB values rather than black fallback colors. The information control is now an unfilled gray circular outline with a gray i, including hover state; its exact tooltip message is retained. Current key-row and discovery-dialog screenshots were inspected. Figma only; no Rust changes or subagents.
+
+## November 9 — gray unsupported row with information tooltip
+
+Figma Remote · remote is now gray in the Results, Installing and Failed discovery dialogs, including its unchecked checkbox and label. Its exact approval explanation moved from the separate line into a shared information i hover tooltip (set234:2431; Default234:2421, Hovered234:2426). The row remains unsupported/disabled. Results dialog and tooltip screenshots were inspected. Figma-only, with no Rust changes or subagents.
+
+## November 9 — key visibility eye control
+
+The shared API key entry now includes a small right-aligned eye button. Click switches between Hidden and Visible variants; the visible state uses a crossed-out eye to hide again. Existing name/colon emphasis and placeholder colors remain. Component set231:2987 retains original hidden master226:2385; visible master231:2978. Figma uses the disposable example-token-1234 value for the filled-key reveal demonstration. Empty/named/busy forms retain their placeholder when switched. This specifies the requested UI behavior; native reveal implementation is unchanged.
+
+Shared-state and filled-key specimen screenshots were inspected; reciprocal ON_CLICK → CHANGE_TO links were read back. No actual user credentials were read. No subagents or application source changes.
+
+## November 9 — requested label emphasis
+
+Shared tool-card labels Name and Required fields are now Inter Bold. Shared key-entry name and colon are Inter Bold; the API key or token placeholder is grayer (#8F9499), using neo/credential-placeholder. Filled masked-key text retains its previous color. Tool-card and key-entry screenshots were inspected. Figma only; no source changes or subagents.
+
+## November 9 — restarting status on hover
+
+The separate Restarting message below the server card is removed in Figma. Starting/restarting headers retain the compact yellow dot normally; hover shows an information i and the exact message in a dark tooltip. Shared set228:2391 (default228:2384, hover228:2386) is used in both Starting header variants. Restarting master77:1507 supplies “Restarting… waiting for this attempt to finish.” through its Status message property. Current app specimens inherit it. The tooltip and Restarting screen78:1782 were visually inspected; the temporary hover check frame was removed. This is Figma-only, performed directly without subagents. Other runtime-color headers were not changed. The manual-install background remains only a recommendation.
+
+## November 9 — requested Settings and tool-field edits
+
+User-directed Figma edits only, performed by the root agent without subagents. Reverted the earlier self-chosen wording/layout/hover additions: original Install/Connect/settings wording restored; six new hover variants, bold close glyph, seven hover styles and seven hover links removed; earlier control effects restored. The removed key-selection buttons were recreated for rollback, then explicitly removed again at the user's request.
+
+Current requested design: four active Settings credential states say **API keys/fixed tokens** and have no description. Shared API key entry component226:2385 places entry name, colon and token in one44px row; filled keys stay masked. Remove entry is red with bold white text. Search Settings viewport height is498px so the full form/actions fit. Twelve authentication-control instances on current Settings screens explicitly use key glyph132:1667, correcting the gear overrides. Shared read-only tool fields182:3991 and the two fields in tool card146:2456 use **#EAF5FB**, through neo/tool-field variable226:2384. Original reference pages and Rust code were not changed.
+
+Visual checks: current filled-key app specimen78:1875 shows full form/actions, requested title, paired field, red Remove and key icon; tool card146:2456 shows pale-blue fields. Both screenshots were inspected. Checks were direct, not independent. This is Figma-only; it does not establish native implementation or runtime behavior.
+
+Latest design recommendation, not applied: distinguish the manual-install section using the same recessed warm-gray section background as Installed servers, retaining a light command field and dark console. Wait for the user's selection before changing it. Continue applying only the user's specific edits.
+
+## November 9 — Figma edits are user-directed
+
+The user clarified that they will specify each Figma change. Apply only those requested edits, quickly and without subagents; do not choose additional UX changes independently.
+
+Before this clarification, the root agent changed shared Install/manual-key instructions, timeout/simultaneous-call labels, discovery hint layout, and Connect wording; added six hover variants, a bold close glyph and seven hover transitions; removed four redundant Search key-selection buttons after the user's question. Selected/active effects were made inset without drop shadows. The current Figma canvas is newer than the November 8 repository descriptions (server Settings are already inside server cards). These changes have structural tool evidence but final visual review was interrupted by the user's clarification. No Rust source, running app, credentials or client settings changed. No independent agents were used. Do not describe this pass as visually accepted or continue its self-chosen edits.
+
 ## November 9 — remove gloss and compare the actual pixels
 
 The user rejects the earlier approximate gradient/rim appearance and requires the actual design. Current source uses uniform design fills and all shadow layers from the fresh high-fidelity Button75:2252, Navigation77:1401, server202:2101 and app78:1438 contexts. Matching-size references are preserved in [neumorphic-fidelity](../milestones/neumorphic-fidelity/info.md).

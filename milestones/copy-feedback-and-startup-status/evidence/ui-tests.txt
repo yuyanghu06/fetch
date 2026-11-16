@@ -1,0 +1,295 @@
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:81:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    81 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+warning: fetch-local@0.1.0:       |                                                               ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:95:27: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    95 |         OSStatus status = SecTrustedApplicationCreateFromPath(NULL, &application);
+warning: fetch-local@0.1.0:       |                           ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:    61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:99:18: warning: 'SecAccessCreate' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    99 |         status = SecAccessCreate(CFSTR("Fetch encrypted local state"), (__bridge CFArrayRef)trusted, &access);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:132:10: note: 'SecAccessCreate' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:   132 | OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/native_auth/bridge.m:108:63: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:   108 |             (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail };
+warning: fetch-local@0.1.0:       |                                                               ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: 4 warnings generated.
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:15:59: warning: 'kSecUseAuthenticationUIFail' is deprecated: first deprecated in macOS 11.0 - Instead of kSecUseAuthenticationUI, use kSecUseAuthenticationContext and set LAContext.interactionNotAllowed property [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    15 |         (__bridge id)kSecUseAuthenticationUI:(__bridge id)kSecUseAuthenticationUIFail};
+warning: fetch-local@0.1.0:       |                                                           ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecItem.h:1078:26: note: 'kSecUseAuthenticationUIFail' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:  1078 | extern const CFStringRef kSecUseAuthenticationUIFail
+warning: fetch-local@0.1.0:       |                          ^
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:44:18: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    44 |         status = SecTrustedApplicationCreateFromPath(NULL, &app);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:    61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: src/remote_oauth/keychain.m:47:18: warning: 'SecAccessCreate' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+warning: fetch-local@0.1.0:    47 |         status = SecAccessCreate(CFSTR("Fetch remote MCP login"), (__bridge CFArrayRef)@[(__bridge id)app], &access);
+warning: fetch-local@0.1.0:       |                  ^
+warning: fetch-local@0.1.0: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:132:10: note: 'SecAccessCreate' has been explicitly marked deprecated here
+warning: fetch-local@0.1.0:   132 | OSStatus SecAccessCreate(CFStringRef descriptor, CFArrayRef __nullable trustedlist, SecAccessRef * __nonnull CF_RETURNS_RETAINED accessRef)
+warning: fetch-local@0.1.0:       |          ^
+warning: fetch-local@0.1.0: 3 warnings generated.
+   Compiling fetch-local v0.1.0 (/Users/yuyang/Documents/fetch)
+warning: unused import: `self`
+ --> src/ui/copy_feedback.rs:2:23
+  |
+2 | use iced::{advanced::{self,layout,mouse,overlay,renderer,widget::{self,Tree},Clipboard,Layout,Shell,Widget},Element,Event,Length,Poin...
+  |                       ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `available`
+   --> src/ui/mod.rs:596:13
+    |
+596 |         let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_available`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `with_request_context` is never used
+  --> src/diagnostics.rs:24:21
+   |
+24 | pub(crate) async fn with_request_context<F: std::future::Future>(request_id: Option<RequestId>, future: F) -> F::Output {
+   |                     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `AuthenticationOutcome` is never used
+  --> src/diagnostics.rs:29:17
+   |
+29 | pub(crate) enum AuthenticationOutcome {
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `ProviderMetadata`, `ProviderRegistration`, `ProviderTokenExchange`, `ProviderRefresh`, and `ProviderVerification` are never constructed
+  --> src/diagnostics.rs:36:5
+   |
+35 | pub(crate) enum UpstreamOperation {
+   |                 ----------------- variants in this enum
+36 |     ProviderMetadata, ProviderRegistration, ProviderTokenExchange, ProviderRefresh,
+   |     ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+37 |     ProviderVerification, PackageDownload, McpHttp, LocalApi,
+   |     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `UpstreamOperation` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `authentication_outcome` is never used
+  --> src/diagnostics.rs:76:15
+   |
+76 | pub(crate) fn authentication_outcome(request_id: Option<&RequestId>, outcome: AuthenticationOutcome) {
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `error` is never read
+  --> src/mcp/mod.rs:25:221
+   |
+25 | ...ct Message{jsonrpc:String,#[serde(default)]id:Option<Box<RawValue>>,#[serde(default)]method:Option<String>,#[serde(default)]params:Option<Box<RawValue>>,#[serde(default)]result:Option<Box<RawValue>>,#[serde(default)]error:Op...
+   |       ------- field in this struct                                                                                                                                                                                         ^^^^^
+
+warning: associated function `new` is never used
+  --> src/remote_oauth/sdk.rs:53:18
+   |
+52 | impl Prepared {
+   | ------------- associated function in this implementation
+53 |     pub async fn new(grants:Arc<GrantStore>,id:&str,endpoint:&str)->Result<Self,AuthError>{Self::with_http(grants,id,endpoint,Arc::n...
+   |                  ^^^
+
+warning: struct `Network` is never constructed
+   --> src/remote_oauth/sdk.rs:169:19
+    |
+169 | pub(crate) struct Network;
+    |                   ^^^^^^^
+
+warning: variants `AuthDismiss`, `AuthName`, `AuthValue`, and `ToggleTool` are never constructed
+  --> src/ui/mod.rs:39:52
+   |
+33 | enum Message {
+   |      ------- variants in this enum
+...
+39 |     AuthFinished(u64,String,Result<Value,String>), AuthDismiss(String), AuthOpenSignIn(String),
+   |                                                    ^^^^^^^^^^^
+40 |     CredentialFinished(u64,String,bool,Result<Value,String>), AuthName(String,String), AuthValue(String,String), AuthSave(String),
+   |                                                               ^^^^^^^^                 ^^^^^^^^^
+...
+46 |     Copy(String), ToggleServer(String), ToggleTool(String),
+   |                                         ^^^^^^^^^^
+   |
+   = note: `Message` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: method `title` is never used
+  --> src/ui/authentication.rs:77:12
+   |
+42 | impl Flow {
+   | --------- method in this implementation
+...
+77 |     pub fn title(&self) -> &'static str {
+   |            ^^^^^
+
+warning: function `output_controls` is never used
+  --> src/ui/components.rs:97:15
+   |
+97 | pub(super) fn output_controls<'a,M:Clone+'a>(console:M,terminal:Option<M>)->Row<'a,M>{row![button("Console").style(theme::output_but...
+   |               ^^^^^^^^^^^^^^^
+
+warning: function `disclosure` is never used
+   --> src/ui/components.rs:100:15
+    |
+100 | pub(super) fn disclosure<'a,M:Clone+'a>(title:&str,expanded:bool,size:f32,toggle:M)->Button<'a,M>{
+    |               ^^^^^^^^^^
+
+warning: function `tool_disclosure` is never used
+   --> src/ui/components.rs:103:15
+    |
+103 | pub(super) fn tool_disclosure<'a,M:Clone+'a>(name:&str,expanded:bool,raw_definition:Option<String>,toggle:M)->Container<'a,M>{
+    |               ^^^^^^^^^^^^^^^
+
+warning: function `server_header` is never used
+   --> src/ui/components.rs:122:15
+    |
+122 | pub(super) fn server_header<'a,M:Clone+'a>(title:&str,expanded:bool,toggle:M,delete:Option<M>,_delete_hint:&str)->Row<'a,M>{
+    |               ^^^^^^^^^^^^^
+
+warning: constant `PAGE_TITLE` is never used
+  --> src/ui/theme.rs:16:18
+   |
+16 | pub(super) const PAGE_TITLE: f32 = 32.0;
+   |                  ^^^^^^^^^^
+
+warning: constant `SECTION_TITLE` is never used
+  --> src/ui/theme.rs:17:18
+   |
+17 | pub(super) const SECTION_TITLE: f32 = 22.0;
+   |                  ^^^^^^^^^^^^^
+
+warning: constant `CARD_GAP` is never used
+  --> src/ui/theme.rs:25:18
+   |
+25 | pub(super) const CARD_GAP: f32 = 20.0;
+   |                  ^^^^^^^^
+
+warning: constant `SECTION_GAP` is never used
+  --> src/ui/theme.rs:26:18
+   |
+26 | pub(super) const SECTION_GAP: f32 = 32.0;
+   |                  ^^^^^^^^^^^
+
+warning: constant `PANEL_PADDING` is never used
+  --> src/ui/theme.rs:30:18
+   |
+30 | pub(super) const PANEL_PADDING: f32 = 24.0;
+   |                  ^^^^^^^^^^^^^
+
+warning: constant `DELETE_BUTTON_PADDING` is never used
+  --> src/ui/theme.rs:32:18
+   |
+32 | pub(super) const DELETE_BUTTON_PADDING: [f32;2] = [10.0,10.0];
+   |                  ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `DELETE_ICON_SIZE` is never used
+  --> src/ui/theme.rs:33:18
+   |
+33 | pub(super) const DELETE_ICON_SIZE: f32 = 18.0;
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: function `muted_text` is never used
+  --> src/ui/theme.rs:47:15
+   |
+47 | pub(super) fn muted_text(_: &Theme) -> widget::text::Style {widget::text::Style {color:Some(MUTED)}}
+   |               ^^^^^^^^^^
+
+warning: function `output_button` is never used
+  --> src/ui/theme.rs:64:15
+   |
+64 | pub(super) fn output_button(_: &Theme,status:widget::button::Status)->widget::button::Style {control(Color::from_rgb8(227,230,233),f...
+   |               ^^^^^^^^^^^^^
+
+warning: method `width` is never used
+   --> src/ui/surface.rs:309:19
+    |
+303 | impl<'a,M:Clone+'a> TextInput<'a,M>{
+    | ----------------------------------- method in this implementation
+...
+309 |     pub(super) fn width(mut self,value:impl Into<Length>)->Self{self.inner=self.inner.width(value);self}
+    |                   ^^^^^
+
+warning: `fetch-local` (lib test) generated 25 warnings (run `cargo fix --lib -p fetch-local --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.57s
+     Running unittests src/lib.rs (target/debug/deps/fetch_local-48e398b2f54fdebf)
+
+running 21 tests
+test ui::neumorphic_tests::connect_commands_are_first_and_removed_copy_stays_absent ... UI capture connect-commands-first 874x630: 0.107s
+ok
+test ui::neumorphic_tests::console_and_terminal_switch_without_waiting_for_server_io ... Output switch round 0 Console at 2x: 0.081s
+Output switch round 0 Terminal at 2x: 0.026s
+Output switch round 1 Console at 2x: 0.072s
+Output switch round 1 Terminal at 2x: 0.029s
+UI capture terminal-matching-console 874x630: 0.010s
+Output switch round 2 Console at 2x: 0.075s
+Output switch round 2 Terminal at 2x: 0.021s
+ok
+test ui::neumorphic_tests::copy_control_shines_and_confirms_to_its_left_then_clears ... UI capture copy-confirmation 874x630: 0.004s
+ok
+test ui::neumorphic_tests::first_server_expansion_draws_without_server_io ... Server expansion 0: 0.070s
+Server expansion 1: 0.010s
+Server expansion 2: 0.005s
+ok
+test ui::neumorphic_tests::global_errors_and_notices_do_not_render_below_navigation ... ok
+test ui::neumorphic_tests::installed_servers_scroll_inside_a_fixed_section ... UI capture installed-servers-before-scroll 1248x900: 0.200s
+UI capture installed-servers-after-scroll 1248x900: 0.007s
+UI capture installed-servers-before-scroll 760x520: 0.049s
+UI capture installed-servers-after-scroll 760x520: 0.008s
+ok
+test ui::neumorphic_tests::instant_manual_reload_replays_every_card_and_keeps_brief_spin_feedback ... ok
+test ui::neumorphic_tests::manual_refresh_keeps_spinning_away_from_pointer_until_its_reply ... ok
+test ui::neumorphic_tests::navbar_switches_pages_without_rebuilding_shadows_on_return ... Navbar round 0 Install MCPs at 2x: 0.040s
+Navbar round 0 Connect apps at 2x: 0.033s
+Navbar round 0 Servers at 2x: 0.015s
+Navbar round 1 Install MCPs at 2x: 0.012s
+Navbar round 1 Connect apps at 2x: 0.007s
+Navbar round 1 Servers at 2x: 0.013s
+ok
+test ui::neumorphic_tests::nested_console_tools_and_settings_keep_wheel_input_at_both_ends ... ok
+test ui::neumorphic_tests::neumorphic_server_panels_open_from_their_own_controls_and_keep_key_ownership ... ok
+test ui::neumorphic_tests::neumorphic_tools_have_three_columns_and_scroll_without_moving_the_page ... UI capture tools-scrolled 1248x900: 0.007s
+ok
+test ui::neumorphic_tests::neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes ... UI capture servers 874x630: 0.119s
+UI capture tools 874x630: 0.140s
+UI capture settings 874x630: 0.047s
+UI capture console 874x630: 0.022s
+UI capture install 874x630: 0.028s
+UI capture install-popup 874x630: 0.040s
+UI capture connect 874x630: 0.015s
+UI capture servers 760x520: 0.035s
+UI capture tools 760x520: 0.049s
+UI capture tools-minimum-scrolled 760x520: 0.011s
+UI capture settings 760x520: 0.048s
+UI capture console 760x520: 0.017s
+UI capture install 760x520: 0.015s
+UI capture install-popup 760x520: 0.011s
+UI capture connect 760x520: 0.015s
+ok
+test ui::neumorphic_tests::refresh_hover_spins_without_invoking_refresh_and_stops_on_leave ... ok
+test ui::neumorphic_tests::remove_button_hover_has_a_red_glow ... ok
+test ui::neumorphic_tests::restart_failures_show_beside_the_affected_name_and_clear_on_retry ... UI capture restart-failed-inline 874x630: 0.105s
+ok
+test ui::neumorphic_tests::server_actions_fade_in_hover_glow_without_tooltip_text ... ok
+test ui::neumorphic_tests::server_expansion_opens_console_with_fetch_errors_and_server_output ... UI capture expanded-error-console 1248x900: 0.152s
+ok
+test ui::neumorphic_tests::server_restart_spins_through_submission_and_completion_without_success_notice ... ok
+test ui::neumorphic_tests::starting_servers_spin_without_unknown_warning_and_success_updates_the_card_immediately ... UI capture startup-completed 874x630: 0.007s
+ok
+test ui::neumorphic_tests::white_console_copy_icon_shines_without_a_background ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 179 filtered out; finished in 10.36s
+
