@@ -1,0 +1,18 @@
+Workspace widgets
+running 5 tests
+test ui::workspace_tests::add_subagent_opens_a_blank_editor_and_keeps_the_draft_on_filename_conflict ... UI capture workspace-add-subagent-toolbar 1058x789: 0.011s
+test ui::workspace_tests::escape_closes_focused_workspace_popups_and_preserves_drafts_and_cached_history ... ok
+test ui::workspace_tests::subagent_preview_wheel_reaches_the_end_without_moving_the_header_or_path ... UI capture subagent-preview-top 874x750: 0.264s
+test ui::workspace_tests::subagent_rows_open_rendered_popups_and_file_paths_offer_finder ... UI capture codex-subagent-blue-row-code-path 874x750: 0.003s
+test ui::workspace_tests::workspace_editor_and_paste_draft_keep_the_save_target_stable_during_model_changes ... UI capture workspace-pasted-agent-editor 874x1000: 0.225s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 262 filtered out; finished in 4.16s
+
+Create-only API
+running 1 test
+test creating_a_subagent_refuses_to_replace_an_existing_definition ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.03s
+
+Existing shared Copy
+running 1 test
+test ui::neumorphic_tests::copy_control_shines_and_confirms_to_its_left_then_clears ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 266 filtered out; finished in 1.60s

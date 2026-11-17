@@ -93,15 +93,20 @@ fn platform_confirm(_:CString,_:u32)->Result<(),NativeAuthError> { Err(NativeAut
 
 #[cfg(target_os="macos")]
 unsafe extern "C" { fn fetch_set_app_icon(bytes:*const u8,length:usize); fn fetch_install_app_menu(); fn fetch_take_app_action()->i32; }
-/// Register native actions without taking over Iced's application delegate.
-pub fn install_app_menu() {
+/// Set the app icon before Iced activates the app or creates a window.
+pub fn prepare_app_icon() {
     #[cfg(target_os="macos")]
     {
         const ICON:&[u8]=include_bytes!("../../packaging/Fetch.png");
-        // SAFETY: the static image bytes stay valid; the bridge copies them and
-        // dispatches icon/menu setup onto the existing main queue.
-        unsafe { fetch_set_app_icon(ICON.as_ptr(),ICON.len()); fetch_install_app_menu(); }
+        // SAFETY: the bridge copies these static bytes before assigning an AppKit image on the main thread.
+        unsafe { fetch_set_app_icon(ICON.as_ptr(),ICON.len()); }
     }
+}
+/// Register native actions without taking over Iced's application delegate.
+pub fn install_app_menu() {
+    #[cfg(target_os="macos")]
+    // SAFETY: the bridge registers its menu actions on the main thread.
+    unsafe { fetch_install_app_menu(); }
 }
 pub fn take_app_action()->i32 {
     #[cfg(target_os="macos")]

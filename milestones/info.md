@@ -1,3 +1,15 @@
+[Workspace agent actions](workspace-agent-actions/info.md) tracks the model picker, copied Codex descriptions, Claude Plan mapping and per-card actions.
+
+[Subagent card name](subagent-card-name/info.md) tracks filling the missing converted name from the clipboard's source card.
+
+[Subagent feedback](subagent-feedback/info.md) tracks the bold Add label, compact toolbar and editor notices, and steady clipboard press behavior.
+
+[Bulk subagents](bulk-subagents/info.md) tracks Copy all and immediate Paste all for the selected app and folder.
+
+[Add subagent](add-subagent/info.md) tracks the blank Workspace draft, Paste control and create-only save.
+
+[Startup and Workspace polish](startup-and-workspace-polish/info.md) tracks the server card entrance, Finder button, subagent preview scrolling, quiet Copy and centered empty messages.
+
 ## November 13 — Workspace editor and gesture follow-up
 
 workspace-editor-gestures/ records shared scroll ownership, editor undo/Copy/Save, automatic folder registration, clean/full session rendering, popup clearance and staggered server entry. It includes focused source-real screenshots/logs plus the read-only missing-global-role finding.

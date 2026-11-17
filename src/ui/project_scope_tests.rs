@@ -40,6 +40,14 @@ async fn registering_a_workspace_folder_keeps_server_install_and_connection_choi
     assert!(parsed["mcp_servers"]["fetch"]["args"].as_array().unwrap().iter().any(|arg|arg.as_str()==a.project_id()));
     assert!(desktop.connector_command("claude-code").contains("--scope project"));
     view.relayout(&desktop);view.export(&desktop,"project-connect-a");
-    desktop.page=Page::Install;view.relayout(&desktop);view.export(&desktop,"project-install-a");
+    desktop.page=Page::Servers;view.relayout(&desktop);
+    let mut messages=view.click(&desktop,"Install MCPs");
+    assert!(matches!(messages.as_slice(),[Message::OpenInstall]));
+    drop(desktop.update(messages.remove(0)));
+    view.relayout(&desktop);
+    assert!(view.survey(&desktop).text.iter().any(|(text,_)|text=="Install into"));
+    assert_eq!(desktop.projects.install,a);
+    view.export(&desktop,"project-install-a");
+    drop(desktop.update(Message::CloseInstall));
     desktop.page=Page::Servers;view.relayout(&desktop);view.export(&desktop,"project-server-shared");
 }

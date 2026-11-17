@@ -1,3 +1,35 @@
+## November 17 — Install MCPs opens from Servers
+
+The white **Install MCPs** button next to Installed servers Refresh opens the install modal. Destination, source, discovery and job progress stay in one dialog. The modal shows each server’s reported status beside its name. [Scope and checks](milestones/servers-install-modal/info.md)
+
+## November 17 — toolbar Paste uses a single copy or Copy all
+
+The Subagents toolbar accepts either clipboard format and immediately creates the copied definitions in the selected app and folder. It keeps the copied filename and protects occupied names. Two focused checks and the signed development build passed. [Scope and results](milestones/workspace-agent-actions/info.md#toolbar-paste-follow-up)
+
+## November 17 — Workspace model menus and row actions
+
+Models load as Add or Edit opens and the native menu displays four rows before scrolling. Copy carries the registered Codex description and cross-app conversion maps read-only to Claude Plan. The row Paste replaces the selected definition and creates eligible remaining files. The red X confirms deletion of the selected definition. Seven focused checks, independent review and signed build passed. [Scope and rendered results](milestones/workspace-agent-actions/info.md)
+
+## November 17 — source card name in converted subagents
+
+If a copied subagent omits its name, cross-app conversion can use the name shown on its source card. Three focused tests, independent review and the signed build passed. [Evidence](milestones/subagent-card-name/info.md)
+
+## November 17 — subagent toolbar and Save feedback
+
+Bold Add subagent, compact Copy/Paste feedback and hover errors are delivered. Draft editing displays the compact marker beside Save and drops the acknowledgement checkbox. Offscreen press and real disposable file checks, independent review and the signed build passed. [Evidence](milestones/subagent-feedback/info.md)
+
+## November 17 — bulk subagent clipboard
+
+Subagents can copy all definitions from the current app and Workspace folder, then paste them directly into the selected destination. Paste only creates new files and reports conflicts and conversion issues. Three focused widget and disposable HTTP checks, independent review and the signed build passed. [Scope and results](milestones/bulk-subagents/info.md)
+
+## November 17 — Add subagent
+
+Workspace Subagents has a blue Add button with white text and a blank popup with Paste before Copy. Save shows the selected app and folder and refuses occupied filenames while retaining the draft. Focused offscreen and disposable HTTP checks, independent review and the signed build passed. [Scope and evidence](milestones/add-subagent/info.md)
+
+## November 17 — startup and Workspace polish
+
+Servers now visibly enter one at a time on startup. Workspace has the blue Finder button, a fixed path over its scrolling subagent preview, quiet Copy and centered standalone empty messages. Seven offscreen widget checks, independent review and the signed development build passed. Native window and trackpad observation remains after Quit and reopen. [Scope and results](milestones/startup-and-workspace-polish/info.md)
+
 ## November 16 — Escape dismisses popups
 
 Escape now dismisses the top visible Fetch popup even while editing, through the existing Close action. Unsaved drafts, cached sessions and pending approval/discovery work remain. Two actual-widget/production-mapper keyboard flows, signed build/strict verification26.11s and independent Evaluator ACCEPT pass. User explicitly Quit/reopen for native observation; no personal/backend/OS-dialog changes. [Evidence](milestones/workspace-session-error/escape-evidence/info.md).

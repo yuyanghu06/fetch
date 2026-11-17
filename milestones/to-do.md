@@ -1,3 +1,89 @@
+## November 17 — macOS preview
+
+- [x] Set the dog icon before the first window and build for Apple Silicon.
+- [ ] Push current source, verify the disk image and publish the preview.
+- [ ] Verify the actual startup and minimized badge in the macOS Dock.
+
+## November 17 — install rows, Instructions Paste and auth highlight
+
+- [x] Show white selectable boxes and gray unsupported rows.
+- [x] Put failed installation details behind the inline info icon.
+- [x] Add Paste beside Copy in both Instructions editors.
+- [x] Make the auth key hover glow gray and verify the signed build.
+
+## November 17 — install button colors and inline progress
+
+- [x] Use white and black for the Servers shortcut.
+- [x] Gray out the disabled footer action.
+- [x] Show progress to the right of each matching server row and verify the signed build.
+
+## November 17 — install modal over Servers
+
+- [x] Move Install MCPs beside Refresh and remove its navbar tab and standalone page.
+- [x] Keep discovery and installation details together in the modal.
+- [x] Verify dismissal, reopening, minimum-size rendering and the signed build.
+
+## November 17 — editable Claude subagent fields
+
+- [x] Confirm which popup controls to add.
+- [x] Implement name and description edits using the current draft.
+- [x] Verify the controls and signed development build.
+
+## November 17 — Workspace loading status
+
+- [x] Center Loading... in the existing dimmed Workspace overlay.
+- [x] Verify initial loading, refresh and completion and build the signed executable.
+
+## November 17 — single-card copies in toolbar Paste
+
+- [x] Identify why the toolbar rejects single-card copies.
+- [x] Accept both clipboard formats.
+- [x] Keep the selected card filename when it links to another file.
+- [x] Verify the immediate single-file save and build.
+- [ ] Try toolbar Paste with the live clipboard after reopening Fetch.
+
+## November 17 — Workspace model picker and subagent actions
+
+- [x] Load model choices on opening the editor and cap its menu.
+- [x] Look up the registration description and implement the selected one-way Plan mapping.
+- [x] Complete row Paste, confirmation/delete and focused checks.
+- [x] Review independently and build the signed development executable.
+- [ ] Try the model catalog and new card actions after quitting and reopening Fetch.
+
+## November 17 — subagent card names
+
+- [x] Carry the displayed name in both Fetch clipboard flows and use it in the existing cross-app converter for a missing name.
+- [x] Verify the displayed-name fallback, explicit-name precedence and existing description validation. Build and sign.
+
+## November 17 — subagent clipboard feedback
+
+- [x] Bold Add subagent.
+- [x] Put bulk and draft feedback by the controls, add the hover details and remove the acknowledgement checkbox.
+- [x] Keep the raised clipboard faces stable and stop disabled presses starting a window drag.
+- [x] Verify narrow toolbar and editor behavior offscreen, review independently and rebuild the signed binary.
+- [ ] Observe the clipboard click in the live macOS window after quit and restart.
+
+## November 17 — bulk subagent clipboard
+
+- [x] Reuse the raised clipboard icons before Add subagent and wire the selected immediate paste flow.
+- [x] Verify the minimum-window toolbar, same-app bytes, cross-app conversion and duplicate handling through disposable Workspace APIs.
+- [x] Complete independent review and the signed development build.
+- [ ] Try the bulk controls with the system clipboard after quitting and reopening Fetch.
+
+## November 17 — Add subagent
+
+- [x] Place the blue Add subagent button with white text and implement blank draft and Paste in the shared popup.
+- [x] Add the approved create-only Save option to the existing Workspace file API.
+- [x] Verify widget and disposable HTTP flows, review independently, and rebuild the signed development executable.
+- [ ] Try the new popup and system clipboard after quitting and reopening Fetch.
+
+## November 17 — startup and Workspace polish
+
+- [x] Implement the visible startup card entrance and keep the existing manual refresh animation.
+- [x] Implement the shared Finder colors, subagent preview scroll, quiet Copy and centered Workspace messages.
+- [x] Pass the seven focused offscreen checks, independent review and the signed development build.
+- [ ] Observe startup motion and physical trackpad scrolling after quitting and reopening the app.
+
 ## November 16 — Escape popups complete
 
 - [x] Captured-key-safe topmost Escape dismissal implemented through existing Close actions.

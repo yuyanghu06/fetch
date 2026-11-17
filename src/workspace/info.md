@@ -1,3 +1,19 @@
+## Claude subagent metadata editing
+
+`agents.rs` changes the selected name or description in a Claude draft using the existing YAML parser and formatter, then attaches the original Markdown body. Fetch's native file API handles the eventual Save.
+
+## Subagent registration metadata and file removal
+
+`files.rs` matches Codex registration metadata to the exact definition in the selected scope. The shared Codex configuration is reserved. Confirmed removal deletes only the selected definition leaf. `agents.rs` maps the selected Codex read-only field to Claude Plan.
+
+## Subagent conversion name
+
+When converting between apps, an optional source card name fills a missing name. The explicit definition name wins, and a missing description remains an issue.
+
+## Create a subagent file
+
+`files.rs` checks the existing Workspace path and agent content rules, writes a completed temporary file, and links it to the requested filename only if it is free. The ordinary edit path retains its existing replace behavior.
+
 ## Project-bound session access
 
 `project_sessions.rs` is the common HTTP/MCP history reader. It requires an

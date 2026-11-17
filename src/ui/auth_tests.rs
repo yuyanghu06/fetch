@@ -67,10 +67,14 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
             {"server_id":"github","authentication":{"status":"required","error":null},"config":{"environment":[]}},
             {"server_id":"tavily","authentication":{"status":"required","error":null},"config":{"environment":[]}}
         ]}),
+        startup_server_cards: super::StartupServerCards::Finished,
         discovery: serde_json::Value::Null,
         tools: serde_json::Value::Null,
         selected: BTreeSet::new(),
         config_path: String::new(),
+        install_popup_open: false,
+        install_error: None,
+        install_notice: String::new(),
         discovery_started: false,
         picker_window: None,
         selected_server: String::new(),
@@ -110,7 +114,8 @@ pub(super) async fn desktop_fixture() -> (tempfile::TempDir, Desktop) {
 #[tokio::test]
 async fn desktop_install_stays_empty_until_a_location_is_chosen() {
     let (_directory, mut desktop) = desktop_fixture().await;
-    drop(desktop.update(Message::Page(Page::Install)));
+    assert_eq!(desktop.update(Message::OpenInstall).units(), 0);
+    assert!(desktop.install_popup_open && desktop.page == Page::Servers);
     assert!(!desktop.discovery_started);
     assert!(!desktop.busy);
     assert!(desktop.discovery.is_null());
@@ -126,14 +131,17 @@ async fn desktop_install_stays_empty_until_a_location_is_chosen() {
     assert!(desktop.discovery_started);
     assert!(desktop.busy, "choosing a location immediately starts discovery");
     drop(desktop.update(Message::Discovery(Ok(json!({"configs":[],"next_steps":[]})))));
-    drop(desktop.update(Message::Page(Page::Servers)));
-    drop(desktop.update(Message::Page(Page::Install)));
-    assert!(!desktop.busy, "revisiting Install must preserve the discovery result");
+    drop(desktop.update(Message::CloseInstall));
+    assert!(!desktop.install_popup_open);
+    assert_eq!(desktop.update(Message::OpenInstall).units(), 0);
+    assert!(desktop.discovery_started && desktop.discovery["configs"].is_array());
+    assert!(!desktop.busy, "reopening Install must preserve the discovery result");
 }
 
 #[tokio::test]
 async fn desktop_typed_location_discovers_explicitly() {
     let (_directory, mut desktop) = desktop_fixture().await;
+    drop(desktop.update(Message::OpenInstall));
     drop(desktop.update(Message::ConfigPath("/fixture/another-home/.codex".into())));
     assert!(!desktop.busy);
     drop(desktop.update(Message::Discover));
@@ -146,6 +154,7 @@ async fn desktop_typed_location_discovers_explicitly() {
 async fn desktop_explicit_discovery_waits_for_incompatible_operations() {
     for blocked in ["busy", "picker", "installation"] {
         let (_directory, mut desktop) = desktop_fixture().await;
+        drop(desktop.update(Message::OpenInstall));
         desktop.config_path = "/fixture/chosen/.codex".into();
         match blocked {
             "busy" => desktop.busy = true,

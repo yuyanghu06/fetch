@@ -26,12 +26,18 @@ impl NativeClient {
         Ok(Self { client, origin, session })
     }
     pub async fn request(&self, method: Method, path: &str, body: Option<Value>) -> Result<Value, String> {
-        self.request_with_status(method, path, body).await.map(|(_, value)| value)
+        self.request_with_status(method, path, body, false).await.map(|(_, value)| value)
     }
-    async fn request_with_status(&self, method: Method, path: &str, body: Option<Value>) -> Result<(reqwest::StatusCode, Value), String> {
+    pub(super) async fn save_new_workspace_file(&self, body: Value) -> Result<Value, String> {
+        self.request_with_status(Method::PUT, "/api/v1/workspace/file", Some(body), true)
+            .await
+            .map(|(_, value)| value)
+    }
+    async fn request_with_status(&self, method: Method, path: &str, body: Option<Value>, create_only: bool) -> Result<(reqwest::StatusCode, Value), String> {
         if !path.starts_with("/api/v1/") || path.contains('#') { return Err("This operation is unavailable.".into()); }
         let mut request = self.client.request(method, format!("{}{}", self.origin, path))
             .header("X-Fetch-Settings-Capability", self.session.header_value());
+        if create_only { request = request.header(reqwest::header::IF_NONE_MATCH, "*"); }
         if let Some(body) = body { request = request.json(&body); }
         let response = crate::diagnostics::send(crate::diagnostics::UpstreamOperation::LocalApi, request).await.map_err(|_| "Fetch could not read its local API response. A submitted change may still be running; refresh its status before trying again.")?;
         let status = response.status();
@@ -56,7 +62,7 @@ impl NativeClient {
     pub(super) async fn terminal_open(&self, id: &str) -> Result<TerminalOpened, String> {
         let (status, value) = self.request_with_status(Method::POST,
             &format!("/api/v1/servers/{}/terminal", component(id)),
-            Some(json!({"action":"open","columns":80,"rows":24}))).await?;
+            Some(json!({"action":"open","columns":80,"rows":24})), false).await?;
         Ok(TerminalOpened { created: status == reqwest::StatusCode::CREATED, value })
     }
     pub async fn terminal_action(&self, id: &str, body: Value) -> Result<Value, String> {

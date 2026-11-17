@@ -1,3 +1,39 @@
+## November 17 — navigation and install modal
+
+The native navbar has Servers, Connect apps and Workspace. A shared white text button beside the Installed servers Refresh opens a shared modal with the existing install controls. The initial form is compact, then the dialog expands for scrollable results and a fixed install footer. The footer action uses a light gray face and dark gray label when disabled. A shared inline status bar animates while a server is installing and shows the reported result when it finishes.
+
+Selectable unchecked install boxes are white with a light outline. Unsupported and already-installed rows share the same gray box and label, and the installed box keeps its checkmark. A failed installation shows the original error in the shared info tooltip beside **Failed**.
+
+The AGENTS.md and CLAUDE.md editor headers use the shared Paste and Copy controls in that order. The shared key button uses a neutral gray hover glow.
+
+## November 17 — editing existing Claude subagents
+
+The Claude Edit popup uses the shared text inputs for Name and Description above the raw editor. Both change the draft and use the existing Save control.
+
+## November 17 — shared loading overlay
+
+The dimmed Workspace loading overlay reuses the centered panel text layout to display **Loading...**. It keeps underlying content in place while the request runs.
+
+## November 17 — model menu and agent card controls
+
+The existing picker loads from the current app when editing opens and caps the menu at four rows. Agent cards reuse matching 40 px clipboard buttons and a same-size red X. The confirmation uses the shared popup and red action style.
+
+## November 17 — bold Add and compact error marker
+
+Add subagent uses the blue primary button with a bold white label. The shared compact error displays error! and a faint gray info icon that shows the original message on hover. The bulk clipboard icons keep their white faces on press and while busy.
+
+## November 17 — bulk clipboard icons
+
+The Subagents toolbar reuses the raised Paste and Copy glyph buttons before Add subagent. The header keeps the blue Add background and white text. The popup uses the same glyphs as the toolbar.
+
+## November 17 — Add subagent and Paste
+
+Add subagent uses the shared raised text button with the blue background and white text style. The shared popup arranges matching raised Paste and Copy controls side by side. Copy feedback appears to their left. The shared file editor accepts an ID for focusing the blank draft.
+
+## November 17 — startup cards, Finder and empty panels
+
+The shared startup card wrapper waits for each row's turn and draws the whole card as it grows and settles. The shared Finder button uses the accent blue surface and a filled white icon with cutout eyes and face lines. `empty_panel_message` centers the only message in an otherwise empty panel. The expandable file preview uses the existing selectable editor and shared inset styling inside one scroll area.
+
 ## November 13 — native conversation and subagent presentation
 
 Workspace consumes complete official messages; tools begin collapsed with name/blue Copy and expand independently. Subagents open a shared modal with parsed settings/Markdown instructions and Edit/Preview, Close and Copy. file_path/finder_button share a compact raised blue Finder control next to supported instruction/subagent paths. Saved success text is removed. Focused popup/API evidence and independent ACCEPT are recorded under milestones/official-session-readers/evidence.

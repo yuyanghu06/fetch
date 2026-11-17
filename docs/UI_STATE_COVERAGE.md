@@ -1,3 +1,51 @@
+## November 17 — install checkboxes, Instructions Paste and auth glow
+
+Offscreen fixtures verify the selectable and unsupported checkbox palettes, original failure detail on hover, Paste and Copy in both Instructions editors, and neutral key highlights at the two sizes. The install and clipboard replies are simulated. [Evidence](../milestones/history/2026-11-17_18-40-33-760776-tester-verify-install-paste-and-key-glow.md)
+
+## November 17 — install button colors and progress by server
+
+The focused render checks verify the white shortcut, disabled gray and enabled blue footer, and the position and motion of the inline bars. The fixture distinguishes two same-name servers in different configuration files and shows queued, installing, installed and failed results. [Evidence](../milestones/history/2026-11-17_18-28-41-722172-tester-verify-inline-install-progress.md)
+
+## November 17 — install from the Servers heading
+
+Focused widget tests cover the blue header button, compact chooser, results and install footer at minimum window size, picker failure, selection and active-job reopening after dismissal. Replies use fixtures. [Evidence](../milestones/servers-install-modal/info.md)
+
+## November 17 — editable Claude subagent fields
+
+A focused popup fixture edits Name and Description through the native controls. It checks the retained path, Markdown instructions and tools, the Save task and the updated Preview. The file responses are simulated. [Details](../milestones/history/2026-11-17_18-14-15-483250-tester-verify-claude-popup-metadata.md)
+
+## November 17 — Workspace loading label
+
+The Sessions widget fixture checks a centered **Loading...** on the empty initial panel and during a refresh with retained rows. It verifies the label disappears when results arrive. [Check details](../milestones/history/2026-11-17_17-59-58-671554-orchestrator-deliver-workspace-loading-label.md)
+
+## November 17 — toolbar Paste from a single copied card
+
+The toolbar Paste fixture clicks the same button used for Copy all bundles, supplies a single card copy, and checks for immediate creation with no editor draft. It uses a registered card whose path has a different filename from the resolved definition. [Evidence](../milestones/workspace-agent-actions/info.md#toolbar-paste-follow-up)
+
+## November 17 — model menu and card actions
+
+The [focused Workspace captures](../milestones/workspace-agent-actions/info.md) show four initial model rows, later rows after scrolling, immediate Paste results and a named delete confirmation. Disposable routes verified the registered description, Plan conversion, replacement, create-only additions, and shared config protection.
+
+## November 17 — unnamed subagent conversion
+
+[Focused checks](../milestones/subagent-card-name/info.md) verify that the displayed Codex label is carried into the Claude file when the source has no name, even if the displayed name and source filename differ. Existing explicit names and missing-description validation are preserved.
+
+## November 17 — compact subagent errors and clipboard status
+
+[Final widget evidence](../milestones/subagent-feedback/info.md) covers Copied all!, Pasted all!, five simultaneous errors at minimum window size, Save errors and conversion details on hover, no review checkbox, and busy clipboard button presses captured without starting a window drag. The offscreen fixture does not reproduce the live macOS flash.
+
+## November 17 — bulk subagent clipboard
+
+[Rendered and fixture evidence](../milestones/bulk-subagents/info.md) covers the two icons at minimum window size, selected scope copying, immediate paste, the partial report and refreshed list. Disposable HTTP calls checked exact same-app bytes, an occupied name, cross-app conversion and a review-required definition.
+
+## November 17 — Add subagent states
+
+The [focused Add evidence](../milestones/add-subagent/info.md) includes the blue Add button with white text before the app icons, the blank popup with adjacent Paste and Copy, Save in the scrolled minimum-size popup, and the visible conflict with the draft retained. Tests use a fixture clipboard and temporary files. The actual macOS clipboard remains for live observation.
+
+## November 17 — startup and Workspace polish
+
+[Rendered evidence](../milestones/startup-and-workspace-polish/info.md) covers blank pending startup, three staggered cards and their settled slots, centered confirmed-empty Servers and Subagents states, the blue Finder face and white icon, and both ends of a long subagent preview with its path fixed. The focused tests also exercise manual reload, quiet Copy, the Finder action and existing editor and Escape behavior. Evidence uses offscreen native widgets and fixture responses. No physical trackpad event or live Finder action was run.
+
 ## November 16 — Escape keyboard flows
 
 [Focused keyboard evidence](../milestones/workspace-session-error/escape-evidence/info.md) covers a genuinely focused dirty agent editor, session/cache, no-popup state and layered pending approval/install. Tests deliver real widget events then the exact production subscription mapper with actual Shell status; Captured routing is checked explicitly. Two cases pass1.79s; Close state retention and zero-backend dismissal tasks pass. No new visual layout; native physical keyboard observation remains after Quit/reopen.

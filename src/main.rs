@@ -64,6 +64,7 @@ fn run()->Result<(),Box<dyn std::error::Error>> {
                 Err(error)if error.kind()==std::io::ErrorKind::AlreadyExists=>{if let Some(context)=&context{runtime.block_on(fetch_local::application::show_connection_context(&root,context))?;}else{runtime.block_on(show_existing(&root))?;}return Ok(());},
                 Err(error)=>return Err(error.into()),
             };
+            fetch_local::native_auth::prepare_app_icon();
             if let Some(context)=context{host.request_connection_context(context);}
             {let _context=runtime.enter();host.start()?;}
             install_shutdown_signal(&runtime,host.clone());

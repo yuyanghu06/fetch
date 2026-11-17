@@ -8,7 +8,7 @@ use std::{collections::BTreeMap, sync::Arc};
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/api/v1/workspace",get(discover))
-        .route("/api/v1/workspace/file",get(read_file).put(save_file))
+        .route("/api/v1/workspace/file",get(read_file).put(save_file).delete(delete_agent_file))
         .route("/api/v1/workspace/file/reveal",post(reveal_file))
         .route("/api/v1/workspace/agents/convert",post(convert_agent))
         .route("/api/v1/workspace/models",get(models))
@@ -39,7 +39,7 @@ async fn run(operation:impl FnOnce()->Result<Value,WorkspaceError>+Send+'static)
 async fn parameters(state:&AppState,request:Request,allowed:&[&str])->Result<BTreeMap<String,String>,Response>{
     native(state,request.headers())?;
     let query=request.uri().query().unwrap_or("").to_owned();
-    empty_body(request).await.map_err(|_|invalid("Workspace reads do not accept a request body."))?;
+    empty_body(request).await.map_err(|_|invalid("Workspace query operations do not accept a request body."))?;
     let pairs=parse_query(&query).map_err(|_|invalid("The Workspace query could not be read."))?;
     let mut output=BTreeMap::new();
     for (key,value) in pairs {
@@ -74,22 +74,60 @@ async fn read_file(State(state):State<Arc<AppState>>,request:Request)->Response{
     let service=match service(&state){Ok(value)=>value,Err(reply)=>return reply};
     run(move||service.read_file(params.get("folder_path").map(String::as_str),&path)).await
 }
+async fn delete_agent_file(State(state): State<Arc<AppState>>, request: Request) -> Response {
+    let params = match parameters(&state, request, &["folder_path", "file_path"]).await {
+        Ok(value) => value,
+        Err(reply) => return reply,
+    };
+    let path = match required(&params, "file_path") {
+        Ok(value) => value.to_owned(),
+        Err(reply) => return reply,
+    };
+    let service = match service(&state) {
+        Ok(value) => value,
+        Err(reply) => return reply,
+    };
+    run(move || service.delete_agent_file(params.get("folder_path").map(String::as_str), &path)).await
+}
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Save {folder_path:Option<String>,file_path:String,content:String}
 async fn save_file(State(state):State<Arc<AppState>>,request:Request)->Response{
+    let condition = request.headers().get(header::IF_NONE_MATCH).cloned();
     let body:Save=match input(&state,request).await{Ok(value)=>value,Err(reply)=>return reply};
+    let create_only = match condition {
+        None => false,
+        Some(value) if value.as_bytes() == b"*" => true,
+        Some(_) => return invalid("Use If-None-Match: * when adding a subagent."),
+    };
     let service=match service(&state){Ok(value)=>value,Err(reply)=>return reply};
-    run(move||service.save_file(body.folder_path.as_deref(),&body.file_path,&body.content)).await
+    run(move || {
+        let folder = body.folder_path.as_deref();
+        if create_only {
+            service.create_agent_file(folder, &body.file_path, &body.content)
+        } else {
+            service.save_file(folder, &body.file_path, &body.content)
+        }
+    }).await
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Convert {source_app:String,target_app:String,content:String,target_model:Option<String>}
+struct Convert {
+    source_app: String,
+    target_app: String,
+    content: String,
+    target_model: Option<String>,
+    fallback_name: Option<String>,
+    fallback_description: Option<String>,
+}
 async fn convert_agent(State(state):State<Arc<AppState>>,request:Request)->Response{
     let body:Convert=match input(&state,request).await{Ok(value)=>value,Err(reply)=>return reply};
     let service=match service(&state){Ok(value)=>value,Err(reply)=>return reply};
     run(move||{
-        let mut value=service.convert_agent(&body.source_app,&body.target_app,&body.content)?;
+        let mut value = service.convert_agent_with_fallbacks(
+            &body.source_app, &body.target_app, &body.content,
+            body.fallback_name.as_deref(), body.fallback_description.as_deref(),
+        )?;
         if let Some(model)=body.target_model{
             let content=value["content"].as_str().unwrap_or("");
             let changed=service.set_agent_model(&body.target_app,content,&model)?;

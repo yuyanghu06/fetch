@@ -5,10 +5,23 @@ use super::theme;
 const FEEDBACK:Duration=Duration::from_millis(1400);
 #[derive(Default)]
 struct State{pressed:bool,hovered:bool,copied:Option<Instant>}
-struct CopyFeedback<'a,M>{button:Element<'a,M>,label:Element<'a,M>,dark:bool}
+struct CopyFeedback<'a,M>{button:Element<'a,M>,label:Element<'a,M>,dark:bool,copy_width:Option<f32>}
 pub(super) fn wrap<'a,M:'a>(button:impl Into<Element<'a,M>>,dark:bool)->Element<'a,M>{
+    with_copy_width(button, dark, None)
+}
+/// Reserve confirmation space before a row ending in the actual Copy control.
+pub(super) fn wrap_trailing_copy<'a, M: 'a>(row: impl Into<Element<'a, M>>, copy_width: f32) -> Element<'a, M> {
+    with_copy_width(row, false, Some(copy_width))
+}
+fn with_copy_width<'a, M: 'a>(button: impl Into<Element<'a, M>>, dark: bool, copy_width: Option<f32>) -> Element<'a, M> {
     let label=iced::widget::text("Copied!").size(12).font(theme::MEDIUM_FONT).color(if dark{theme::CONSOLE_FOREGROUND}else{theme::MUTED});
-    Element::new(CopyFeedback{button:button.into(),label:label.into(),dark})
+    Element::new(CopyFeedback{button:button.into(),label:label.into(),dark,copy_width})
+}
+impl<M> CopyFeedback<'_, M> {
+    fn copy_bounds(&self, bounds: Rectangle) -> Rectangle {
+        let width = self.copy_width.unwrap_or(bounds.width).min(bounds.width);
+        Rectangle { x: bounds.x + bounds.width - width, width, ..bounds }
+    }
 }
 impl<M> Widget<M,Theme,Renderer> for CopyFeedback<'_,M>{
     fn size(&self)->Size<Length>{Size::new(Length::Shrink,Length::Shrink)}
@@ -31,8 +44,9 @@ impl<M> Widget<M,Theme,Renderer> for CopyFeedback<'_,M>{
     }
     fn update(&mut self,tree:&mut Tree,event:&Event,layout:Layout<'_>,cursor:mouse::Cursor,renderer:&Renderer,clipboard:&mut dyn Clipboard,shell:&mut Shell<'_,M>,viewport:&Rectangle){
         let button=layout.children().next().unwrap();
-        let hovered=cursor.is_over(button.bounds())&&cursor.is_over(*viewport);
-        let glyph_cursor=if hovered{mouse::Cursor::Available(button.bounds().center())}else{cursor};
+        let copy = self.copy_bounds(button.bounds());
+        let hovered=cursor.is_over(copy)&&cursor.is_over(*viewport);
+        let glyph_cursor=if hovered{mouse::Cursor::Available(copy.center())}else{cursor};
         self.button.as_widget_mut().update(&mut tree.children[0],event,button,glyph_cursor,renderer,clipboard,shell,viewport);
         let state=tree.state.downcast_mut::<State>();
         if hovered!=state.hovered{state.hovered=hovered;shell.request_redraw();}
@@ -50,15 +64,16 @@ impl<M> Widget<M,Theme,Renderer> for CopyFeedback<'_,M>{
     }
     fn draw(&self,tree:&Tree,renderer:&mut Renderer,theme:&Theme,style:&renderer::Style,layout:Layout<'_>,cursor:mouse::Cursor,viewport:&Rectangle){
         let state=tree.state.downcast_ref::<State>();let mut children=layout.children();let button=children.next().unwrap();
+        let copy = self.copy_bounds(button.bounds());
         if self.dark&&state.hovered{
             use iced::advanced::svg::Renderer as _;
-            let bounds=Rectangle::new(button.bounds().center()-Vector::new(10.0,10.0),Size::new(20.0,20.0));
+            let bounds=Rectangle::new(copy.center()-Vector::new(10.0,10.0),Size::new(20.0,20.0));
             let handle=iced::advanced::svg::Handle::from_memory(include_bytes!("assets/ccd0d.svg").as_slice());
             for offset in [Vector::new(-0.6,0.0),Vector::new(0.6,0.0),Vector::new(0.0,-0.6),Vector::new(0.0,0.6)]{
                 renderer.draw_svg(iced::advanced::svg::Svg{handle:handle.clone(),color:Some(Color::WHITE),rotation:iced::Radians(0.0),opacity:0.18},bounds+offset,*viewport);
             }
         }
-        let glyph_cursor=if state.hovered{mouse::Cursor::Available(button.bounds().center())}else{cursor};
+        let glyph_cursor=if state.hovered{mouse::Cursor::Available(copy.center())}else{cursor};
         self.button.as_widget().draw(&tree.children[0],renderer,theme,style,button,glyph_cursor,viewport);
         if state.copied.is_some(){self.label.as_widget().draw(&tree.children[1],renderer,theme,style,children.next().unwrap(),cursor,viewport);}
     }

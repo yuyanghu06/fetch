@@ -43,7 +43,8 @@ impl Desktop {
         }
         Event::Install(choice)=>{
             if self.busy||self.picker_window.is_some()||self.job.is_some()||self.discovery_refresh.running(){return Task::none();}
-            self.projects.install=choice;self.discovery=Value::Null;self.selected.clear();self.progress=Value::Null;self.discovery_started=false;self.error=None;
+            self.projects.install=choice;self.discovery=Value::Null;self.selected.clear();self.progress=Value::Null;self.discovery_started=false;
+            self.install_error=None;self.install_notice.clear();
         }
         Event::Connection(choice)=>{if !self.connector.creating&&!self.connector.deciding{self.projects.connection=choice;}}
         Event::Scope(id,choice)=>{

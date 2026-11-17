@@ -1,3 +1,7 @@
+## November 17 — Add subagent save decision resolved
+
+The user selected create-only Save with the draft kept open when a filename is taken. The native popup and [conditional Workspace save](workspace.md#add-subagent-save) are implemented and independently accepted after focused widget and HTTP checks. The signed build passed. Live clipboard use remains for user observation.
+
 ## November 13 — official reader and Finder scope accepted
 
 [Approved native reader/Finder contract](session-reader-reuse.md) is implemented and independently ACCEPTed, with complete native fixture/API/widget checks and signed build. No API/dependency approval remains for this bounded scope. Personal-history/Finder interaction, forced deadline/cancel runtime cases and live SQLite sidecars remain the specific verification limits; no new feature or automatic personal-state action is selected.

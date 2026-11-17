@@ -1,0 +1,15 @@
+running 4 tests
+test ui::workspace_tests::add_subagent_opens_a_blank_editor_and_keeps_the_draft_on_filename_conflict ... ok
+test ui::workspace_tests::bulk_subagent_toolbar_copies_the_selected_scope_and_pastes_without_overwriting ...
+ok
+test ui::workspace_tests::subagent_model_picker_loads_on_edit_and_scrolls_after_four_rows ... ok
+test ui::workspace_tests::workspace_editor_and_paste_draft_keep_the_save_target_stable_during_model_changes ... ok
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 265 filtered out; finished in 4.05s
+running 3 tests
+test native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_session_chunks ...
+ok
+test ordinary_bearer_and_background_requests_cannot_access_workspace_files_history_or_models ...
+ok
+test subagent_actions_protect_the_shared_codex_config_registered_as_a_definition ...
+ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.10s

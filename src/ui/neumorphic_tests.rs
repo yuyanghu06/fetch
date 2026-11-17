@@ -6,7 +6,7 @@ use iced::{Color, Font, Pixels, Point, Rectangle, Size, Vector};
 #[derive(Default)]
 pub(super) struct Survey {
     pub(super) text: Vec<(String, Rectangle)>,
-    scrolls: Vec<(String, Rectangle, Rectangle, Vector)>,
+    pub(super) scrolls: Vec<(String, Rectangle, Rectangle, Vector)>,
     pub(super) containers: Vec<Rectangle>,
     offset: Vector,
     child_offset: Option<Vector>,
@@ -57,21 +57,44 @@ impl ViewFixture {
     }
     pub(super) fn survey(&mut self, desktop: &Desktop) -> Survey {
         let mut survey = Survey::default();
+        self.operate(desktop, &mut survey);
+        survey
+    }
+    pub(super) fn operate(&mut self, desktop: &Desktop, operation: &mut dyn Operation) {
         let mut element = desktop.view(desktop.window.unwrap());
         // Fresh views must run layout to initialize size-dependent children.
         self.node = element.as_widget_mut().layout(&mut self.tree, &self.renderer, &layout::Limits::new(self.screen.size(), self.screen.size()));
-        element.as_widget_mut().operate(&mut self.tree, Layout::new(&self.node), &self.renderer, &mut survey);
-        survey
+        element.as_widget_mut().operate(&mut self.tree, Layout::new(&self.node), &self.renderer, operation);
     }
     pub(super) fn event(&mut self, desktop: &Desktop, event: iced::Event, point: Point) -> Vec<Message> {
         self.event_with_status(desktop,event,point).0
     }
     pub(super) fn event_with_status(&mut self, desktop: &Desktop, event: iced::Event, point: Point) -> (Vec<Message>,iced::event::Status) {
+        self.event_with_clipboard(desktop, event, point, &mut clipboard::Null)
+    }
+    pub(super) fn overlay_event(&mut self, desktop: &Desktop, event: Option<(iced::Event, Point)>) -> (Rectangle, Vec<Message>) {
+        let mut element = desktop.view(desktop.window.unwrap());
+        self.node = element.as_widget_mut().layout(&mut self.tree, &self.renderer, &layout::Limits::new(self.screen.size(), self.screen.size()));
+        let mut overlay = element.as_widget_mut().overlay(&mut self.tree, Layout::new(&self.node), &self.renderer, &self.screen, Vector::ZERO)
+            .expect("the open picker has a native overlay");
+        let node = overlay.as_overlay_mut().layout(&self.renderer, self.screen.size());
+        let mut messages = Vec::new();
+        if let Some((event, point)) = event {
+            overlay.as_overlay_mut().update(&event, Layout::new(&node), iced::mouse::Cursor::Available(point),
+                &self.renderer, &mut clipboard::Null, &mut Shell::new(&mut messages));
+        }
+        let mut content = Layout::new(&node);
+        while content.bounds().size() == self.screen.size() {
+            content = content.children().next().expect("the overlay group contains its menu");
+        }
+        (content.bounds(), messages)
+    }
+    pub(super) fn event_with_clipboard(&mut self, desktop: &Desktop, event: iced::Event, point: Point, clipboard: &mut dyn iced::advanced::Clipboard) -> (Vec<Message>,iced::event::Status) {
         let mut messages = vec![];
         let mut element = desktop.view(desktop.window.unwrap());
         self.node = element.as_widget_mut().layout(&mut self.tree, &self.renderer, &layout::Limits::new(self.screen.size(), self.screen.size()));
         let mut shell = Shell::new(&mut messages);
-        element.as_widget_mut().update(&mut self.tree, &event, Layout::new(&self.node), iced::mouse::Cursor::Available(point), &self.renderer, &mut clipboard::Null, &mut shell, &self.screen);
+        element.as_widget_mut().update(&mut self.tree, &event, Layout::new(&self.node), iced::mouse::Cursor::Available(point), &self.renderer, clipboard, &mut shell, &self.screen);
         let status=shell.event_status();
         (messages,status)
     }
@@ -87,7 +110,7 @@ impl ViewFixture {
     pub(super) fn pixels(&mut self, desktop: &Desktop) -> Vec<u8> {
         self.pixels_at(desktop,iced::mouse::Cursor::Unavailable,std::time::Instant::now())
     }
-    fn pixels_at(&mut self,desktop:&Desktop,cursor:iced::mouse::Cursor,now:std::time::Instant)->Vec<u8>{
+    pub(super) fn pixels_at(&mut self,desktop:&Desktop,cursor:iced::mouse::Cursor,now:std::time::Instant)->Vec<u8>{
         self.renderer.reset(self.screen);
         let mut element = desktop.view(desktop.window.unwrap());
         self.node = element.as_widget_mut().layout(&mut self.tree, &self.renderer, &layout::Limits::new(self.screen.size(), self.screen.size()));
@@ -105,15 +128,30 @@ impl ViewFixture {
         <iced::Renderer as Headless>::screenshot(&mut self.renderer, Size::new(self.screen.width as u32, self.screen.height as u32), 1.0, Color::TRANSPARENT)
     }
     pub(super) fn export(&mut self, desktop: &Desktop, name: &str) {
+        self.export_at(desktop, name, iced::mouse::Cursor::Unavailable);
+    }
+    pub(super) fn export_at(&mut self, desktop: &Desktop, name: &str, cursor: iced::mouse::Cursor) {
         if let Some(directory) = std::env::var_os("FETCH_UI_EVIDENCE_DIR") {
             let path = std::path::PathBuf::from(directory);
             std::fs::create_dir_all(&path).unwrap();
             let started=std::time::Instant::now();
-            let pixels = self.pixels(desktop);
+            let pixels = self.pixels_at(desktop, cursor, started);
             eprintln!("UI capture {name} {}x{}: {:.3}s",self.screen.width as u32,self.screen.height as u32,started.elapsed().as_secs_f64());
             std::fs::write(path.join(format!("{name}-{}x{}.rgba", self.screen.width as u32, self.screen.height as u32)), pixels).unwrap();
         }
     }
+}
+
+fn halo_darkening(idle: &[u8], hovered: &[u8], pixel_width: usize, point: Point) -> [i16; 3] {
+    let index = (point.y.round() as usize * pixel_width + point.x.round() as usize) * 4;
+    std::array::from_fn(|channel| idle[index + channel] as i16 - hovered[index + channel] as i16)
+}
+
+fn assert_gray_halo(darkening: [i16; 3]) {
+    let lightest = darkening.into_iter().min().unwrap();
+    let darkest = darkening.into_iter().max().unwrap();
+    assert!(lightest >= 5 && darkest - lightest <= 5,
+        "the halo is visible and neutral gray, with RGB darkening {darkening:?}");
 }
 
 pub(super) fn escape_key()->iced::Event{
@@ -178,7 +216,6 @@ async fn navbar_switches_pages_without_rebuilding_shadows_on_return() {
     let mut first_frames = BTreeMap::new();
     for round in 0..2 {
         for (label, expected, content) in [
-            ("Install MCPs", Page::Install, "Install MCPs"),
             ("Connect apps", Page::Connect, "Claude Code"),
             ("Servers", Page::Servers, "Installed servers"),
         ] {
@@ -348,12 +385,20 @@ async fn server_actions_fade_in_hover_glow_without_tooltip_text() {
     let hovered=fixture.pixels_at(&desktop,cursor,now+std::time::Duration::from_millis(150));
     let difference=|pixels:&[u8]|pixels.iter().zip(&start).map(|(a,b)|a.abs_diff(*b) as u64).sum::<u64>();
     assert!(difference(&middle)>0&&difference(&hovered)>difference(&middle),"the hover glow grows over 150ms instead of appearing instantly");
+    let pixel_width = fixture.screen.width as usize;
+    assert_gray_halo(halo_darkening(&idle, &hovered, pixel_width, Point::new(action.x, action.y - 27.0)));
     {
         let mut element=desktop.view(desktop.window.unwrap());
         let overlay=element.as_widget_mut().overlay(&mut fixture.tree,Layout::new(&fixture.node),&fixture.renderer,&fixture.screen,Vector::ZERO);
         assert!(overlay.is_none(),"hovering a server action must not create tooltip text");
     }
     assert!(fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,now+std::time::Duration::from_millis(200))==idle,"leaving the action removes the glow");
+    let refresh = Point::new(action.x + 54.0, action.y);
+    let cursor = iced::mouse::Cursor::Available(refresh);
+    fixture.pixels_at(&desktop, cursor, now + Duration::from_millis(200));
+    let refresh_hovered = fixture.pixels_at(&desktop, cursor, now + Duration::from_millis(350));
+    let [red, _, blue] = halo_darkening(&idle, &refresh_hovered, pixel_width, Point::new(refresh.x, refresh.y - 27.0));
+    assert!(red > blue + 8, "the refresh halo keeps its blue tint");
     if let Some(dir)=std::env::var_os("FETCH_UI_EVIDENCE_DIR"){
         std::fs::create_dir_all(&dir).unwrap();
         for (name,pixels) in [("hover-idle",idle),("hover-mid",middle),("hover-full",hovered)]{std::fs::write(std::path::PathBuf::from(&dir).join(format!("{name}-{}x{}.rgba",fixture.screen.width as u32,fixture.screen.height as u32)),pixels).unwrap();}
@@ -487,9 +532,29 @@ async fn neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes
         fixture.relayout(&desktop);
         assert!(fixture.survey(&desktop).text.iter().any(|(text, _)| text == "[server] Ready for requests"));
         fixture.export(&desktop, "console");
-        drop(desktop.update(Message::Page(Page::Install)));
-        fixture.relayout(&desktop);
+        let survey = fixture.survey(&desktop);
+        let heading = survey.text.iter().find(|(label, _)| label == "Installed servers").unwrap().1;
+        let refresh = survey.containers.iter().find(|rect| {
+            (rect.width - 44.0).abs() < 0.1 && (rect.height - 44.0).abs() < 0.1
+                && (rect.center_y() - heading.center_y()).abs() < 2.0 && rect.x > heading.x
+        }).unwrap();
+        let mut shortcuts = survey.text.iter().filter(|(label, _)| label == "Install MCPs");
+        let shortcut = shortcuts.next().unwrap().1;
+        assert!(shortcuts.next().is_none(), "Install MCPs only appears in the Installed servers heading");
+        assert!(shortcut.x > refresh.x + refresh.width && (shortcut.center_y() - refresh.center_y()).abs() < 2.0);
+        apply_click(&mut fixture, &mut desktop, "Install MCPs");
+        assert!(desktop.page == Page::Servers && desktop.install_popup_open && !desktop.busy);
+        let survey = fixture.survey(&desktop);
+        for label in ["Installed servers", "Discover and install", "Install into", "Choose file or folder…"] {
+            assert!(survey.text.iter().any(|(text, _)| text == label), "missing {label}");
+        }
         fixture.export(&desktop, "install");
+        let window = desktop.window.unwrap();
+        desktop.picker_window = Some(window);
+        drop(desktop.update(Message::ConfigFileChosen(window, Err("Could not open the fixture picker".into()))));
+        fixture.relayout(&desktop);
+        assert!(fixture.survey(&desktop).text.iter().any(|(text, _)| text == "Could not open the fixture picker"));
+        desktop.install_error = None;
         desktop.discovery_started = true;
         desktop.discovery = json!({"configs":[{"path":"/disposable/config.toml","servers":[{"name":"Filesystem","type":"local","status":"supported","installed":false},{"name":"Search","type":"remote","status":"supported","installed":true}]}],"next_steps":[]});
         desktop.selected.insert(("/disposable/config.toml".into(), "Filesystem".into()));
@@ -509,12 +574,29 @@ async fn neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes
             }));
             assert!(visible,"{label} checkbox retains its filled face above the popup background, not only its checkmark");
         }
-        desktop.job = Some("disposable-installation".into());
-        drop(desktop.update(Message::CloseDiscovery));
+        let mut install = fixture.click(&desktop, "Install selected servers");
+        assert!(matches!(install.as_slice(), [Message::Install]));
+        assert_eq!(desktop.update(install.remove(0)).units(), 1);
+        drop(desktop.update(Message::Installed(Ok(json!({
+            "installation_id":"disposable-installation","status":"running"
+        })))));
         fixture.relayout(&desktop);
-        apply_click(&mut fixture, &mut desktop, "View installation progress");
-        assert!(desktop.discovery_started && desktop.job.as_deref() == Some("disposable-installation"), "closing the popup preserves an active installation and lets the user reopen its progress");
+        let mut dismiss = fixture.event(
+            &desktop,
+            iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)),
+            Point::new(16.0, size.height / 2.0),
+        );
+        assert!(matches!(dismiss.as_slice(), [Message::CloseInstall]));
+        assert_eq!(desktop.update(dismiss.remove(0)).units(), 0);
+        fixture.relayout(&desktop);
+        apply_click(&mut fixture, &mut desktop, "Install MCPs");
+        assert!(desktop.install_popup_open && desktop.job.as_deref() == Some("disposable-installation"));
+        assert!(fixture.survey(&desktop).text.iter().any(|(text, _)| text == "Installation: running"), "the same shortcut reopens the active installation progress");
+        drop(desktop.update(Message::CloseInstall));
         desktop.job = None;
+        desktop.discovery = Value::Null;
+        desktop.progress = Value::Null;
+        desktop.selected.clear();
         desktop.discovery_started = false;
         drop(desktop.update(Message::Page(Page::Connect)));
         fixture.relayout(&desktop);
@@ -522,8 +604,122 @@ async fn neumorphic_views_render_real_screens_at_design_and_minimum_window_sizes
         let survey = fixture.survey(&desktop);
         assert!(survey.text.iter().any(|(text, _)| text.contains("codex mcp add fetch -- ") && text.contains("connect --client codex")), "copyable Codex commands are retained");
         assert!(!survey.text.iter().any(|(text,_)|text=="Copy Fetch MCP address"||text.starts_with("Public certificate:")),"the removed connection footer stays absent");
-        assert!(!survey.text.iter().any(|(text, _)| text == "Quit Fetch" || text == "Settings"), "navigation has only the three approved tabs");
+        assert!(!survey.text.iter().any(|(text, _)| text == "Quit Fetch" || text == "Settings" || text == "Install MCPs"), "navigation has only the three approved tabs");
     }
+}
+
+#[tokio::test]
+async fn install_modal_renders_button_colors_and_reports_progress_on_each_source_row() {
+    let (_directory, mut desktop) = auth_tests::desktop_fixture().await;
+    desktop.servers = sample_servers();
+    let size = Size::new(760.0, 520.0);
+    let mut fixture = ViewFixture::new(&desktop, size).await;
+
+    let rgb = |pixels: &[u8], point: Point| {
+        let index = (point.y.round() as usize * size.width as usize + point.x.round() as usize) * 4;
+        [pixels[index], pixels[index + 1], pixels[index + 2]]
+    };
+    let button = |fixture: &mut ViewFixture, desktop: &Desktop, label, face: [u8; 3], ink: [u8; 3]| {
+        let bounds = fixture.survey(desktop).text.into_iter().find(|(text, _)| text == label).unwrap().1;
+        let pixels = fixture.pixels(desktop);
+        let near = |pixel: [u8; 3], color: [u8; 3]| pixel.into_iter().zip(color).all(|(a, b)| a.abs_diff(b) <= 8);
+        let face_sample = rgb(&pixels, Point::new(bounds.x - 7.0, bounds.center_y()));
+        assert!(near(face_sample, face), "{label} face is {face_sample:?}, expected {face:?}");
+        assert!((bounds.x.ceil() as u32..(bounds.x + bounds.width).floor() as u32).any(|x| {
+            (bounds.y.ceil() as u32..(bounds.y + bounds.height).floor() as u32)
+                .any(|y| near(rgb(&pixels, Point::new(x as f32, y as f32)), ink))
+        }), "{label} uses text color {ink:?}");
+    };
+    button(&mut fixture, &desktop, "Install MCPs", [247, 246, 241], [39, 43, 48]);
+    fixture.export(&desktop, "install-shortcut-light");
+    apply_click(&mut fixture, &mut desktop, "Install MCPs");
+
+    let local = "/disposable/local.toml";
+    let remote = "/disposable/remote.json";
+    drop(desktop.update(Message::Discovery(Ok(json!({"configs":[
+        {"path":local,"servers":[
+            {"name":"Fixture search","type":"local","status":"supported"},
+            {"name":"Fixture unsupported","type":"unsupported","status":"unsupported"}
+        ]},
+        {"path":remote,"servers":[{"name":"Fixture search","type":"remote","status":"supported"}]}
+    ]})))));
+    fixture.relayout(&desktop);
+    let survey = fixture.survey(&desktop);
+    let row_bounds = |label| survey.text.iter().find(|(text, _)| text == label).unwrap().1;
+    let selectable = row_bounds("Fixture search · local");
+    let unsupported = row_bounds("Fixture unsupported · unsupported");
+    let pixels = fixture.pixels(&desktop);
+    let box_pixel = |bounds: Rectangle| rgb(&pixels, Point::new(bounds.x + 9.0, bounds.center_y()));
+    assert_eq!(box_pixel(selectable), [255, 255, 255]);
+    assert_eq!(box_pixel(unsupported), [227, 230, 233]);
+    let darkest_label_pixel = |bounds: Rectangle| {
+        ((bounds.x + 26.0).ceil() as u32..(bounds.x + bounds.width).floor() as u32)
+            .flat_map(|x| (bounds.y.ceil() as u32..(bounds.y + bounds.height).floor() as u32)
+                .map(move |y| Point::new(x as f32, y as f32)))
+            .map(|point| rgb(&pixels, point)[0]).min().unwrap()
+    };
+    assert!(darkest_label_pixel(unsupported) > darkest_label_pixel(selectable) + 65,
+        "the unsupported label is dimmed along with its box");
+    assert!(!fixture.click(&desktop, "Fixture unsupported · unsupported").iter()
+        .any(|message| matches!(message, Message::Select(..))));
+    button(&mut fixture, &desktop, "Install selected servers", [227, 230, 233], [102, 107, 112]);
+    assert!(!fixture.click(&desktop, "Install selected servers").iter().any(|message| matches!(message, Message::Install)));
+    fixture.export(&desktop, "install-button-disabled");
+    apply_click(&mut fixture, &mut desktop, "Select all");
+    button(&mut fixture, &desktop, "Install selected servers", [149, 212, 241], [255, 255, 255]);
+    let mut messages = fixture.click(&desktop, "Install selected servers");
+    assert!(matches!(messages.as_slice(), [Message::Install]));
+    assert_eq!(desktop.update(messages.remove(0)).units(), 1);
+    assert_eq!(desktop.update(Message::Installed(Ok(json!({
+        "installation_id":"fixture-installation","status":"installing"
+    })))).units(), 1, "acceptance requests the first progress reply immediately");
+
+    let states = |fixture: &mut ViewFixture, desktop: &Desktop, local_status, remote_status| {
+        let survey = fixture.survey(desktop);
+        assert_eq!(survey.text.iter().filter(|(text, _)| text.starts_with("Fixture search")).count(), 2);
+        for (source, status) in [("Fixture search · local", local_status), ("Fixture search · remote", remote_status)] {
+            let name = survey.text.iter().find(|(text, _)| text == source).unwrap().1;
+            let label = survey.text.iter().find(|(text, _)| text == status).unwrap().1;
+            assert!((label.center_y() - name.center_y()).abs() < 2.0 && label.x > name.x,
+                "{status} appears to the right of {source} on the same row");
+        }
+    };
+    drop(desktop.update(Message::Progress(Ok(json!({"status":"installing","servers":[
+        {"config_path":local,"server_name":"Fixture search","status":"installing"},
+        {"config_path":remote,"server_name":"Fixture search","status":"pending"}
+    ]})))));
+    fixture.relayout(&desktop);
+    states(&mut fixture, &desktop, "Installing", "Queued");
+    let bar = fixture.survey(&desktop).containers.into_iter().find(|rect| rect.width == 100.0 && rect.height == 6.0).unwrap();
+    let now = std::time::Instant::now();
+    let strip = |pixels: &[u8]| (bar.x.ceil() as u32..(bar.x + bar.width).floor() as u32)
+        .map(|x| rgb(pixels, Point::new(x as f32, bar.center_y()))).collect::<Vec<_>>();
+    let first = strip(&fixture.pixels_at(&desktop, iced::mouse::Cursor::Unavailable, now));
+    let next = strip(&fixture.pixels_at(&desktop, iced::mouse::Cursor::Unavailable, now + Duration::from_millis(400)));
+    assert!(first.contains(&[149, 212, 241]) && next.contains(&[149, 212, 241]));
+    assert_ne!(first, next, "the active cue moves along the server's own row");
+    let mut evidence = ViewFixture::new(&desktop, window_settings().size).await;
+    evidence.export(&desktop, "install-progress-active-and-queued");
+
+    drop(desktop.update(Message::Progress(Ok(json!({"status":"failed","servers":[
+        {"config_path":local,"server_name":"Fixture search","server_id":"fixture-search","status":"succeeded"},
+        {"config_path":remote,"server_name":"Fixture search","status":"failed","error":{"message":"Fixture preparation failed"}}
+    ]})))));
+    evidence.relayout(&desktop);
+    states(&mut evidence, &desktop, "Installed", "Failed");
+    let survey = evidence.survey(&desktop);
+    assert!(!survey.text.iter().any(|(text, _)| text == "Fixture preparation failed"));
+    let failed = survey.text.iter().find(|(text, _)| text == "Failed").unwrap().1;
+    let info = survey.text.iter().find(|(text, _)| text == "ⓘ").unwrap().1;
+    assert!(info.x >= failed.x + failed.width && (info.center_y() - failed.center_y()).abs() < 2.0,
+        "the detail icon appears just to the right of Failed on the same row");
+    evidence.export(&desktop, "install-progress-installed-and-failed");
+    let before = evidence.pixels(&desktop);
+    let cursor = iced::mouse::Cursor::Available(info.center());
+    let hovered = evidence.pixels_at(&desktop, cursor, std::time::Instant::now());
+    assert!(before.chunks_exact(4).zip(hovered.chunks_exact(4)).filter(|(a, b)| a != b).count() > 500,
+        "hovering over the info icon opens the error tooltip");
+    evidence.export_at(&desktop, "install-failure-details-hover", cursor);
 }
 
 #[tokio::test]
@@ -690,7 +886,7 @@ async fn global_errors_and_notices_do_not_render_below_navigation() {
     desktop.servers=sample_servers();
     desktop.error=Some("The server is restarting or its waiting queue is full.".into());
     desktop.notice="Server folder open request completed.".into();
-    for page in [Page::Servers,Page::Install,Page::Connect] {
+    for page in [Page::Servers,Page::Connect,Page::Workspace] {
         desktop.page=page;
         let mut fixture=ViewFixture::new(&desktop,window_settings().size).await;
         let survey=fixture.survey(&desktop);
@@ -734,26 +930,82 @@ async fn restart_failures_show_beside_the_affected_name_and_clear_on_retry() {
 }
 
 #[tokio::test]
+async fn startup_cards_arrive_in_order_and_settle_in_their_reserved_slots() {
+    let (_directory,mut desktop)=auth_tests::desktop_fixture().await;
+    desktop.servers=json!({"servers":[]});
+    desktop.startup_server_cards=super::StartupServerCards::Waiting;
+    let mut fixture=ViewFixture::new(&desktop,window_settings().size).await;
+    assert!(!fixture.survey(&desktop).text.iter().any(|(name,_)|name.starts_with("No servers installed yet.")),
+        "startup waits for the first list response before displaying an empty-state message");
+
+    let mut records=sample_servers();
+    let mut third=records["servers"][0].clone();
+    third["server_id"]=json!("third");
+    third["name"]=json!("Third server");
+    records["servers"].as_array_mut().unwrap().push(third);
+    let (revision,sequence)=desktop.auth_requests.begin_read();
+    drop(desktop.update(Message::Servers(revision,sequence,desktop.window,Ok(records.clone()))));
+    fixture.relayout(&desktop);
+
+    let survey=fixture.survey(&desktop);
+    let cards=["Filesystem","Search","Third server"].map(|name|{
+        let title=survey.text.iter().find(|(text,_)|text==name).unwrap().1;
+        *survey.containers.iter().find(|bounds|bounds.width>700.0&&bounds.height>90.0&&bounds.height<200.0&&bounds.contains(title.center())).unwrap()
+    });
+
+    let start=std::time::Instant::now();
+    let first=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start);
+    let second=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start+Duration::from_millis(125));
+    let overshoot=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start+Duration::from_millis(155));
+    let third=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start+Duration::from_millis(245));
+    let settled=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start+Duration::from_millis(550));
+    let pixel_width=fixture.screen.width as usize;
+    // Sample undecorated card face away from the labels, controls and rounded corners.
+    let is_face=|pixels:&[u8],x:f32,y:f32|{
+        let offset=(y as usize*pixel_width+x as usize)*4;
+        pixels[offset..offset+3]==[247,246,241]
+    };
+    let visible=|pixels:&[u8]|cards.map(|card|is_face(pixels,card.center_x(),card.center_y()));
+    assert_eq!(visible(&first),[true,false,false],"later cards are still hidden");
+    assert_eq!(visible(&second),[true,true,false],"the second card enters before the third");
+    assert_eq!(visible(&third),[true,true,true],"the third card enters next");
+    assert_eq!(visible(&settled),[true,true,true]);
+    let top=cards[0];
+    assert!(!is_face(&first,top.x+32.0,top.center_y())&&is_face(&settled,top.x+32.0,top.center_y()),"the first card grows from visibly smaller than its slot");
+    assert!(is_face(&overshoot,top.x-6.0,top.center_y())&&!is_face(&settled,top.x-6.0,top.center_y()),"the first card briefly expands beyond its resting size");
+
+    let (revision,sequence)=desktop.auth_requests.begin_read();
+    drop(desktop.update(Message::Servers(revision,sequence,desktop.window,Ok(records))));
+    apply_click(&mut fixture,&mut desktop,"Install MCPs");
+    drop(desktop.update(Message::CloseInstall));
+    fixture.relayout(&desktop);
+    let after_return=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,start+Duration::from_millis(650));
+    assert_eq!(visible(&after_return),[true,true,true],"refresh and returning to Servers do not hide the settled cards");
+
+    let (revision,sequence)=desktop.auth_requests.begin_read();
+    drop(desktop.update(Message::Servers(revision,sequence,desktop.window,Ok(json!({"servers":[]})))));
+    fixture.relayout(&desktop);
+    let empty=fixture.survey(&desktop);
+    let placeholder=empty.text.iter().find(|(name,_)|name.starts_with("No servers installed yet.")).unwrap().1;
+    let panel=empty.containers.iter().find(|bounds|bounds.y>placeholder.y-300.0&&bounds.width>800.0&&bounds.height>400.0&&bounds.contains(placeholder.center())).unwrap();
+    assert!((placeholder.center_x()-panel.center_x()).abs()<1.0&&(placeholder.center_y()-panel.center_y()).abs()<1.0,
+        "the empty server message is centered in the recessed list: {placeholder:?}, {panel:?}");
+    fixture.export(&desktop,"empty-installed-servers");
+
+    if let Some(dir)=std::env::var_os("FETCH_UI_EVIDENCE_DIR"){
+        for (name,pixels) in [("startup-first",first),("startup-second",second),("startup-third",third),("startup-settled",settled)]{
+            std::fs::write(std::path::PathBuf::from(&dir).join(format!("{name}-{}x{}.rgba",fixture.screen.width as u32,fixture.screen.height as u32)),pixels).unwrap();
+        }
+    }
+}
+
+#[tokio::test]
 async fn instant_manual_reload_replays_every_card_and_keeps_brief_spin_feedback() {
     let (_directory,mut desktop)=auth_tests::desktop_fixture().await;
     desktop.servers=sample_servers();
     let mut fixture=ViewFixture::new(&desktop,window_settings().size).await;
     let pixel_width=fixture.screen.width as usize;
-    let first=std::time::Instant::now();
-    let initial=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,first);
-    let early=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,first+std::time::Duration::from_millis(30));
     let survey=fixture.survey(&desktop);
-    for (name,should_change) in [("Filesystem",true),("Search",false)]{
-        let title=survey.text.iter().find(|(text,_)|text==name).unwrap().1;
-        let card=survey.text.iter().filter(|(text,bounds)|text=="Available in every project"&&bounds.y>title.y).min_by(|(_,a),(_,b)|a.y.total_cmp(&b.y)).unwrap().1;
-        let crop=|pixels:&[u8]|{let mut result=vec![];for y in card.y.ceil() as usize..(card.y+card.height).floor() as usize{let x=card.x.ceil() as usize;let end=(card.x+card.width).floor() as usize;result.extend_from_slice(&pixels[(y*pixel_width+x)*4..(y*pixel_width+end)*4]);}result};
-        assert_eq!(crop(&initial)!=crop(&early),should_change,"first-load entry progresses from the first row downward");
-    }
-    if let Some(dir)=std::env::var_os("FETCH_UI_EVIDENCE_DIR"){
-        std::fs::write(std::path::PathBuf::from(&dir).join(format!("first-load-start-{}x{}.rgba",fixture.screen.width as u32,fixture.screen.height as u32)),initial).unwrap();
-        std::fs::write(std::path::PathBuf::from(&dir).join(format!("first-load-stagger-{}x{}.rgba",fixture.screen.width as u32,fixture.screen.height as u32)),early).unwrap();
-    }
-
     let heading=survey.text.iter().find(|(text,_)|text=="Installed servers").unwrap().1;
     let action=survey.containers.iter().find(|rect|(rect.width-44.0).abs()<0.1&&(rect.height-44.0).abs()<0.1&&(rect.center_y()-heading.center_y()).abs()<2.0).unwrap().center();
     let mut messages=fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)),action);
@@ -921,11 +1173,17 @@ async fn connector_setup_popup_shows_requested_scopes_and_requires_explicit_choi
 #[tokio::test]
 async fn install_refresh_shares_request_spin_minimum_feedback_and_retry_behavior() {
     let (_directory,mut desktop)=auth_tests::desktop_fixture().await;
-    desktop.page=Page::Install;
     let mut fixture=ViewFixture::new(&desktop,window_settings().size).await;
-    let action=fixture.survey(&desktop).containers.iter().find(|rect|
-        (rect.width-44.0).abs()<0.1&&(rect.height-44.0).abs()<0.1
-    ).unwrap().center();
+    apply_click(&mut fixture, &mut desktop, "Install MCPs");
+    let refresh_control = |fixture: &mut ViewFixture, desktop: &Desktop| {
+        let survey = fixture.survey(desktop);
+        let choose = survey.text.iter().find(|(label, _)| label == "Choose file or folder…").unwrap().1;
+        survey.containers.iter().find(|rect| {
+            (rect.width - 44.0).abs() < 0.1 && (rect.height - 44.0).abs() < 0.1
+                && (rect.center_y() - choose.center_y()).abs() < 2.0 && rect.x < choose.x
+        }).unwrap().center()
+    };
+    let action = refresh_control(&mut fixture, &desktop);
     let now=std::time::Instant::now();let cursor=iced::mouse::Cursor::Available(action);
     fixture.pixels_at(&desktop,cursor,now);
     let first=fixture.pixels_at(&desktop,cursor,now+Duration::from_millis(200));
@@ -936,19 +1194,20 @@ async fn install_refresh_shares_request_spin_minimum_feedback_and_retry_behavior
     desktop.config_path="/fixture/chosen/.codex".into();
     fixture.relayout(&desktop);
     for slow_failure in [false,true] {
+        let action = refresh_control(&mut fixture, &desktop);
         let mut messages=fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)),action);
         messages.extend(fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonReleased(iced::mouse::Button::Left)),action));
         assert!(messages.iter().any(|message|matches!(message,Message::Discover)),"click uses the real discovery action");
         for message in messages { drop(desktop.update(message)); }
         let sequence=desktop.discovery_refresh.pending.expect("discovery starts its own indicator");
         assert!(desktop.busy);
-        assert!(desktop.discovery_started,"discovery still opens its existing results popup");
-        drop(desktop.update(Message::CloseDiscovery));
+        assert!(desktop.discovery_started && desktop.install_popup_open,"discovery results appear inside the same modal");
         fixture.relayout(&desktop);
         let now=std::time::Instant::now();
         let first=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,now);
         let next=fixture.pixels_at(&desktop,iced::mouse::Cursor::Unavailable,now+Duration::from_millis(200));
         assert_ne!(first,next,"the pending arrow spins without hover, just like Servers");
+        let action = refresh_control(&mut fixture, &desktop);
         let mut repeated=fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)),action);
         repeated.extend(fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonReleased(iced::mouse::Button::Left)),action));
         assert!(!repeated.iter().any(|message|matches!(message,Message::Discover)),"a running refresh cannot submit twice");
@@ -956,7 +1215,7 @@ async fn install_refresh_shares_request_spin_minimum_feedback_and_retry_behavior
             drop(desktop.update(Message::DiscoveryFeedbackDone(sequence)));
             assert!(desktop.discovery_refresh.running(),"a slow read outlasts minimum feedback");
             drop(desktop.update(Message::Discovery(Err("Fixture source could not be read".into()))));
-            assert_eq!(desktop.error.as_deref(),Some("Fixture source could not be read"));
+            assert_eq!(desktop.install_error.as_deref(),Some("Fixture source could not be read"));
         } else {
             let result=json!({"configs":[],"next_steps":[]});
             drop(desktop.update(Message::Discovery(Ok(result.clone()))));
@@ -998,6 +1257,12 @@ async fn inline_app_keys_open_and_reopen_dismissible_approval_with_rounded_shadi
         let heading=survey.text.iter().find(|(text,_)|text==label).unwrap().1;
         let key=survey.containers.iter().find(|rect|(rect.width-22.0).abs()<0.1&&(rect.height-22.0).abs()<0.1&&(rect.center_y()-heading.center_y()).abs()<2.0).unwrap().center();
         assert!(key.x>heading.x+heading.width,"authentication is inline to the right of the app heading");
+        let now = std::time::Instant::now();
+        let idle = fixture.pixels_at(&desktop, iced::mouse::Cursor::Unavailable, now);
+        let cursor = iced::mouse::Cursor::Available(key);
+        fixture.pixels_at(&desktop, cursor, now);
+        let hovered = fixture.pixels_at(&desktop, cursor, now + Duration::from_millis(150));
+        assert_gray_halo(halo_darkening(&idle, &hovered, size.width as usize, Point::new(key.x, key.y - 15.0)));
         fixture.export(&desktop,"connect-inline-auth");
         let mut messages=fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)),key);
         messages.extend(fixture.event(&desktop,iced::Event::Mouse(iced::mouse::Event::ButtonReleased(iced::mouse::Button::Left)),key));
@@ -1042,7 +1307,8 @@ async fn inline_app_keys_open_and_reopen_dismissible_approval_with_rounded_shadi
 #[tokio::test]
 async fn escape_hides_only_the_top_pending_popup_without_canceling_approval_or_discovery(){
     let (_directory,mut desktop)=auth_tests::desktop_fixture().await;
-    desktop.page=Page::Install;desktop.config_path="/fixture/config.json".into();
+    drop(desktop.update(Message::OpenInstall));
+    desktop.config_path="/fixture/config.json".into();
     drop(desktop.update(Message::Discover));
     let sequence=desktop.discovery_refresh.pending.expect("discovery request is pending");
     assert!(desktop.discovery_started&&desktop.busy);
@@ -1054,14 +1320,14 @@ async fn escape_hides_only_the_top_pending_popup_without_canceling_approval_or_d
 
     press_escape(&mut fixture,&mut desktop,Point::new(400.0,350.0));
     assert!(!desktop.connector.popup_visible(),"Escape hides the top approval popup");
-    assert!(desktop.discovery_started&&desktop.busy,"the lower installation popup and pending discovery remain");
+    assert!(desktop.install_popup_open&&desktop.busy,"the lower installation popup and pending discovery remain");
     assert_eq!(desktop.discovery_refresh.pending,Some(sequence));
     assert!(!desktop.connector.deciding,"Escape does not approve or deny the request");
     drop(desktop.update(Message::Connector(connector_setup::Event::Requests(Ok(json!({"requests":[request.clone()]}))))));
     assert!(!desktop.connector.popup_visible(),"polling preserves the person's dismissal");
 
     press_escape(&mut fixture,&mut desktop,Point::new(400.0,350.0));
-    assert!(!desktop.discovery_started,"the next Escape hides the installation popup");
+    assert!(!desktop.install_popup_open,"the next Escape hides the installation popup");
     assert!(desktop.busy&&desktop.discovery_refresh.pending==Some(sequence),"hiding does not cancel the ongoing discovery");
     let task=desktop.update(Message::Connector(connector_setup::Event::Start("codex")));
     assert_eq!(task.units(),0,"the same pending approval reopens without creating another request");drop(task);

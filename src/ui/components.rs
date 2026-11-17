@@ -16,11 +16,11 @@ pub(super) fn checkbox<'a,M:Clone+'a>(selected:bool)->Checkbox<'a,M>{widget::che
 pub(super) fn server_toggle<'a,M:Clone+'a>(enabled:bool,action:Option<impl Fn(bool)->M+'a>)->Container<'a,M>{
     widget::container(widget::toggler(enabled).size(22).style(theme::server_toggle).on_toggle_maybe(action)).width(44).height(22)
 }
-pub(super) fn installed_checkbox<'a,M:Clone+'a>()->Checkbox<'a,M>{checkbox(true).style(theme::installed_checkbox)}
+pub(super) fn install_checkbox<'a,M:Clone+'a>(selected:bool)->Checkbox<'a,M>{checkbox(selected).style(theme::install_checkbox)}
 pub(super) fn tab<'a,M:Clone+'a>(label:&str,selected:bool,action:Option<M>)->Button<'a,M>{button(text(label.to_owned()).size(14).font(theme::MEDIUM_FONT).line_height(iced::widget::text::LineHeight::Absolute(20.0.into()))).style(if selected{theme::selected_button}else{theme::button}).on_press_maybe(action)}
 pub(super) fn output_tab<'a,M:Clone+'a>(label:&str,selected:bool,action:Option<M>)->Button<'a,M>{button(text(label.to_owned()).size(14).font(theme::MEDIUM_FONT).line_height(iced::widget::text::LineHeight::Absolute(20.0.into()))).style(move|_,status|theme::control(Color::from_rgb8(227,230,233),selected,status)).on_press_maybe(action)}
-pub(super) fn navigation<'a,M:Clone+'a>(actions:[M;4],active:usize)->Container<'a,M>{
-    let labels=["Servers","Install MCPs","Connect apps","Workspace"];
+pub(super) fn navigation<'a,M:Clone+'a>(actions:[M;3],active:usize)->Container<'a,M>{
+    let labels=["Servers","Connect apps","Workspace"];
     let mut content=row![text("Fetch").size(theme::APP_TITLE).font(theme::SEMIBOLD_FONT).line_height(iced::widget::text::LineHeight::Absolute(40.0.into()))].spacing(theme::NAVIGATION_GAP).align_y(iced::Center);
     for (index,action) in actions.into_iter().enumerate(){
         content=content.push(button(text(labels[index]).size(14).font(if active==index{theme::BOLD_FONT}else{theme::MEDIUM_FONT}).line_height(iced::widget::text::LineHeight::Absolute(20.0.into()))).on_press(action).style(move|_,status|{
@@ -48,16 +48,50 @@ pub(super) fn conversation_message<'a,M:'a>(content:impl Into<Element<'a,M>>,use
 }
 pub(super) fn raised_with_radius<'a,M:'a>(content:impl Into<Element<'a,M>>,radius:f32)->Container<'a,M>{widget::container(surface::wrap(content,theme::SURFACE,radius,false))}
 pub(super) fn input_surface<'a,M:'a>(content:impl Into<Element<'a,M>>)->Container<'a,M>{widget::container(surface::wrap(content,theme::CODE_BACKGROUND,12.0,true))}
-/// Native file text shares typography, padding and scrolling in edit and preview.
-pub(super) fn file_content<'a,M:Clone+'a>(content:&'a text_editor::Content,on_action:impl Fn(text_editor::Action)->M+'a,undo:Option<M>)->Container<'a,M>{
-    input_surface(surface::contain_scroll(text_editor(content).font(theme::MONO_FONT).size(12).padding(theme::INPUT_PADDING).style(theme::text_editor).height(240).key_binding(move|press|{
+fn file_text_editor<'a, M: Clone + 'a>(
+    content: &'a text_editor::Content,
+    on_action: impl Fn(text_editor::Action) -> M + 'a,
+) -> text_editor::TextEditor<'a, iced::advanced::text::highlighter::PlainText, M> {
+    text_editor(content)
+        .font(theme::MONO_FONT)
+        .size(12)
+        .padding(theme::INPUT_PADDING)
+        .style(theme::text_editor)
+        .on_action(on_action)
+}
+pub(super) fn file_content<'a,M:Clone+'a>(content:&'a text_editor::Content,on_action:impl Fn(text_editor::Action)->M+'a,undo:Option<M>,id:Option<&'static str>)->Container<'a,M>{
+    let editor = file_text_editor(content, on_action).height(240);
+    let editor = match id {
+        Some(id) => editor.id(id),
+        None => editor,
+    };
+    input_surface(surface::contain_scroll(editor.key_binding(move|press|{
         if let Some(undo)=undo.as_ref(){
             if matches!(press.status,text_editor::Status::Focused{..})&&press.key.to_latin(press.physical_key)==Some('z')&&(press.modifiers.command()||press.modifiers.control())&&!press.modifiers.shift()&&!press.modifiers.alt(){return Some(text_editor::Binding::Custom(undo.clone()));}
         }
         text_editor::Binding::from_key_press(press)
-    }).on_action(on_action))).width(iced::Fill)
+    }))).width(iced::Fill)
+}
+pub(super) fn file_preview<'a, M: Clone + 'a>(
+    content: &'a text_editor::Content,
+    on_action: impl Fn(text_editor::Action) -> M + 'a,
+) -> Container<'a, M> {
+    // The surrounding scroll area supplies the full text height. The editor
+    // can still select text, while wheel input scrolls the preview as a whole.
+    input_surface(
+        file_text_editor(content, on_action)
+            .height(iced::Shrink)
+            .min_height(240.0 - 2.0 * theme::INPUT_PADDING),
+    )
+    .width(iced::Fill)
 }
 pub(super) fn recessed<'a,M:'a>(content:impl Into<Element<'a,M>>)->Container<'a,M>{widget::container(surface::wrap(content,theme::RECESSED,24.0,true))}
+pub(super) fn empty_panel_message<'a, M: 'a>(message: &'a str) -> Container<'a, M> {
+    widget::container(text(message).size(14).color(theme::MUTED).center())
+        .padding(16)
+        .center_x(iced::Fill)
+        .center_y(iced::Fill)
+}
 pub(super) fn read_only<'a,M:'a>(value:String,height:f32)->Container<'a,M>{
     widget::container(surface::wrap(widget::container(text(value).size(12).width(iced::Fill).wrapping(widget::text::Wrapping::Glyph)).padding(8).width(iced::Fill).height(height),Color::from_rgb8(234,245,251),12.0,false)).width(iced::Fill)
 }
@@ -74,24 +108,65 @@ pub(super) fn modal<'a,M:Clone+'a>(content:impl Into<Element<'a,M>>,dismiss:M)->
     let dialog=widget::container(widget::opaque(content)).padding(iced::Padding{top:48.0,right:32.0,bottom:32.0,left:32.0}).center_x(iced::Fill).center_y(iced::Fill);
     widget::opaque(widget::stack![shade,dialog]).into()
 }
-/// Dim a pending list while keeping its existing rows in place.
+/// Show the loading status over the dimmed panel while retaining its content.
 pub(super) fn loading_panel<'a,M:Clone+'a>(content:impl Into<Element<'a,M>>,loading:bool)->Element<'a,M>{
     let mut layers=widget::stack![content.into()];
-    if loading{layers=layers.push(widget::opaque(widget::container(widget::Space::new().width(iced::Fill).height(iced::Fill)).style(|_|widget::container::Style{background:Some(Color::from_rgb8(190,190,188).scale_alpha(0.30).into()),border:iced::Border{radius:24.0.into(),..Default::default()},..Default::default()})));}
+    if loading {
+        let overlay = empty_panel_message("Loading...").style(|_| widget::container::Style {
+            background: Some(Color::from_rgb8(190, 190, 188).scale_alpha(0.30).into()),
+            border: iced::Border { radius: 24.0.into(), ..Default::default() },
+            ..Default::default()
+        });
+        layers = layers.push(widget::opaque(overlay));
+    }
     layers.into()
 }
-pub(super) fn entry_card<'a,M:Clone+'a>(label:String,detail:String,open:Option<M>,copy:Option<M>,primary:bool,reveal:Option<M>,copy_path:Option<M>)->Container<'a,M>{
+
+#[derive(Clone, Copy)]
+pub(super) enum InstallRowStatus {
+    Pending,
+    Installing,
+    Succeeded,
+    Failed,
+}
+
+pub(super) fn install_row_status<'a, M: 'a>(status: InstallRowStatus, detail: Option<&'a str>) -> Element<'a, M> {
+    use surface::ActivityBar;
+    let (bar, label) = match status {
+        InstallRowStatus::Pending => (ActivityBar::Waiting, "Queued"),
+        InstallRowStatus::Installing => (ActivityBar::Moving, "Installing"),
+        InstallRowStatus::Succeeded => (ActivityBar::Complete(theme::SUCCESS), "Installed"),
+        InstallRowStatus::Failed => (ActivityBar::Complete(theme::DANGER), "Failed"),
+    };
+    let mut status_line = row![text(label).font(theme::BODY_FONT).size(theme::SMALL_TEXT).color(theme::MUTED)]
+        .spacing(6).align_y(iced::Center);
+    if let Some(detail) = detail {
+        status_line = status_line.push(error_details(detail));
+    }
+    row![Element::new(bar), widget::container(status_line).width(80)]
+        .spacing(8).align_y(iced::Center).into()
+}
+
+pub(super) fn entry_card<'a,M:Clone+'a>(label:String,detail:String,open:Option<M>,actions:Option<Element<'a,M>>,primary:bool,reveal:Option<M>,copy_path:Option<M>)->Container<'a,M>{
     let action=if primary{primary_button(label)}else{text_button(label)};
-    let mut actions=row![action.on_press_maybe(open).width(iced::Fill)].spacing(12).align_y(iced::Center);
-    if let Some(copy)=copy{actions=actions.push(copy_button(copy,false));}
+    let mut controls=row![action.on_press_maybe(open).width(iced::Fill)].spacing(12).align_y(iced::Center);
+    if let Some(actions)=actions{controls=controls.push(actions);}
     let detail:Element<'a,M>=if let Some(copy_path)=copy_path{file_path(detail,reveal,copy_path)}else{text(detail).size(11).color(theme::MUTED).into()};
-    raised(widget::container(column![actions,detail].spacing(6)).padding(14).width(iced::Fill))
+    raised(widget::container(column![controls,detail].spacing(6)).padding(14).width(iced::Fill))
 }
 /// A compact raised Finder-face control; callers invoke the authorized file API.
 pub(super) fn finder_button<'a,M:Clone+'a>(action:Option<M>)->Element<'a,M>{
-    const FINDER:&[u8]=br#"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M13 3l-2 10h4l-1 8M7 8v2m10-2v2M7 16c3 2 7 2 10-1'/></g></svg>"#;
-    let glyph=svg(svg::Handle::from_memory(FINDER)).width(17).height(17).style(|_,_|svg::Style{color:Some(theme::ACCENT)});
-    Button::new(widget::container(glyph).center_x(28).center_y(28)).padding(0).style(theme::button).on_press_maybe(action).into()
+    const FINDER: &[u8] = br#"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>
+        <mask id='face'>
+            <rect width='24' height='24' fill='white'/>
+            <circle cx='7.3' cy='9' r='1.4'/>
+            <circle cx='16.7' cy='9' r='1.4'/>
+            <path d='M13 2.5l-2 10h4l-1.5 9M7 16c3 2 7 2 10-1' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/>
+        </mask>
+        <rect x='2.5' y='2.5' width='19' height='19' rx='3' fill='white' mask='url(#face)'/>
+    </svg>"#;
+    let glyph=svg(svg::Handle::from_memory(FINDER)).width(17).height(17);
+    Button::new(widget::container(glyph).center_x(28).center_y(28)).padding(0).style(theme::install_button).on_press_maybe(action).into()
 }
 pub(super) fn file_path<'a,M:Clone+'a>(path:String,reveal:Option<M>,copy:M)->Element<'a,M>{
     widget::responsive(move|size|{
@@ -103,6 +178,30 @@ pub(super) fn file_path<'a,M:Clone+'a>(path:String,reveal:Option<M>,copy:M)->Ele
 }
 pub(super) fn message<'a>(content:impl widget::text::IntoFragment<'a>)->Text<'a>{text(content).size(14)}
 pub(super) fn error_message<'a,M:'a>(content:impl widget::text::IntoFragment<'a>)->Container<'a,M>{widget::container(message(content).color(theme::DANGER)).padding(theme::MESSAGE_PADDING)}
+pub(super) fn compact_error<'a, M: 'a>(detail: String) -> Row<'a, M> {
+    row![text("error!").font(theme::BODY_FONT).size(12).color(theme::DANGER), error_details(detail)]
+        .spacing(4).align_y(iced::Center)
+}
+fn error_details<'a, M: 'a>(detail: impl widget::text::IntoFragment<'a>) -> Element<'a, M> {
+    let info = text("ⓘ").font(theme::BODY_FONT).size(13).color(theme::MUTED.scale_alpha(0.62));
+    let detail = widget::container(
+        text(detail).font(theme::BODY_FONT).size(11).line_height(iced::Pixels(14.0))
+            .color(theme::INK).wrapping(widget::text::Wrapping::WordOrGlyph),
+    ).max_width(620);
+    widget::tooltip(info, detail, widget::tooltip::Position::Top)
+        .gap(6)
+        .padding(9)
+        .style(|_| widget::container::Style {
+            background: Some(theme::SURFACE.into()),
+            border: iced::Border { radius: 10.0.into(), width: 1.0, color: theme::RECESSED },
+            shadow: iced::Shadow {
+                color: Color::BLACK.scale_alpha(0.2),
+                offset: iced::Vector::new(0.0, 4.0),
+                blur_radius: 14.0,
+            },
+            ..Default::default()
+        }).into()
+}
 pub(super) fn console_line<'a>(content:impl widget::text::IntoFragment<'a>)->Text<'a>{text(content).font(theme::MONO_FONT).size(theme::CONSOLE_TEXT_SIZE)}
 
 #[derive(Clone,Copy)]
@@ -135,16 +234,58 @@ fn icon_button_with_activity<'a,M:Clone+'a>(kind:Icon,action:Option<M>,running:b
     let glyph=widget::container(if matches!(kind,Icon::Refresh){surface::refresh_glyph(action.is_some(),running)}else{icon_at_size(kind,(size!=44.0).then_some(20.0*size/44.0))}).center_x(size).center_y(size);
     let glyph=if matches!(kind,Icon::Close){surface::bold_on_hover(glyph)}else{glyph.into()};
     let control=Button::new(glyph);
-    let control=if matches!(kind,Icon::Refresh|Icon::Key){control.strong_hover()}else{control};
+    let control = match kind {
+        Icon::Refresh => control.hover_glow(surface::Effect::RefreshGlow),
+        Icon::Key => control.hover_glow(surface::Effect::AuthGlow),
+        _ => control,
+    };
     control.padding(0).width(size).height(size).on_press_maybe(action).style(move|_,status|{
         let mut style=theme::control(color,false,status);style.border.radius=99.0.into();style.text_color=Color::WHITE;
         if matches!(kind,Icon::Close)&&status==widget::button::Status::Disabled{style.background=Some(theme::convex(theme::DANGER,false));}
         style
     })
 }
+const CLIPBOARD_BUTTON_SIZE: f32 = 40.0;
+const PASTE_GLYPH: &[u8] = br#"<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'>
+    <rect x='5' y='5' width='14' height='17' rx='2' fill='none' stroke='currentColor' stroke-width='2'/>
+    <rect x='8' y='2' width='8' height='6' rx='2' fill='currentColor'/>
+    <path d='M9 13h6m-6 4h6' stroke='currentColor' stroke-width='2' stroke-linecap='round'/>
+</svg>"#;
+fn clipboard_glyph<'a, M: 'a>(glyph: &'static [u8], dark: bool) -> Container<'a, M> {
+    let glyph=svg(svg::Handle::from_memory(glyph)).width(iced::Shrink).height(iced::Shrink).style(move|_,status|svg::Style{color:Some(if dark{if status==svg::Status::Hovered{Color::WHITE}else{Color::from_rgb8(222,226,232)}}else if status==svg::Status::Hovered{Color::from_rgb8(194,232,250)}else{theme::ACCENT})});
+    widget::container(glyph).center_x(CLIPBOARD_BUTTON_SIZE).center_y(CLIPBOARD_BUTTON_SIZE)
+}
+fn clipboard_button<'a, M: Clone + 'a>(glyph: &'static [u8], action: Option<M>, dark: bool) -> Button<'a, M> {
+    Button::new(clipboard_glyph(glyph, dark)).padding(0).style(if dark{theme::transparent}else{theme::button}).on_press_maybe(action)
+}
 pub(super) fn copy_button<'a,M:Clone+'a>(copy:M,dark:bool)->Element<'a,M>{
-    let glyph=svg(svg::Handle::from_memory(asset(Icon::Copy))).width(iced::Shrink).height(iced::Shrink).style(move|_,status|svg::Style{color:Some(if dark{if status==svg::Status::Hovered{Color::WHITE}else{Color::from_rgb8(222,226,232)}}else if status==svg::Status::Hovered{Color::from_rgb8(194,232,250)}else{theme::ACCENT})});
-    super::copy_feedback::wrap(Button::new(widget::container(glyph).center_x(40).center_y(40)).padding(0).style(if dark{theme::transparent}else{theme::button}).on_press(copy),dark)
+    super::copy_feedback::wrap(clipboard_button(asset(Icon::Copy), Some(copy), dark),dark)
+}
+fn toolbar_clipboard_button<'a, M: Clone + 'a>(glyph: &'static [u8], action: Option<M>) -> Element<'a, M> {
+    let control = widget::button(clipboard_glyph(glyph, false))
+        .padding(0).style(theme::transparent).on_press_maybe(action);
+    // Keep the same face when a press starts an asynchronous clipboard action.
+    // A second press while disabled must not start dragging the window.
+    widget::opaque(surface::raised_control(control)).into()
+}
+pub(super) fn clipboard_buttons<'a, M: Clone + 'a>(paste: Option<M>, copy: Option<M>) -> Row<'a, M> {
+    row![toolbar_clipboard_button(PASTE_GLYPH, paste), toolbar_clipboard_button(asset(Icon::Copy), copy)]
+}
+pub(super) fn agent_card_actions<'a, M: Clone + 'a>(
+    copy: Option<M>,
+    paste: Option<M>,
+    delete: Option<M>,
+) -> Element<'a, M> {
+    let delete = widget::opaque(icon_button_with_activity(Icon::Close, delete, false, CLIPBOARD_BUTTON_SIZE));
+    row![
+        toolbar_clipboard_button(asset(Icon::Copy), copy),
+        toolbar_clipboard_button(PASTE_GLYPH, paste),
+        delete,
+    ].spacing(theme::CONTROL_GAP).align_y(iced::Center).into()
+}
+pub(super) fn paste_and_copy<'a, M: Clone + 'a>(paste: Option<M>, copy: M) -> Element<'a, M> {
+    let buttons = row![clipboard_button(PASTE_GLYPH, paste, false), clipboard_button(asset(Icon::Copy), Some(copy), false)].spacing(12);
+    super::copy_feedback::wrap_trailing_copy(buttons, CLIPBOARD_BUTTON_SIZE)
 }
 /// A blue Copy glyph with a transparent hit area and no raised face.
 pub(super) fn frameless_copy<'a,M:Clone+'a>(copy:M)->Element<'a,M>{

@@ -1,0 +1,10 @@
+running 7 tests
+test ui::neumorphic_tests::instant_manual_reload_replays_every_card_and_keeps_brief_spin_feedback ... ok
+test ui::neumorphic_tests::startup_cards_arrive_in_order_and_settle_in_their_reserved_slots ... ok
+test ui::workspace_tests::continuous_outer_scroll_does_not_transfer_to_editor_until_a_new_gesture ... ok
+test ui::workspace_tests::escape_closes_focused_workspace_popups_and_preserves_drafts_and_cached_history ... ok
+test ui::workspace_tests::session_list_failure_stays_in_sessions_while_codex_instructions_remain_editable ... ok
+test ui::workspace_tests::subagent_preview_wheel_reaches_the_end_without_moving_the_header_or_path ... ok
+test ui::workspace_tests::subagent_rows_open_rendered_popups_and_file_paths_offer_finder ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 4.10s

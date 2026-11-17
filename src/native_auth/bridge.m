@@ -177,12 +177,19 @@ static _Atomic int fetch_app_action = 0;
 static FetchMenuActions *fetch_menu_actions = nil;
 // The same embedded artwork is used by the unbundled development executable.
 void fetch_set_app_icon(const uint8_t *bytes, size_t length) {
-    NSData *data = [NSData dataWithBytes:bytes length:length];
-    void (^install)(void) = ^{
-        NSImage *icon = [[NSImage alloc] initWithData:data];
-        if (icon) NSApp.applicationIconImage = icon;
-    };
-    if ([NSThread isMainThread]) install(); else dispatch_async(dispatch_get_main_queue(), install);
+    @autoreleasepool {
+        NSData *data = [NSData dataWithBytes:bytes length:length];
+        void (^install)(void) = ^{
+            @autoreleasepool {
+                NSImage *icon = [[NSImage alloc] initWithData:data];
+                if (!icon) return;
+                NSApplication *application = [NSApplication sharedApplication];
+                application.applicationIconImage = icon;
+                [application.dockTile display];
+            }
+        };
+        if ([NSThread isMainThread]) install(); else dispatch_async(dispatch_get_main_queue(), install);
+    }
 }
 void fetch_install_app_menu(void) {
     void (^install)(void) = ^{

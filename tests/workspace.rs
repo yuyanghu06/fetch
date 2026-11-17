@@ -300,12 +300,49 @@ async fn native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_ses
 
     let converted = api_value(&app, api_request("POST", "/api/v1/workspace/agents/convert", Some(json!({
         "source_app":"claude","target_app":"codex","content":"---\nname: reviewer\ndescription: Reviews code\nmodel: fixture-source-model\n---\nReview carefully.\n",
+        "fallback_name":"different-card-label",
+        "fallback_description":"Registration text should not replace this definition's description",
         "target_model":"fixture-destination-model"
     })), Some(capability)), StatusCode::OK).await;
     let config: toml::Value = toml::from_str(converted["content"].as_str().unwrap()).unwrap();
+    assert_eq!(config["name"].as_str(), Some("reviewer"));
+    assert_eq!(config["description"].as_str(), Some("Reviews code"));
     assert_eq!(config["model"].as_str(), Some("fixture-destination-model"));
     assert_eq!(config["developer_instructions"].as_str(), Some("Review carefully.\n"));
     assert!(!fixture.project.join(".codex/agents/reviewer.toml").exists());
+
+    let legacy = "developer_instructions = 'Make the requested change.'\n";
+    let converted = api_value(&app, api_request("POST", "/api/v1/workspace/agents/convert", Some(json!({
+        "source_app":"codex","target_app":"claude","content":legacy,"fallback_name":"coder"
+    })), Some(capability)), StatusCode::OK).await;
+    assert_eq!(converted["name"], "coder");
+    assert_eq!(converted["source_content"], legacy);
+    let issues = converted["issues"].as_array().unwrap();
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0]["field"], "description");
+
+    let legacy_path = fixture.project.join(".codex/agents/coder.toml");
+    let legacy = "sandbox_mode = 'read-only'\ndeveloper_instructions = 'Inspect the requested change.'\n";
+    fixture.write(&legacy_path, legacy);
+    fixture.write(&fixture.project.join(".codex/config.toml"),
+        "[agents.coder]\nconfig_file = 'agents/coder.toml'\ndescription = 'Inspect project code'\n");
+    fixture.write(&fixture.service.codex_root.join("config.toml"),
+        "[agents.coder]\nconfig_file = 'agents/coder.toml'\ndescription = 'Global registration'\n");
+    let legacy_uri = url("/api/v1/workspace/file", &[("folder_path", fixture.folder()), ("file_path", legacy_path.to_str().unwrap())]);
+    let read = api_value(&app, api_request("GET", &legacy_uri, None, Some(capability)), StatusCode::OK).await;
+    assert_eq!(read["content"], legacy);
+    assert_eq!(read["registered_description"], "Inspect project code");
+    let converted = api_value(&app, api_request("POST", "/api/v1/workspace/agents/convert", Some(json!({
+        "source_app":"codex","target_app":"claude","content":read["content"],"fallback_name":"coder",
+        "fallback_description":read["registered_description"]
+    })), Some(capability)), StatusCode::OK).await;
+    let (header, _) = converted["content"].as_str().unwrap().strip_prefix("---\n").unwrap().split_once("\n---\n").unwrap();
+    let fields: Value = serde_saphyr::from_str(header).unwrap();
+    assert_eq!(fields["description"], "Inspect project code");
+    assert_eq!(fields["permissionMode"], "plan");
+    assert!(fields.get("sandbox_mode").is_none());
+    assert!(converted["issues"].as_array().unwrap().is_empty());
+    assert_eq!(fs::read_to_string(&legacy_path).unwrap(), legacy);
 
     let names = api_value(&app, api_request("GET", &url("/api/v1/workspace/sessions", &[("folder_path", fixture.folder()), ("app", "codex")]), None, Some(capability)), StatusCode::OK).await;
     assert_eq!(names["sessions"][0]["name"], "API fixture session");
@@ -319,6 +356,73 @@ async fn native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_ses
     assert_eq!(models["models"][0]["slug"], "fixture-dynamic-model-from-installed-cache");
     assert!(!models.to_string().contains("fixture-private-root-identity"));
     assert_eq!(serde_json::from_slice::<Value>(&fs::read(&cache_path).unwrap()).unwrap(), model_cache);
+}
+
+#[tokio::test]
+async fn creating_a_subagent_refuses_to_replace_an_existing_definition() {
+    let fixture = Fixture::new();
+    let folder = fixture.project.join(".codex/agents");
+    let existing = folder.join("reviewer.toml");
+    let renamed = folder.join("project-reviewer.toml");
+    let original = "name = \"reviewer\"\ndescription = \"Existing agent\"\ndeveloper_instructions = \"Keep the original.\"\n";
+    let draft = "name = \"reviewer\"\ndescription = \"New agent\"\ndeveloper_instructions = \"Read the project instructions.\"\n";
+    fixture.write(&existing, original);
+    let (app, native) = api_fixture(&fixture);
+    let session = native.open_settings();
+    let request = |path: &Path, content: &str| api_request(
+        "PUT",
+        "/api/v1/workspace/file",
+        Some(json!({"folder_path":fixture.folder(),"file_path":path,"content":content})),
+        Some(session.header_value()),
+    );
+    let create_only = |path: &Path| {
+        let mut request = request(path, draft);
+        request.headers_mut().insert(header::IF_NONE_MATCH, header::HeaderValue::from_static("*"));
+        request
+    };
+
+    let conflict = api_value(&app, create_only(&existing), StatusCode::PRECONDITION_FAILED).await;
+    assert_eq!(conflict["error"]["code"], "WORKSPACE_FILE_ALREADY_EXISTS");
+    assert_eq!(conflict["error"]["message"], "A subagent with this filename already exists. Choose another name.");
+    assert_eq!(fs::read_to_string(&existing).unwrap(), original);
+
+    let saved = api_value(&app, create_only(&renamed), StatusCode::OK).await;
+    assert_eq!(saved["saved"], true);
+    assert_eq!(fs::read_to_string(&renamed).unwrap(), draft);
+    assert_eq!(fs::read_to_string(&existing).unwrap(), original);
+    assert_eq!(fs::read_dir(&folder).unwrap().count(), 2, "only the two definitions remain");
+
+    // A save from Edit still uses the same route without a creation condition.
+    api_value(&app, request(&existing, draft), StatusCode::OK).await;
+    assert_eq!(fs::read_to_string(&existing).unwrap(), draft);
+}
+
+#[tokio::test]
+async fn subagent_actions_protect_the_shared_codex_config_registered_as_a_definition() {
+    let fixture = Fixture::new();
+    let config = fixture.project.join(".codex/config.toml");
+    let content = "[agents.shared]\nconfig_file = \"config.toml\"\ndescription = \"Shared settings\"\n";
+    fixture.write(&config, content);
+    let (app, native) = api_fixture(&fixture);
+    let session = native.open_settings();
+    let uri = url("/api/v1/workspace/file", &[
+        ("folder_path", fixture.folder()),
+        ("file_path", config.to_str().unwrap()),
+    ]);
+    let denied = api_value(
+        &app, api_request("DELETE", &uri, None, Some(session.header_value())), StatusCode::FORBIDDEN,
+    ).await;
+    assert_eq!(denied["error"]["code"], "WORKSPACE_PATH_FORBIDDEN");
+    let replacement = json!({
+        "folder_path": fixture.folder(),
+        "file_path": config,
+        "content": "name = 'replacement'\ndescription = 'Replacement'\n",
+    });
+    let denied = api_value(&app, api_request(
+        "PUT", "/api/v1/workspace/file", Some(replacement), Some(session.header_value()),
+    ), StatusCode::FORBIDDEN).await;
+    assert_eq!(denied["error"]["code"], "WORKSPACE_PATH_FORBIDDEN");
+    assert_eq!(fs::read_to_string(&config).unwrap(), content);
 }
 
 #[tokio::test]
@@ -426,6 +530,7 @@ async fn ordinary_bearer_and_background_requests_cannot_access_workspace_files_h
         ("GET", url("/api/v1/workspace", &[("folder_path", fixture.folder())]), None),
         ("GET", url("/api/v1/workspace/file", &[("folder_path", fixture.folder()), ("file_path", instruction.to_str().unwrap())]), None),
         ("PUT", "/api/v1/workspace/file".into(), Some(json!({"folder_path":fixture.folder(),"file_path":instruction,"content":"must not write"}))),
+        ("DELETE", url("/api/v1/workspace/file", &[("folder_path", fixture.folder()), ("file_path", instruction.to_str().unwrap())]), None),
         ("POST", "/api/v1/workspace/agents/convert".into(), Some(json!({"source_app":"claude","target_app":"codex","content":"must not parse"}))),
         ("GET", url("/api/v1/workspace/sessions", &[("folder_path", fixture.folder())]), None),
         ("GET", url("/api/v1/workspace/sessions/read", &[("file_path", log.to_str().unwrap())]), None),

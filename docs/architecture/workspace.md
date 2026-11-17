@@ -63,9 +63,10 @@ exist and be a directory. These operations do not start MCPs or run inference.
 | Method/path | Inputs | Successful result and effects |
 | --- | --- | --- |
 | GET `/api/v1/workspace` | Optional `folder_path` | 200: selected scope and recognized instruction/agent file descriptors, including paths and app; no full file contents. |
-| GET `/api/v1/workspace/file` | `file_path`, optional `folder_path` | 200: content of the recognized instruction or agent file in that scope. |
+| GET `/api/v1/workspace/file` | `file_path`, optional `folder_path` | 200: content of the recognized instruction or agent file in that scope. An authorized Codex agent read can also return `registered_description` from its matching configuration entry. |
 | PUT `/api/v1/workspace/file` | JSON `file_path`, optional/null `folder_path`, `content` | 200: saves the recognized native file; agent contents must parse. Can create a destination agent definition. No arbitrary application/config/credential file editing. |
-| POST `/api/v1/workspace/agents/convert` | JSON `source_app`, `target_app`, `content`, optional `target_model` | 200: converted draft and explicit unresolved settings, retaining the source. No disk write. |
+| DELETE `/api/v1/workspace/file` | `file_path`, optional `folder_path` | 200: removes the selected subagent definition after native confirmation, returns its path, app, kind and `deleted: true`. |
+| POST `/api/v1/workspace/agents/convert` | JSON `source_app`, `target_app`, `content`, optional `target_model`, `fallback_name` and `fallback_description` | 200: converted draft and explicit unresolved settings, retaining the source. No disk write. |
 | GET `/api/v1/workspace/models` | `app` (`claude` or `codex`) | 200: app-reported model choices and effort metadata. Codex reads its saved native catalog; Claude uses an initialization-only metadata subprocess. No inference or MCP startup. An unavailable list is an actual error, never a hardcoded fallback. |
 | GET `/api/v1/workspace/sessions` | Optional `folder_path`, `app`, `cursor`, `limit` | 200: names/IDs/app/project/time/source paths and continuation; no message contents. Default 50 sessions, at most 200 per response. |
 | GET `/api/v1/workspace/sessions/read` | `file_path`, optional `folder_path`, `offset`, `limit` | 200: exact bounded recorded UTF-8 text, byte positions, next offset and EOF. Default 32KiB, at most 64KiB. Verifies session source and selected project before reading. |
@@ -82,6 +83,24 @@ The UI sends paths to these APIs. Global file paths are resolved from the
 current home and configured app roots; no machine-specific username is baked in.
 Project file discovery never mixes in global instructions or agents. Recognized
 file destinations and canonical path containment are checked by the backend.
+
+## Add subagent save
+
+November 17. In the Subagents view, Add opens a blank draft for the selected app and folder. The filename and definition are entered before Save. The native UI uses the app's agent directory from Workspace discovery and the app's file extension. The existing clipboard converter can prepare definitions copied from Fetch in the selected target format. Opening, typing and pasting create a draft in memory.
+
+For Add, `PUT /api/v1/workspace/file` sends `If-None-Match: *` with the existing `file_path`, `folder_path` and `content` JSON body. This asks the server to create a new agent file only. Native authority, path scope and content validation still apply. If the filename already exists, the server returns HTTP 412 with `WORKSPACE_FILE_ALREADY_EXISTS` and keeps the saved file intact. The UI keeps the draft open for renaming. A compact error sits beside Save and its info icon shows the returned message on hover. Success returns the existing 200 response. A condition other than `*` or a create request targeting an instruction file returns 400. Without the header, existing Edit saves use the prior behavior.
+
+## Bulk subagent clipboard
+
+November 17. Copy all reads the selected app and Workspace folder's listed agent definitions through the native file GET. The clipboard entry contains the app, relative filenames and the source definitions. Paste all uses the current destination's agent directory and the existing converter for cross-app copies. It submits an immediate create-only Save for each eligible definition. The UI refreshes the list and shows the result before the clipboard controls. Hovering the error's info icon reveals refused filenames, their returned errors and conversions that need individual review. Paste on a card uses the first definition to replace that selected file, then applies create-only Save to each remaining eligible entry. No bulk API route is required.
+
+Toolbar Paste reads the current clipboard and accepts a single card copy or a Copy all bundle. A single card copy carries the relative filename and original definition. Older single copies can use their recorded card name as the filename.
+
+
+## Delete a subagent definition
+
+November 17. The red X on the card opens a confirmation with that definition's name and file path. Only confirming sends the native DELETE request. The API validates the same selected folder and existing agent path as the file editor, rejects instruction files, and returns the existing error envelope if the file is absent or cannot be removed. It removes the selected definition file. The Codex registration file is outside this deletion scope.
+
 
 ## Session reading and upstream reuse
 
@@ -130,7 +149,7 @@ No real Claude catalog process was started during fixture verification.
 Use existing TOML/JSON libraries plus a maintained YAML library for native Claude
 frontmatter. Research selects serde-saphyr 2.1.1 (MIT OR Apache-2.0, Rust1.89),
 without filesystem includes/property expansion. No custom YAML parser or LLM
-conversion. Unsupported source fields remain visible as draft issues.
+conversion. Unsupported source fields remain visible as draft issues. For a cross-app copy, a missing or blank name uses the optional `fallback_name` from the source card. An explicit name takes precedence. A missing description can use the matched Codex registration provided as `fallback_description`. An explicit description takes precedence, and conversion still reports missing descriptions when no fallback exists. The selected Codex-to-Claude translation maps `sandbox_mode = "read-only"` to `permissionMode: plan`. Other unresolved settings still require review.
 
 ## Work and acceptance
 

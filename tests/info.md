@@ -1,3 +1,11 @@
+## November 17 — copied subagent name
+
+The native Workspace API fixture checks that a copied card's fallback fills a missing cross-app name, preserves explicit names, and still reports a missing description. The Widget fixture in src/ui also converts and creates the Claude file from a Codex card whose displayed label differs from its file name.
+
+## November 17 — create-only subagent save
+
+The Workspace HTTP fixture attempts to add a subagent with an occupied filename, confirms the original bytes, and saves the draft as a new file. It also checks that ordinary Edit still updates its file and no temporary file remains.
+
 ## November 13 — native scroll phases
 
 native_scroll_phases.m includes the Fetch bridge and verifies phase ordering, fresh finger starts and continued ownership through momentum. It never creates a window, installs the event monitor or opens accounts/Keychain. Compile with ARC/blocks and AppKit, Foundation, Security and LocalAuthentication. UI routing/undo/parser fixtures remain in src/ui; evidence is under milestones/workspace-editor-gestures/evidence.

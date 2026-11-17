@@ -1,3 +1,89 @@
+## November 17 — macOS preview in preparation
+
+Fetch sets its dog icon before Iced opens a window. The app bundle also declares the dog icon as a startup asset. Two isolated AppKit checks and both development and optimized arm64 builds passed. The GitHub preview is being prepared. [Implementation and build](history/2026-11-17_18-50-48-362010-orchestrator-build-macos-preview.md)
+
+## November 17 — install rows, Instructions Paste and auth highlight
+
+Selectable install rows show a white unchecked box. Unsupported rows use the same muted palette as installed rows. Failed installation details are available from the info icon beside Failed. Paste sits left of Copy in the AGENTS.md and CLAUDE.md editors and changes the draft. Auth key hover uses a neutral gray glow.
+
+Six focused widget checks and the signed development build passed. [Implementation](history/2026-11-17_18-40-33-760292-orchestrator-polish-install-instructions-and-auth-controls.md) · [Tests](history/2026-11-17_18-40-33-760776-tester-verify-install-paste-and-key-glow.md) · [Review](history/2026-11-17_18-40-33-760887-evaluator-review-install-and-instructions-polish.md) · [Signed build](history/2026-11-17_18-40-33-760978-orchestrator-deliver-install-paste-and-auth-polish.md)
+
+## November 17 — install button colors and inline status bars
+
+The Servers shortcut uses a white face and black label. The install footer uses a gray face and dark gray label when disabled. Each reported install status appears beside its matching server. The installing bar moves without presenting a completion percentage.
+
+Two focused widget tests, independent review and the signed development build passed. [Implementation](history/2026-11-17_18-28-41-721712-coder-add-install-colors-and-inline-progress.md) · [Tests](history/2026-11-17_18-28-41-722172-tester-verify-inline-install-progress.md) · [Review](history/2026-11-17_18-28-41-722291-evaluator-accept-inline-install-progress.md) · [Signed build](history/2026-11-17_18-28-41-722399-orchestrator-deliver-install-button-colors-and-progress.md)
+
+## November 17 — install modal over Servers
+
+Install MCPs appears immediately right of Refresh in Installed servers. It opens one modal for the destination, source, discovery, selection and installation progress. The separate page and navbar entry are removed. Closing the modal preserves pending work and results.
+
+Eleven focused tests, independent review and the signed development build passed. [Scope and evidence](servers-install-modal/info.md) · [Latest pass](history/2026-11-17_18-16-16-390759-orchestrator-deliver-servers-install-modal.md)
+
+## November 17 — editable Claude subagent fields
+
+Name and Description can be changed in Edit for an existing Claude definition. Changes stay in the draft until Save writes the same file. Independent source review accepted the cursor and layout corrections. Two focused checks and the signed development build passed. The YAML header can be reformatted and comments in it can be removed. [Checks](history/2026-11-17_18-14-15-483250-tester-verify-claude-popup-metadata.md) · [Signed build](history/2026-11-17_18-14-15-483709-orchestrator-deliver-claude-popup-metadata.md) [Review](history/2026-11-17_18-09-53-072941-evaluator-review-claude-popup-metadata.md) [Scope](history/2026-11-17_18-08-06-998659-orchestrator-plan-claude-popup-metadata-editing.md) · [Implementation](history/2026-11-17_18-08-06-998978-coder-edit-claude-popup-metadata.md)
+
+## November 17 — Workspace loading status
+
+The shared dimmed Workspace overlay now centers **Loading...** until the pending request finishes. It covers the Sessions list, conversation popup and subagent popup.
+
+The focused Sessions widget test passed, the offscreen render was checked, and the signed build passed strict verification. [Review](history/2026-11-17_17-59-58-671146-evaluator-review-workspace-loading-label.md) · [Change and checks](history/2026-11-17_17-59-58-671554-orchestrator-deliver-workspace-loading-label.md)
+
+## November 17 — toolbar Paste accepts one copied subagent
+
+The left toolbar Paste button reads the current clipboard and immediately creates the definition or definitions copied with a card or Copy all. It preserves the copied filename and uses the existing create-only save and app conversion.
+
+Two focused fixture tests passed, independent review accepted, and the signed build passed strict verification. Live clipboard use remains for observation after relaunch. [Tests](history/2026-11-17_17-51-23-321603-tester-verify-single-card-toolbar-paste.md) · [Review](history/2026-11-17_17-51-23-321934-evaluator-accept-single-card-toolbar-paste.md) · [Signed build](history/2026-11-17_17-51-23-322051-orchestrator-deliver-single-card-toolbar-paste.md)
+
+## November 17 — Workspace model picker and subagent actions complete
+
+Add and Edit start the model catalog read and cap the scrolling dropdown at four rows. An omitted model uses the native app's selection. Copy carries the Codex registration description for a missing definition description. Codex read-only converts to Claude Plan. Row Paste immediately replaces the selected definition from the first copied entry and creates other eligible entries. The red X requires confirmation and removes the selected definition file. Discovery, overwrite and removal preserve shared Codex configuration files.
+
+Four widget tests and three native API tests passed. Independent review ACCEPT after the shared config guard. The signed development build passed in 19.66 seconds and strict signature verification passed. Actual clipboard use and app catalogs remain for observation after Quit and reopen.
+
+[Scope](workspace-agent-actions/info.md) · [Research](history/2026-11-17_17-36-22-184989-researcher-model-defaults-and-plan-mode.md) · [Model picker](history/2026-11-17_17-36-22-185603-coder-workspace-model-picker-first-open.md) · [Conversion](history/2026-11-17_17-36-22-185733-coder-copy-registered-description-and-plan.md) · [Row actions](history/2026-11-17_17-36-22-185839-coder-workspace-immediate-row-paste.md) · [Delete](history/2026-11-17_17-43-44-315218-coder-workspace-confirm-agent-delete.md) · [Config protection](history/2026-11-17_17-43-44-315631-orchestrator-protect-shared-config-in-agent-actions.md) · [Tests](history/2026-11-17_17-43-44-315767-tester-verify-workspace-agent-actions.md) · [Review](history/2026-11-17_17-43-44-315878-evaluator-accept-workspace-agent-actions.md) · [Signed build](history/2026-11-17_17-43-44-315975-orchestrator-deliver-workspace-agent-actions.md)
+
+## November 17 — source card name reused during conversion
+
+Copy and Copy all carry the label shown in Fetch. Cross-app conversion uses it if the definition leaves out the name. Explicit names, raw source text and the missing-description check are preserved.
+
+Three focused tests passed, including a real disposable Codex-to-Claude transfer using a displayed name different from the filename. Independent review ACCEPT. Signed development build finished in 25.96 seconds and passed strict verification. Quit and reopen, then copy the source cards again to include their names in the clipboard.
+
+[Scope](subagent-card-name/info.md) · [Plan](history/2026-11-17_16-41-31-562032-orchestrator-plan-subagent-card-name.md) · [Converter](history/2026-11-17_16-41-50-237672-coder-convert-with-subagent-card-name.md) · [Clipboard](history/2026-11-17_16-44-09-930500-coder-carry-subagent-card-name.md) · [Build space](history/2026-11-17_16-44-09-931001-orchestrator-recover-build-space.md) · [Tests](history/2026-11-17_16-45-23-065580-tester-verify-subagent-card-name.md) · [Review](history/2026-11-17_16-45-23-065915-evaluator-accept-subagent-card-name.md) · [Signed build](history/2026-11-17_16-45-49-060190-orchestrator-deliver-subagent-card-name.md)
+
+## November 17 — subagent clipboard feedback complete
+
+Add subagent is bold and white on blue. The toolbar shows Copied all!, Pasted all!, or error! with a faint gray info icon to the left of the clipboard buttons. Hover shows the full messages. The individual draft editor shows its error marker beside Save and removes the review checkbox. Required-field and create-only file checks remain. Bulk icons keep the same face on press or while busy, and disabled presses no longer start a drag.
+
+Four focused widget and disposable API checks passed in 5.03 seconds. Independent review accepted the feature. Signed development build in 16.39 seconds and strict verification passed. Live macOS flash confirmation remains after Quit and reopen.
+
+[Scope](subagent-feedback/info.md) · [Bold button](history/2026-11-17_16-31-44-221950-orchestrator-bold-add-subagent.md) · [Plan](history/2026-11-17_16-31-44-225537-planner-workspace-clipboard-feedback.md) · [Shared controls](history/2026-11-17_16-31-44-225656-coder-compact-error-and-steady-clipboard.md) · [Workspace wiring](history/2026-11-17_16-31-44-225754-orchestrator-move-subagent-feedback-inline.md) · [Final checks](history/2026-11-17_16-34-58-710013-tester-verify-subagent-feedback.md) · [Review](history/2026-11-17_16-34-58-710325-evaluator-accept-subagent-feedback.md) · [Signed build](history/2026-11-17_16-34-58-710446-orchestrator-complete-subagent-feedback.md)
+
+## November 17 — bulk subagent clipboard complete
+
+The raised Paste all and Copy all icons sit before the blue Add subagent button. Copy all uses the selected app and Workspace folder. Paste all immediately creates eligible definitions in the chosen destination. Existing files stay intact, and the Workspace lists filenames it could not add. New files use the existing native create-only Save and unchanged conversion API.
+
+Three final focused checks passed in 3.38 seconds. Independent Evaluator ACCEPT. The signed build finished in 9.65 seconds and passed strict signature verification. Actual macOS clipboard observation remains after Quit and reopen. [Scope and rendered results](bulk-subagents/info.md)
+
+[Plan](history/2026-11-17_16-18-43-279950-planner-bulk-subagents.md) · [File helpers](history/2026-11-17_16-18-43-280249-coder-bulk-subagent-file-operations.md) · [Toolbar](history/2026-11-17_16-18-43-280361-orchestrator-bulk-subagent-toolbar.md) · [Tests](history/2026-11-17_16-20-21-465006-tester-verify-bulk-subagents.md) · [Review](history/2026-11-17_16-20-21-465344-evaluator-accept-bulk-subagents.md) · [Signed build](history/2026-11-17_16-20-21-465464-orchestrator-complete-bulk-subagents.md)
+
+## November 17 — Add subagent complete
+
+Workspace Subagents has a blue Add subagent button with white text just before the app logos. It opens the existing popup with a blank, focused draft. The header has adjacent Paste and Copy. Save shows the destination derived from the selected app and Workspace folder. The existing native PUT accepts a create-only condition for Add. An occupied filename leaves the original and the draft intact and brings the error and filename into view.
+
+Seven focused widget and HTTP checks passed. Independent Evaluator ACCEPT. The signed development build finished in 21.88 seconds and passed strict verification. User Quit/reopen remains for live window and system clipboard observation. [Scope and evidence](add-subagent/info.md)
+
+[Plan](history/2026-11-17_16-01-41-972596-planner-add-subagent.md) · [Save implementation](history/2026-11-17_16-03-09-891840-coder-create-only-workspace-save.md) · [UI implementation](history/2026-11-17_16-04-10-820630-coder-add-and-paste-subagent.md) · [Initial checks](history/2026-11-17_16-07-07-786437-tester-add-subagent-initial-checks.md) · [Corrections](history/2026-11-17_16-07-07-786755-orchestrator-tighten-paste-and-conflict-view.md) · [Final checks](history/2026-11-17_16-08-36-004061-tester-verify-add-subagent.md) · [Review](history/2026-11-17_16-08-36-004368-evaluator-accept-add-subagent.md) · [Signed build](history/2026-11-17_16-08-36-004491-orchestrator-complete-add-subagent.md) · [Blue button verification and build](history/2026-11-17_16-13-53-642758-orchestrator-blue-add-subagent.md)
+
+## November 17 — startup and Workspace polish complete
+
+The first populated Servers response starts a visible 120 ms stagger. Each card appears in order, grows with a small overshoot and settles in 270 ms. The panel stays clear pending the first reply. The shared Finder button is blue with a white filled mark. The subagent preview keeps the path and controls fixed above its one scrolling body. Copy keeps the clipboard action without the Copied agent label. Standalone empty messages in Servers and Workspace are centered.
+
+Seven offscreen widget checks passed in 4.10 seconds. Independent Evaluator ACCEPT. The signed development build finished in 23.02 seconds and passed strict signature verification. Fetch was left running as found. The user can explicitly Quit and reopen to see the new motion and try their trackpad. [Scope and rendered evidence](startup-and-workspace-polish/info.md)
+
+[Plan](history/2026-11-17_15-44-55-410995-planner-startup-and-workspace-polish.md) · [Workspace source](history/2026-11-17_15-46-52-449030-coder-workspace-popup-and-empty-panels.md) · [Servers source](history/2026-11-17_15-47-24-224364-coder-stagger-startup-server-cards.md) · [Initial tests](history/2026-11-17_15-49-02-241896-tester-first-rendered-ui-checks.md) · [Startup correction](history/2026-11-17_15-49-02-242278-orchestrator-wait-for-initial-server-list.md) · [Final tests](history/2026-11-17_15-49-49-943392-tester-confirm-startup-and-workspace-polish.md) · [Review](history/2026-11-17_15-49-49-943734-evaluator-accept-startup-and-workspace-polish.md) · [Signed build](history/2026-11-17_15-50-32-158665-orchestrator-complete-startup-and-workspace-polish.md)
+
 ## November 16 — Escape popup dismissal accepted
 
 Active follow-up complete after independent Evaluator ACCEPT. mod.rs routes Escape through the existing window-wide event subscription even when a control captures it; current-main-window handler dismisses one topmost visible popup in drawing order (connector approval, Workspace agent/session, Install discovery) using its existing Close action. Approval/draft/cache/discovery state is preserved, and no-popup Escape does nothing. Modifiers/rescale mapping remains unchanged; no component/backend/API or native OS-dialog changes.

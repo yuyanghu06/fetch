@@ -40,7 +40,7 @@ November11 correction: per-button hidden-fixture captures now prove red/yellow/g
 
 ## Application icon
 
-install_app_menu also passes the embedded packaging/Fetch.png to fetch_set_app_icon. The bridge copies PNG bytes into NSData, decodes an NSImage and assigns NSApp.applicationIconImage on the existing main queue. This supplies the Dock icon for direct development launches without a bundle, new dependency or changed application delegate. Icon setup does not access credentials or start services.
+The GUI process sets its embedded dog icon before starting its host or opening a window. The bridge decodes the image, assigns it to the shared AppKit application and refreshes the Dock tile on the main thread. macOS owns the minimized window thumbnail and its app badge. The bundled app also declares the same icon for launch through its Info.plist. Menu setup is separate from icon assignment.
 
 ## November 12 — final reload, copy, startup status and resize UI
 

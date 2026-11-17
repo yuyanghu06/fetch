@@ -13,7 +13,7 @@ then launches it. --build-only stops before launch. It never creates/exports a
 private key, changes trust, falls back to ad-hoc signing, or modifies release
 packaging. The selected private signing key stays in login Keychain.
 
-Approved icon source: package-macos.sh copies packaging/Fetch.icns into bundle Resources; Info.plist names that file. This source update does not enable or run packaging.
+package-macos.sh copies packaging/Fetch.icns into bundle Resources and Info.plist names that file. FETCH_PACKAGE_NOTICES supplies the directory of resolved third-party license texts. A signing identity of '-' explicitly selects an ad-hoc signature for a preview. A Developer ID identity uses the existing timestamped signing path.
 
 
 setup-session-readers.sh explicitly prepares both official readers under a supplied absolute --root; the two setup scripts own pinned source/package installation. Conversation opening never installs dependencies.

@@ -24,7 +24,7 @@ mod neumorphic_tests;
 mod fidelity_tests;
 #[cfg(test)]
 mod workspace_tests;
-use components::{button, checkbox, text_input};
+use components::{button, text_input};
 use authentication::{Flow as AuthFlow, Phase as AuthPhase};
 use crate::{application::ApplicationHost, native_auth::NativeSettingsSession};
 use client::{NativeClient, component};
@@ -32,13 +32,32 @@ use iced::{Element, Subscription, Task, window, widget::{column, row, scrollable
 use reqwest::Method;
 use serde_json::{Value, json};
 use zeroize::Zeroize;
-use std::{collections::{BTreeMap,BTreeSet}, sync::Arc, time::Duration};
+use std::{cell::Cell, collections::{BTreeMap,BTreeSet}, sync::Arc, time::{Duration, Instant}};
 
 #[derive(Clone,Copy,PartialEq,Eq)]
-enum Page { Servers, Install, Connect, Workspace, Settings }
+enum Page { Servers, Connect, Workspace, Settings }
 #[derive(Clone,Copy,PartialEq,Eq)]
 enum Deletion { Pending(u64), Refreshing }
+enum StartupServerCards {
+    Waiting,
+    Animating(Cell<Option<Instant>>),
+    Finished,
+}
 fn installable(row:&Value)->bool { row["status"]=="supported" && row["installed"]!=true }
+fn installation_row<'a>(name: impl Into<Element<'a, Message>>, item: &'a Value) -> Element<'a, Message> {
+    use components::InstallRowStatus;
+    let status = match item["status"].as_str() {
+        Some("pending") => InstallRowStatus::Pending,
+        Some("installing") => InstallRowStatus::Installing,
+        Some("succeeded") => InstallRowStatus::Succeeded,
+        Some("failed") => InstallRowStatus::Failed,
+        _ => return name.into(),
+    };
+    let name: Element<'a, Message> = name.into();
+    let detail = item["error"]["message"].as_str();
+    row![name, components::install_row_status(status, detail)]
+        .spacing(16).align_y(iced::Center).width(iced::Fill).into()
+}
 #[derive(Clone)]
 enum Message {
     Workspace(workspace::Event),
@@ -55,7 +74,7 @@ enum Message {
     PowerClicked(String,bool), PowerFinished(String,bool,Result<Value,String>),
     Changed(String,Result<Value,String>), RestartStatus(String,Result<Value,String>),
     Choose(String), Timeout(String), Concurrency(String), StepTimeout(i64), StepConcurrency(i64), SaveExecution,
-    ScaleFactor(window::Id,f32), Modifiers(iced::keyboard::Modifiers), RestartClicked(String), CloseDiscovery, OpenDiscovery,
+    ScaleFactor(window::Id,f32), Modifiers(iced::keyboard::Modifiers), RestartClicked(String), OpenInstall, CloseInstall,
     SecretName(String), SecretValue(String), SaveSecret, RemoveSecret,
     Copy(String), ToggleServer(String), ToggleTool(String),
 }
@@ -78,7 +97,10 @@ struct Desktop {
     connector: connector_setup::State,
     host: Arc<ApplicationHost>, client: Option<NativeClient>, session: Option<Arc<NativeSettingsSession>>, window:Option<window::Id>,
     page:Page, servers:Value, discovery:Value, tools:Value, selected:BTreeSet<(String,String)>,
-    config_path:String, discovery_started:bool, picker_window:Option<window::Id>, selected_server:String, timeout:String, concurrency:String, secret_name:String, secret_value:String,
+    startup_server_cards: StartupServerCards,
+    config_path:String, install_popup_open:bool, discovery_started:bool, picker_window:Option<window::Id>,
+    install_error:Option<String>, install_notice:String,
+    selected_server:String, timeout:String, concurrency:String, secret_name:String, secret_value:String,
     job:Option<String>, progress:Value, restarts:BTreeMap<String,String>, error:Option<String>, notice:String,
     busy:bool, server_refresh:refresh_feedback::RefreshFeedback, discovery_refresh:refresh_feedback::RefreshFeedback, reload_generation:u64, restart_submitting:BTreeSet<String>, restart_failures:BTreeMap<String,String>, polling:Option<u64>, installation_polling:bool, restart_polling:BTreeSet<String>, expanded_servers:BTreeSet<String>, expanded_tools:BTreeSet<String>,
     authentication:BTreeMap<String,AuthFlow>, auth_requests:auth_requests::Requests,
@@ -92,7 +114,7 @@ impl Desktop {
         let session=Arc::new(host.native.open_settings());
         let client=NativeClient::new(host.state.origin.clone(),&host.certificate_pem,session.clone());
         let (id,open)=window::open(window_settings());
-        let mut state=Self {projects:project_scope::State::default(),workspace:workspace::State::default(),connector:connector_setup::State::default(),host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),discovery_started:false,picker_window:None,selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,server_refresh:refresh_feedback::RefreshFeedback::default(),discovery_refresh:refresh_feedback::RefreshFeedback::default(),reload_generation:0,restart_submitting:BTreeSet::new(),restart_failures:BTreeMap::new(),polling:None,installation_polling:false,restart_polling:BTreeSet::new(),expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),power_pending:BTreeMap::new(),power_errors:BTreeMap::new(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new(),modifiers:iced::keyboard::Modifiers::default(),scale_factor:1.0};
+        let mut state=Self {projects:project_scope::State::default(),workspace:workspace::State::default(),connector:connector_setup::State::default(),host,client:None,session:Some(session),window:Some(id),page:Page::Servers,servers:json!({"servers":[]}),startup_server_cards:StartupServerCards::Waiting,discovery:Value::Null,tools:Value::Null,selected:BTreeSet::new(),config_path:String::new(),install_popup_open:false,discovery_started:false,picker_window:None,install_error:None,install_notice:String::new(),selected_server:String::new(),timeout:"120".into(),concurrency:"1".into(),secret_name:String::new(),secret_value:String::new(),job:None,progress:Value::Null,restarts:BTreeMap::new(),error:None,notice:String::new(),busy:false,server_refresh:refresh_feedback::RefreshFeedback::default(),discovery_refresh:refresh_feedback::RefreshFeedback::default(),reload_generation:0,restart_submitting:BTreeSet::new(),restart_failures:BTreeMap::new(),polling:None,installation_polling:false,restart_polling:BTreeSet::new(),expanded_servers:BTreeSet::new(),expanded_tools:BTreeSet::new(),authentication:BTreeMap::new(),auth_requests:auth_requests::Requests::default(),power_pending:BTreeMap::new(),power_errors:BTreeMap::new(),deletions:BTreeMap::new(),opening_folders:BTreeSet::new(),terminals:BTreeMap::new(),modifiers:iced::keyboard::Modifiers::default(),scale_factor:1.0};
         match client {Ok(client)=>state.client=Some(client),Err(error)=>state.error=Some(error)}
         let read=state.refresh();
         let projects=state.load_projects();
@@ -233,22 +255,35 @@ impl Desktop {
     fn update(&mut self,message:Message)->Task<Message> {
         match message {
             Message::Workspace(event)=>return self.update_workspace(event),
-            Message::Projects(event)=>return self.update_projects(event),
+            Message::Projects(event)=>{
+                if matches!(&event, project_scope::Event::Filter(choice) if choice != &self.projects.server_filter) {
+                    self.startup_server_cards = StartupServerCards::Finished;
+                }
+                return self.update_projects(event);
+            }
             Message::Terminal(message)=>return self.update_terminal(message),
             Message::Connector(event)=>return self.update_connector(event),
             Message::Escape(id)=>{
                 if self.window!=Some(id){return Task::none();}
                 if self.connector.popup_visible(){return self.update_connector(connector_setup::Event::Dismiss);}
+                if self.install_popup_open{return self.update(Message::CloseInstall);}
                 if self.page==Page::Workspace{
+                    if self.workspace.delete_agent_visible(){return self.update_workspace(workspace::Event::CancelDeleteAgent);}
                     if self.workspace.agent_popup{return self.update_workspace(workspace::Event::CloseAgentPopup);}
                     if self.workspace.active_session.is_some(){return self.update_workspace(workspace::Event::CloseSession);}
                 }
-                if self.page==Page::Install&&self.discovery_started{return self.update(Message::CloseDiscovery);}
             }
-            Message::Page(page)=>{if self.page!=page{self.clear_secrets();}self.page=page;self.error=None;if page==Page::Workspace{return self.load_workspace();}}
+            Message::Page(page)=>{
+                if self.page!=page {
+                    self.clear_secrets();
+                    self.startup_server_cards = StartupServerCards::Finished;
+                    self.install_popup_open = false;
+                }
+                self.page=page;self.error=None;if page==Page::Workspace{return self.load_workspace();}
+            }
             Message::DragWindow=>{if let Some(id)=self.window{return window::drag(id);}}
             Message::Opened(id)=>{file_picker::prepare();self.window=Some(id);crate::native_auth::install_app_menu();return Task::batch([window::run(id,crate::native_auth::configure_window).discard(),window::scale_factor(id).map(move|value|Message::ScaleFactor(id,value))]);}
-            Message::Closed(id)=>{if self.window==Some(id){self.server_refresh=refresh_feedback::RefreshFeedback::default();self.discovery_refresh=refresh_feedback::RefreshFeedback::default();self.restart_submitting.clear();self.power_pending.clear();self.window=None;self.picker_window=None;file_picker::cancel();self.host.native.invalidate_all();self.client=None;self.session=None;self.connector.window_closed();self.pause_terminals();self.close_authentication();}}
+            Message::Closed(id)=>{if self.window==Some(id){self.startup_server_cards=StartupServerCards::Finished;self.server_refresh=refresh_feedback::RefreshFeedback::default();self.discovery_refresh=refresh_feedback::RefreshFeedback::default();self.restart_submitting.clear();self.power_pending.clear();self.window=None;self.picker_window=None;file_picker::cancel();self.host.native.invalidate_all();self.client=None;self.session=None;self.connector.window_closed();self.pause_terminals();self.close_authentication();}}
             Message::Show=>{
                 self.connector.foreground_request();
                 if let Some(id)=self.window{return window::gain_focus(id);}
@@ -267,8 +302,8 @@ impl Desktop {
             Message::ScaleFactor(id,value)=>{if self.window==Some(id){self.scale_factor=value;}},
             Message::Modifiers(value)=>self.modifiers=value,
             Message::RestartClicked(id)=>return self.update(Message::Restart(id,self.modifiers.shift())),
-            Message::CloseDiscovery=>self.discovery_started=false,
-            Message::OpenDiscovery=>self.discovery_started=true,
+            Message::OpenInstall=>self.install_popup_open=true,
+            Message::CloseInstall=>self.install_popup_open=false,
             Message::AutomaticRefresh=>{
                 if self.client.is_none()||self.polling.is_some(){return Task::none();}
                 let read=self.refresh();self.polling=Some(self.auth_requests.latest_sequence());return read;
@@ -283,7 +318,16 @@ impl Desktop {
                 }
                 if !self.auth_requests.accept_read(revision,sequence){return Task::none();}
                 match result {Ok(value)=>{
-                    if manual{self.reload_generation+=1;}
+                    if manual {
+                        self.reload_generation+=1;
+                        self.startup_server_cards = StartupServerCards::Finished;
+                    } else if matches!(self.startup_server_cards, StartupServerCards::Waiting) {
+                        self.startup_server_cards = if value["servers"].as_array().is_some_and(|rows| !rows.is_empty()) {
+                            StartupServerCards::Animating(Cell::new(None))
+                        } else {
+                            StartupServerCards::Finished
+                        };
+                    }
                     if let Some(servers)=value["servers"].as_array(){for server in servers{
                         if let Some(id)=server["server_id"].as_str(){
                             // Every server has passive console state. A read can
@@ -308,36 +352,36 @@ impl Desktop {
             Message::ChooseConfigFile=>{
                 if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
                 let Some(id)=self.window else{return Task::none();};
-                self.picker_window=Some(id);self.error=None;
+                self.picker_window=Some(id);self.install_error=None;
                 return Task::perform(file_picker::choose_config_file(),move|result|Message::ConfigFileChosen(id,result));
             }
             Message::ConfigFileChosen(id,result)=>{
                 if self.window!=Some(id)||self.picker_window!=Some(id){return Task::none();}
                 self.picker_window=None;
-                match result{Ok(Some(path))=>{self.config_path=path;self.discovery_refresh.minimum=None;return self.update(Message::Discover);},Ok(None)=>{},Err(error)=>self.error=Some(error)}
+                match result{Ok(Some(path))=>{self.config_path=path;self.discovery_refresh.minimum=None;return self.update(Message::Discover);},Ok(None)=>{},Err(error)=>self.install_error=Some(error)}
             }
-            Message::Discover=>{if (self.config_path.trim().is_empty()&&self.projects.install.project_id().is_none())||self.busy||self.discovery_refresh.running()||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;self.discovery_started=true;let path=self.config_path.clone();let project=self.projects.install.project_id().map(str::to_owned);let feedback=self.discovery_refresh.begin(self.discovery_refresh.generation+1,Duration::from_secs(3)).map(Message::DiscoveryFeedbackDone);return Task::batch([Task::perform(async move{client.discovery_for(&path,project.as_deref()).await},Message::Discovery),feedback]);}}
+            Message::Discover=>{if (self.config_path.trim().is_empty()&&self.projects.install.project_id().is_none())||self.busy||self.discovery_refresh.running()||self.picker_window.is_some()||self.job.is_some(){return Task::none();}if let Some(client)=self.client.clone(){self.busy=true;self.discovery_started=true;self.install_error=None;let path=self.config_path.clone();let project=self.projects.install.project_id().map(str::to_owned);let feedback=self.discovery_refresh.begin(self.discovery_refresh.generation+1,Duration::from_secs(3)).map(Message::DiscoveryFeedbackDone);return Task::batch([Task::perform(async move{client.discovery_for(&path,project.as_deref()).await},Message::Discovery),feedback]);}}
             Message::Discovery(result)=>{self.busy=false;self.discovery_refresh.pending=None;match result {Ok(value)=>{
                 self.discovery=value;
                 // A discovery read may finish after an in-flight installation succeeds.
                 self.mark_installed_from_progress(&self.progress.clone());
                 self.selected.clear();
                 if let Some(groups)=self.discovery["configs"].as_array(){for group in groups {if let Some(rows)=group["servers"].as_array(){for item in rows{if installable(item)&&item["selected_by_default"]==true{if let(Some(path),Some(name))=(group["path"].as_str(),item["name"].as_str()){self.selected.insert((path.into(),name.into()));}}}}}}
-            },Err(error)=>self.error=Some(error)}}
+            },Err(error)=>self.install_error=Some(error)}}
             Message::Select(path,name,selected)=>{let key=(path,name);if selected&&self.supported_selections().contains(&key){self.selected.insert(key);}else{self.selected.remove(&key);}}
             Message::SelectAllServers=>{
                 if self.busy||self.picker_window.is_some()||self.job.is_some(){return Task::none();}
                 let eligible=self.supported_selections();
                 if eligible.is_subset(&self.selected){self.selected.clear();}else{self.selected=eligible;}
             }
-            Message::Install=>{let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.notice.clear();self.busy=true;let project=self.projects.install.project_id().map(str::to_owned);return Task::perform(async move{client.install_for(rows,project.as_deref()).await},Message::Installed);}}
-            Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{String::new()};},Err(error)=>self.error=Some(error)}}
+            Message::Install=>{let rows=self.selected_for_install();if self.busy||self.picker_window.is_some()||self.job.is_some()||rows.is_empty(){return Task::none();}if let Some(client)=self.client.clone(){self.install_notice.clear();self.install_error=None;self.busy=true;let project=self.projects.install.project_id().map(str::to_owned);return Task::perform(async move{client.install_for(rows,project.as_deref()).await},Message::Installed);}}
+            Message::Installed(result)=>{self.busy=false;match result {Ok(value)=>{self.job=value["installation_id"].as_str().map(str::to_owned);let existing=value["error"]["code"]=="INSTALLATION_IN_PROGRESS";self.progress=value;self.install_notice=if existing{"An installation is already running. Monitoring that existing operation.".into()}else{String::new()};return self.poll_installation();},Err(error)=>self.install_error=Some(error)}}
             Message::Progress(result)=>{self.installation_polling=false;match result {Ok(value)=>{self.mark_installed_from_progress(&value);let terminal=matches!(value["status"].as_str(),Some("succeeded"|"failed"));if terminal {
                     self.selected.clear();
                     let eligible=self.supported_selections();
                     if let Some(rows)=value["servers"].as_array(){for item in rows {if item["status"]=="failed" {if let (Some(path),Some(name))=(item["config_path"].as_str(),item["server_name"].as_str()){let key=(path.to_owned(),name.to_owned());if eligible.contains(&key){self.selected.insert(key);}}}}}
                 }
-                self.progress=value;if terminal{self.job=None;return self.refresh();}},Err(error)=>self.error=Some(error)}}
+                self.install_error=None;self.progress=value;if terminal{self.job=None;return self.refresh();}},Err(error)=>self.install_error=Some(error)}}
             Message::Inspect(id)=>{
                 if self.deletions.contains_key(&id){return Task::none();}
                 self.clear_secrets(); self.expanded_servers.insert(id.clone());
@@ -466,10 +510,7 @@ impl Desktop {
                 let Some(client)=self.client.clone() else{return Task::none();};
                 let mut reads=Vec::new();
                 if let Some(read)=self.poll_connector_requests(){reads.push(read);}
-                if !self.installation_polling{if let Some(id)=self.job.clone(){
-                    self.installation_polling=true;let client=client.clone();
-                    reads.push(Task::perform(async move{client.request(Method::GET,&format!("/api/v1/setup/installations/{}",component(&id)),None).await},Message::Progress));
-                }}
+                reads.push(self.poll_installation());
                 for (id,restart) in &self.restarts{if !self.restart_polling.contains(id){
                     let id=id.clone();let client=client.clone();
                     let query=url::form_urlencoded::Serializer::new(String::new()).append_pair("id",&id).append_pair("restart_id",restart).finish();
@@ -485,29 +526,39 @@ impl Desktop {
     fn view(&self,_window:window::Id)->Element<'_,Message>{
         let base=self.view_content();
         let mut layers=iced::widget::stack![base];
+        if self.install_popup_open{layers=layers.push(self.install_popup_view());}
         if self.page==Page::Workspace&&self.workspace.active_session.is_some(){layers=layers.push(self.workspace_session_popup());}
         if self.page==Page::Workspace&&self.workspace.agent_popup{layers=layers.push(self.workspace_agent_popup());}
+        if self.page==Page::Workspace&&self.workspace.delete_agent_visible(){layers=layers.push(self.workspace_delete_agent_popup());}
         if self.connector.popup_visible(){layers=layers.push(self.connector_popup());}
         let content:Element<'_,Message>=layers.into();
         surface::with_scale(iced::widget::mouse_area(content).on_press(Message::DragWindow),self.scale_factor)
     }
     fn view_content(&self)->Element<'_,Message>{
-        let active=match self.page{Page::Servers|Page::Settings=>0,Page::Install=>1,Page::Connect=>2,Page::Workspace=>3};
-        let nav=components::navigation([Message::Page(Page::Servers),Message::Page(Page::Install),Message::Page(Page::Connect),Message::Page(Page::Workspace)],active);
-        let mut body=column![nav].spacing(if self.page==Page::Connect{16}else{32}).padding(16);
-        if self.page==Page::Install{
-            let base=components::page(body.push(self.install_view()).height(iced::Fill));
-            return if self.discovery_started{iced::widget::stack![base,self.install_popup_view()].into()}else{base.into()};
-        }
-        body=body.push(match self.page{Page::Servers|Page::Settings=>self.servers_view(),Page::Install=>self.install_view(),Page::Connect=>self.connect_view(),Page::Workspace=>self.workspace_view()});
+        let active=match self.page{Page::Servers|Page::Settings=>0,Page::Connect=>1,Page::Workspace=>2};
+        let nav=components::navigation([Message::Page(Page::Servers),Message::Page(Page::Connect),Message::Page(Page::Workspace)],active);
+        let body=column![nav].spacing(if self.page==Page::Connect{16}else{32}).padding(16)
+            .push(match self.page{Page::Servers|Page::Settings=>self.servers_view(),Page::Connect=>self.connect_view(),Page::Workspace=>self.workspace_view()});
         components::page(body.height(iced::Fill)).into()
     }
     fn servers_view(&self)->Element<'_,Message>{
         use components::Icon;
-        let heading=row![text("Installed servers").size(32).line_height(iced::Pixels(45.0)).font(theme::SEMIBOLD_FONT),components::refresh_button(self.client.is_some().then_some(Message::Refresh),self.server_refresh.running())].spacing(20).align_y(iced::Center).height(45);
+        let heading=row![
+            text("Installed servers").size(32).line_height(iced::Pixels(45.0)).font(theme::SEMIBOLD_FONT),
+            components::refresh_button(self.client.is_some().then_some(Message::Refresh),self.server_refresh.running()),
+            components::text_button("Install MCPs").on_press(Message::OpenInstall),
+        ].spacing(20).align_y(iced::Center).height(45);
         let mut items=column![].spacing(20).width(iced::Fill);
+        let empty_message = self.servers["servers"].as_array()
+            .filter(|servers| servers.is_empty() && !matches!(self.startup_server_cards, StartupServerCards::Waiting))
+            .map(|_| {
+                if self.projects.server_filter == project_scope::Choice::All {
+                    "No servers installed yet. Open Install MCPs to discover your existing definitions."
+                } else {
+                    "No servers in this view. Choose another project or open Install MCPs."
+                }
+            });
         if let Some(servers)=self.servers["servers"].as_array(){
-            if servers.is_empty(){items=items.push(text(if self.projects.server_filter==project_scope::Choice::All{"No servers installed yet. Open Install MCPs to discover your existing definitions."}else{"No servers in this view. Choose another project or open Install MCPs."}));}
             for (index,server) in servers.iter().enumerate(){
                 let id=server["server_id"].as_str().unwrap_or("").to_owned();
                 let runtime=server["runtime"]["status"].as_str().unwrap_or("unknown");
@@ -548,10 +599,17 @@ impl Desktop {
                     let count=|key:&str|server["tool_execution"][key].as_u64().unwrap_or(0);
                     card=card.push(row![text(format!("Active: {}   Waiting: {}   Uncertain: {}",count("active_calls"),count("queued_calls"),count("uncertain_calls"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED),iced::widget::Space::new().width(iced::Fill),text(format!("Connection access expires: {}",server["authentication"]["access_expires_at"].as_str().unwrap_or("unknown"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED),text(format!("Last verified connection access: {}",server["authentication"]["last_verified_at"].as_str().unwrap_or("unknown"))).size(12).line_height(iced::Pixels(18.0)).color(theme::MUTED)].spacing(16).height(22).align_y(iced::Center));
                 }
-                items=items.push(surface::pop_in(components::server_card(card).width(iced::Fill),self.reload_generation.wrapping_add(1),index));
+                let startup = match &self.startup_server_cards {
+                    StartupServerCards::Animating(clock) => Some(clock),
+                    _ => None,
+                };
+                items=items.push(surface::pop_in(components::server_card(card).width(iced::Fill),self.reload_generation,index,startup));
             }
         }
-        let cards=surface::contain_scroll(scrollable(iced::widget::container(items).padding(24)).id("fetch-installed-servers").style(theme::scrollable).width(iced::Fill).height(iced::Fill));
+        let cards = match empty_message {
+            Some(message) => components::empty_panel_message(message).into(),
+            None => surface::contain_scroll(scrollable(iced::widget::container(items).padding(24)).id("fetch-installed-servers").style(theme::scrollable).width(iced::Fill).height(iced::Fill)),
+        };
         column![iced::widget::container(heading).padding(iced::Padding{top:24.0,right:0.0,bottom:0.0,left:0.0}),self.project_picker("Show servers",&self.projects.server_filter,true,true,project_scope::Event::Filter),components::recessed(cards).width(iced::Fill).height(iced::Fill)].spacing(20).height(iced::Fill).into()
     }
     fn server_tools_view<'a>(&'a self,id:&str)->Element<'a,Message>{
@@ -638,6 +696,14 @@ impl Desktop {
     fn selected_for_install(&self)->Vec<(String,String)>{
         self.selected.intersection(&self.supported_selections()).cloned().collect()
     }
+    fn poll_installation(&mut self) -> Task<Message> {
+        if self.installation_polling { return Task::none(); }
+        let (Some(client), Some(id)) = (self.client.clone(), self.job.clone()) else { return Task::none(); };
+        self.installation_polling = true;
+        Task::perform(async move {
+            client.request(Method::GET, &format!("/api/v1/setup/installations/{}", component(&id)), None).await
+        }, Message::Progress)
+    }
     fn mark_installed_from_progress(&mut self,progress:&Value){
         let mut succeeded=BTreeMap::new();
         if let Some(rows)=progress["servers"].as_array(){for item in rows{
@@ -656,43 +722,100 @@ impl Desktop {
         let eligible=self.supported_selections();
         self.selected.retain(|key|eligible.contains(key));
     }
-    fn install_view(&self)->Element<'_,Message>{
+    fn install_source_controls(&self)->Element<'_,Message>{
         let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
-        let header=column![
-            text("Discover and install").size(32).line_height(iced::Pixels(45.0)).font(iced::Font{weight:iced::font::Weight::Semibold,..iced::Font::with_name("Inter")}),
+        column![
             self.project_picker("Install into",&self.projects.install,false,available&&!self.discovery_refresh.running(),project_scope::Event::Install),
             row![
                 text_input("Folder or configuration file path",&self.config_path).on_input_maybe(available.then_some(Message::ConfigPath)).on_submit_maybe((available&&!self.discovery_refresh.running()&&(!self.config_path.trim().is_empty()||self.projects.install.project_id().is_some())).then_some(Message::Discover)),
                 components::refresh_button((self.client.is_some()&&available).then_some(Message::Discover),self.discovery_refresh.running()),
                 components::text_button("Choose file or folder…").on_press_maybe(available.then_some(Message::ChooseConfigFile)),
             ].spacing(16).align_y(iced::Center),
-        ].spacing(20);
-        let mut base=column![header].spacing(24).width(iced::Fill).height(iced::Fill);
-        if !self.discovery.is_null()||self.job.is_some(){base=base.push(components::text_button(if self.job.is_some(){"View installation progress"}else{"View discovered MCPs"}).on_press(Message::OpenDiscovery));}
-        base.into()
+        ].spacing(16).into()
     }
     fn install_popup_view(&self)->Element<'_,Message>{
+        let show_results = self.discovery_started || !self.discovery.is_null() || self.job.is_some() || !self.progress.is_null();
+        let title=if !show_results{"Discover and install"}else if self.busy&&self.discovery.is_null(){"Looking for MCP servers…"}else if self.job.is_some(){"Installing MCP servers"}else if self.progress["status"]=="failed"{"Installation needs attention"}else{"Choose MCPs to install"};
+        let mut body = column![
+            row![
+                text(title).size(28).font(theme::SEMIBOLD_FONT).width(iced::Fill),
+                components::icon_button(components::Icon::Close, Some(Message::CloseInstall)),
+            ].spacing(16).align_y(iced::Center),
+            self.install_source_controls(),
+        ].spacing(16).width(iced::Fill);
+        if show_results {
+            body = body.push(self.install_results()).height(iced::Fill);
+        } else if let Some(error) = &self.install_error {
+            body = body.push(components::error_message(error.as_str()));
+        }
+        let popup = components::raised(iced::widget::container(body).padding(24).width(iced::Fill))
+            .width(iced::Fill).max_width(900).max_height(600);
+        components::modal(popup, Message::CloseInstall)
+    }
+    fn install_results(&self)->Element<'_,Message>{
         let eligible=self.supported_selections();
         let all_selected=!eligible.is_empty()&&eligible.is_subset(&self.selected);
         let can_select_all=!self.busy&&self.picker_window.is_none()&&self.job.is_none()&&!eligible.is_empty();
-        let available=!self.busy&&self.picker_window.is_none()&&self.job.is_none();
         let mut items=column![].spacing(theme::PAGE_GAP);
-        if let Some(error)=&self.error{items=items.push(components::error_message(error.as_str()));}
-        if !self.notice.is_empty(){items=items.push(components::message(self.notice.as_str()));}
+        if let Some(error)=&self.install_error{items=items.push(components::error_message(error.as_str()));}
+        if !self.install_notice.is_empty(){items=items.push(components::message(self.install_notice.as_str()));}
         let has_rows=self.discovery["configs"].as_array().is_some_and(|groups|groups.iter().any(|group|group["servers"].as_array().is_some_and(|rows|!rows.is_empty())));
-        if !has_rows{items=items.push(text(if !self.discovery_started{"Choose a folder to discover MCP servers."}else if self.busy{"Looking for server definitions…"}else{"No server definitions found. Review the source messages below, refresh, or choose a different file or folder."}));}
-        if let Some(groups)=self.discovery["configs"].as_array(){for group in groups{let path=group["path"].as_str().unwrap_or("").to_owned();items=items.push(text(path.clone()).size(theme::TOOL_TITLE));if let Some(rows)=group["servers"].as_array(){for server in rows{let name=server["name"].as_str().unwrap_or("").to_owned();let eligible=installable(server);let installed=server["installed"]==true;let selected=eligible&&self.selected.contains(&(path.clone(),name.clone()));let control=if installed{components::installed_checkbox()}else{checkbox(selected)};let mut control=control.label(format!("{} · {}{}",name,server["type"].as_str().unwrap_or("unsupported"),if installed{" · already installed"}else if server["source_enabled"]==false{" · disabled in source; opt in explicitly"}else{""}));if eligible{let path=path.clone();let name=name.clone();control=control.on_toggle(move|value|Message::Select(path.clone(),name.clone(),value));}items=items.push(control);if let Some(error)=server["error"]["message"].as_str(){items=items.push(components::message(error));}}}if let Some(error)=group["error"]["message"].as_str(){items=items.push(components::message(error));}}}
-        if !self.progress.is_null(){items=items.push(text(format!("Installation: {}",self.progress["status"].as_str().unwrap_or("pending"))));if let Some(rows)=self.progress["servers"].as_array().or_else(||self.progress["items"].as_array()){for item in rows{items=items.push(text(format!("{} · {}",item["server_name"].as_str().unwrap_or("server"),item["status"].as_str().unwrap_or("pending"))));if let Some(error)=item["error"]["message"].as_str(){items=items.push(components::message(error));}}}}
+        if !has_rows && self.progress.is_null(){items=items.push(text(if self.busy{"Looking for server definitions…"}else{"No server definitions found. Review the source messages below, refresh, or choose a different file or folder."}));}
+        let progress = self.progress["servers"].as_array().or_else(|| self.progress["items"].as_array())
+            .map(Vec::as_slice).unwrap_or_default();
+        let mut inline = BTreeMap::new();
+        for (index, item) in progress.iter().enumerate() {
+            if let (Some(path), Some(name)) = (item["config_path"].as_str(), item["server_name"].as_str()) {
+                inline.insert((path, name), index);
+            }
+        }
+        let mut shown = BTreeSet::new();
+        for group in self.discovery["configs"].as_array().into_iter().flatten() {
+            let path = group["path"].as_str().unwrap_or_default();
+            items = items.push(text(path).size(theme::TOOL_TITLE));
+            for server in group["servers"].as_array().into_iter().flatten() {
+                let name = server["name"].as_str().unwrap_or_default();
+                let eligible = installable(server);
+                let installed = server["installed"] == true;
+                let entry = (path.to_owned(), name.to_owned());
+                let selected = eligible && self.selected.contains(&entry);
+                let item = inline.get(&(path, name)).copied();
+                let detail = if installed && item.is_none() {
+                    " · already installed"
+                } else if !installed && server["source_enabled"] == false {
+                    " · disabled in source; opt in explicitly"
+                } else {
+                    ""
+                };
+                let mut control = components::install_checkbox(installed || selected)
+                    .label(format!("{name} · {}{detail}", server["type"].as_str().unwrap_or("unsupported")));
+                if eligible {
+                    control = control.on_toggle(move |value| Message::Select(entry.0.clone(), entry.1.clone(), value));
+                }
+                if let Some(index) = item {
+                    shown.insert(index);
+                    items = items.push(installation_row(control.width(iced::Fill), &progress[index]));
+                } else {
+                    items = items.push(control);
+                }
+                if let Some(error) = server["error"]["message"].as_str() { items = items.push(components::message(error)); }
+            }
+            if let Some(error) = group["error"]["message"].as_str() { items = items.push(components::message(error)); }
+        }
+        if !self.progress.is_null() {
+            items = items.push(text(format!("Installation: {}", self.progress["status"].as_str().unwrap_or("pending"))));
+            for (_, item) in progress.iter().enumerate().filter(|(index, _)| !shown.contains(index)) {
+                let name = text(item["server_name"].as_str().unwrap_or("server")).width(iced::Fill);
+                items = items.push(installation_row(name, item));
+            }
+        }
         let selected_count=self.selected_for_install().len();
         let can_install=selected_count>0&&!self.busy&&self.picker_window.is_none()&&self.job.is_none();
-        let footer=row![components::primary_button("Install selected servers").on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",selected_count))].spacing(theme::PAGE_GAP).align_y(iced::Center);
-        let title=if self.busy&&self.discovery.is_null(){"Looking for MCP servers…"}else if self.job.is_some(){"Installing MCP servers"}else if self.progress["status"]=="failed"{"Installation needs attention"}else{"Choose MCPs to install"};
-        let popup=components::raised(iced::widget::container(column![
-            row![text(title).size(28).font(iced::Font{weight:iced::font::Weight::Semibold,..iced::Font::with_name("Inter")}),iced::widget::Space::new().width(iced::Fill),components::icon_button(components::Icon::Close,Some(Message::CloseDiscovery))].spacing(16).align_y(iced::Center),
+        let footer=row![components::primary_button("Install selected servers").style(theme::install_selected_button).on_press_maybe(can_install.then_some(Message::Install)),text(format!("{} selected",selected_count))].spacing(theme::PAGE_GAP).align_y(iced::Center);
+        column![
             components::text_button(if all_selected{"Unselect all"}else{"Select all"}).on_press_maybe(can_select_all.then_some(Message::SelectAllServers)),
             surface::contain_scroll(scrollable(items).style(theme::scrollable).id("fetch-install-discovery").width(iced::Fill).height(iced::Fill)),footer,
-        ].spacing(24)).padding(32).width(iced::Fill).height(iced::Fill)).width(iced::Fill).max_width(900).height(iced::Fill).max_height(600);
-        components::modal(popup,Message::CloseDiscovery)
+        ].spacing(16).height(iced::Fill).into()
     }
     fn connect_view(&self)->Element<'_,Message>{
         let mut items=column![self.project_picker("Connection",&self.projects.connection,false,!self.connector.creating&&!self.connector.deciding,project_scope::Event::Connection)].spacing(20).width(iced::Fill);

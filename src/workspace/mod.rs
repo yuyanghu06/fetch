@@ -1,5 +1,6 @@
 //! File-backed Workspace operations. The native API owns caller authorization.
 mod agents;
+pub(crate) use agents::{ClaudeAgentMetadataField, edit_claude_agent_metadata};
 mod files;
 mod sessions;
 mod conversations;
@@ -100,9 +101,21 @@ impl WorkspaceService {
     }
     pub fn discover(&self, folder_path: Option<&str>) -> Result<Value, WorkspaceError> { files::discover(self,folder_path) }
     pub fn read_file(&self, folder_path: Option<&str>, file_path: &str) -> Result<Value, WorkspaceError> { files::read(self,folder_path,file_path) }
-    pub fn save_file(&self, folder_path: Option<&str>, file_path: &str, content: &str) -> Result<Value, WorkspaceError> { files::save(self,folder_path,file_path,content) }
+    pub fn delete_agent_file(&self, folder_path: Option<&str>, file_path: &str) -> Result<Value, WorkspaceError> {
+        files::delete_agent_file(self, folder_path, file_path)
+    }
+    pub fn save_file(&self, folder_path: Option<&str>, file_path: &str, content: &str) -> Result<Value, WorkspaceError> { files::save(self,folder_path,file_path,content,false) }
+    pub(crate) fn create_agent_file(&self, folder_path: Option<&str>, file_path: &str, content: &str) -> Result<Value, WorkspaceError> {
+        files::save(self, folder_path, file_path, content, true)
+    }
     pub fn convert_agent(&self, source_app: &str, target_app: &str, content: &str) -> Result<Value, WorkspaceError> {
-        agents::convert(App::parse(source_app)?,App::parse(target_app)?,content)
+        self.convert_agent_with_fallbacks(source_app, target_app, content, None, None)
+    }
+    pub(crate) fn convert_agent_with_fallbacks(
+        &self, source_app: &str, target_app: &str, content: &str,
+        fallback_name: Option<&str>, fallback_description: Option<&str>,
+    ) -> Result<Value, WorkspaceError> {
+        agents::convert(App::parse(source_app)?, App::parse(target_app)?, content, fallback_name, fallback_description)
     }
     pub async fn reveal_file(&self,folder_path:Option<&str>,file_path:&str)->Result<Value,WorkspaceError>{
         files::reveal(self,folder_path,file_path).await

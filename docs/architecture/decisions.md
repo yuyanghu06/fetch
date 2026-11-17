@@ -1,3 +1,19 @@
+## November 17 — subagent model picker, Codex descriptions and row actions
+
+The user chose loading models on editor open and a four-row scrolling menu. Leaving model unset uses the native app's model choice. Copy obtains the selected Codex registration's description and can use it when the definition omits one. The user selected Claude Plan for a Codex read-only source and immediate replacement of the selected file by the first clipboard definition. The remaining definitions use create-only saves. The row X requires confirmation naming the selected definition. [Workspace contract](workspace.md)
+
+## November 17 — use the source card name for unnamed conversions
+
+The user selected the displayed source-card name as the fallback when a cross-app conversion encounters a missing name. Single and bulk Copy carry that label separately from the original content and relative filename. The existing conversion route takes it as an optional input. Explicit names and missing-description checks still apply.
+
+## November 17 — paste all subagents immediately
+
+The user selected immediate creation when clicking the new Paste all icon. Copy all uses the selected app and Workspace folder. Paste all uses the selected destination and the existing create-only Save route, preserves occupied filenames, and reports the names it could not add. [Scope](../../milestones/bulk-subagents/info.md)
+
+## November 17 — Add subagent uses create-only Save
+
+The user chose a white Add subagent button just before the Claude and Codex logos, a blank reusable popup, and Paste immediately before Copy. The user explicitly selected refusing a Save if the filename is taken and keeping the draft open for renaming. Add uses the existing private Workspace file API with a create-only request. Edit keeps using the existing Save operation. [Contract](workspace.md#add-subagent-save)
+
 ## November 12 — project connection contract approved
 
 User explicitly selected "Approve and build this contract" for

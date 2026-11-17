@@ -1,0 +1,8 @@
+running 2 tests
+test ui::workspace_tests::bulk_subagent_toolbar_copies_the_selected_scope_and_pastes_without_overwriting ... {"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-12223eb731b18ce2ece474774e75f470","status":null,"timestamp":"2026-11-17T21:44:14.063Z"}
+ok
+test ui::workspace_tests::subagent_rows_open_rendered_popups_and_file_paths_offer_finder ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 266 filtered out; finished in 3.12s
+running 1 test
+test native_workspace_apis_edit_the_fixture_file_convert_agents_and_read_session_chunks ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s

@@ -1,3 +1,39 @@
+## November 17 — Servers install modal
+
+`mod.rs` renders the Install MCPs shortcut and overlays its chooser and results on Servers. The widget state keeps the modal's visibility separate from discovery results and job tracking. The same setup API handles discovery and installation. Install status is matched to the discovery row by configuration path and server name. `components.rs` and `surface.rs` draw the inline status and animate only the installing bar.
+
+`theme.rs` uses white for selectable unchecked install boxes and gray for unavailable rows. Failed rows show their preparation message on hover over the shared info icon. `workspace.rs` pastes clipboard text into the open instructions draft through the existing editor and Undo flow. `components.rs` and `surface.rs` give shared auth key buttons a neutral gray glow.
+
+## November 17 — Claude subagent metadata inputs
+
+The Edit popup updates Name and Description in the current draft of an existing Claude subagent. It uses the same Undo and Save flow as raw editing. Save writes to the selected definition path.
+
+## November 17 — Workspace loading label
+
+The shared loading overlay in `components.rs` centers **Loading...** during pending Sessions lists, conversation popups and subagent popups.
+
+## November 17 — model picker and subagent card actions
+
+`workspace.rs` loads the active catalog on first Add or Edit, formats the capped menu, and sends scoped row Paste and confirmed Delete operations. Each card uses the shared Copy, Paste and X actions.
+
+## November 17 — compact subagent feedback and steady clipboard buttons
+
+The Subagents toolbar owns the bulk clipboard result and draws it before the two icons. The editor places Save errors and converter details beside Save. The shared compact error shows full details on hover. The bulk clipboard icons keep their white raised face and capture presses while disabled to prevent a window drag.
+
+## November 17 — Copy all and Paste all subagents
+
+`workspace.rs` uses the visible subagent list and scope for Copy all. Toolbar Paste accepts either one copied card or a bundle. `workspace/bulk.rs` wraps the current file APIs. The toolbar reuses the popup glyphs and refreshes the list after creating files.
+
+## November 17 — Add subagent
+
+`workspace.rs` uses the shared blue style for Add subagent and opens the existing popup with an empty, focused definition editor. The filename sets a path in the selected agent folder. The shared Paste control uses the system clipboard on click. Plain text goes into the editor. The existing conversion and save APIs handle copied definitions and changes to disk.
+
+## November 17 — startup cards, Finder, subagent preview and empty panels
+
+`mod.rs` marks the first installed-server response for its startup entrance. `surface.rs` uses one first-redraw clock for all rows. Each row waits its turn, then grows and settles in its original slot. The existing manual refresh uses its earlier scale motion.
+
+`components.rs` shares the Finder button across instruction and subagent paths. The face is blue and the solid white icon has cutouts for the eyes and face lines. The shared empty message takes the full panel and centers its text. In `workspace.rs`, a subagent preview keeps the path above its single scroller and lets the selectable instructions take their full height. Copy retains its clipboard operation without a success line.
+
 ## November13 — whole raw loading and compact tools
 
 The current chunk interface now reads to EOF while the popup is open, stops follow-up dispatch on close and resumes incomplete cached logs. Read more/early assistant targets are removed. Per-log expanded tool IDs keep named results collapsed by default with exact Copy and shared code blocks on expansion. Existing call IDs associate names; no additional guessed record formats were added.9widget cases, signed build and independent frontend review pass. This is preparatory frontend work; modern native reconstruction still awaits official reader/backend integration and user contract input.

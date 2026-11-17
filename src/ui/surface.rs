@@ -2,10 +2,11 @@
 //! resvg renders compact corner/edge textures, reused across page and button states.
 use iced::{advanced::{self, layout, mouse, overlay, renderer, widget::{self,Tree}, Clipboard, Layout, Shell, Widget}, Background, Color, Element, Event, Length, Padding, Rectangle, Renderer, Size, Theme, Vector};
 use std::{rc::Rc,cell::{RefCell,Cell},collections::VecDeque};
+use std::time::{Duration, Instant};
 use super::theme;
 
 #[derive(Clone,Copy,PartialEq,Eq)]
-pub(super) enum Effect { Panel, Control, Accent, Inset, Glow, RefreshGlow, DangerGlow, Window }
+pub(super) enum Effect { Panel, Control, Accent, Inset, Glow, RefreshGlow, AuthGlow, DangerGlow, Window }
 #[derive(Clone,Copy)]
 struct Shadow { x:f32,y:f32,blur:f32,color:Color,inner:bool }
 const fn shadow(x:f32,y:f32,blur:f32,r:u8,g:u8,b:u8,alpha:f32,inner:bool)->Shadow { Shadow{x,y,blur,color:Color::from_rgba8(r,g,b,alpha),inner} }
@@ -27,6 +28,7 @@ const INSET:[Shadow;2]=[
 ];
 const GLOW:[Shadow;1]=[shadow(0.0,0.0,16.0,149,212,241,0.32,false)];
 const REFRESH_GLOW:[Shadow;2]=[shadow(0.0,0.0,24.0,115,202,245,0.72,false),shadow(0.0,0.0,10.0,149,212,241,0.65,false)];
+const AUTH_GLOW:[Shadow;2]=[shadow(0.0,0.0,24.0,120,120,120,0.52,false),shadow(0.0,0.0,10.0,165,165,165,0.52,false)];
 const DANGER_GLOW:[Shadow;2]=[shadow(0.0,0.0,24.0,198,69,69,0.64,false),shadow(0.0,0.0,10.0,225,110,110,0.50,false)];
 const HOVER_FADE:std::time::Duration=std::time::Duration::from_millis(150);
 fn rgba(color:Color)->String {format!("rgb({},{},{})",(color.r*255.0).round() as u8,(color.g*255.0).round() as u8,(color.b*255.0).round() as u8)}
@@ -35,7 +37,7 @@ fn shadow_padding(shadows:&[Shadow])->f32{shadows.iter().map(|s|s.x.abs().max(s.
 
 /// Generate only the decoration, never a screenshot or a replacement for widget content.
 pub(super) fn effect_svg(width:f32,height:f32,radius:f32,color:Color,effect:Effect)->(iced::advanced::svg::Handle,f32) {
-    let shadows:&[Shadow]=match effect {Effect::Panel=>&PANEL,Effect::Control=>&CONTROL,Effect::Accent=>&ACCENT,Effect::Inset=>&INSET,Effect::Glow=>&GLOW,Effect::RefreshGlow=>&REFRESH_GLOW,Effect::DangerGlow=>&DANGER_GLOW,Effect::Window=>&WINDOW};
+    let shadows:&[Shadow]=match effect {Effect::Panel=>&PANEL,Effect::Control=>&CONTROL,Effect::Accent=>&ACCENT,Effect::Inset=>&INSET,Effect::Glow=>&GLOW,Effect::RefreshGlow=>&REFRESH_GLOW,Effect::AuthGlow=>&AUTH_GLOW,Effect::DangerGlow=>&DANGER_GLOW,Effect::Window=>&WINDOW};
     let pad=shadow_padding(shadows);
     let w=width+2.0*pad;let h=height+2.0*pad;
     let mut primitives=String::new();
@@ -50,7 +52,7 @@ pub(super) fn effect_svg(width:f32,height:f32,radius:f32,color:Color,effect:Effe
     let mut merge=String::from("<feMerge>");
     // SVG merge layers are back-to-front, the reverse of the CSS shadow list.
     for index in (0..shadows.len()).filter(|index|!shadows[*index].inner){merge.push_str(&format!("<feMergeNode in='s{index}'/>"));}
-    if !matches!(effect,Effect::Glow|Effect::RefreshGlow|Effect::DangerGlow){merge.push_str("<feMergeNode in='SourceGraphic'/>");}
+    if !matches!(effect,Effect::Glow|Effect::RefreshGlow|Effect::AuthGlow|Effect::DangerGlow){merge.push_str("<feMergeNode in='SourceGraphic'/>");}
     for index in (0..shadows.len()).filter(|index|shadows[*index].inner){merge.push_str(&format!("<feMergeNode in='s{index}'/>"));}
     merge.push_str("</feMerge>");
     let svg=format!("<svg xmlns='http://www.w3.org/2000/svg' width='{w}' height='{h}' viewBox='0 0 {w} {h}'><defs><filter id='depth' x='0' y='0' width='{w}' height='{h}' filterUnits='userSpaceOnUse' primitiveUnits='userSpaceOnUse' color-interpolation-filters='sRGB'>{primitives}{merge}</filter></defs><rect x='{pad}' y='{pad}' width='{width}' height='{height}' rx='{radius}' fill='{}' fill-opacity='{}' filter='url(#depth)'/></svg>",rgba(color),color.a);
@@ -69,7 +71,7 @@ struct Raster {key:RasterKey,handle:iced::advanced::image::Handle,_allocation:ic
 fn paint(renderer:&mut Renderer,bounds:Rectangle,viewport:Rectangle,color:Color,radius:f32,effect:Effect,opacity:f32,cache:&RefCell<Option<Raster>>){
     use iced::advanced::image::Renderer as _;
     if bounds.width<=0.0||bounds.height<=0.0{return;}
-    let shadows:&[Shadow]=match effect{Effect::Panel=>&PANEL,Effect::Control=>&CONTROL,Effect::Accent=>&ACCENT,Effect::Inset=>&INSET,Effect::Glow=>&GLOW,Effect::RefreshGlow=>&REFRESH_GLOW,Effect::DangerGlow=>&DANGER_GLOW,Effect::Window=>&WINDOW};
+    let shadows:&[Shadow]=match effect{Effect::Panel=>&PANEL,Effect::Control=>&CONTROL,Effect::Accent=>&ACCENT,Effect::Inset=>&INSET,Effect::Glow=>&GLOW,Effect::RefreshGlow=>&REFRESH_GLOW,Effect::AuthGlow=>&AUTH_GLOW,Effect::DangerGlow=>&DANGER_GLOW,Effect::Window=>&WINDOW};
     let pad=shadow_padding(shadows);
     let image_bounds=Rectangle{x:bounds.x-pad,y:bounds.y-pad,width:bounds.width+2.0*pad,height:bounds.height+2.0*pad};
     // Shadows contain only soft gradients. Rasterize at logical-pixel density;
@@ -151,13 +153,22 @@ fn paint(renderer:&mut Renderer,bounds:Rectangle,viewport:Rectangle,color:Color,
 }
 
 type Style<'a> = Rc<dyn Fn(&Theme,iced::widget::button::Status)->iced::widget::button::Style+'a>;
-struct Interactive<'a>{style:Style<'a>,enabled:bool,refresh:bool}
+struct Interactive<'a>{style:Style<'a>,enabled:bool,hover_glow:Effect}
 #[derive(Default)]
-struct State{scroll_id:u64,pressed:bool,raster:RefCell<Option<Raster>>,glow_raster:RefCell<Option<Raster>>,hover_started:Option<std::time::Instant>,hover_progress:f32,spin_angle:f32,spin_started:Option<std::time::Instant>,pop_generation:u64,pop_started:Option<std::time::Instant>,pop_progress:f32}
-pub(super) struct Surface<'a,M>{content:Element<'a,M>,color:Color,radius:f32,effect:Effect,interactive:Option<Interactive<'a>>,emphasize:bool,scale:Option<f32>,spin:Option<(bool,bool)>,contain_scroll:bool,pop:Option<(u64,std::time::Duration)>}
+struct State{scroll_id:u64,pressed:bool,raster:RefCell<Option<Raster>>,glow_raster:RefCell<Option<Raster>>,hover_started:Option<std::time::Instant>,hover_progress:f32,spin_angle:f32,spin_started:Option<std::time::Instant>,pop_generation:u64,pop_started:Option<std::time::Instant>,pop_progress:f32,startup_progress:Option<f32>}
+#[derive(Clone, Copy)]
+enum PopIn<'a> {
+    Still,
+    Startup { clock: &'a Cell<Option<Instant>>, delay: Duration },
+    Reload { generation: u64, delay: Duration },
+}
+pub(super) struct Surface<'a,M>{content:Element<'a,M>,color:Color,radius:f32,effect:Effect,interactive:Option<Interactive<'a>>,emphasize:bool,scale:Option<f32>,spin:Option<(bool,bool)>,contain_scroll:bool,pop:Option<PopIn<'a>>}
 pub(super) fn wrap<'a,M:'a>(content:impl Into<Element<'a,M>>,color:Color,radius:f32,inset:bool)->Element<'a,M>{
     let effect=if inset{Effect::Inset}else if radius<=12.0{Effect::Control}else{Effect::Panel};
     Element::new(Surface{content:content.into(),color,radius,effect,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:false,pop:None})
+}
+pub(super) fn raised_control<'a,M:'a>(content:impl Into<Element<'a,M>>)->Element<'a,M>{
+    Element::new(Surface{content:content.into(),color:theme::SURFACE,radius:16.0,effect:Effect::Control,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:false,pop:None})
 }
 pub(super) fn window<'a,M:'a>(content:impl Into<Element<'a,M>>)->Element<'a,M>{
     Element::new(Surface{content:content.into(),color:theme::SURFACE,radius:theme::WINDOW_RADIUS,effect:Effect::Window,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:false,pop:None})
@@ -172,14 +183,128 @@ pub(super) fn with_scale<'a,M:'a>(content:impl Into<Element<'a,M>>,scale:f32)->E
 pub(super) fn refresh_glyph<'a,M:'a>(enabled:bool,running:bool)->Element<'a,M>{
     Element::new(Surface{content:iced::widget::Space::new().width(44).height(44).into(),color:Color::TRANSPARENT,radius:0.0,effect:Effect::Control,interactive:None,emphasize:false,scale:None,spin:Some((enabled,running)),contain_scroll:false,pop:None})
 }
+
+/// An activity cue for operations that report a state without a percentage.
+pub(super) enum ActivityBar {
+    Waiting,
+    Moving,
+    Complete(Color),
+}
+
+#[derive(Default)]
+struct ActivityBarState {
+    started: Option<Instant>,
+    position: f32,
+}
+
+impl<M> Widget<M, Theme, Renderer> for ActivityBar {
+    fn size(&self) -> Size<Length> {
+        Size::new(100.into(), 6.into())
+    }
+
+    fn tag(&self) -> widget::tree::Tag {
+        widget::tree::Tag::of::<ActivityBarState>()
+    }
+
+    fn state(&self) -> widget::tree::State {
+        widget::tree::State::new(ActivityBarState::default())
+    }
+
+    fn layout(
+        &mut self,
+        _tree: &mut Tree,
+        _renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        layout::atomic(limits, 100, 6)
+    }
+
+    fn operate(
+        &mut self,
+        _tree: &mut Tree,
+        layout: Layout<'_>,
+        _renderer: &Renderer,
+        operation: &mut dyn widget::Operation,
+    ) {
+        operation.container(None, layout.bounds());
+    }
+
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &Event,
+        layout: Layout<'_>,
+        _cursor: mouse::Cursor,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, M>,
+        viewport: &Rectangle,
+    ) {
+        if matches!(self, Self::Moving)
+            && let Event::Window(iced::window::Event::RedrawRequested(now)) = event
+            && layout.bounds().intersection(viewport).is_some()
+        {
+            let state = tree.state.downcast_mut::<ActivityBarState>();
+            let started = *state.started.get_or_insert(*now);
+            let cycle = now.saturating_duration_since(started).as_secs_f32() % 2.0;
+            state.position = 1.0 - (cycle - 1.0).abs();
+            shell.request_redraw_at(*now + Duration::from_millis(33));
+        }
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        _theme: &Theme,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        _cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        use advanced::Renderer as _;
+        let bounds = layout.bounds();
+        if bounds.intersection(viewport).is_none() {
+            return;
+        }
+        let quad = renderer::Quad {
+            bounds,
+            border: iced::Border { radius: (bounds.height / 2.0).into(), ..Default::default() },
+            ..Default::default()
+        };
+        renderer.fill_quad(quad, theme::INSTALL_PROGRESS_TRACK);
+        match self {
+            Self::Waiting => {}
+            Self::Moving => {
+                let position = tree.state.downcast_ref::<ActivityBarState>().position;
+                let width = bounds.width * 0.34;
+                let segment = Rectangle {
+                    x: bounds.x + (bounds.width - width) * position,
+                    width,
+                    ..bounds
+                };
+                renderer.fill_quad(renderer::Quad { bounds: segment, ..quad }, theme::ACCENT);
+            }
+            Self::Complete(color) => renderer.fill_quad(quad, *color),
+        }
+    }
+}
+
 /// Let the native child scroll first, then consume wheel input even at its
 /// boundary so a surrounding scroll area cannot take over the gesture.
 pub(super) fn contain_scroll<'a,M:'a>(content:impl Into<Element<'a,M>>)->Element<'a,M>{
     Element::new(Surface{content:content.into(),color:Color::TRANSPARENT,radius:0.0,effect:Effect::Panel,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:true,pop:None})
 }
-/// Replay a short visual entrance without replacing card data or widget state.
-pub(super) fn pop_in<'a,M:'a>(content:impl Into<Element<'a,M>>,generation:u64,index:usize)->Element<'a,M>{
-    Element::new(Surface{content:content.into(),color:Color::TRANSPARENT,radius:0.0,effect:Effect::Panel,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:false,pop:Some((generation,std::time::Duration::from_millis(index as u64*45)))})
+/// Keep the card in layout while its startup or manual reload entrance draws.
+pub(super) fn pop_in<'a,M:'a>(content:impl Into<Element<'a,M>>,generation:u64,index:usize,startup:Option<&'a Cell<Option<Instant>>>)->Element<'a,M>{
+    let pop = if let Some(clock) = startup {
+        PopIn::Startup { clock, delay: Duration::from_millis(index as u64 * 120) }
+    } else if generation != 0 {
+        PopIn::Reload { generation, delay: Duration::from_millis(index as u64 * 45) }
+    } else {
+        PopIn::Still
+    };
+    Element::new(Surface{content:content.into(),color:Color::TRANSPARENT,radius:0.0,effect:Effect::Panel,interactive:None,emphasize:false,scale:None,spin:None,contain_scroll:false,pop:Some(pop)})
 }
 impl<M> Widget<M,Theme,Renderer> for Surface<'_,M>{
     fn size(&self)->Size<Length>{self.content.as_widget().size()}
@@ -211,7 +336,32 @@ impl<M> Widget<M,Theme,Renderer> for Surface<'_,M>{
             }
         }
         if self.scale.is_some()&&matches!(event,Event::Mouse(mouse::Event::ButtonPressed(_)|mouse::Event::ButtonReleased(_)|mouse::Event::CursorLeft)){super::scroll_gesture::reset();}
-        if let Some((generation,delay))=self.pop{
+        if let Some(PopIn::Startup { clock, delay }) = self.pop {
+            let state = tree.state.downcast_mut::<State>();
+            if let Event::Window(iced::window::Event::RedrawRequested(now)) = event {
+                // All cards use the timestamp of the first painted frame.
+                let started = clock.get().unwrap_or_else(|| {
+                    clock.set(Some(*now));
+                    *now
+                });
+                let entrance = started + delay;
+                state.startup_progress = now.checked_duration_since(entrance)
+                    .map(|elapsed| (elapsed.as_secs_f32() / 0.27).min(1.0));
+                if layout.bounds().intersection(viewport).is_some() {
+                    match state.startup_progress {
+                        None => shell.request_redraw_at(entrance),
+                        Some(progress) if progress < 1.0 => shell.request_redraw(),
+                        _ => {}
+                    }
+                }
+            } else if state.startup_progress != Some(1.0) {
+                return;
+            }
+            if state.startup_progress != Some(1.0) {
+                routed_cursor = mouse::Cursor::Unavailable;
+            }
+        }
+        if let Some(PopIn::Reload { generation, delay })=self.pop{
             let state=tree.state.downcast_mut::<State>();
             let now=if let Event::Window(iced::window::Event::RedrawRequested(now))=event{*now}else{std::time::Instant::now()};
             if state.pop_generation!=generation{state.pop_generation=generation;state.pop_started=Some(now);state.pop_progress=0.0;}
@@ -246,18 +396,46 @@ impl<M> Widget<M,Theme,Renderer> for Surface<'_,M>{
         self.content.as_widget_mut().update(&mut tree.children[0],event,layout,routed_cursor,renderer,clipboard,shell,viewport);
         if self.contain_scroll&&wheel{super::scroll_gesture::leave(scroll_id);shell.capture_event();}
     }
-    fn mouse_interaction(&self,tree:&Tree,layout:Layout<'_>,cursor:mouse::Cursor,viewport:&Rectangle,renderer:&Renderer)->mouse::Interaction{self.content.as_widget().mouse_interaction(&tree.children[0],layout,cursor,viewport,renderer)}
+    fn mouse_interaction(&self,tree:&Tree,layout:Layout<'_>,cursor:mouse::Cursor,viewport:&Rectangle,renderer:&Renderer)->mouse::Interaction{
+        if matches!(self.pop, Some(PopIn::Startup { .. })) && tree.state.downcast_ref::<State>().startup_progress != Some(1.0) {
+            return mouse::Interaction::None;
+        }
+        self.content.as_widget().mouse_interaction(&tree.children[0],layout,cursor,viewport,renderer)
+    }
     fn overlay<'a>(&'a mut self,tree:&'a mut Tree,layout:Layout<'a>,renderer:&Renderer,viewport:&Rectangle,translation:Vector)->Option<overlay::Element<'a,M,Theme,Renderer>>{self.content.as_widget_mut().overlay(&mut tree.children[0],layout,renderer,viewport,translation)}
     fn draw(&self,tree:&Tree,renderer:&mut Renderer,theme:&Theme,style:&renderer::Style,layout:Layout<'_>,cursor:mouse::Cursor,viewport:&Rectangle){
         use advanced::Renderer as _;
         let bounds=layout.bounds();if bounds.intersection(viewport).is_none(){return;}
-        if self.pop.is_some(){
-            let state=tree.state.downcast_ref::<State>();
-            let progress=if state.pop_started.is_some(){state.pop_progress}else{1.0};
-            let scale=1.0-0.08*(1.0-progress).powi(3);
+        if let Some(pop) = self.pop {
+            let state = tree.state.downcast_ref::<State>();
+            let (scale, shift, cursor) = match pop {
+                PopIn::Still => (1.0, 0.0, cursor),
+                PopIn::Startup { .. } => {
+                    let Some(progress) = state.startup_progress else { return; };
+                    if progress == 1.0 {
+                        (1.0, 0.0, cursor)
+                    } else {
+                        // Ease past full size, then settle back to the exact layout.
+                        let remaining = progress - 1.0;
+                        let growth = 1.0 + 3.25 * remaining.powi(3) + 2.25 * remaining.powi(2);
+                        (0.80 + 0.20 * growth, 14.0 * (1.0 - progress).powi(3), mouse::Cursor::Unavailable)
+                    }
+                }
+                PopIn::Reload { .. } => {
+                    let progress = if state.pop_started.is_some() { state.pop_progress } else { 1.0 };
+                    (1.0 - 0.08 * (1.0 - progress).powi(3), -8.0 * (1.0 - progress), cursor)
+                }
+            };
+            if scale == 1.0 && shift == 0.0 {
+                self.content.as_widget().draw(&tree.children[0],renderer,theme,style,layout,cursor,viewport);
+                return;
+            }
             let center=bounds.center();
-            let transform=iced::Transformation::translate(center.x,center.y-8.0*(1.0-progress))*iced::Transformation::scale(scale)*iced::Transformation::translate(-center.x,-center.y);
-            renderer.with_transformation(transform,|renderer|self.content.as_widget().draw(&tree.children[0],renderer,theme,style,layout,cursor,viewport));return;
+            let transform=iced::Transformation::translate(center.x,center.y+shift)*iced::Transformation::scale(scale)*iced::Transformation::translate(-center.x,-center.y);
+            // Express the same clip in the card's scaled coordinates.
+            let viewport = if matches!(pop, PopIn::Startup { .. }) { *viewport * transform.inverse() } else { *viewport };
+            renderer.with_transformation(transform,|renderer|self.content.as_widget().draw(&tree.children[0],renderer,theme,style,layout,cursor,&viewport));
+            return;
         }
         if self.contain_scroll{
             self.content.as_widget().draw(&tree.children[0],renderer,theme,style,layout,cursor,viewport);return;
@@ -279,7 +457,8 @@ impl<M> Widget<M,Theme,Renderer> for Surface<'_,M>{
                 if let Some(Background::Color(color))=appearance.background{
                     let state=tree.state.downcast_ref::<State>();
                     if control.enabled&&state.hover_progress>0.0{
-                        paint(renderer,bounds,*viewport,Color::WHITE,appearance.border.radius.top_left,if color==theme::DANGER{Effect::DangerGlow}else if control.refresh{Effect::RefreshGlow}else{Effect::Glow},state.hover_progress,&state.glow_raster);
+                        let glow = if color == theme::DANGER { Effect::DangerGlow } else { control.hover_glow };
+                        paint(renderer,bounds,*viewport,Color::WHITE,appearance.border.radius.top_left,glow,state.hover_progress,&state.glow_raster);
                     }
                     let selected=appearance.border.width>0.0;
                     let effect=if selected||(status==Status::Disabled&&color==theme::SURFACE){Effect::Inset}else if color==theme::ACCENT{Effect::Accent}else{Effect::Control};
@@ -299,10 +478,10 @@ impl<M> Widget<M,Theme,Renderer> for Surface<'_,M>{
 }
 
 /// Keeps stock Iced button behavior and builder methods; only its decoration differs.
-pub(super) struct Button<'a,M>{inner:iced::widget::Button<'a,M>,style:Style<'a>,enabled:bool,refresh:bool}
+pub(super) struct Button<'a,M>{inner:iced::widget::Button<'a,M>,style:Style<'a>,enabled:bool,hover_glow:Effect}
 impl<'a,M:Clone+'a> Button<'a,M>{
-    pub(super) fn new(content:impl Into<Element<'a,M>>)->Self{Self{inner:iced::widget::button(content),style:Rc::new(theme::button),enabled:false,refresh:false}}
-    pub(super) fn strong_hover(mut self)->Self{self.refresh=true;self}
+    pub(super) fn new(content:impl Into<Element<'a,M>>)->Self{Self{inner:iced::widget::button(content),style:Rc::new(theme::button),enabled:false,hover_glow:Effect::Glow}}
+    pub(super) fn hover_glow(mut self,glow:Effect)->Self{self.hover_glow=glow;self}
     pub(super) fn padding(mut self,value:impl Into<Padding>)->Self{self.inner=self.inner.padding(value);self}
     pub(super) fn width(mut self,value:impl Into<Length>)->Self{self.inner=self.inner.width(value);self}
     pub(super) fn height(mut self,value:impl Into<Length>)->Self{self.inner=self.inner.height(value);self}
@@ -314,7 +493,7 @@ impl<'a,M:Clone+'a> From<Button<'a,M>> for Element<'a,M>{
     fn from(button:Button<'a,M>)->Self{
         let style=button.style.clone();
         let inner=button.inner.style(move|theme,status|{let mut s=style(theme,status);s.background=None;s.shadow=Default::default();s.border=Default::default();s});
-        Element::new(Surface{content:inner.into(),color:Color::TRANSPARENT,radius:16.0,effect:Effect::Control,interactive:Some(Interactive{style:button.style,enabled:button.enabled,refresh:button.refresh}),emphasize:false,scale:None,spin:None,contain_scroll:false,pop:None})
+        Element::new(Surface{content:inner.into(),color:Color::TRANSPARENT,radius:16.0,effect:Effect::Control,interactive:Some(Interactive{style:button.style,enabled:button.enabled,hover_glow:button.hover_glow}),emphasize:false,scale:None,spin:None,contain_scroll:false,pop:None})
     }
 }
 

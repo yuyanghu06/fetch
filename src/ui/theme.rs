@@ -14,7 +14,9 @@ pub(super) const SESSION_ASSISTANT_BACKGROUND: Color = Color::from_rgb8(230,230,
 pub(super) const ACCENT: Color = Color::from_rgb8(149,212,241);
 pub(super) const INK: Color = Color::from_rgb8(39,43,48);
 pub(super) const MUTED: Color = Color::from_rgb8(102,107,112);
+pub(super) const SUCCESS: Color = Color::from_rgb8(119,173,138);
 pub(super) const DANGER: Color = Color::from_rgb8(198,69,69);
+pub(super) const INSTALL_PROGRESS_TRACK: Color = Color::from_rgb8(227,230,233);
 pub(super) const APP_TITLE: f32 = 28.0;
 pub(super) const APP_LOGO_SIZE: f32 = 22.0;
 pub(super) const WINDOW_RADIUS: f32 = 32.0;
@@ -39,7 +41,7 @@ pub(super) const DELETE_ICON_SIZE: f32 = 18.0;
 pub(super) const INPUT_PADDING: f32 = 12.0;
 pub(super) const CHECKBOX_SIZE: f32 = 18.0;
 pub(super) const CHECKBOX_GAP: f32 = 8.0;
-pub(super) const INSTALLED_LABEL_ALPHA: f32 = 0.5;
+pub(super) const UNAVAILABLE_CHECKBOX_LABEL_ALPHA: f32 = 0.5;
 pub(super) const CONSOLE_HEIGHT: f32 = 240.0;
 pub(super) const CONSOLE_TEXT_SIZE: f32 = 13.0;
 pub(super) const CONSOLE_BACKGROUND:Color=Color::from_rgb8(36,43,48);
@@ -47,7 +49,7 @@ pub(super) const CONSOLE_FOREGROUND:Color=Color::from_rgb8(222,226,232);
 pub(super) const CONSOLE_LINE_GAP: f32 = 4.0;
 
 pub(super) fn light() -> Theme {
-    Theme::custom("Fetch warm white", iced::theme::Palette {background:SURFACE,text:INK,primary:ACCENT,success:Color::from_rgb8(119,173,138),danger:DANGER,warning:Color::from_rgb8(165,125,37)})
+    Theme::custom("Fetch warm white", iced::theme::Palette {background:SURFACE,text:INK,primary:ACCENT,success:SUCCESS,danger:DANGER,warning:Color::from_rgb8(165,125,37)})
 }
 pub(super) fn muted_text(_: &Theme) -> widget::text::Style {widget::text::Style {color:Some(MUTED)}}
 // Figma faces are uniform colors. The shared Surface paints the actual
@@ -69,6 +71,13 @@ pub(super) fn selected_button(_: &Theme,status:widget::button::Status)->widget::
 pub(super) fn output_button(_: &Theme,status:widget::button::Status)->widget::button::Style {control(Color::from_rgb8(227,230,233),false,status)}
 pub(super) fn install_button(_: &Theme,status:widget::button::Status)->widget::button::Style {
     let mut style=control(ACCENT,false,status);style.text_color=if status==widget::button::Status::Disabled{MUTED}else{Color::WHITE};style
+}
+pub(super) fn install_selected_button(theme:&Theme,status:widget::button::Status)->widget::button::Style {
+    if status == widget::button::Status::Disabled {
+        output_button(theme, status)
+    } else {
+        install_button(theme, status)
+    }
 }
 pub(super) fn save_button(_: &Theme,status:widget::button::Status)->widget::button::Style {
     let mut style=control(ACCENT,false,status);style.text_color=Color::WHITE;style
@@ -99,8 +108,23 @@ pub(super) fn picker_menu(_: &Theme)->widget::overlay::menu::Style {
 pub(super) fn checkbox(_: &Theme,status:widget::checkbox::Status)->widget::checkbox::Style {
     let mut style=widget::checkbox::primary(&light(),status);style.border.radius=5.0.into();style.border.width=0.0;style.icon_color=Color::WHITE;style
 }
-pub(super) fn installed_checkbox(theme:&Theme,status:widget::checkbox::Status)->widget::checkbox::Style {
-    let mut style=checkbox(theme,status);style.background=Color::from_rgb8(227,230,233).into();style.icon_color=Color::from_rgb8(166,171,178);style.text_color=Some(MUTED.scale_alpha(INSTALLED_LABEL_ALPHA));style
+pub(super) fn install_checkbox(theme: &Theme, status: widget::checkbox::Status) -> widget::checkbox::Style {
+    use widget::checkbox::Status;
+    let mut style = checkbox(theme, status);
+    match status {
+        Status::Active { is_checked: false } | Status::Hovered { is_checked: false } => {
+            style.background = Color::WHITE.into();
+            style.border.width = 1.0;
+            style.border.color = Color::from_rgb8(212, 215, 218);
+        }
+        Status::Disabled { .. } => {
+            style.background = Color::from_rgb8(227, 230, 233).into();
+            style.icon_color = Color::from_rgb8(166, 171, 178);
+            style.text_color = Some(MUTED.scale_alpha(UNAVAILABLE_CHECKBOX_LABEL_ALPHA));
+        }
+        _ => {}
+    }
+    style
 }
 pub(super) fn console(_: &Theme)->widget::container::Style {
     widget::container::Style{background:Some(CONSOLE_BACKGROUND.into()),text_color:Some(CONSOLE_FOREGROUND),border:Border{radius:16.0.into(),..Default::default()},..Default::default()}

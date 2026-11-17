@@ -1,0 +1,51 @@
+running 3 tests
+test ui::workspace_tests::add_subagent_opens_a_blank_editor_and_keeps_the_draft_on_filename_conflict ... UI capture workspace-add-subagent-toolbar 1058x789: 0.009s
+ok
+test ui::workspace_tests::bulk_subagent_toolbar_copies_the_selected_scope_and_pastes_without_overwriting ... {"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-f632005e5ce7911ff038544f18814fd7","status":null,"timestamp":"2026-11-17T21:19:19.673Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-70dd27c72ac7024d4a34ce3ce2370ed8","route":"/api/v1/workspace","status":null,"timestamp":"2026-11-17T21:19:19.679Z"}
+{"elapsed_ms":1,"event":"request_completed","method":"GET","request_id":"fetch-70dd27c72ac7024d4a34ce3ce2370ed8","route":"/api/v1/workspace","status":200,"timestamp":"2026-11-17T21:19:19.680Z"}
+{"elapsed_ms":6,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-f632005e5ce7911ff038544f18814fd7","status":200,"timestamp":"2026-11-17T21:19:19.680Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-84dc31cd65e8839fef1ad54e6d392666","status":null,"timestamp":"2026-11-17T21:19:19.785Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-f0c191929126ad23c06224d1073fc725","route":"/api/v1/workspace/file","status":null,"timestamp":"2026-11-17T21:19:19.786Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"GET","request_id":"fetch-f0c191929126ad23c06224d1073fc725","route":"/api/v1/workspace/file","status":200,"timestamp":"2026-11-17T21:19:19.786Z"}
+{"elapsed_ms":1,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-84dc31cd65e8839fef1ad54e6d392666","status":200,"timestamp":"2026-11-17T21:19:19.787Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-c87a2fef27cfd3b743a1bf55c9ac5799","status":null,"timestamp":"2026-11-17T21:19:19.787Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-12725af2951e3429f67984c1d2d13fc2","route":"/api/v1/workspace/file","status":null,"timestamp":"2026-11-17T21:19:19.787Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"GET","request_id":"fetch-12725af2951e3429f67984c1d2d13fc2","route":"/api/v1/workspace/file","status":200,"timestamp":"2026-11-17T21:19:19.787Z"}
+{"elapsed_ms":0,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-c87a2fef27cfd3b743a1bf55c9ac5799","status":200,"timestamp":"2026-11-17T21:19:19.788Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-0e823da8c3649f0b1a7f867e43e02110","status":null,"timestamp":"2026-11-17T21:19:19.974Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-eeca4807cea09581b52e95e522419b56","route":"/api/v1/workspace","status":null,"timestamp":"2026-11-17T21:19:19.974Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"GET","request_id":"fetch-eeca4807cea09581b52e95e522419b56","route":"/api/v1/workspace","status":200,"timestamp":"2026-11-17T21:19:19.975Z"}
+{"elapsed_ms":1,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-0e823da8c3649f0b1a7f867e43e02110","status":200,"timestamp":"2026-11-17T21:19:19.975Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-93b7c92a2dc4bf64c588604ff7c815c8","status":null,"timestamp":"2026-11-17T21:19:19.976Z"}
+{"elapsed_ms":0,"event":"request_started","method":"PUT","request_id":"fetch-154df1826ed8f3eaf4e8e3e7bba3b9db","route":"/api/v1/workspace/file","status":null,"timestamp":"2026-11-17T21:19:19.977Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"PUT","request_id":"fetch-154df1826ed8f3eaf4e8e3e7bba3b9db","route":"/api/v1/workspace/file","status":412,"timestamp":"2026-11-17T21:19:19.977Z"}
+{"elapsed_ms":0,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-93b7c92a2dc4bf64c588604ff7c815c8","status":412,"timestamp":"2026-11-17T21:19:19.977Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-5e5e8f48c86123429d92abf67452738a","status":null,"timestamp":"2026-11-17T21:19:19.977Z"}
+{"elapsed_ms":0,"event":"request_started","method":"PUT","request_id":"fetch-0ed7ecc1dca4e1736864a1d402d91d5e","route":"/api/v1/workspace/file","status":null,"timestamp":"2026-11-17T21:19:19.977Z"}
+{"elapsed_ms":15,"event":"request_completed","method":"PUT","request_id":"fetch-0ed7ecc1dca4e1736864a1d402d91d5e","route":"/api/v1/workspace/file","status":200,"timestamp":"2026-11-17T21:19:19.993Z"}
+{"elapsed_ms":16,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-5e5e8f48c86123429d92abf67452738a","status":200,"timestamp":"2026-11-17T21:19:19.993Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-cf4f9ba05701402a7cde61a69cdea6ec","status":null,"timestamp":"2026-11-17T21:19:19.993Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-75b89b4d2117bc5e4a354ed48229e9d4","route":"/api/v1/workspace","status":null,"timestamp":"2026-11-17T21:19:19.994Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"GET","request_id":"fetch-75b89b4d2117bc5e4a354ed48229e9d4","route":"/api/v1/workspace","status":200,"timestamp":"2026-11-17T21:19:19.994Z"}
+{"elapsed_ms":0,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-cf4f9ba05701402a7cde61a69cdea6ec","status":200,"timestamp":"2026-11-17T21:19:19.994Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-cc049884e1274809402edf3cb9de6c45","status":null,"timestamp":"2026-11-17T21:19:20.006Z"}
+{"elapsed_ms":0,"event":"request_started","method":"GET","request_id":"fetch-502155bc36bab8bb68fb29fbead7c73d","route":"/api/v1/workspace","status":null,"timestamp":"2026-11-17T21:19:20.007Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"GET","request_id":"fetch-502155bc36bab8bb68fb29fbead7c73d","route":"/api/v1/workspace","status":200,"timestamp":"2026-11-17T21:19:20.007Z"}
+{"elapsed_ms":1,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-cc049884e1274809402edf3cb9de6c45","status":200,"timestamp":"2026-11-17T21:19:20.007Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-0e8c9486634428289d39ed4fad0ab958","status":null,"timestamp":"2026-11-17T21:19:20.007Z"}
+{"elapsed_ms":0,"event":"request_started","method":"POST","request_id":"fetch-6bdb2fdc6be19442a07ba3946d438f06","route":"/api/v1/workspace/agents/convert","status":null,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"POST","request_id":"fetch-6bdb2fdc6be19442a07ba3946d438f06","route":"/api/v1/workspace/agents/convert","status":200,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-0e8c9486634428289d39ed4fad0ab958","status":200,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-49fd88e4a23278549a02151df57298a2","status":null,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"request_started","method":"POST","request_id":"fetch-d877b02aed9d4026a938bce492a22bd1","route":"/api/v1/workspace/agents/convert","status":null,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"request_completed","method":"POST","request_id":"fetch-d877b02aed9d4026a938bce492a22bd1","route":"/api/v1/workspace/agents/convert","status":200,"timestamp":"2026-11-17T21:19:20.008Z"}
+{"elapsed_ms":0,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-49fd88e4a23278549a02151df57298a2","status":200,"timestamp":"2026-11-17T21:19:20.009Z"}
+{"elapsed_ms":0,"event":"upstream_request_started","operation":"local_api","parent_request_id":null,"request_id":"fetch-26db3cb834651e661e3db382da80705d","status":null,"timestamp":"2026-11-17T21:19:20.009Z"}
+{"elapsed_ms":0,"event":"request_started","method":"PUT","request_id":"fetch-896ae541191c88ca12f0e559814ae988","route":"/api/v1/workspace/file","status":null,"timestamp":"2026-11-17T21:19:20.009Z"}
+{"elapsed_ms":7,"event":"request_completed","method":"PUT","request_id":"fetch-896ae541191c88ca12f0e559814ae988","route":"/api/v1/workspace/file","status":200,"timestamp":"2026-11-17T21:19:20.016Z"}
+{"elapsed_ms":8,"event":"upstream_request_completed","operation":"local_api","parent_request_id":null,"request_id":"fetch-26db3cb834651e661e3db382da80705d","status":200,"timestamp":"2026-11-17T21:19:20.017Z"}
+ok
+test ui::workspace_tests::workspace_logo_choices_filter_instructions_agents_and_sessions_in_one_row ... UI capture workspace-claude-instructions-logo 874x630: 0.202s
+ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 265 filtered out; finished in 3.38s
