@@ -1,3 +1,7 @@
+## November 17 — app approval and unknown server sign-in
+
+Connect apps widget fixtures cover a Codex project approval and a shared Claude Code approval at minimum window size. The notice sits beside the matching app key only in the approved scope. The Servers fixture checks that an unknown sign-in status has no warning and that clicking its disabled key starts no action. A server that requires sign-in still shows its warning.
+
 ## November 17 — install checkboxes, Instructions Paste and auth glow
 
 Offscreen fixtures verify the selectable and unsupported checkbox palettes, original failure detail on hover, Paste and Copy in both Instructions editors, and neutral key highlights at the two sizes. The install and clipboard replies are simulated. [Evidence](../milestones/history/2026-11-17_18-40-33-760776-tester-verify-install-paste-and-key-glow.md)

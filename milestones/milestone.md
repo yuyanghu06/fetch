@@ -1,3 +1,7 @@
+## November 17 — inline approval and disabled unknown sign-in keys
+
+Connect apps shows approval beside the app key for the approved scope. Servers hides the unknown sign-in warning and disables that key. Four focused native widget tests passed and independent review accepted the change. [Changes and checks](history/2026-11-17_19-00-06-952482-orchestrator-verify-inline-approval-and-disabled-server-key.md)
+
 ## November 17 — macOS preview in preparation
 
 Fetch sets its dog icon before Iced opens a window. The app bundle also declares the dog icon as a startup asset. Two isolated AppKit checks and both development and optimized arm64 builds passed. The GitHub preview is being prepared. [Implementation and build](history/2026-11-17_18-50-48-362010-orchestrator-build-macos-preview.md)

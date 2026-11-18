@@ -570,7 +570,7 @@ impl Desktop {
                 let expanded=self.expanded_servers.contains(&id);
                 let enabled=server["config"]["enabled"].as_bool().unwrap_or(true);
                 let toggle_id=id.clone();let power=components::server_toggle(enabled,(can_change&&!starting).then_some(move|enabled|Message::PowerClicked(toggle_id.clone(),enabled)));
-                let key=components::icon_button(Icon::Key,(can_change&&matches!(auth,"required"|"failed"|"unknown")).then_some(Message::Authenticate(id.clone())));
+                let key=components::icon_button(Icon::Key,(can_change&&matches!(auth,"required"|"failed")).then_some(Message::Authenticate(id.clone())));
                 let restart=components::refresh_button(can_change.then_some(Message::RestartClicked(id.clone())),starting);
                 let remove=components::icon_button(Icon::Close,self.can_delete(&id).then_some(Message::Delete(id.clone())));
                 let restarting=starting;

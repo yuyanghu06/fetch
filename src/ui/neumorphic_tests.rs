@@ -1102,10 +1102,24 @@ async fn copy_control_shines_and_confirms_to_its_left_then_clears() {
 async fn starting_servers_spin_without_unknown_warning_and_success_updates_the_card_immediately() {
     let (_directory,mut desktop)=auth_tests::desktop_fixture().await;
     desktop.servers=sample_servers();
-    desktop.servers["servers"][0]["runtime"]=json!({"status":"starting"});
     desktop.servers["servers"][0]["authentication"]=json!({"status":"unknown"});
     let mut fixture=ViewFixture::new(&desktop,window_settings().size).await;
     let pixel_width=fixture.screen.width as usize;
+    let survey=fixture.survey(&desktop);
+    assert!(!survey.text.iter().any(|(text,_)|text=="Sign-in status unknown"));
+    assert!(survey.text.iter().any(|(text,_)|text=="Sign-in required"));
+    let ready_name = survey.text.iter().find(|(text,_)|text=="Filesystem").unwrap().1;
+    let key = survey.containers.iter().filter(|rect| {
+        rect.width == 44.0 && rect.height == 44.0 && rect.x > ready_name.x
+            && (rect.center_y() - ready_name.center_y()).abs() < 2.0
+    }).min_by(|left,right|left.x.total_cmp(&right.x)).unwrap().center();
+    for action in [iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left), iced::mouse::Event::ButtonReleased(iced::mouse::Button::Left)] {
+        let messages = fixture.event(&desktop, iced::Event::Mouse(action), key);
+        assert!(!messages.iter().any(|message| matches!(message, Message::Authenticate(_))), "the unknown sign-in key is disabled");
+    }
+
+    desktop.servers["servers"][0]["runtime"]=json!({"status":"starting"});
+    fixture.relayout(&desktop);
     let survey=fixture.survey(&desktop);
     assert!(!survey.text.iter().any(|(text,_)|text=="Sign-in status unknown"));
     let name=survey.text.iter().find(|(text,_)|text=="Filesystem").unwrap().1;
@@ -1301,6 +1315,52 @@ async fn inline_app_keys_open_and_reopen_dismissible_approval_with_rounded_shadi
             fixture.relayout(&desktop);
             assert!(fixture.survey(&desktop).text.iter().any(|(text,_)|text=="482193"));
         }
+    }
+}
+
+#[tokio::test]
+async fn connector_approval_notice_sits_beside_the_matching_app_key() {
+    use crate::connector::ConnectionContext;
+
+    let (_directory, mut desktop) = auth_tests::desktop_fixture().await;
+    desktop.page = Page::Connect;
+    let project = project_scope::Choice::Project { id: "fixture-project".into(), name: "Fixture project".into() };
+    desktop.projects.records = vec![json!({"id":"fixture-project","name":"Fixture project"})];
+    let mut fixture = ViewFixture::new(&desktop, Size::new(760.0, 520.0)).await;
+    for (client, label, approved_scope, outcome) in [
+        ("codex", "Codex", project.clone(), connector_setup::Event::Saved(
+            "fixture".into(),
+            ConnectionContext { client: "codex".into(), project_id: Some("fixture-project".into()) },
+            Ok(()),
+        )),
+        ("claude-code", "Claude Code", project_scope::Choice::Shared, connector_setup::Event::AutomaticSaved(
+            "fixture".into(), ConnectionContext::global("claude-code".into()), Ok(true),
+        )),
+    ] {
+        let other_scope = if approved_scope == project { project_scope::Choice::Shared } else { project.clone() };
+        let expected = format!("{client} is approved. Reconnect in the coding app if it stopped waiting.");
+        drop(desktop.update(Message::Projects(project_scope::Event::Connection(other_scope.clone()))));
+        drop(desktop.update(Message::Connector(outcome)));
+        fixture.relayout(&desktop);
+        assert!(!fixture.survey(&desktop).text.iter().any(|(text, _)| text == &expected));
+
+        drop(desktop.update(Message::Projects(project_scope::Event::Connection(approved_scope))));
+        fixture.relayout(&desktop);
+        let survey = fixture.survey(&desktop);
+        let heading = survey.text.iter().find(|(text, _)| text == label).unwrap().1;
+        let key = survey.containers.iter().find(|rect| {
+            rect.width == 22.0 && rect.height == 22.0 && (rect.center_y() - heading.center_y()).abs() < 1.0
+        }).unwrap();
+        let mut notices = survey.text.iter().filter(|(text, _)| text == &expected);
+        let notice = notices.next().unwrap().1;
+        assert!(notices.next().is_none(), "approval is only shown once");
+        assert!(notice.x > key.x + key.width && (notice.center_y() - key.center_y()).abs() < 1.0);
+        assert_eq!(survey.text.iter().filter(|(text, _)| text.contains("is approved.")).count(), 1);
+        fixture.export(&desktop, &format!("connect-{client}-approval-inline"));
+
+        drop(desktop.update(Message::Projects(project_scope::Event::Connection(other_scope))));
+        fixture.relayout(&desktop);
+        assert!(!fixture.survey(&desktop).text.iter().any(|(text, _)| text == &expected));
     }
 }
 

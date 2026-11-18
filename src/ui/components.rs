@@ -361,9 +361,16 @@ pub(super) fn server_identity<'a,M:Clone+'a>(name:&str,runtime:&str,auth:&str,re
     let dot_asset=if runtime=="ready"{include_bytes!("assets/67c29.svg").as_slice()}else{include_bytes!("assets/97eb5.svg").as_slice()};
     let dot=svg(svg::Handle::from_memory(dot_asset)).width(iced::Shrink).height(iced::Shrink).style(move|_,_|svg::Style{color:Some(dot_color)});
     let mut content=row![widget::container(icon(if expanded{Icon::ChevronDown}else{Icon::ChevronRight})).center_x(28).center_y(44),text(name.to_owned()).size(theme::SERVER_TITLE).font(theme::BOLD_FONT).line_height(iced::Pixels(24.0)),dot].spacing(10).align_y(iced::Center);
-    let warning=if restart_failed{Some("Restart failed")}else if !matches!(auth,"authenticated"|"not_required")&&!(auth=="unknown"&&matches!(runtime,"starting"|"restarting")){
-        Some(match auth{"required"=>"Sign-in required","failed"=>"Sign-in failed","authenticating"=>"Signing in…",_=>"Sign-in status unknown"})
-    }else{None};
+    let warning = if restart_failed {
+        Some("Restart failed")
+    } else {
+        match auth {
+            "required" => Some("Sign-in required"),
+            "failed" => Some("Sign-in failed"),
+            "authenticating" => Some("Signing in…"),
+            _ => None,
+        }
+    };
     if let Some(warning)=warning{
         content=content.push(svg(svg::Handle::from_memory(include_bytes!("assets/2a1d5.svg").as_slice())).width(18).height(18).content_fit(iced::ContentFit::Contain).style(|_,_|svg::Style{color:Some(Color::from_rgb8(165,125,37))})).push(text(warning).size(13).line_height(iced::Pixels(20.0)).color(Color::from_rgb8(165,125,37)));
     }

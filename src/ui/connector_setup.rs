@@ -27,8 +27,8 @@ pub(super) enum Event {
     Toggle(String, bool),
     Decide(bool),
     Decided(String, bool, Result<Value, String>),
-    Saved(String, String, Result<(), String>),
-    AutomaticSaved(String, String, Result<bool, String>),
+    Saved(String, ConnectionContext, Result<(), String>),
+    AutomaticSaved(String, ConnectionContext, Result<bool, String>),
     Reconciled(Result<(), String>),
     PendingCleared(String, Result<(), String>),
 }
@@ -60,10 +60,22 @@ pub(super) struct State {
     pub(super) creating: bool,
     pub(super) deciding: bool,
     pub(super) status: String,
+    inline_status_context: Option<ConnectionContext>,
     error: Option<String>,
 }
 
 impl State {
+    fn set_status(&mut self, status: impl Into<String>) {
+        self.status = status.into();
+        self.inline_status_context = None;
+    }
+
+    fn connection_approved(&mut self, context: ConnectionContext) {
+        let client = &context.client;
+        self.status = format!("{client} is approved. Reconnect in the coding app if it stopped waiting.");
+        self.inline_status_context = matches!(client.as_str(), "claude-code" | "codex").then_some(context);
+    }
+
     pub(super) fn popup_visible(&self) -> bool {
         self.popup.is_some() && !self.popup_hidden
     }
@@ -123,7 +135,7 @@ impl Desktop {
             Event::AutomaticStarted(name, result) => {
                 self.connector.creating = false;
                 match result {
-                    Ok(()) => self.connector.status = format!("Review the {name} connection request in Fetch."),
+                    Ok(()) => self.connector.set_status(format!("Review the {name} connection request in Fetch.")),
                     Err(error) => self.connector.error = Some(error),
                 }
             }
@@ -143,7 +155,7 @@ impl Desktop {
                 };
                 self.connector.read_generation = self.connector.read_generation.wrapping_add(1);
                 self.connector.creating = true;
-                self.connector.status.clear();
+                self.connector.set_status("");
                 self.connector.error = None;
                 let name = client_name.to_owned();
                 let project_id=self.projects.connection.project_id().map(str::to_owned);
@@ -244,9 +256,7 @@ impl Desktop {
                                     })
                             });
                             if self.connector.owned.len() != before {
-                                self.connector.status =
-                                    "Connection request ended. Set up the app again to retry."
-                                        .into();
+                                self.connector.set_status("Connection request ended. Set up the app again to retry.");
                             }
                             if let Some(active) = &self.connector.popup {
                                 let id = active["request_id"].as_str();
@@ -260,7 +270,7 @@ impl Desktop {
                                 {
                                     if let Some(id) = id {
                                         if self.connector.owned.remove(id).is_some() {
-                                            self.connector.status = "Connection request ended. Set up the app again to retry.".into();
+                                            self.connector.set_status("Connection request ended. Set up the app again to retry.");
                                         }
                                     }
                                     self.connector.popup = None;
@@ -336,7 +346,7 @@ impl Desktop {
                         self.connector.owned.remove(&id);
                         self.connector.claiming.remove(&id);
                         self.connector.popup = None;
-                        self.connector.status = "Connection denied. No access was granted.".into();
+                        self.connector.set_status("Connection denied. No access was granted.");
                         if let Some(name) = self.connector.request_contexts.get(&id).cloned() {
                             return self.clear_automatic_request(id, name);
                         }
@@ -347,7 +357,7 @@ impl Desktop {
                             if let Some(name) = self.connector.request_contexts.get(&id).cloned() {
                                 return self.finish_automatic_connection(id, name);
                             }
-                            self.connector.status = "Connection approved. Waiting for the requesting app to finish connecting.".into();
+                            self.connector.set_status("Connection approved. Waiting for the requesting app to finish connecting.");
                             return Task::none();
                         };
                         self.connector.claiming.insert(id.clone());
@@ -355,13 +365,13 @@ impl Desktop {
                         let origin = self.host.state.origin.clone();
                         let name = owned.client.clone();
                         let context=owned.context.clone();
-                        let saved_name = name.clone();
+                        let saved_context = context.clone();
                         let saved_id = id.clone();
-                        self.connector.status = format!("Saving the {name} connection…");
+                        self.connector.set_status(format!("Saving the {name} connection…"));
                         return Task::perform(async move {
                             let response = claim(root.clone(), &origin, &context, &id, &owned.proof).await?;
                             crate::connector::profile::save_from_response_for_context(root, context, response).await
-                        }, move |result| Message::Connector(Event::Saved(saved_id.clone(), saved_name.clone(), result)));
+                        }, move |result| Message::Connector(Event::Saved(saved_id.clone(), saved_context.clone(), result)));
                     }
                     Ok(_) => self.connector.error = Some("Fetch has not confirmed this approval. Review the request before retrying.".into()),
                     Err(error) => {
@@ -377,18 +387,18 @@ impl Desktop {
                     }
                 }
             }
-            Event::Saved(id, name, result) => {
+            Event::Saved(id, context, result) => {
                 self.connector.claiming.remove(&id);
                 match result {
-                    Ok(()) => self.connector.status = format!("{name} is approved. Reconnect in the coding app if it stopped waiting."),
+                    Ok(()) => self.connector.connection_approved(context),
                     Err(error) => self.connector.error = Some(format!("The connection could not be saved: {error} Retry approval in Fetch.")),
                 }
             }
-            Event::AutomaticSaved(id, name, result) => {
+            Event::AutomaticSaved(id, context, result) => {
                 self.connector.claiming.remove(&id);
                 match result {
-                    Ok(true) => self.connector.status = format!("{name} is approved. Reconnect in the coding app if it stopped waiting."),
-                    Ok(false) => self.connector.status = "Fetch is still waiting for this connection to finish. Reconnect the coding app if needed.".into(),
+                    Ok(true) => self.connector.connection_approved(context),
+                    Ok(false) => self.connector.set_status("Fetch is still waiting for this connection to finish. Reconnect the coding app if needed."),
                     Err(error) => self.connector.error = Some(error),
                 }
             }
@@ -411,10 +421,10 @@ impl Desktop {
         let root = self.host.state.repository.root().to_owned();
         let origin = self.host.state.origin.clone();
         let saved_id = id.clone();
-        let saved_name = context.client.clone();
-        self.connector.status = format!("Saving the {} connection…",context.client);
+        let saved_context = context.clone();
+        self.connector.set_status(format!("Saving the {} connection…", context.client));
         Task::perform(async move { crate::connector::profile::complete_pending_for_context(root, context, origin, id).await },
-            move |result| Message::Connector(Event::AutomaticSaved(saved_id.clone(), saved_name.clone(), result)))
+            move |result| Message::Connector(Event::AutomaticSaved(saved_id.clone(), saved_context.clone(), result)))
     }
 
     fn clear_automatic_request(&mut self, id: String, context: ConnectionContext) -> Task<Message> {
@@ -526,17 +536,26 @@ impl Desktop {
             && !self.connector.creating
             && !self.connector.deciding
             && (self.connector.owned.is_empty() || self.connector_matches(client));
-        components::app_heading(label, logo).push(components::app_auth_button(
+        let mut heading = components::app_heading(label, logo).push(components::app_auth_button(
             enabled.then_some(Message::Connector(Event::Start(client))),
-        ))
+        ));
+        if self.connector.inline_status_context.as_ref().is_some_and(|context| {
+            context.client == client
+                && context.project_id.as_deref() == self.projects.connection.project_id()
+        }) {
+            heading = heading.push(text(self.connector.status.as_str()).size(14).width(iced::Fill)
+                .wrapping(iced::widget::text::Wrapping::WordOrGlyph));
+        }
+        heading
     }
 
     pub(super) fn connector_feedback(&self) -> Option<Element<'_, Message>> {
-        if self.connector.status.is_empty() && self.connector.error.is_none() {
+        let show_status = !self.connector.status.is_empty() && self.connector.inline_status_context.is_none();
+        if !show_status && self.connector.error.is_none() {
             return None;
         }
         let mut feedback = column![].spacing(12);
-        if !self.connector.status.is_empty() {
+        if show_status {
             feedback = feedback.push(text(self.connector.status.as_str()));
         }
         if let Some(error) = &self.connector.error {

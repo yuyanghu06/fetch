@@ -1,3 +1,7 @@
+## November 17 — shared key and inline approval
+
+On Connect apps, the approval notice sits immediately right of the matching app's compact key for the approved connection scope. On Servers, the shared key is disabled for unknown sign-in status and the card omits that warning. The key stays available for sign-in required and failed when server changes are allowed.
+
 ## November 17 — navigation and install modal
 
 The native navbar has Servers, Connect apps and Workspace. A shared white text button beside the Installed servers Refresh opens a shared modal with the existing install controls. The initial form is compact, then the dialog expands for scrollable results and a fixed install footer. The footer action uses a light gray face and dark gray label when disabled. A shared inline status bar animates while a server is installing and shows the reported result when it finishes.

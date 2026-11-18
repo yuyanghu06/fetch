@@ -1,3 +1,7 @@
+## November 17 — inline approval and server keys
+
+`connector_setup.rs` displays an approval beside the key for the app and project that were approved. `components.rs` shows only actionable server sign-in warnings and active sign-in progress. `mod.rs` enables the server key only for required or failed sign-in when server changes are allowed.
+
 ## November 17 — Servers install modal
 
 `mod.rs` renders the Install MCPs shortcut and overlays its chooser and results on Servers. The widget state keeps the modal's visibility separate from discovery results and job tracking. The same setup API handles discovery and installation. Install status is matched to the discovery row by configuration path and server name. `components.rs` and `surface.rs` draw the inline status and animate only the installing bar.

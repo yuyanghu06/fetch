@@ -1,6 +1,7 @@
 ## November 17 — macOS preview
 
 - [x] Set the dog icon before the first window and build for Apple Silicon.
+- [x] Show approval beside the matching app key and disable unknown-status server keys.
 - [ ] Push current source, verify the disk image and publish the preview.
 - [ ] Verify the actual startup and minimized badge in the macOS Dock.
 
