@@ -1,3 +1,5 @@
+[Apple Silicon macOS preview](macos-preview/info.md) tracks the dog icon fix, release package and publication checks.
+
 [Workspace agent actions](workspace-agent-actions/info.md) tracks the model picker, copied Codex descriptions, Claude Plan mapping and per-card actions.
 
 [Subagent card name](subagent-card-name/info.md) tracks filling the missing converted name from the clipboard's source card.

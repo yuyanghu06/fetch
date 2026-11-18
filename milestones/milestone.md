@@ -1,10 +1,10 @@
+## November 17 — Apple Silicon preview published
+
+Fetch sets its dog icon before opening a window. The app bundle declares the same icon as a startup asset. Two isolated AppKit checks, both final builds, strict signature verification and the public DMG checksum passed. Main was pushed before tagging `4418d89` and publishing the ad-hoc-signed v0.1.0 prerelease. The live minimized Dock badge still needs observation. [GitHub release](https://github.com/yuyanghu06/fetch/releases/tag/v0.1.0) · [Publication checks](history/2026-11-17_19-02-44-610231-orchestrator-publish-verified-macos-preview.md) · [Scope](macos-preview/info.md)
+
 ## November 17 — inline approval and disabled unknown sign-in keys
 
 Connect apps shows approval beside the app key for the approved scope. Servers hides the unknown sign-in warning and disables that key. Four focused native widget tests passed and independent review accepted the change. [Changes and checks](history/2026-11-17_19-00-06-952482-orchestrator-verify-inline-approval-and-disabled-server-key.md)
-
-## November 17 — macOS preview in preparation
-
-Fetch sets its dog icon before Iced opens a window. The app bundle also declares the dog icon as a startup asset. Two isolated AppKit checks and both development and optimized arm64 builds passed. The GitHub preview is being prepared. [Implementation and build](history/2026-11-17_18-50-48-362010-orchestrator-build-macos-preview.md)
 
 ## November 17 — install rows, Instructions Paste and auth highlight
 

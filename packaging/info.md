@@ -2,11 +2,11 @@
 
 Info.plist describes the one-process native application. scripts/package-macos.sh takes an already-built executable and creates a drag-and-drop DMG with Fetch.app and an Applications shortcut. It requires explicit FETCH_ALLOW_PACKAGING=1 and a fresh output destination. It never builds, tests, notarizes, publishes, installs trust or changes client configurations. An explicit signing identity is optional input for a later authorized packaging run; no signing credentials are stored here.
 
-Packaging has not been executed. A signed/notarized production build and final notices remain acceptance work after dependency resolution and user-started verification.
+The v0.1.0 Apple Silicon preview uses an ad-hoc signature and includes the license notices. The mounted app passed strict signature verification, and the public download matched the published checksum. A Developer ID-signed and notarized build remains pending. [GitHub preview](https://github.com/yuyanghu06/fetch/releases/tag/v0.1.0)
 
 ## Approved app icon
 
-Fetch.png is the approved1024px square Figma composition with transparent outer margins. Fetch.icns contains the standard16–1024px macOS sizes derived from it. Native development embeds the PNG; Info.plist names Fetch.icns and the packaging script copies it into bundle Resources. No package/release run is implied.
+Fetch.png is the approved 1024 px square Figma composition with transparent outer margins. Fetch.icns contains the standard 16–1024 px macOS sizes derived from it. The native app embeds the PNG and sets it before opening the first window. Info.plist names Fetch.icns and the packaging script copies it into bundle Resources.
 
 Fetch.png uses72DPI metadata so AppKit interprets1024pixels as1024points; the initial Figma export’s low DPI caused an unnecessarily large snapshot. ICNS was regenerated after this metadata correction.
 
